@@ -233,7 +233,7 @@ export function AttendancePunchModal({
             </div>
 
             {/* Multi-step pipeline pills */}
-            <div className="space-y-2 max-w-xs mx-auto text-left text-xs font-mono">
+            <div className="space-y-2 max-w-xs mx-auto text-left text-xs tabular-nums">
               <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-slate-950 p-2.5 rounded-xl border border-emerald-200 dark:border-slate-800">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
                 <span>QR Token Captured</span>
@@ -262,7 +262,7 @@ export function AttendancePunchModal({
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Timestamp:{' '}
-                <strong className="text-slate-900 dark:text-white font-mono">
+                <strong className="text-slate-900 dark:text-white tabular-nums">
                   {new Date(successRecord.checked_at).toLocaleTimeString('en-US', {
                     timeZone: 'Asia/Dhaka',
                     hour: '2-digit',
@@ -283,13 +283,13 @@ export function AttendancePunchModal({
               </div>
               <div className="flex justify-between items-center py-1 border-b border-slate-200 dark:border-slate-800">
                 <span className="text-slate-500 dark:text-slate-400">Distance from Center:</span>
-                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                <span className="tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">
                   {Math.round(successRecord.distance_from_location_meters)}m
                 </span>
               </div>
               <div className="flex justify-between items-center py-1">
                 <span className="text-slate-500 dark:text-slate-400">GPS Accuracy:</span>
-                <span className="font-mono text-slate-700 dark:text-slate-300">
+                <span className="tabular-nums text-slate-700 dark:text-slate-300">
                   ±{Math.round(successRecord.gps_accuracy_meters)}m
                 </span>
               </div>
@@ -326,7 +326,7 @@ export function AttendancePunchModal({
                 {verificationDetails.distanceMeters !== undefined && (
                   <div className="flex justify-between text-slate-500 dark:text-slate-400">
                     <span>Calculated Distance:</span>
-                    <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">
+                    <span className="tabular-nums text-rose-600 dark:text-rose-400 font-bold">
                       {verificationDetails.distanceMeters}m (Allowed: {verificationDetails.allowedRadiusMeters}m)
                     </span>
                   </div>
@@ -334,7 +334,7 @@ export function AttendancePunchModal({
                 {verificationDetails.accuracyMeters !== undefined && (
                   <div className="flex justify-between text-slate-500 dark:text-slate-400">
                     <span>GPS Accuracy:</span>
-                    <span className="font-mono text-slate-700 dark:text-slate-300">±{verificationDetails.accuracyMeters}m</span>
+                    <span className="tabular-nums text-slate-700 dark:text-slate-300">±{verificationDetails.accuracyMeters}m</span>
                   </div>
                 )}
               </div>

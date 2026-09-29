@@ -80,7 +80,7 @@ export function AppShell({
     <RealtimeProvider>
       <SubscriptionProvider initialSnapshot={initialSubscriptionSnapshot}>
         <ToastProvider>
-          <div className="flex h-screen max-h-screen bg-slate-50/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex-col overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-slate-900">
+          <div className="flex h-screen max-h-screen bg-background text-foreground flex-col overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-slate-900">
             <div className="print:hidden">
               <PlatformSupportBanner />
               <NetworkBanner onOpenSyncDrawer={() => setSyncDrawerOpen(true)} />
@@ -96,7 +96,7 @@ export function AppShell({
                 <div className="print:hidden">
                   <TopNav />
                 </div>
-                <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-8 print:p-0 print:m-0 print:overflow-visible print:h-auto print:max-h-none">
+                <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 lg:p-6 pb-24 md:pb-8 print:p-0 print:m-0 print:overflow-visible print:h-auto print:max-h-none">
                   <div className="mx-auto max-w-7xl print:max-w-none print:m-0 print:p-0">{children}</div>
                 </main>
               </div>

@@ -156,7 +156,7 @@ export function NegotiationModal({
         <div className="p-4 rounded-xl bg-slate-900 text-white space-y-2.5 text-xs shadow-md border border-slate-800">
           <div className="flex justify-between items-center text-slate-400">
             <span>List Quoted Subtotal:</span>
-            <span className="font-mono font-bold text-slate-200">{formatBDT(subtotal)}</span>
+            <span className="tabular-nums font-bold text-slate-200">{formatBDT(subtotal)}</span>
           </div>
 
           <div className="flex justify-between items-center text-slate-400">
@@ -164,14 +164,14 @@ export function NegotiationModal({
               Internal Direct Cost Floor:
               <span className="text-2xs bg-white/10 px-1.5 py-0.2 rounded text-slate-300">Materials + Print Labor</span>
             </span>
-            <span className="font-mono font-bold text-amber-400">{formatBDT(totalCost)}</span>
+            <span className="tabular-nums font-bold text-amber-400">{formatBDT(totalCost)}</span>
           </div>
 
           <div className="border-t border-slate-800 pt-2 grid grid-cols-2 gap-3">
             <div>
               <span className="text-2xs text-slate-400 block">Projected Gross Profit</span>
               <span
-                className={`text-base font-black font-mono ${
+                className={`text-base font-black tabular-nums ${
                   calculated.grossProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
                 }`}
               >
@@ -182,7 +182,7 @@ export function NegotiationModal({
             <div className="text-right">
               <span className="text-2xs text-slate-400 block">Projected Margin</span>
               <span
-                className={`text-base font-black font-mono ${
+                className={`text-base font-black tabular-nums ${
                   calculated.marginPercent >= 35
                     ? 'text-emerald-400'
                     : calculated.marginPercent >= 25
@@ -278,7 +278,7 @@ export function NegotiationModal({
               max={subtotal}
               value={discountAmount || ''}
               onChange={(e) => setDiscountAmount(parseFloat(e.target.value) || 0)}
-              className="text-xs h-9 font-mono"
+              className="text-xs h-9 tabular-nums"
               placeholder="Enter discount in Taka..."
             />
             <span className="text-2xs text-slate-400 mt-1 block">
@@ -302,7 +302,7 @@ export function NegotiationModal({
           {/* Result Preview */}
           <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs flex items-center justify-between">
             <span className="text-slate-600 dark:text-slate-400">Revised Grand Total (with VAT):</span>
-            <span className="text-base font-black font-mono text-slate-900 dark:text-white">
+            <span className="text-base font-black tabular-nums text-slate-900 dark:text-white">
               {formatBDT(calculated.grandTotal)}
             </span>
           </div>

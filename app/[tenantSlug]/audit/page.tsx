@@ -132,18 +132,18 @@ export default function TenantAuditLogsPage() {
       />
 
       {/* Security Architecture Compliance Banner */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950/30 border border-slate-800 flex items-start gap-3.5">
-        <div className="h-9 w-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
+      <div className="p-4 rounded-xl bg-card border border-border flex items-start gap-3.5 shadow-xs">
+        <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
           <Lock className="h-5 w-5" />
         </div>
         <div className="text-xs space-y-1">
-          <div className="font-bold text-white text-sm flex flex-wrap items-center gap-2">
+          <div className="font-bold text-foreground text-sm flex flex-wrap items-center gap-2">
             <span>Immutable Append-Only Audit Integrity Active</span>
-            <span className="text-2xs font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            <span className="text-2xs tabular-nums px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
               ANTI-DELETION ENFORCED
             </span>
           </div>
-          <p className="text-slate-400 leading-relaxed">
+          <p className="text-muted-foreground leading-relaxed">
             Audit log entries cannot be modified or deleted by company users or administrators. Invoices and historical payment records strictly adhere to non-destructive void, cancel, reverse, and adjustment patterns.
           </p>
         </div>
@@ -185,7 +185,7 @@ export default function TenantAuditLogsPage() {
             <div>
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <span>Company Audit Stream</span>
-                <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                   {logs.length} Records
                 </span>
               </CardTitle>
@@ -230,11 +230,11 @@ export default function TenantAuditLogsPage() {
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-white">
                           {formatDate(log.timestamp)}
-                          <span className="text-slate-400 font-mono ml-1">
+                          <span className="text-slate-400 tabular-nums ml-1">
                             {formatTime(log.timestamp)}
                           </span>
                         </div>
-                        <div className="text-2xs font-mono text-slate-500 flex items-center gap-1 mt-0.5">
+                        <div className="text-2xs tabular-nums text-slate-500 flex items-center gap-1 mt-0.5">
                           <Globe className="h-2.5 w-2.5 text-slate-500" />
                           <span>{log.ip_address || 'unavailable'}</span>
                           {log.device_metadata?.browser && (
@@ -249,7 +249,7 @@ export default function TenantAuditLogsPage() {
                           <User className="h-3 w-3 text-indigo-400" />
                           <span>{log.user_email}</span>
                         </div>
-                        <div className="text-2xs text-slate-500 font-mono">
+                        <div className="text-2xs text-slate-500 tabular-nums">
                           ID: {log.user_id || 'System'}
                         </div>
                       </td>
@@ -258,7 +258,7 @@ export default function TenantAuditLogsPage() {
                       <td className="py-3.5 px-4">
                         <div className="space-y-1">
                           <span
-                            className={`inline-block font-mono text-2xs font-bold px-2 py-0.5 rounded-lg border ${
+                            className={`inline-block tabular-nums text-2xs font-bold px-2 py-0.5 rounded-lg border ${
                               log.action.includes('cancel') || log.action.includes('logout')
                                 ? 'bg-red-500/10 text-red-400 border-red-500/30'
                                 : log.action.includes('login') || log.action.includes('approve') || log.action.includes('create')
@@ -270,7 +270,7 @@ export default function TenantAuditLogsPage() {
                           >
                             {log.action}
                           </span>
-                          <div className="text-2xs text-slate-400 font-mono">
+                          <div className="text-2xs text-slate-400 tabular-nums">
                             Entity: {log.entity} {log.entity_id ? `(${log.entity_id})` : ''}
                           </div>
                         </div>
@@ -318,7 +318,7 @@ export default function TenantAuditLogsPage() {
                 <div key={log.id} className="p-4 space-y-2.5 hover:bg-slate-850/40 transition-colors">
                   <div className="flex items-start justify-between gap-2">
                     <span
-                      className={`inline-block font-mono text-2xs font-bold px-2 py-0.5 rounded-lg border ${
+                      className={`inline-block tabular-nums text-2xs font-bold px-2 py-0.5 rounded-lg border ${
                         log.action.includes('cancel') || log.action.includes('logout')
                           ? 'bg-red-500/10 text-red-400 border-red-500/30'
                           : log.action.includes('login') || log.action.includes('approve') || log.action.includes('create')
@@ -330,7 +330,7 @@ export default function TenantAuditLogsPage() {
                     >
                       {log.action}
                     </span>
-                    <span className="text-2xs font-mono text-slate-400">
+                    <span className="text-2xs tabular-nums text-slate-400">
                       {formatDateTime(log.timestamp)}
                     </span>
                   </div>
@@ -346,19 +346,19 @@ export default function TenantAuditLogsPage() {
                     </div>
                     <div>
                       <span className="text-slate-500 block text-2xs">Entity:</span>
-                      <span className="text-indigo-400 font-mono truncate block">
+                      <span className="text-indigo-400 tabular-nums truncate block">
                         {log.entity} {log.entity_id ? `(${log.entity_id})` : ''}
                       </span>
                     </div>
                     <div>
                       <span className="text-slate-500 block text-2xs">IP / Device:</span>
-                      <span className="text-slate-400 font-mono truncate block">
+                      <span className="text-slate-400 tabular-nums truncate block">
                         {log.ip_address || 'unavailable'}
                       </span>
                     </div>
                     <div>
                       <span className="text-slate-500 block text-2xs">Actor ID:</span>
-                      <span className="text-slate-400 font-mono truncate block">{log.user_id || 'System'}</span>
+                      <span className="text-slate-400 tabular-nums truncate block">{log.user_id || 'System'}</span>
                     </div>
                   </div>
 
@@ -395,7 +395,7 @@ export default function TenantAuditLogsPage() {
               </div>
               <div>
                 <h3 className="text-sm sm:text-base font-bold text-white">Audit Event Value Diff</h3>
-                <p className="text-2xs sm:text-xs font-mono text-slate-400 break-all">
+                <p className="text-2xs sm:text-xs tabular-nums text-slate-400 break-all">
                   {selectedLog.action} • {selectedLog.id}
                 </p>
               </div>
@@ -409,13 +409,13 @@ export default function TenantAuditLogsPage() {
               </div>
               <div>
                 <span className="text-slate-500 text-2xs block">Target Entity:</span>
-                <div className="font-bold text-indigo-400 font-mono mt-0.5 truncate">
+                <div className="font-bold text-indigo-400 tabular-nums mt-0.5 truncate">
                   {selectedLog.entity} {selectedLog.entity_id ? `(${selectedLog.entity_id})` : ''}
                 </div>
               </div>
               <div>
                 <span className="text-slate-500 text-2xs block">IP Address:</span>
-                <div className="font-bold text-slate-300 font-mono mt-0.5 truncate">
+                <div className="font-bold text-slate-300 tabular-nums mt-0.5 truncate">
                   {selectedLog.ip_address || 'unavailable'}
                 </div>
               </div>
@@ -435,7 +435,7 @@ export default function TenantAuditLogsPage() {
                   <span className="h-2 w-2 rounded-full bg-red-400" />
                   <span>Previous State (Before)</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-2xs text-red-300/90 max-h-48 sm:h-52 overflow-y-auto">
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 tabular-nums text-2xs text-red-300/90 max-h-48 sm:h-52 overflow-y-auto">
                   {selectedLog.previous_value ? (
                     <pre className="whitespace-pre-wrap break-all">{JSON.stringify(selectedLog.previous_value, null, 2)}</pre>
                   ) : (
@@ -450,7 +450,7 @@ export default function TenantAuditLogsPage() {
                   <span className="h-2 w-2 rounded-full bg-emerald-400" />
                   <span>Modified State (After)</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-2xs text-emerald-300/90 max-h-48 sm:h-52 overflow-y-auto">
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 tabular-nums text-2xs text-emerald-300/90 max-h-48 sm:h-52 overflow-y-auto">
                   {selectedLog.new_value ? (
                     <pre className="whitespace-pre-wrap break-all">{JSON.stringify(selectedLog.new_value, null, 2)}</pre>
                   ) : (
@@ -462,7 +462,7 @@ export default function TenantAuditLogsPage() {
 
             {/* Device Metadata */}
             {selectedLog.device_metadata && (
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-2xs text-slate-400 font-mono flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-2xs text-slate-400 tabular-nums flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
                 <span>Device: {selectedLog.device_metadata.browser || 'Browser'} on {selectedLog.device_metadata.os || 'OS'}</span>
                 <span>{selectedLog.device_metadata.geo_city || 'Dhaka'}, {selectedLog.device_metadata.geo_country || 'BD'}</span>
               </div>

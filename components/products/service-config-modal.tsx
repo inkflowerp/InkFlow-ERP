@@ -3588,11 +3588,11 @@ export function ServiceConfigModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {initialData ? `Configure Service: ${initialData.name}` : 'New Printing & Production Service'}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
                 {serviceType.toUpperCase()}
               </Badge>
               {sellingUnit && (
-                <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                   {sellingUnit} Billing
                 </Badge>
               )}
@@ -3705,7 +3705,7 @@ export function ServiceConfigModal({
                 <span>{tab.label}</span>
                 {tab.count && (
                   <span className={cn(
-                    'text-2xs px-1 py-0.2 rounded-full font-mono font-bold leading-tight',
+                    'text-2xs px-1 py-0.2 rounded-full tabular-nums font-bold leading-tight',
                     isSelected ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                   )}>
                     {tab.count}
@@ -3782,7 +3782,7 @@ export function ServiceConfigModal({
                     placeholder="e.g. SRV-UV-VINYL-01"
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
-                    className="h-9 text-xs font-mono uppercase"
+                    className="h-9 text-xs tabular-nums uppercase"
                   />
                 </div>
               </div>
@@ -4004,9 +4004,9 @@ export function ServiceConfigModal({
 
                       {selectedMachineId && (
                         <div className="flex items-center gap-3 text-2xs text-slate-600 dark:text-slate-400 pt-0.5">
-                          <span>Hourly Rate: <strong className="text-slate-900 dark:text-white font-mono">৳{machineHourlyRate || 0}/hr</strong></span>
-                          <span>Speed: <strong className="text-blue-600 dark:text-blue-400 font-mono">{estimatedSpeed || 'Auto'} {speedUnit === 'sheet_per_hr' ? 'Sheets/hr' : 'Sqft/hr'}</strong></span>
-                          <span>Unit Machine Cost: <strong className="text-emerald-600 dark:text-emerald-400 font-mono">৳{machineCost || 0}/sft</strong></span>
+                          <span>Hourly Rate: <strong className="text-slate-900 dark:text-white tabular-nums">৳{machineHourlyRate || 0}/hr</strong></span>
+                          <span>Speed: <strong className="text-blue-600 dark:text-blue-400 tabular-nums">{estimatedSpeed || 'Auto'} {speedUnit === 'sheet_per_hr' ? 'Sheets/hr' : 'Sqft/hr'}</strong></span>
+                          <span>Unit Machine Cost: <strong className="text-emerald-600 dark:text-emerald-400 tabular-nums">৳{machineCost || 0}/sft</strong></span>
                         </div>
                       )}
                     </div>
@@ -4062,29 +4062,29 @@ export function ServiceConfigModal({
                       <div>
                         <span className="text-2xs text-slate-500 uppercase block font-medium">Material / SKU</span>
                         <span className="font-bold text-slate-900 dark:text-white truncate block">{selectedMaterialRecord.name}</span>
-                        <span className="text-2xs font-mono text-slate-400">{selectedMaterialRecord.sku}</span>
+                        <span className="text-2xs tabular-nums text-slate-400">{selectedMaterialRecord.sku}</span>
                       </div>
                       <div>
                         <span className="text-2xs text-slate-500 uppercase block font-medium">Purchase / Stock Unit</span>
-                        <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 uppercase">
+                        <span className="tabular-nums font-bold text-emerald-700 dark:text-emerald-300 uppercase">
                           {purchaseUnit} / {selectedMaterialRecord.unit || 'roll'}
                         </span>
                       </div>
                       <div>
                         <span className="text-2xs text-slate-500 uppercase block font-medium">Roll Widths</span>
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                        <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
                           {availableRollWidths.join(', ')} ft
                         </span>
                       </div>
                       <div>
                         <span className="text-2xs text-slate-500 uppercase block font-medium">Roll Length</span>
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                        <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
                           {standardRollLength} ft
                         </span>
                       </div>
                       <div>
                         <span className="text-2xs text-slate-500 uppercase block font-medium">Average Cost</span>
-                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
                           ৳{getMaterialCost(selectedMaterialRecord)} / {getMaterialUnitDetails(selectedMaterialRecord).consumeUnit}
                         </span>
                       </div>
@@ -4112,7 +4112,7 @@ export function ServiceConfigModal({
                       {availableRollWidths.map((w) => (
                         <span
                           key={w}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 shadow-2xs"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs tabular-nums font-bold text-slate-900 dark:text-slate-100 shadow-2xs"
                         >
                           <span>{w} ft</span>
                           {availableRollWidths.length > 1 && (
@@ -4136,7 +4136,7 @@ export function ServiceConfigModal({
                           value={newRollWidth}
                           onChange={(e) => setNewRollWidth(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddRollWidth())}
-                          className="h-7 w-24 text-xs font-mono"
+                          className="h-7 w-24 text-xs tabular-nums"
                         />
                         <Button
                           type="button"
@@ -4164,7 +4164,7 @@ export function ServiceConfigModal({
                           min="0"
                           value={trimAllowanceIn}
                           onChange={(e) => setTrimAllowanceIn(parseFloat(e.target.value) || 0)}
-                          className="h-9 text-xs font-mono pr-8"
+                          className="h-9 text-xs tabular-nums pr-8"
                         />
                         <span className="absolute right-3 top-2 text-2xs font-bold text-slate-400">in</span>
                       </div>
@@ -4181,7 +4181,7 @@ export function ServiceConfigModal({
                           min="0"
                           value={productionBleedInches}
                           onChange={(e) => setProductionBleedInches(parseFloat(e.target.value) || 0)}
-                          className="h-9 text-xs font-mono pr-8"
+                          className="h-9 text-xs tabular-nums pr-8"
                         />
                         <span className="absolute right-3 top-2 text-2xs font-bold text-slate-400">in</span>
                       </div>
@@ -4198,7 +4198,7 @@ export function ServiceConfigModal({
                           min="0"
                           value={extraWidthAllowance}
                           onChange={(e) => setExtraWidthAllowance(e.target.value)}
-                          className="h-9 text-xs font-mono pr-8"
+                          className="h-9 text-xs tabular-nums pr-8"
                         />
                         <span className="absolute right-3 top-2 text-2xs font-bold text-slate-400">ft</span>
                       </div>
@@ -4232,7 +4232,7 @@ export function ServiceConfigModal({
                         Ink Configuration & Chemistry
                       </h4>
                     </div>
-                    <span className="text-2xs text-slate-500 dark:text-slate-400 font-mono font-medium">
+                    <span className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums font-medium">
                       Ink Cost: <strong className="text-indigo-600 dark:text-indigo-400">৳{inkCost || 0}/sft</strong>
                     </span>
                   </div>
@@ -4260,7 +4260,7 @@ export function ServiceConfigModal({
                             <div className="font-bold text-slate-900 dark:text-white truncate">
                               {prof.name.split(' (')[0]}
                             </div>
-                            <div className="text-2xs text-slate-500 font-mono mt-0.5">
+                            <div className="text-2xs text-slate-500 tabular-nums mt-0.5">
                               {prof.channels.length} Channels ({prof.channels.map((c) => c.channel[0]).join('')})
                             </div>
                           </button>
@@ -4331,7 +4331,7 @@ export function ServiceConfigModal({
                               })}
                             </select>
 
-                            <div className="flex items-center justify-between text-2xs text-slate-500 font-mono pt-0.5 border-t border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center justify-between text-2xs text-slate-500 tabular-nums pt-0.5 border-t border-slate-100 dark:border-slate-800">
                               <span>Allocation: <strong>{brk ? brk.allocatedMl : autoCalculatedInkMetrics.perChannelMl} ml</strong></span>
                               <span className="text-indigo-600 dark:text-indigo-400 font-bold">৳{brk ? brk.channelCost.toFixed(3) : 0}</span>
                             </div>
@@ -4345,9 +4345,9 @@ export function ServiceConfigModal({
                   <div className="p-2.5 bg-indigo-100/50 dark:bg-indigo-950/40 rounded-lg border border-indigo-200 dark:border-indigo-900/50 text-2xs text-indigo-950 dark:text-indigo-200 space-y-1">
                     <div className="flex items-center justify-between font-medium">
                       <span>💡 <strong>Ink Channel Consumption Formula:</strong> Total ml/sft divided equally across active channels (Qi = total_ml / {selectedInks.length || 4})</span>
-                      <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300">{autoCalculatedInkMetrics.perChannelMl} ml / channel / sft</span>
+                      <span className="tabular-nums font-bold text-indigo-700 dark:text-indigo-300">{autoCalculatedInkMetrics.perChannelMl} ml / channel / sft</span>
                     </div>
-                    <div className="text-2xs text-indigo-800/80 dark:text-indigo-300/80 font-mono">
+                    <div className="text-2xs text-indigo-800/80 dark:text-indigo-300/80 tabular-nums">
                       Formula: {selectedInks.map((c) => `${c.channel} (${autoCalculatedInkMetrics.perChannelMl}ml)`).join(' + ')} = {consumePerUnitMl || 1.2} ml/sft
                     </div>
                   </div>
@@ -4365,7 +4365,7 @@ export function ServiceConfigModal({
                           min="0.1"
                           value={consumePerUnitMl}
                           onChange={(e) => setConsumePerUnitMl(e.target.value)}
-                          className="h-9 text-xs font-mono pr-12 font-bold"
+                          className="h-9 text-xs tabular-nums pr-12 font-bold"
                         />
                         <span className="absolute right-3 top-2 text-2xs font-bold text-slate-400">ml/sft</span>
                       </div>
@@ -4383,7 +4383,7 @@ export function ServiceConfigModal({
                           disabled={autoCalculateInkCost}
                           onChange={(e) => setInkCost(parseFloat(e.target.value) || '')}
                           className={cn(
-                            'h-9 text-xs font-mono pr-8 font-bold',
+                            'h-9 text-xs tabular-nums pr-8 font-bold',
                             autoCalculateInkCost
                               ? 'bg-indigo-50/80 dark:bg-indigo-950/60 text-indigo-950 dark:text-indigo-200 border-indigo-300 dark:border-indigo-800'
                               : 'bg-white dark:bg-slate-900'
@@ -4624,7 +4624,7 @@ export function ServiceConfigModal({
                         max="100"
                         value={defaultWastagePercent}
                         onChange={(e) => setDefaultWastagePercent(parseFloat(e.target.value) || 0)}
-                        className="h-9 text-xs font-mono font-bold"
+                        className="h-9 text-xs tabular-nums font-bold"
                       />
                     </div>
 
@@ -4637,7 +4637,7 @@ export function ServiceConfigModal({
                         min="0"
                         value={minimumCharge}
                         onChange={(e) => setMinimumCharge(parseFloat(e.target.value) || 0)}
-                        className="h-9 text-xs font-mono font-bold"
+                        className="h-9 text-xs tabular-nums font-bold"
                       />
                     </div>
                   </div>
@@ -4714,7 +4714,7 @@ export function ServiceConfigModal({
                         placeholder="e.g. 32 Micron / 80 Micron / 3mm Board"
                         value={laminationMicron}
                         onChange={(e) => setLaminationMicron(e.target.value)}
-                        className="h-9 text-xs font-mono font-bold"
+                        className="h-9 text-xs tabular-nums font-bold"
                       />
                     </div>
 
@@ -5089,7 +5089,7 @@ export function ServiceConfigModal({
                         min="1"
                         value={turnaroundHours}
                         onChange={(e) => setTurnaroundHours(parseInt(e.target.value) || 24)}
-                        className="h-9 text-xs font-mono font-bold"
+                        className="h-9 text-xs tabular-nums font-bold"
                       />
                     </div>
 
@@ -5175,7 +5175,7 @@ export function ServiceConfigModal({
                       min="0.1"
                       value={minBillableQty}
                       onChange={(e) => setMinBillableQty(parseFloat(e.target.value) || 1)}
-                      className="h-9 text-xs font-mono pr-10"
+                      className="h-9 text-xs tabular-nums pr-10"
                     />
                     <span className="absolute right-3 top-2 text-2xs font-bold text-slate-400 uppercase">
                       {sellingUnit}
@@ -5196,7 +5196,7 @@ export function ServiceConfigModal({
                       placeholder="0"
                       value={minimumCharge}
                       onChange={(e) => setMinimumCharge(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-9 text-xs font-mono pl-7"
+                      className="h-9 text-xs tabular-nums pl-7"
                     />
                   </div>
                 </div>
@@ -5264,10 +5264,10 @@ export function ServiceConfigModal({
               </div>
 
               <div className="flex items-center gap-1.5 flex-wrap">
-                <Badge variant="outline" className="text-2xs font-mono uppercase bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
+                <Badge variant="outline" className="text-2xs tabular-nums uppercase bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
                   {requiredMaterials.length} In Recipe
                 </Badge>
-                <Badge className="bg-emerald-600 text-white text-2xs font-mono py-0.5">
+                <Badge className="bg-emerald-600 text-white text-2xs tabular-nums py-0.5">
                   BOM Direct Cost: ৳{totalBOMCost.toFixed(2)} / {sellingUnit || 'sft'}
                 </Badge>
               </div>
@@ -5352,7 +5352,7 @@ export function ServiceConfigModal({
                                   {item.material_name}
                                 </span>
                                 {item.sku && (
-                                  <span className="text-2xs text-slate-400 font-mono">
+                                  <span className="text-2xs text-slate-400 tabular-nums">
                                     [{item.sku}]
                                   </span>
                                 )}
@@ -5372,7 +5372,7 @@ export function ServiceConfigModal({
                                 min="0.0001"
                                 value={item.quantity_per_unit ?? 1}
                                 onChange={(e) => handleUpdateBOMItem(idx, 'quantity_per_unit', parseFloat(e.target.value) || 0)}
-                                className="h-7 text-xs font-mono font-bold px-1.5 text-center"
+                                className="h-7 text-xs tabular-nums font-bold px-1.5 text-center"
                               />
                             </td>
 
@@ -5381,7 +5381,7 @@ export function ServiceConfigModal({
                               <select
                                 value={item.unit || 'sft'}
                                 onChange={(e) => handleUpdateBOMItem(idx, 'unit', e.target.value)}
-                                className="h-7 w-full text-2xs font-mono font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1 text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-1 focus:ring-amber-500 uppercase cursor-pointer"
+                                className="h-7 w-full text-2xs tabular-nums font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1 text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-1 focus:ring-amber-500 uppercase cursor-pointer"
                               >
                                 {COMMON_BOM_UNITS.map((u) => (
                                   <option key={u.value} value={u.value}>
@@ -5406,7 +5406,7 @@ export function ServiceConfigModal({
                                   min="0"
                                   value={item.unit_cost ?? 0}
                                   onChange={(e) => handleUpdateBOMItem(idx, 'unit_cost', parseFloat(e.target.value) || 0)}
-                                  className="h-7 text-xs font-mono pl-4 pr-1 text-right"
+                                  className="h-7 text-xs tabular-nums pl-4 pr-1 text-right"
                                 />
                               </div>
                             </td>
@@ -5420,7 +5420,7 @@ export function ServiceConfigModal({
                                   max="50"
                                   value={item.waste_percent ?? 5}
                                   onChange={(e) => handleUpdateBOMItem(idx, 'waste_percent', parseFloat(e.target.value) || 0)}
-                                  className="h-7 text-xs font-mono pr-4 text-center"
+                                  className="h-7 text-xs tabular-nums pr-4 text-center"
                                 />
                                 <span className="absolute right-1.5 top-1.5 text-2xs text-slate-400 font-bold">%</span>
                               </div>
@@ -5428,7 +5428,7 @@ export function ServiceConfigModal({
 
                             {/* Subtotal Contribution */}
                             <td className="py-2 px-3 text-right">
-                              <span className="text-xs font-mono font-bold text-amber-700 dark:text-amber-300">
+                              <span className="text-xs tabular-nums font-bold text-amber-700 dark:text-amber-300">
                                 ৳{Number(lineSubtotal).toFixed(2)}
                               </span>
                             </td>
@@ -5453,7 +5453,7 @@ export function ServiceConfigModal({
                         <td colSpan={6} className="py-2 px-3 text-right text-slate-700 dark:text-slate-300">
                           Total Direct Material BOM Cost (per {sellingUnit || 'sft'}):
                         </td>
-                        <td className="py-2 px-3 text-right font-mono text-sm text-emerald-700 dark:text-emerald-300">
+                        <td className="py-2 px-3 text-right tabular-nums text-sm text-emerald-700 dark:text-emerald-300">
                           ৳{totalBOMCost.toFixed(2)}
                         </td>
                         <td></td>
@@ -5520,7 +5520,7 @@ export function ServiceConfigModal({
                       max="50"
                       value={defaultWastagePercent}
                       onChange={(e) => setDefaultWastagePercent(parseFloat(e.target.value) || 0)}
-                      className="h-9 text-xs font-mono font-bold pr-8 bg-white dark:bg-slate-900"
+                      className="h-9 text-xs tabular-nums font-bold pr-8 bg-white dark:bg-slate-900"
                     />
                     <span className="absolute right-3 top-2 text-xs text-slate-400 font-bold">%</span>
                   </div>
@@ -5555,7 +5555,7 @@ export function ServiceConfigModal({
                             <span className="font-bold text-slate-900 dark:text-white line-clamp-1">
                               {mat.name}
                             </span>
-                            <Badge variant="outline" className="text-2xs uppercase px-1 py-0 font-mono shrink-0">
+                            <Badge variant="outline" className="text-2xs uppercase px-1 py-0 tabular-nums shrink-0">
                               {mat.category || 'material'}
                             </Badge>
                           </div>
@@ -5566,13 +5566,13 @@ export function ServiceConfigModal({
                             </span>
                           )}
 
-                          <span className="text-2xs text-slate-500 dark:text-slate-400 font-mono block mt-0.5">
+                          <span className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums block mt-0.5">
                             {mat.sku} • {stockSubtitle}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800/60">
-                          <span className="text-2xs font-mono font-bold text-amber-700 dark:text-amber-300">
+                          <span className="text-2xs tabular-nums font-bold text-amber-700 dark:text-amber-300">
                             {rateDisplay}
                           </span>
 
@@ -5645,7 +5645,7 @@ export function ServiceConfigModal({
                   </p>
                 </div>
               </div>
-              <Badge variant="outline" className="text-2xs font-mono uppercase bg-purple-50 text-purple-700 border-purple-200">
+              <Badge variant="outline" className="text-2xs tabular-nums uppercase bg-purple-50 text-purple-700 border-purple-200">
                 {finishingOptions.length} Configured
               </Badge>
             </div>
@@ -5749,17 +5749,17 @@ export function ServiceConfigModal({
                               <span className="font-bold text-slate-900 dark:text-white line-clamp-1">
                                 {mat.name}
                               </span>
-                              <Badge variant="outline" className="text-2xs uppercase px-1 py-0 font-mono shrink-0">
+                              <Badge variant="outline" className="text-2xs uppercase px-1 py-0 tabular-nums shrink-0">
                                 {mat.category || 'material'}
                               </Badge>
                             </div>
-                            <span className="text-2xs text-slate-500 dark:text-slate-400 font-mono block mt-0.5">
+                            <span className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums block mt-0.5">
                               {mat.sku} • {stockSubtitle}{sellVal > 0 ? ` • Sell: ৳${sellVal}/${consumeUnit}` : ''}
                             </span>
                           </div>
 
                           <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/60">
-                            <div className="flex items-center gap-1.5 font-mono text-2xs font-bold">
+                            <div className="flex items-center gap-1.5 tabular-nums text-2xs font-bold">
                               <span className="text-purple-700 dark:text-purple-300">
                                 {costVal > 0 ? `Cost: ৳${costVal}/${consumeUnit}` : 'Raw Item'}
                               </span>
@@ -5872,7 +5872,7 @@ export function ServiceConfigModal({
                                 next[idx].price = val
                                 setFinishingOptions(next)
                               }}
-                              className="w-20 h-7 text-xs font-mono font-bold"
+                              className="w-20 h-7 text-xs tabular-nums font-bold"
                             />
                           </div>
 
@@ -5888,7 +5888,7 @@ export function ServiceConfigModal({
                                 next[idx].cost = val
                                 setFinishingOptions(next)
                               }}
-                              className="w-20 h-7 text-xs font-mono"
+                              className="w-20 h-7 text-xs tabular-nums"
                             />
                           </div>
 
@@ -6033,7 +6033,7 @@ export function ServiceConfigModal({
                           placeholder="25"
                           value={customFinishingPrice}
                           onChange={(e) => setCustomFinishingPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="h-8 text-xs font-mono bg-white dark:bg-slate-900"
+                          className="h-8 text-xs tabular-nums bg-white dark:bg-slate-900"
                         />
                       </div>
 
@@ -6044,7 +6044,7 @@ export function ServiceConfigModal({
                           placeholder="15"
                           value={customFinishingCost}
                           onChange={(e) => setCustomFinishingCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="h-8 text-xs font-mono bg-white dark:bg-slate-900"
+                          className="h-8 text-xs tabular-nums bg-white dark:bg-slate-900"
                         />
                       </div>
                     </div>
@@ -6088,7 +6088,7 @@ export function ServiceConfigModal({
                   Add-on Accessories & Site Installation
                 </h3>
               </div>
-              <Badge variant="outline" className="text-2xs font-mono uppercase bg-teal-50 text-teal-700 border-teal-200">
+              <Badge variant="outline" className="text-2xs tabular-nums uppercase bg-teal-50 text-teal-700 border-teal-200">
                 {additionalOptions.length + installationOptions.length} Configured
               </Badge>
             </div>
@@ -6124,7 +6124,7 @@ export function ServiceConfigModal({
                       >
                         <div>
                           <span className="block font-bold">{opt.name}</span>
-                          <span className="text-2xs text-slate-500 font-mono">
+                          <span className="text-2xs text-slate-500 tabular-nums">
                             ৳{opt.selling_price}/{opt.pricing_method === 'per_piece' ? 'pc' : opt.pricing_method === 'fixed' ? 'job' : 'sft'}
                           </span>
                         </div>
@@ -6154,7 +6154,7 @@ export function ServiceConfigModal({
                   Pricing, 9-Head Direct Cost Breakdown & Margins
                 </h3>
               </div>
-              <Badge variant="outline" className="text-2xs font-mono uppercase bg-emerald-50 text-emerald-700 border-emerald-200">
+              <Badge variant="outline" className="text-2xs tabular-nums uppercase bg-emerald-50 text-emerald-700 border-emerald-200">
                 Direct Unit Cost: ৳{totalDirectCost.toFixed(2)} / {sellingUnit || 'sft'}
               </Badge>
             </div>
@@ -6180,7 +6180,7 @@ export function ServiceConfigModal({
                     }}
                     required
                     className={cn(
-                      'h-9 text-xs font-mono font-bold pl-7 bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 transition-colors',
+                      'h-9 text-xs tabular-nums font-bold pl-7 bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 transition-colors',
                       fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
                     )}
                   />
@@ -6206,7 +6206,7 @@ export function ServiceConfigModal({
                     placeholder="150"
                     value={minimumCharge}
                     onChange={(e) => setMinimumCharge(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                    className="h-9 text-xs font-mono pl-7"
+                    className="h-9 text-xs tabular-nums pl-7"
                   />
                 </div>
               </div>
@@ -6238,7 +6238,7 @@ export function ServiceConfigModal({
                     <span>Auto-Calculate Direct Costs from BOM</span>
                   </Button>
 
-                  <span className="text-2xs font-mono font-bold text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-900 px-2 py-1 rounded border border-blue-200 shadow-2xs">
+                  <span className="text-2xs tabular-nums font-bold text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-900 px-2 py-1 rounded border border-blue-200 shadow-2xs">
                     Total: ৳{totalDirectCost.toFixed(2)} / {sellingUnit || 'sft'}
                   </span>
                 </div>
@@ -6258,7 +6258,7 @@ export function ServiceConfigModal({
                       min="0"
                       value={materialCost}
                       onChange={(e) => setMaterialCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-7 text-xs font-mono pl-4"
+                      className="h-7 text-xs tabular-nums pl-4"
                     />
                   </div>
                 </div>
@@ -6276,7 +6276,7 @@ export function ServiceConfigModal({
                       min="0"
                       value={inkCost}
                       onChange={(e) => setInkCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-7 text-xs font-mono pl-4 text-blue-600 dark:text-blue-400 font-bold"
+                      className="h-7 text-xs tabular-nums pl-4 text-blue-600 dark:text-blue-400 font-bold"
                     />
                   </div>
                 </div>
@@ -6294,7 +6294,7 @@ export function ServiceConfigModal({
                       min="0"
                       value={machineCost}
                       onChange={(e) => setMachineCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-7 text-xs font-mono pl-4"
+                      className="h-7 text-xs tabular-nums pl-4"
                     />
                   </div>
                 </div>
@@ -6312,7 +6312,7 @@ export function ServiceConfigModal({
                       min="0"
                       value={laborCost}
                       onChange={(e) => setLaborCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-7 text-xs font-mono pl-4"
+                      className="h-7 text-xs tabular-nums pl-4"
                     />
                   </div>
                 </div>
@@ -6330,7 +6330,7 @@ export function ServiceConfigModal({
                       min="0"
                       value={finishingCost}
                       onChange={(e) => setFinishingCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-7 text-xs font-mono pl-4"
+                      className="h-7 text-xs tabular-nums pl-4"
                     />
                   </div>
                 </div>
@@ -6348,7 +6348,7 @@ export function ServiceConfigModal({
                       min="0"
                       value={fabricationCost}
                       onChange={(e) => setFabricationCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-7 text-xs font-mono pl-4"
+                      className="h-7 text-xs tabular-nums pl-4"
                     />
                   </div>
                 </div>
@@ -6366,7 +6366,7 @@ export function ServiceConfigModal({
                       min="0"
                       value={installationCost}
                       onChange={(e) => setInstallationCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-7 text-xs font-mono pl-4"
+                      className="h-7 text-xs tabular-nums pl-4"
                     />
                   </div>
                 </div>
@@ -6384,7 +6384,7 @@ export function ServiceConfigModal({
                       min="0"
                       value={deliveryCost}
                       onChange={(e) => setDeliveryCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-7 text-xs font-mono pl-4"
+                      className="h-7 text-xs tabular-nums pl-4"
                     />
                   </div>
                 </div>
@@ -6402,7 +6402,7 @@ export function ServiceConfigModal({
                       min="0"
                       value={otherDirectCost}
                       onChange={(e) => setOtherDirectCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-7 text-xs font-mono pl-4"
+                      className="h-7 text-xs tabular-nums pl-4"
                     />
                   </div>
                 </div>
@@ -6434,7 +6434,7 @@ export function ServiceConfigModal({
                       </span>
                     )}
                   </span>
-                  <span className="text-2xs text-slate-600 dark:text-slate-400 font-mono">
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 tabular-nums">
                     Unit Profit: ৳{(marginMetrics.grossProfit).toFixed(2)} / {sellingUnit || 'sft'} (Cost: ৳{totalDirectCost.toFixed(2)} | Sell: ৳{Number(sellingPrice || 0).toFixed(2)})
                   </span>
                 </div>
@@ -6477,7 +6477,7 @@ export function ServiceConfigModal({
                 </Label>
                 {totalDirectCost > 0 && (
                   <span className="text-2xs text-slate-500 font-medium">
-                    Break-Even Floor: <strong className="font-mono text-emerald-700 dark:text-emerald-300 font-bold">≥ ৳{totalDirectCost.toFixed(2)}</strong> (Prevents Selling at a Loss)
+                    Break-Even Floor: <strong className="tabular-nums text-emerald-700 dark:text-emerald-300 font-bold">≥ ৳{totalDirectCost.toFixed(2)}</strong> (Prevents Selling at a Loss)
                   </span>
                 )}
               </div>
@@ -6494,7 +6494,7 @@ export function ServiceConfigModal({
                     step="any"
                     value={priceTiers.retail}
                     onChange={(e) => setPriceTiers({ ...priceTiers, retail: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className={`h-8 text-xs font-mono ${
+                    className={`h-8 text-xs tabular-nums ${
                       priceTiers.retail !== '' && Number(priceTiers.retail) < totalDirectCost && totalDirectCost > 0
                         ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
                         : ''
@@ -6518,7 +6518,7 @@ export function ServiceConfigModal({
                     step="any"
                     value={priceTiers.reseller}
                     onChange={(e) => setPriceTiers({ ...priceTiers, reseller: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className={`h-8 text-xs font-mono ${
+                    className={`h-8 text-xs tabular-nums ${
                       priceTiers.reseller !== '' && Number(priceTiers.reseller) < totalDirectCost && totalDirectCost > 0
                         ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
                         : ''
@@ -6542,7 +6542,7 @@ export function ServiceConfigModal({
                     step="any"
                     value={priceTiers.corporate}
                     onChange={(e) => setPriceTiers({ ...priceTiers, corporate: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className={`h-8 text-xs font-mono ${
+                    className={`h-8 text-xs tabular-nums ${
                       priceTiers.corporate !== '' && Number(priceTiers.corporate) < totalDirectCost && totalDirectCost > 0
                         ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
                         : ''
@@ -6566,7 +6566,7 @@ export function ServiceConfigModal({
                     step="any"
                     value={priceTiers.agency}
                     onChange={(e) => setPriceTiers({ ...priceTiers, agency: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className={`h-8 text-xs font-mono ${
+                    className={`h-8 text-xs tabular-nums ${
                       priceTiers.agency !== '' && Number(priceTiers.agency) < totalDirectCost && totalDirectCost > 0
                         ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
                         : ''
@@ -6590,7 +6590,7 @@ export function ServiceConfigModal({
                     step="any"
                     value={priceTiers.regular}
                     onChange={(e) => setPriceTiers({ ...priceTiers, regular: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className={`h-8 text-xs font-mono ${
+                    className={`h-8 text-xs tabular-nums ${
                       priceTiers.regular !== '' && Number(priceTiers.regular) < totalDirectCost && totalDirectCost > 0
                         ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
                         : ''
@@ -6614,7 +6614,7 @@ export function ServiceConfigModal({
                     step="any"
                     value={priceTiers.custom}
                     onChange={(e) => setPriceTiers({ ...priceTiers, custom: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className={`h-8 text-xs font-mono ${
+                    className={`h-8 text-xs tabular-nums ${
                       priceTiers.custom !== '' && Number(priceTiers.custom) < totalDirectCost && totalDirectCost > 0
                         ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
                         : ''

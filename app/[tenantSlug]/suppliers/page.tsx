@@ -553,7 +553,7 @@ export default function SuppliersPage() {
                 }`}
               >
                 <span>{cat.labelEn.split(' ')[0]}</span>
-                <span className="text-2xs opacity-75 font-mono">({count})</span>
+                <span className="text-2xs opacity-75 tabular-nums">({count})</span>
               </button>
             )
           })}
@@ -599,7 +599,7 @@ export default function SuppliersPage() {
                 <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                   {tBilingual('Registered Suppliers & Vendor Partners', 'নিবন্ধিত মহাজন ও ভেন্ডর পার্টনার')}
                 </CardTitle>
-                <Badge variant="outline" className="text-2xs font-mono">
+                <Badge variant="outline" className="text-2xs tabular-nums">
                   {filtered.length} shown
                 </Badge>
               </div>
@@ -654,7 +654,7 @@ export default function SuppliersPage() {
                                   {supplier.name_bn}
                                 </div>
                               )}
-                              <div className="flex items-center gap-2 text-2xs text-slate-400 font-mono mt-0.5">
+                              <div className="flex items-center gap-2 text-2xs text-slate-400 tabular-nums mt-0.5">
                                 <span>{supplier.supplier_code || 'SUP-001'}</span>
                                 {supplier.company && <span>• {supplier.company}</span>}
                               </div>
@@ -680,7 +680,7 @@ export default function SuppliersPage() {
                           {supplier.designation && (
                             <div className="text-2xs text-slate-400">{supplier.designation}</div>
                           )}
-                          <div className="flex items-center gap-3 font-mono text-2xs pt-1">
+                          <div className="flex items-center gap-3 tabular-nums text-2xs pt-1">
                             <a
                               href={`tel:${supplier.mobile}`}
                               className="flex items-center gap-1 text-slate-700 dark:text-slate-300 hover:text-teal-600"
@@ -722,7 +722,7 @@ export default function SuppliersPage() {
                             {supplier.payment_terms.replace('_', ' ')}
                           </div>
                           {(supplier.credit_limit || 0) > 0 && (
-                            <div className="text-2xs text-slate-400 font-mono">
+                            <div className="text-2xs text-slate-400 tabular-nums">
                               Limit: {formatBDT(supplier.credit_limit || 0)}
                             </div>
                           )}
@@ -732,7 +732,7 @@ export default function SuppliersPage() {
                         <td className="py-3.5 px-4">
                           {hasDue ? (
                             <div>
-                              <div className="text-sm font-black font-mono text-amber-700 dark:text-amber-400">
+                              <div className="text-sm font-black tabular-nums text-amber-700 dark:text-amber-400">
                                 {formatBDT(supplier.outstanding_balance || 0)}
                               </div>
                               {isOverLimit ? (
@@ -863,7 +863,7 @@ export default function SuppliersPage() {
                               {supplier.name_bn}
                             </div>
                           )}
-                          <div className="text-2xs text-slate-400 font-mono mt-0.5">
+                          <div className="text-2xs text-slate-400 tabular-nums mt-0.5">
                             {supplier.supplier_code || 'SUP-001'} {supplier.company && `• ${supplier.company}`}
                           </div>
                         </div>
@@ -890,7 +890,7 @@ export default function SuppliersPage() {
                         </div>
                       )}
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-2xs pt-0.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2 tabular-nums text-2xs pt-0.5">
                         <a
                           href={`tel:${supplier.mobile}`}
                           className="flex items-center gap-1 text-teal-700 dark:text-teal-400 font-bold hover:underline"
@@ -942,7 +942,7 @@ export default function SuppliersPage() {
                     <span className="text-2xs text-slate-400 uppercase font-bold tracking-wider">
                       {tBilingual('Payable Balance', 'বকেয়া পাওনা')}
                     </span>
-                    <div className="text-base font-black font-mono">
+                    <div className="text-base font-black tabular-nums">
                       {hasDue ? (
                         <span className="text-amber-700 dark:text-amber-400">
                           {formatBDT(currentBal)}

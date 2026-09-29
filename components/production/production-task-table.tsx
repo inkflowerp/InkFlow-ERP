@@ -139,10 +139,10 @@ export function ProductionTaskTable({
                 <tr key={task.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                   {/* Task & Job # */}
                   <td className="py-3 px-4">
-                    <div className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                    <div className="tabular-nums font-bold text-blue-600 dark:text-blue-400">
                       {task.task_number}
                     </div>
-                    <div className="font-mono text-2xs text-slate-400 mt-0.5">
+                    <div className="tabular-nums text-2xs text-slate-400 mt-0.5">
                       Job: {task.job_number || 'N/A'}
                     </div>
                     {task.priority === 'urgent' && (
@@ -167,14 +167,14 @@ export function ProductionTaskTable({
                     <div className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
                       {task.department}
                     </div>
-                    <div className="text-2xs text-blue-600 dark:text-blue-400 font-mono mt-0.5 flex items-center gap-1">
+                    <div className="text-2xs text-blue-600 dark:text-blue-400 tabular-nums mt-0.5 flex items-center gap-1">
                       <Cpu className="h-3 w-3 text-slate-400" />
                       <span>{task.assigned_machine_name || 'Floor Bench'}</span>
                     </div>
                   </td>
 
                   {/* Size & Substrate */}
-                  <td className="py-3 px-4 font-mono">
+                  <td className="py-3 px-4 tabular-nums">
                     {task.width && task.height ? (
                       <div>
                         {task.width} × {task.height} {task.unit || 'in'}
@@ -277,7 +277,7 @@ export function ProductionTaskTable({
         {tasks.map((task) => (
           <div key={task.id} className="p-4 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="font-mono font-bold text-xs text-blue-600 dark:text-blue-400">
+              <span className="tabular-nums font-bold text-xs text-blue-600 dark:text-blue-400">
                 {task.task_number}
               </span>
               {getStatusBadge(task.status, task)}
@@ -290,7 +290,7 @@ export function ProductionTaskTable({
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800 font-mono">
+            <div className="grid grid-cols-2 gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800 tabular-nums">
               <div>
                 <span className="text-2xs text-slate-400 block font-sans">Machine</span>
                 <strong>{task.assigned_machine_name || 'Floor Bench'}</strong>

@@ -174,13 +174,13 @@ export default function JobCostingDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
             <div className="space-y-1">
               <span className="text-2xs uppercase font-bold text-slate-400">Job Particulars:</span>
-              <div className="font-black text-base text-slate-900 dark:text-white font-mono">{costing.job_number}</div>
+              <div className="font-black text-base text-slate-900 dark:text-white tabular-nums">{costing.job_number}</div>
               <div className="font-bold text-blue-600 dark:text-blue-400">{costing.customer_name}</div>
               <div className="text-slate-700 dark:text-slate-300 font-semibold">{costing.item_title}</div>
-              <div className="text-slate-500 font-mono text-2xs">Specs: {costing.dimensions_spec || 'Custom dimensions'}</div>
+              <div className="text-slate-500 tabular-nums text-2xs">Specs: {costing.dimensions_spec || 'Custom dimensions'}</div>
             </div>
 
-            <div className="space-y-1 text-left sm:text-right font-mono">
+            <div className="space-y-1 text-left sm:text-right tabular-nums">
               <div>
                 Selling Price (Revenue):{' '}
                 <strong className="text-base font-black text-slate-900 dark:text-white">
@@ -200,7 +200,7 @@ export default function JobCostingDetailPage() {
 
           {/* 9-HEAD COMPARISON TABLE: ESTIMATED VS ACTUAL VS VARIANCE */}
           <div className="border border-slate-300 dark:border-slate-700 rounded-xl overflow-hidden">
-            <table className="w-full text-left text-xs font-mono">
+            <table className="w-full text-left text-xs tabular-nums">
               <thead className="bg-slate-100 dark:bg-slate-900 font-bold border-b border-slate-300 dark:border-slate-700">
                 <tr>
                   <th className="p-3">Cost Head (খরচ খাত)</th>
@@ -317,7 +317,7 @@ export default function JobCostingDetailPage() {
           {/* PROFIT & MARGIN RECONCILIATION */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Estimated Margins */}
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border space-y-1 font-mono text-xs">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border space-y-1 tabular-nums text-xs">
               <span className="text-2xs uppercase font-bold text-slate-400">Pre-Production Estimate:</span>
               <div className="flex justify-between">
                 <span>Estimated Profit:</span>
@@ -334,7 +334,7 @@ export default function JobCostingDetailPage() {
             </div>
 
             {/* Actual Margins */}
-            <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-800 space-y-1 font-mono text-xs">
+            <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-800 space-y-1 tabular-nums text-xs">
               <span className="text-2xs uppercase font-bold text-emerald-700 dark:text-emerald-300">
                 Realized Post-Production Margin:
               </span>
@@ -364,14 +364,14 @@ export default function JobCostingDetailPage() {
           {/* Dual Signatures for Official Traveler */}
           <div className="pt-12 flex justify-between items-end text-xs page-break-inside-avoid print-avoid-break">
             <div className="text-center space-y-2">
-              <div className="font-mono text-slate-400">Audited By: Floor Production Supervisor</div>
+              <div className="tabular-nums text-slate-400">Audited By: Floor Production Supervisor</div>
               <div className="border-t border-slate-400 w-52 pt-1 font-bold">
                 প্রোডাকশন অডিটর (Auditor)
               </div>
             </div>
 
             <div className="text-center space-y-2">
-              <div className="font-mono text-slate-400">Authorized: Managing Director</div>
+              <div className="tabular-nums text-slate-400">Authorized: Managing Director</div>
               <div className="border-t border-slate-400 w-60 pt-1 font-bold">
                 ব্যবস্থাপনা পরিচালকের স্বাক্ষর ও সিল (Approval)
               </div>

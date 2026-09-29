@@ -369,7 +369,7 @@ export function PlatformSidebar() {
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 BD-Central Cluster
               </span>
-              <span className="font-mono text-slate-500 text-2xs font-bold">{appName} SaaS</span>
+              <span className="tabular-nums text-slate-500 text-2xs font-bold">{appName} SaaS</span>
             </div>
 
             <Link
@@ -412,7 +412,7 @@ export function PlatformSidebar() {
         <div className="flex h-11 items-center justify-between border-b border-slate-800/80 px-3 shrink-0">
           {!collapsed ? (
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-2xs font-mono font-bold uppercase tracking-widest text-indigo-400 truncate">
+              <span className="text-2xs tabular-nums font-bold uppercase tracking-widest text-indigo-400 truncate">
                 {appName} Control Plane
               </span>
             </div>
@@ -449,7 +449,7 @@ export function PlatformSidebar() {
             </div>
             <div className="text-left">
               <span className="font-bold text-sm text-white block">{appName} Platform</span>
-              <span className="text-2xs text-indigo-400 font-mono">Control Center</span>
+              <span className="text-2xs text-indigo-400 tabular-nums">Control Center</span>
             </div>
           </div>
         </SheetHeader>

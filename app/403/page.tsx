@@ -20,7 +20,7 @@ function ForbiddenContent() {
         </div>
 
         <div className="space-y-2">
-          <span className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-400 font-bold">
+          <span className="tabular-nums text-xs uppercase tracking-widest text-red-600 dark:text-red-400 font-bold">
             403 Forbidden
           </span>
           <h1 className="text-2xl font-black tracking-tight">

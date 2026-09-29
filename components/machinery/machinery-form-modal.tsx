@@ -361,7 +361,7 @@ export function MachineryFormModal({
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   required
-                  className="font-mono uppercase font-bold tracking-wider"
+                  className="tabular-nums uppercase font-bold tracking-wider"
                 />
               </div>
             </div>

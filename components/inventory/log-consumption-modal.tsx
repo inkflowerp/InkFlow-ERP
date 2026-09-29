@@ -306,7 +306,7 @@ export function LogConsumptionModal({
         {selectedActiveRoll && (
           <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2 text-xs">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-black text-blue-900 dark:text-blue-200 font-mono">
+              <div className="flex items-center gap-2 font-black text-blue-900 dark:text-blue-200 tabular-nums">
                 <Disc className="w-4 h-4 text-blue-600" />
                 <span>Piece: {selectedActiveRoll.roll_code || selectedActiveRoll.roll_tag}</span>
               </div>
@@ -382,7 +382,7 @@ export function LogConsumptionModal({
             <select
               value={rollId || selectedActiveRoll?.id || ''}
               onChange={(e) => setRollId(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono font-semibold text-slate-900 dark:text-white"
+              className="w-full h-10 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs tabular-nums font-semibold text-slate-900 dark:text-white"
             >
               {availableRollsOnFloor.map((r: InventoryRollRecord) => (
                 <option key={r.id} value={r.id}>
@@ -515,7 +515,7 @@ export function LogConsumptionModal({
                 <span>
                   Deducting: <strong>{totalActionQty.toFixed(2)}</strong> {floorUnit}
                   {selectedActiveRoll && (
-                    <span className="text-slate-500 ml-1 font-mono">
+                    <span className="text-slate-500 ml-1 tabular-nums">
                       ({Math.round(totalActionQty * (selectedActiveRoll.width_ft || 3) * 100) / 100} sqft)
                     </span>
                   )}
@@ -527,7 +527,7 @@ export function LogConsumptionModal({
             </div>
 
             {selectedActiveRoll && (
-              <div className="pt-1 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-2xs text-slate-500 dark:text-slate-400 font-mono">
+              <div className="pt-1 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-2xs text-slate-500 dark:text-slate-400 tabular-nums">
                 <span>
                   Physical Spec: {selectedActiveRoll.width_ft}ft × {Math.max(0, floorMaxBalance - totalActionQty).toFixed(2)}ft
                 </span>

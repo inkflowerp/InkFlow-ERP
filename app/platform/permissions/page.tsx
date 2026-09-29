@@ -485,7 +485,7 @@ export default function PlatformPermissionsPage() {
             Select System Role Preset to Inspect &amp; Configure
           </h2>
           {currentTemplate && (
-            <span className="text-xs text-slate-400 font-mono">
+            <span className="text-xs text-slate-400 tabular-nums">
               Active Coverage:{' '}
               <strong className="text-indigo-400 font-bold">
                 {getActivePermsCount(currentTemplate)} / {totalPossiblePerms}
@@ -523,7 +523,7 @@ export default function PlatformPermissionsPage() {
                 </div>
 
                 <div className="mt-3 pt-2 border-t border-slate-800/60">
-                  <div className="flex items-center justify-between text-2xs text-slate-400 font-mono mb-1">
+                  <div className="flex items-center justify-between text-2xs text-slate-400 tabular-nums mb-1">
                     <span>{count} perms</span>
                     <span className={pct > 50 ? 'text-emerald-400 font-bold' : 'text-slate-400'}>{pct}%</span>
                   </div>
@@ -647,7 +647,7 @@ export default function PlatformPermissionsPage() {
                   {ACTIONS.map((a) => (
                     <th key={a.key} className="py-3.5 px-3 text-center min-w-[90px]">
                       <div className="flex flex-col items-center">
-                        <span className={`px-2 py-0.5 rounded text-2xs font-mono font-bold border ${a.color}`}>
+                        <span className={`px-2 py-0.5 rounded text-2xs tabular-nums font-bold border ${a.color}`}>
                           {a.label}
                         </span>
                         <span className="text-2xs text-slate-400 font-normal lowercase mt-0.5 hidden sm:inline">
@@ -772,7 +772,7 @@ export default function PlatformPermissionsPage() {
             <p className="text-slate-400 leading-relaxed">
               When a new printing enterprise registers on InkFlow ERP, the platform cloning worker creates localized role copies for their organization based on these exact blueprints. Tenant Business Owners can subsequently grant customized roles to local counter staff and press operators without mutating the platform system root template.
             </p>
-            <div className="flex flex-wrap gap-4 pt-2 text-2xs text-slate-400 font-mono">
+            <div className="flex flex-wrap gap-4 pt-2 text-2xs text-slate-400 tabular-nums">
               <span className="flex items-center gap-1.5 text-emerald-400">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Zero-Trust Default

@@ -220,7 +220,7 @@ export function PlatformNotificationsPopover() {
                           </Link>
                           <p className="text-2xs text-slate-300 leading-relaxed line-clamp-2">{notif.message}</p>
                           <div className="flex items-center gap-2 text-2xs text-slate-400 pt-0.5 flex-wrap">
-                            <span className="flex items-center gap-1 font-mono">
+                            <span className="flex items-center gap-1 tabular-nums">
                               <Clock className="w-3 h-3 text-slate-500" />
                               {formatTime(notif.created_at)}
                             </span>

@@ -191,7 +191,7 @@ export function SupplierMaterialRateModal({
                   ? tBilingual('Update Material Contract Rate', 'মেটেরিয়াল চুক্তি দর আপডেট করুন')
                   : tBilingual('Add Negotiated Material Rate', 'নতুন মেটেরিয়াল চুক্তি দর যুক্ত করুন')}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
                 {supplier.supplier_name}
               </Badge>
             </div>
@@ -288,7 +288,7 @@ export function SupplierMaterialRateModal({
               <select
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium font-mono"
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium tabular-nums"
               >
                 <option value="sft">{tBilingual('sft (Square Feet)', 'স্কয়ার ফিট')}</option>
                 <option value="sheet">{tBilingual('sheet (Sheet)', 'শীট')}</option>
@@ -318,7 +318,7 @@ export function SupplierMaterialRateModal({
                     if (fieldErrors.contract_price_bdt) setFieldErrors((prev) => ({ ...prev, contract_price_bdt: '' }))
                   }}
                   className={cn(
-                    "text-xs h-9 pl-7 font-mono font-bold",
+                    "text-xs h-9 pl-7 tabular-nums font-bold",
                     fieldErrors.contract_price_bdt && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
                   )}
                   required
@@ -342,7 +342,7 @@ export function SupplierMaterialRateModal({
                 placeholder="1"
                 value={formData.moq || ''}
                 onChange={(e) => setFormData({ ...formData, moq: Number(e.target.value) })}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
           </div>
@@ -356,7 +356,7 @@ export function SupplierMaterialRateModal({
                 type="date"
                 value={formData.effective_date}
                 onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
 
@@ -370,7 +370,7 @@ export function SupplierMaterialRateModal({
                 placeholder="2"
                 value={formData.lead_time_days || ''}
                 onChange={(e) => setFormData({ ...formData, lead_time_days: Number(e.target.value) })}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
           </div>

@@ -83,7 +83,7 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
             {tBilingual('Order #:', 'অর্ডার নং:')}{' '}
-            <span className="font-mono font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
+            <span className="tabular-nums font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
             {tBilingual('Customer:', 'কাস্টমার:')} {order.customerName}
           </DialogDescription>
         </DialogHeader>

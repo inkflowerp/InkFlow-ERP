@@ -289,7 +289,7 @@ export function PlatformCheckoutModal({
             <Card className="bg-slate-900 border-slate-800 p-4 space-y-4">
               <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
                 <span>Transaction & Verification Status</span>
-                <span className="text-indigo-400 font-mono text-2xs">{activeTrxId}</span>
+                <span className="text-indigo-400 tabular-nums text-2xs">{activeTrxId}</span>
               </div>
 
               <div className="space-y-3">

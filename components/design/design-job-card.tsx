@@ -119,7 +119,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               </span>
             )}
           </div>
-          <span className="text-slate-500 text-2xs font-mono">
+          <span className="text-slate-500 text-2xs tabular-nums">
             {job.deadline ? `টার্গেট: ${job.deadline.split('T')[0]}` : ''}
           </span>
         </div>
@@ -135,7 +135,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               <div className="flex items-center gap-1.5 flex-wrap">
                 <Link
                   href={workbenchHref}
-                  className="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors inline-flex items-center gap-1"
+                  className="tabular-nums text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors inline-flex items-center gap-1"
                 >
                   <span>#{job.design_number}</span>
                   <ExternalLink className="h-2.5 w-2.5 opacity-60" />
@@ -143,7 +143,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 {job.order_number && (
                   <Link
                     href={getTenantNavHref('/orders', pathname, tenantSlug)}
-                    className="font-mono text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                    className="tabular-nums text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
                   >
                     Ord: #{job.order_number}
                   </Link>
@@ -151,7 +151,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 {job.invoice_number && invoiceHref && (
                   <Link
                     href={invoiceHref}
-                    className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    className="tabular-nums text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                   >
                     Inv: #{job.invoice_number}
                   </Link>
@@ -175,7 +175,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 >
                   <span>Workbench ➔</span>
                 </Link>
-                <span className="text-2xs font-mono text-slate-400">
+                <span className="text-2xs tabular-nums text-slate-400">
                   v{job.current_version || versions.length || 1}
                 </span>
               </div>
@@ -204,7 +204,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             </div>
 
             {/* Job Specifications Strip (6-Field Specs) */}
-            <div className="mt-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-200 dark:border-slate-800 text-2xs font-mono space-y-1">
+            <div className="mt-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-200 dark:border-slate-800 text-2xs tabular-nums space-y-1">
               <div className="grid grid-cols-2 gap-x-2 gap-y-1">
                 <div>
                   <span className="text-slate-400 block text-2xs">{tBilingual('Service / Item:', 'সার্ভিস / আইটেম:')}</span>
@@ -334,7 +334,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               <span className="bg-slate-900/80 backdrop-blur-sm text-white text-2xs font-bold uppercase px-1.5 py-0.5 rounded">
                 {currentVer?.file_format || 'PNG'}
               </span>
-              <span className="bg-indigo-600/90 text-white text-2xs font-bold px-1.5 py-0.5 rounded font-mono">
+              <span className="bg-indigo-600/90 text-white text-2xs font-bold px-1.5 py-0.5 rounded tabular-nums">
                 v{currentVer?.version_number || job.current_version || 1}
               </span>
             </div>

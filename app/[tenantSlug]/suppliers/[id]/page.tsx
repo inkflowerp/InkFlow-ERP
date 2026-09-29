@@ -253,7 +253,7 @@ export default function SupplierProfilePage() {
                   <CatIcon className="h-3.5 w-3.5" />
                   <span>{catMeta.labelEn.split(' ')[0]}</span>
                 </span>
-                <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                   {supplier.supplier_code || 'SUP-001'}
                 </Badge>
               </div>
@@ -268,7 +268,7 @@ export default function SupplierProfilePage() {
               <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-1">
                 <a
                   href={`tel:${supplier.mobile}`}
-                  className="flex items-center gap-1 font-mono text-slate-700 dark:text-slate-300 hover:text-teal-600 font-bold"
+                  className="flex items-center gap-1 tabular-nums text-slate-700 dark:text-slate-300 hover:text-teal-600 font-bold"
                 >
                   <Phone className="h-3.5 w-3.5 text-slate-400" />
                   <span>{supplier.mobile}</span>
@@ -279,7 +279,7 @@ export default function SupplierProfilePage() {
                     href={`https://wa.me/${supplier.whatsapp.replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-emerald-600 font-mono font-bold hover:underline"
+                    className="flex items-center gap-1 text-emerald-600 tabular-nums font-bold hover:underline"
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
                     <span>WhatsApp</span>
@@ -449,7 +449,7 @@ export default function SupplierProfilePage() {
           >
             <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
             {tab.count !== undefined && (
-              <Badge variant="outline" className="text-2xs font-mono py-0 px-1.5">
+              <Badge variant="outline" className="text-2xs tabular-nums py-0 px-1.5">
                 {tab.count}
               </Badge>
             )}
@@ -521,14 +521,14 @@ export default function SupplierProfilePage() {
                       <tr key={price.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors">
                         <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{price.material_name}</td>
                         <td className="py-3 px-4 capitalize text-slate-500">{price.category}</td>
-                        <td className="py-3 px-4 uppercase font-mono font-semibold">{price.unit}</td>
-                        <td className="py-3 px-4 font-black font-mono text-teal-700 dark:text-teal-400 text-sm">
+                        <td className="py-3 px-4 uppercase tabular-nums font-semibold">{price.unit}</td>
+                        <td className="py-3 px-4 font-black tabular-nums text-teal-700 dark:text-teal-400 text-sm">
                           {formatBDT(price.contract_price_bdt)} <span className="text-2xs font-normal text-slate-400">/ {price.unit}</span>
                         </td>
-                        <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">
+                        <td className="py-3 px-4 tabular-nums text-slate-600 dark:text-slate-300">
                           MOQ: {price.moq || 1} • {price.lead_time_days || 2}d
                         </td>
-                        <td className="py-3 px-4 text-slate-500 font-mono">{price.effective_date}</td>
+                        <td className="py-3 px-4 text-slate-500 tabular-nums">{price.effective_date}</td>
                         <td className="py-3 px-4 text-slate-400 italic max-w-[200px] truncate">
                           {price.notes || '—'}
                         </td>
@@ -616,14 +616,14 @@ export default function SupplierProfilePage() {
                   ) : (
                     relatedPOs.map((po) => (
                       <tr key={po.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors">
-                        <td className="py-3 px-4 font-mono font-bold text-teal-600 dark:text-teal-400">
+                        <td className="py-3 px-4 tabular-nums font-bold text-teal-600 dark:text-teal-400">
                           {po.po_number}
                         </td>
-                        <td className="py-3 px-4 text-slate-500 font-mono">{po.po_date}</td>
+                        <td className="py-3 px-4 text-slate-500 tabular-nums">{po.po_date}</td>
                         <td className="py-3 px-4 font-medium text-slate-900 dark:text-white">
                           {po.items?.length || 0} line item(s) • {po.items?.[0]?.material_name || 'Standard supplies'}
                         </td>
-                        <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                        <td className="py-3 px-4 tabular-nums font-bold text-slate-900 dark:text-white">
                           {formatBDT(po.grand_total || 0)}
                         </td>
                         <td className="py-3 px-4">
@@ -681,11 +681,11 @@ export default function SupplierProfilePage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   <tr className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60">
-                    <td className="py-3 px-4 font-mono font-bold text-teal-600">PV-2024-0012</td>
+                    <td className="py-3 px-4 tabular-nums font-bold text-teal-600">PV-2024-0012</td>
                     <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">Bank Cheque</td>
-                    <td className="py-3 px-4 font-mono font-bold text-emerald-600 text-sm">৳ 100,000</td>
-                    <td className="py-3 px-4 text-slate-500 font-mono">20/08/2024</td>
-                    <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">City Bank Cheque #982104</td>
+                    <td className="py-3 px-4 tabular-nums font-bold text-emerald-600 text-sm">৳ 100,000</td>
+                    <td className="py-3 px-4 text-slate-500 tabular-nums">20/08/2024</td>
+                    <td className="py-3 px-4 tabular-nums text-slate-600 dark:text-slate-300">City Bank Cheque #982104</td>
                     <td className="py-3 px-4">
                       <Badge variant="outline" className="text-emerald-700 bg-emerald-50 text-2xs">
                         Cheque Cleared
@@ -733,7 +733,7 @@ export default function SupplierProfilePage() {
                     <th className="py-3 px-4 text-right">{tBilingual('Running Due (Balance)', 'অবশিষ্ট বাকি')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 tabular-nums">
                   <tr>
                     <td className="py-3 px-4 text-slate-500">28/08/2024</td>
                     <td className="py-3 px-4 font-sans font-semibold text-slate-800 dark:text-slate-200">
@@ -780,19 +780,19 @@ export default function SupplierProfilePage() {
             <div className="space-y-2.5 text-xs">
               <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
                 <span className="text-slate-500">Trade License:</span>
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
                   {supplier.trade_license || '—'}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
                 <span className="text-slate-500">BIN / VAT Registration:</span>
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
                   {supplier.bin || '—'}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
                 <span className="text-slate-500">TIN Number:</span>
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
                   {supplier.tin || '—'}
                 </span>
               </div>
@@ -835,7 +835,7 @@ export default function SupplierProfilePage() {
               </div>
               <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
                 <span className="text-slate-500">Account Number:</span>
-                <span className="font-mono font-bold text-teal-700 dark:text-teal-400">
+                <span className="tabular-nums font-bold text-teal-700 dark:text-teal-400">
                   {supplier.bank_account_number || '—'}
                 </span>
               </div>
@@ -847,7 +847,7 @@ export default function SupplierProfilePage() {
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Routing Number:</span>
-                <span className="font-mono text-slate-800 dark:text-slate-200">
+                <span className="tabular-nums text-slate-800 dark:text-slate-200">
                   {supplier.bank_routing_number || '—'}
                 </span>
               </div>

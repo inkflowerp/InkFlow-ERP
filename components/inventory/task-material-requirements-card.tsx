@@ -147,7 +147,7 @@ export function TaskMaterialRequirementsCard({
                   {req.material?.name || 'Material'}
                 </strong>
                 {req.material?.sku && (
-                  <span className="text-2xs text-slate-400 font-mono font-normal ml-1.5">
+                  <span className="text-2xs text-slate-400 tabular-nums font-normal ml-1.5">
                     [SKU: {req.material.sku}]
                   </span>
                 )}

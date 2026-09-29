@@ -128,7 +128,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
             <Clock className="h-5 w-5 text-blue-600" />
             <span>{tBilingual("Today's Schedule & Tasks", 'আজকের কাজের তালিকা')}</span>
           </h2>
-          <Badge variant="outline" className="text-xs font-mono font-bold bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="text-xs tabular-nums font-bold bg-blue-50 text-blue-700 border-blue-200">
             {tasks.length}
           </Badge>
         </div>
@@ -233,7 +233,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                     </div>
 
                     <div className="text-right shrink-0">
-                      <div className="text-base font-bold font-mono text-slate-900 dark:text-slate-100">
+                      <div className="text-base font-bold tabular-nums text-slate-900 dark:text-slate-100">
                         {task.quantity} <span className="text-xs font-normal text-slate-500">{task.unit}</span>
                       </div>
                       {task.assigned_machine_name && (
@@ -373,7 +373,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                   min="0"
                   value={goodQty}
                   onChange={(e) => setGoodQty(parseInt(e.target.value, 10) || 0)}
-                  className="h-11 text-base font-bold font-mono text-center text-emerald-700"
+                  className="h-11 text-base font-bold tabular-nums text-center text-emerald-700"
                 />
               </div>
 
@@ -386,7 +386,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                   min="0"
                   value={scrapQty}
                   onChange={(e) => setScrapQty(parseInt(e.target.value, 10) || 0)}
-                  className="h-11 text-base font-bold font-mono text-center text-rose-700"
+                  className="h-11 text-base font-bold tabular-nums text-center text-rose-700"
                 />
               </div>
             </div>

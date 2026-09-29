@@ -145,7 +145,7 @@ export function AdditionalOptionModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {additional ? 'Edit Additional Work' : 'Add Additional Work'}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
                 Substrate & Addon Master
               </Badge>
             </div>
@@ -282,7 +282,7 @@ export function AdditionalOptionModal({
                 value={sellingPrice}
                 onChange={(e) => setSellingPrice(e.target.value)}
                 placeholder="e.g. 45.00"
-                className="h-9 text-xs font-mono font-bold text-blue-600 dark:text-blue-400"
+                className="h-9 text-xs tabular-nums font-bold text-blue-600 dark:text-blue-400"
               />
             </div>
 
@@ -297,7 +297,7 @@ export function AdditionalOptionModal({
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
                 placeholder="e.g. 25.00"
-                className="h-9 text-xs font-mono"
+                className="h-9 text-xs tabular-nums"
               />
             </div>
           </div>
@@ -307,7 +307,7 @@ export function AdditionalOptionModal({
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Gross Profit: <span className="font-mono font-bold text-slate-900 dark:text-white">৳{marginMath.grossProfit.toFixed(2)}</span>
+                Gross Profit: <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{marginMath.grossProfit.toFixed(2)}</span>
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -315,7 +315,7 @@ export function AdditionalOptionModal({
               <Badge
                 variant="outline"
                 className={cn(
-                  'font-mono font-bold text-xs py-0.5 px-2',
+                  'tabular-nums font-bold text-xs py-0.5 px-2',
                   marginMath.grossMarginPercent >= 30
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                     : marginMath.grossMarginPercent >= 15

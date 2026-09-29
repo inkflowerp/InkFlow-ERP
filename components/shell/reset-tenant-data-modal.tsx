@@ -194,7 +194,7 @@ export function ResetTenantDataModal({
               placeholder="RESET"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
-              className="font-mono text-center tracking-widest uppercase bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus:border-rose-500 focus:ring-rose-500/20"
+              className="tabular-nums text-center tracking-widest uppercase bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus:border-rose-500 focus:ring-rose-500/20"
             />
           </div>
         </div>

@@ -380,7 +380,7 @@ export function MobileNav() {
         <SheetContent className="pb-6">
           <div className="space-y-4 py-1">
             {/* Active Workspace & User Profile Card */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-800/80 dark:to-slate-900/90 border border-slate-200/90 dark:border-slate-800 space-y-2.5 shadow-xs">
+            <div className="p-3 rounded-lg bg-muted/40 border border-border space-y-2.5 shadow-xs">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <Avatar
@@ -435,44 +435,44 @@ export function MobileNav() {
               <Link
                 href={getTenantNavHref('/quotations', pathname, company?.slug)}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-1 p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 transition-colors min-h-[38px] bangla-text"
+                className="flex items-center justify-center gap-1 p-2 rounded-lg bg-muted/50 border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors min-h-[38px] bangla-text"
               >
-                <Plus className="h-3.5 w-3.5 text-blue-600" />
+                <Plus className="h-3.5 w-3.5 text-primary" />
                 <span>{tBilingual('Quotes', 'কোটেশন')}</span>
               </Link>
               <Link
                 href={getTenantNavHref('/sales/new-work', pathname, company?.slug)}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-1 p-2 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold hover:bg-indigo-100 transition-colors min-h-[38px] bangla-text"
+                className="flex items-center justify-center gap-1 p-2 rounded-lg bg-muted/50 border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors min-h-[38px] bangla-text"
               >
-                <Plus className="h-3.5 w-3.5 text-indigo-600" />
+                <Plus className="h-3.5 w-3.5 text-primary" />
                 <span>{tBilingual('New Work', 'নতুন কাজ')}</span>
               </Link>
               <Link
                 href={getTenantNavHref('/production', pathname, company?.slug)}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-1 p-2 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200/70 dark:border-cyan-900/60 text-cyan-700 dark:text-cyan-300 text-xs font-semibold hover:bg-cyan-100 transition-colors min-h-[38px] bangla-text"
+                className="flex items-center justify-center gap-1 p-2 rounded-lg bg-muted/50 border border-border text-foreground text-xs font-semibold hover:bg-muted transition-colors min-h-[38px] bangla-text"
               >
-                <Printer className="h-3.5 w-3.5 text-cyan-600" />
+                <Printer className="h-3.5 w-3.5 text-primary" />
                 <span>{tBilingual('Production', 'কারখানা')}</span>
               </Link>
             </div>
 
             {/* Instant Filter Search Bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={tBilingual('Search menu...', 'মেনু খুঁজুন...')}
-                className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/40 transition-all bangla-text"
+                className="w-full h-9 pl-9 pr-8 rounded-lg bg-muted/40 border border-border text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all bangla-text"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
+                  className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground p-0.5"
                   aria-label="Clear filter search"
                 >
                   <X className="h-4 w-4" />
@@ -525,23 +525,25 @@ export function MobileNav() {
                                   href={getTenantNavHref(item.href, pathname, company?.slug)}
                                   onClick={() => setOpen(false)}
                                   className={cn(
-                                    'group flex flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
+                                    'group flex flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-xs sm:text-sm font-medium transition-colors min-h-[44px] cursor-pointer bangla-text',
                                     isPrimary
                                       ? isActive
-                                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
-                                        : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold'
+                                        ? 'bg-primary text-primary-foreground font-bold shadow-xs'
+                                        : 'bg-primary text-primary-foreground font-semibold hover:bg-primary/90'
                                       : isActive && !hasChildren
-                                      ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-500/20'
+                                      ? 'bg-blue-50 text-blue-600 font-semibold dark:bg-blue-950/50 dark:text-blue-400'
                                       : isChildActive
-                                      ? 'bg-blue-50 text-blue-800 font-semibold dark:bg-blue-950/40 dark:text-blue-300'
-                                      : 'text-slate-700 hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800'
+                                      ? 'bg-blue-50/70 text-blue-600 font-semibold dark:bg-blue-950/40 dark:text-blue-400'
+                                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                                   )}
                                 >
                                   <Icon
                                     className={cn(
-                                      'h-4 w-4 shrink-0 transition-transform group-hover:scale-110',
-                                      isPrimary || (isActive && !hasChildren)
+                                      'h-4 w-4 shrink-0 transition-transform group-hover:scale-105',
+                                      isPrimary
                                         ? 'text-white'
+                                        : isActive && !hasChildren
+                                        ? 'text-blue-600 dark:text-blue-400'
                                         : isChildActive
                                         ? 'text-blue-600 dark:text-blue-400'
                                         : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
@@ -551,14 +553,7 @@ export function MobileNav() {
                                   {item.badge && (
                                     <Badge
                                       variant={isActive || isPrimary ? 'secondary' : 'default'}
-                                      className={cn(
-                                        'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5',
-                                        item.badgeVariant === 'live'
-                                          ? 'bg-rose-500 text-white animate-pulse'
-                                          : item.badgeVariant === 'fast'
-                                          ? 'bg-emerald-400 text-slate-950 font-black'
-                                          : 'bg-emerald-500 text-white'
-                                      )}
+                                      className="text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5"
                                     >
                                       {item.badge}
                                     </Badge>
@@ -588,7 +583,7 @@ export function MobileNav() {
 
                               {/* Nested Children in Mobile Drawer */}
                               {hasChildren && (isSubExpanded || Boolean(searchQuery)) && (
-                                <div className="ml-5 pl-3 border-l-2 border-slate-200 dark:border-slate-800 space-y-1 my-1">
+                                <div className="ml-5 pl-3 border-l border-border space-y-1 my-1">
                                   {item.children!.map((child) => {
                                     const ChildIcon = iconMap[child.icon] || Sparkles
                                     const isSubActive = isItemActive(child.href, child.exact)
@@ -600,13 +595,13 @@ export function MobileNav() {
                                         href={getTenantNavHref(child.href, pathname, company?.slug)}
                                         onClick={() => setOpen(false)}
                                         className={cn(
-                                          'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-all min-h-[36px] bangla-text',
+                                          'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors min-h-[36px] bangla-text',
                                           isSubActive
-                                            ? 'bg-blue-600 text-white font-bold shadow-xs'
+                                            ? 'bg-blue-50 text-blue-600 font-semibold dark:bg-blue-950/50 dark:text-blue-400'
                                             : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                                         )}
                                       >
-                                        <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-white' : 'text-slate-400')} />
+                                        <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400')} />
                                         <span className="flex-1 truncate">{childTitle}</span>
                                         {child.badge && (
                                           <Badge className="text-3xs px-1.5 py-0 h-4">
@@ -635,17 +630,17 @@ export function MobileNav() {
 
             {/* Trial Upgrade Widget in Mobile Menu */}
             {isTrial && (
-              <div className="rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-blue-500/10 p-3.5 border border-indigo-200/80 dark:border-indigo-800/80 space-y-2 shadow-xs">
+              <div className="rounded-lg bg-muted/40 p-3.5 border border-border space-y-2 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 bangla-text">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5 bangla-text">
                     <Crown className="h-4 w-4 text-amber-500" />
                     <span>{tBilingual('Free Trial Active', 'ফ্রি ট্রায়াল চলছে')}</span>
                   </span>
-                  <Badge suppressHydrationWarning className="text-xs bg-amber-500 text-white font-bold px-2 py-0.5">
+                  <Badge suppressHydrationWarning className="text-xs bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 font-bold border-amber-200 dark:border-amber-800 px-2 py-0.5">
                     {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d left`}
                   </Badge>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-snug bangla-text">
+                <p className="text-xs text-muted-foreground leading-snug bangla-text">
                   {tBilingual('Unlock unlimited orders, multi-branch, and SMS automation.', 'আনলিমিটেড অর্ডার ও ফিচারের জন্য বিজনেস প্ল্যানে আপগ্রেড করুন।')}
                 </p>
                 <button
@@ -654,7 +649,7 @@ export function MobileNav() {
                     setOpen(false)
                     openUpgradeModal('business')
                   }}
-                  className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold text-center shadow-xs cursor-pointer bangla-text min-h-[40px] flex items-center justify-center gap-1.5 active:scale-98 transition-all"
+                  className="w-full py-2 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold text-center shadow-xs hover:bg-primary/90 transition-colors cursor-pointer bangla-text min-h-[40px] flex items-center justify-center gap-1.5"
                 >
                   <Crown className="h-3.5 w-3.5 text-amber-300" />
                   <span>{tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড করুন')}</span>

@@ -43,18 +43,18 @@ export function PanelAccessDenied({
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-4 sm:p-6">
-      <Card className="max-w-xl w-full border-red-200/80 dark:border-red-900/50 bg-gradient-to-b from-white via-slate-50 to-red-50/20 dark:from-slate-900 dark:via-slate-900/90 dark:to-red-950/20 shadow-xl overflow-hidden">
-        <div className="h-1.5 bg-gradient-to-r from-red-500 via-amber-500 to-red-600" />
+      <Card className="max-w-xl w-full border-border bg-card shadow-lg rounded-xl overflow-hidden">
+        <div className="h-1 bg-destructive" />
         
         <CardContent className="p-6 sm:p-8 text-center space-y-5">
-          {/* Glowing Lock Badge */}
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 mx-auto shadow-lg ring-4 ring-red-50 dark:ring-red-950/30">
-            <ShieldAlert className="h-8 w-8 animate-pulse" />
+          {/* Lock Icon */}
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-xl bg-destructive/10 text-destructive mx-auto">
+            <ShieldAlert className="h-7 w-7" />
           </div>
 
           {/* Heading */}
           <div className="space-y-1.5">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-mono font-bold uppercase tracking-wider bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs tabular-nums font-bold uppercase tracking-wider bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
               <Lock className="w-3 h-3" />
               {tBilingual('403 Panel Isolated', '৪০৩ প্যানেল সীমাবদ্ধ')}
             </span>

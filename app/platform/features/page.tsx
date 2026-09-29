@@ -704,7 +704,7 @@ export default function PlatformFeaturesPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between text-xs text-slate-400 px-1">
             <span>Global defaults automatically apply to all tenants unless specifically overridden in Tenant Entitlements.</span>
-            <span className="font-mono text-slate-500">
+            <span className="tabular-nums text-slate-500">
               Showing {filteredFlags.length} of {overview?.total_flags || 0} Modules
             </span>
           </div>
@@ -747,7 +747,7 @@ export default function PlatformFeaturesPage() {
                         <div className="space-y-1.5">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-bold text-sm text-white">{flag.name}</h3>
-                            <span className="font-mono text-2xs px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                            <span className="tabular-nums text-2xs px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
                               {flag.key}
                             </span>
                             <span
@@ -766,7 +766,7 @@ export default function PlatformFeaturesPage() {
                               </span>
                             )}
                             {flag.overrides_count > 0 && (
-                              <span className="text-2xs font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                              <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
                                 {flag.overrides_count} Tenant Override{flag.overrides_count > 1 ? 's' : ''}
                               </span>
                             )}
@@ -921,7 +921,7 @@ export default function PlatformFeaturesPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-bold text-sm text-white">{flag.name}</h4>
-                          <span className="font-mono text-2xs px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                          <span className="tabular-nums text-2xs px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
                             {flag.key}
                           </span>
                           {isOverridden ? (
@@ -938,7 +938,7 @@ export default function PlatformFeaturesPage() {
                         <p className="text-xs text-slate-400 max-w-2xl">{flag.description}</p>
 
                         {override?.notes && (
-                          <div className="text-2xs text-cyan-300 font-mono mt-1 bg-cyan-950/40 p-1.5 rounded-lg border border-cyan-800/40 inline-block">
+                          <div className="text-2xs text-cyan-300 tabular-nums mt-1 bg-cyan-950/40 p-1.5 rounded-lg border border-cyan-800/40 inline-block">
                             Override Note: {override.notes} • Updated {formatDate(override.updated_at)}
                           </div>
                         )}
@@ -1029,7 +1029,7 @@ export default function PlatformFeaturesPage() {
                         key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'),
                       })
                     }
-                    className="bg-slate-950 border-slate-700 text-white font-mono text-xs h-9"
+                    className="bg-slate-950 border-slate-700 text-white tabular-nums text-xs h-9"
                   />
                 </div>
 
@@ -1168,9 +1168,9 @@ export default function PlatformFeaturesPage() {
               <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
                 <div>
                   <div className="text-2xs text-slate-500">Key Slug</div>
-                  <div className="font-mono text-white text-xs font-bold">{editingFlag.key}</div>
+                  <div className="tabular-nums text-white text-xs font-bold">{editingFlag.key}</div>
                 </div>
-                <span className="text-2xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
+                <span className="text-2xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 tabular-nums">
                   ID: {editingFlag.id.slice(0, 8)}...
                 </span>
               </div>
@@ -1272,9 +1272,9 @@ export default function PlatformFeaturesPage() {
             <form onSubmit={handleSaveTenantOverride} className="space-y-3.5 text-xs">
               <div>
                 <label className="text-slate-400 font-semibold block mb-1">Target Feature Flag</label>
-                <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono font-bold flex items-center justify-between">
+                <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white tabular-nums font-bold flex items-center justify-between">
                   <span>{overrideModalFlag.name}</span>
-                  <span className="text-2xs text-slate-400 font-mono">({overrideModalFlag.key})</span>
+                  <span className="text-2xs text-slate-400 tabular-nums">({overrideModalFlag.key})</span>
                 </div>
               </div>
 

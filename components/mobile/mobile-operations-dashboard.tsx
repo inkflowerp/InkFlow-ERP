@@ -232,7 +232,7 @@ export function MobileOperationsDashboard({ tenantSlug }: MobileOperationsDashbo
             >
               <div className="flex items-start justify-between gap-2 mb-1.5">
                 <div>
-                  <span className="text-2xs font-mono font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-800/50">
+                  <span className="text-2xs tabular-nums font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-800/50">
                     {t.job_order_number || 'TASK'}
                   </span>
                   <h3 className="text-sm font-bold text-slate-100 mt-1">{t.title}</h3>

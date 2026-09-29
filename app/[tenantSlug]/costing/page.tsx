@@ -825,18 +825,18 @@ export default function JobCostingPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleExportCSV}
-                className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+                className="gap-1.5"
               >
-                <Download className="w-3.5 h-3.5 text-emerald-600" />
+                <Download className="w-3.5 h-3.5" />
                 <span>{tBilingual('Export CSV', 'এক্সপোর্ট')}</span>
               </Button>
 
               <Button
                 size="sm"
                 onClick={() => setIsNewCostingOpen(true)}
-                className="bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 transition-all"
+                className="gap-1.5"
               >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <Plus className="w-4 h-4" />
                 <span>{tBilingual('+ New Costing', '+ কস্টিং গণনা')}</span>
               </Button>
             </div>
@@ -913,7 +913,7 @@ export default function JobCostingPage() {
                 Factory internal substrate purchase rates, machine electricity costs, and raw margin % are hidden.
               </span>
             </div>
-            <span className="font-mono text-2xs uppercase font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
+            <span className="tabular-nums text-2xs uppercase font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
               Role: Sales Executive
             </span>
           </div>
@@ -997,10 +997,10 @@ export default function JobCostingPage() {
                   <tr>
                     <th className="py-3 px-4">Job & Client</th>
                     <th className="py-3 px-4">Work Description</th>
-                    <th className="py-3 px-4 font-mono">Selling Price</th>
-                    <th className="py-3 px-4 font-mono">Estimated Cost</th>
-                    <th className="py-3 px-4 font-mono">Actual Cost</th>
-                    <th className="py-3 px-4 font-mono text-center">Realized Margin</th>
+                    <th className="py-3 px-4 tabular-nums">Selling Price</th>
+                    <th className="py-3 px-4 tabular-nums">Estimated Cost</th>
+                    <th className="py-3 px-4 tabular-nums">Actual Cost</th>
+                    <th className="py-3 px-4 tabular-nums text-center">Realized Margin</th>
                     <th className="py-3 px-4">Variance Status</th>
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
@@ -1012,7 +1012,7 @@ export default function JobCostingPage() {
                       <td className="py-3.5 px-4">
                         <Link
                           href={getTenantNavHref(`/costing/${cst.id}`, pathname, slug)}
-                          className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
+                          className="tabular-nums font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
                         >
                           <span>{cst.job_number}</span>
                           <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1025,21 +1025,21 @@ export default function JobCostingPage() {
                         <div className="font-medium text-slate-700 dark:text-slate-300 max-w-[220px] truncate">
                           {cst.item_title}
                         </div>
-                        <div className="text-2xs font-mono text-slate-400 max-w-[220px] truncate">{cst.dimensions_spec}</div>
+                        <div className="text-2xs tabular-nums text-slate-400 max-w-[220px] truncate">{cst.dimensions_spec}</div>
                       </td>
 
                       {/* Selling Price */}
-                      <td className="py-3.5 px-4 font-mono font-black text-sm text-slate-900 dark:text-white">
+                      <td className="py-3.5 px-4 tabular-nums font-black text-sm text-slate-900 dark:text-white">
                         {formatBDT(cst.selling_price)}
                       </td>
 
                       {/* Estimated Cost */}
-                      <td className="py-3.5 px-4 font-mono text-slate-500">
+                      <td className="py-3.5 px-4 tabular-nums text-slate-500">
                         {isSalesRoleShielded ? '••••••' : formatBDT(cst.est.total_cost)}
                       </td>
 
                       {/* Actual Cost */}
-                      <td className="py-3.5 px-4 font-mono font-bold">
+                      <td className="py-3.5 px-4 tabular-nums font-bold">
                         {isSalesRoleShielded ? (
                           '••••••'
                         ) : cst.status === 'actualized' ? (
@@ -1050,7 +1050,7 @@ export default function JobCostingPage() {
                       </td>
 
                       {/* Realized Margin */}
-                      <td className="py-3.5 px-4 text-center font-mono">
+                      <td className="py-3.5 px-4 text-center tabular-nums">
                         {isSalesRoleShielded ? (
                           <span className="px-2 py-0.5 rounded text-2xs font-bold bg-slate-100 text-slate-600">
                             Shielded
@@ -1075,7 +1075,7 @@ export default function JobCostingPage() {
                       {/* Variance Status */}
                       <td className="py-3.5 px-4">
                         {isSalesRoleShielded ? (
-                          <span className="text-2xs text-slate-400 font-mono">Active</span>
+                          <span className="text-2xs text-slate-400 tabular-nums">Active</span>
                         ) : cst.status === 'actualized' ? (
                           (cst.variances?.total_variance || 0) < 0 ? (
                             <span className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
@@ -1088,10 +1088,10 @@ export default function JobCostingPage() {
                               Overrun +{formatBDT(cst.variances.total_variance)}
                             </span>
                           ) : (
-                            <span className="text-2xs text-slate-500 font-mono">On Budget</span>
+                            <span className="text-2xs text-slate-500 tabular-nums">On Budget</span>
                           )
                         ) : (
-                          <span className="text-2xs text-blue-600 font-mono font-medium">In Production</span>
+                          <span className="text-2xs text-blue-600 tabular-nums font-medium">In Production</span>
                         )}
                       </td>
 
@@ -1163,9 +1163,9 @@ export default function JobCostingPage() {
                           <Button
                             size="sm"
                             onClick={() => setIsNewCostingOpen(true)}
-                            className="mt-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs h-8 px-3 shadow-xs"
+                            className="mt-2 gap-1.5"
                           >
-                            <Plus className="w-3.5 h-3.5 mr-1" />
+                            <Plus className="w-3.5 h-3.5" />
                             <span>{tBilingual('New Job Costing', 'নতুন কস্টিং শুরু করুন')}</span>
                           </Button>
                         </div>
@@ -1184,7 +1184,7 @@ export default function JobCostingPage() {
                     <div>
                       <Link
                         href={getTenantNavHref(`/costing/${cst.id}`, pathname, slug)}
-                        className="font-mono font-bold text-xs text-blue-600 hover:underline"
+                        className="tabular-nums font-bold text-xs text-blue-600 hover:underline"
                       >
                         {cst.job_number}
                       </Link>
@@ -1193,7 +1193,7 @@ export default function JobCostingPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-mono font-black text-sm text-slate-900 dark:text-white">
+                      <div className="tabular-nums font-black text-sm text-slate-900 dark:text-white">
                         {formatBDT(cst.selling_price)}
                       </div>
                       {isSalesRoleShielded ? (
@@ -1220,14 +1220,14 @@ export default function JobCostingPage() {
 
                   <div className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/60">
                     <div className="font-medium text-slate-800 dark:text-slate-200">{cst.item_title}</div>
-                    <div className="text-2xs font-mono text-slate-400 mt-0.5">{cst.dimensions_spec}</div>
+                    <div className="text-2xs tabular-nums text-slate-400 mt-0.5">{cst.dimensions_spec}</div>
                   </div>
 
                   {/* Costs & Variance Grid */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-400 block uppercase">Est vs Act Cost</span>
-                      <span className="font-mono font-semibold">
+                      <span className="tabular-nums font-semibold">
                         {isSalesRoleShielded
                           ? '••••••'
                           : `${formatBDT(cst.est.total_cost)} / ${cst.status === 'actualized' ? formatBDT(cst.act.total_cost) : '—'}`}
@@ -1236,21 +1236,21 @@ export default function JobCostingPage() {
                     <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-400 block uppercase">Variance</span>
                       {isSalesRoleShielded ? (
-                        <span className="font-mono text-slate-400">••••</span>
+                        <span className="tabular-nums text-slate-400">••••</span>
                       ) : cst.status === 'actualized' ? (
                         (cst.variances?.total_variance || 0) < 0 ? (
-                          <span className="text-2xs font-bold text-emerald-600 font-mono">
+                          <span className="text-2xs font-bold text-emerald-600 tabular-nums">
                             Saved {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
                           </span>
                         ) : (cst.variances?.total_variance || 0) > 0 ? (
-                          <span className="text-2xs font-bold text-red-600 font-mono">
+                          <span className="text-2xs font-bold text-red-600 tabular-nums">
                             +{formatBDT(cst.variances.total_variance)}
                           </span>
                         ) : (
-                          <span className="text-2xs text-slate-500 font-mono">On Budget</span>
+                          <span className="text-2xs text-slate-500 tabular-nums">On Budget</span>
                         )
                       ) : (
-                        <span className="text-2xs text-blue-600 font-mono">In Prod</span>
+                        <span className="text-2xs text-blue-600 tabular-nums">In Prod</span>
                       )}
                     </div>
                   </div>
@@ -1346,11 +1346,11 @@ export default function JobCostingPage() {
                       <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 truncate">
                         {tBilingual(p.nameEn, p.nameBn || p.nameEn)}
                       </span>
-                      <span className="text-2xs font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full shrink-0">
+                      <span className="text-2xs tabular-nums font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full shrink-0">
                         {formatBDT(p.selling)}
                       </span>
                     </div>
-                    <div className="text-2xs text-slate-500 dark:text-slate-400 font-mono mt-1.5 truncate">{p.specs}</div>
+                    <div className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums mt-1.5 truncate">{p.specs}</div>
                   </button>
                 ))}
               </div>
@@ -1366,7 +1366,7 @@ export default function JobCostingPage() {
                   id="newJobNum"
                   value={newJobNumber}
                   onChange={(e) => setNewJobNumber(e.target.value)}
-                  className="h-8 text-xs font-mono font-bold"
+                  className="h-8 text-xs tabular-nums font-bold"
                   required
                 />
               </div>
@@ -1409,7 +1409,7 @@ export default function JobCostingPage() {
                 placeholder="e.g. 20ft × 10ft • 440 GSM Star Flex • Konica 512i • MS Pipe 1 inch"
                 value={newSpecs}
                 onChange={(e) => setNewSpecs(e.target.value)}
-                className="h-8 text-xs font-mono"
+                className="h-8 text-xs tabular-nums"
               />
             </div>
 
@@ -1419,7 +1419,7 @@ export default function JobCostingPage() {
                 <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   {tBilingual('9-Head Estimated Cost Breakdown', '৯টি ব্যয় খাতের হিসাব')}
                 </Label>
-                <span className="text-xs font-mono font-bold text-slate-500">
+                <span className="text-xs tabular-nums font-bold text-slate-500">
                   Total Cost: {formatBDT(newTotalEstCost)}
                 </span>
               </div>
@@ -1432,7 +1432,7 @@ export default function JobCostingPage() {
                     min="0"
                     value={newEstHeads.material_cost}
                     onChange={(e) => setNewEstHeads({ ...newEstHeads, material_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1443,7 +1443,7 @@ export default function JobCostingPage() {
                     min="0"
                     value={newEstHeads.ink_cost}
                     onChange={(e) => setNewEstHeads({ ...newEstHeads, ink_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1454,7 +1454,7 @@ export default function JobCostingPage() {
                     min="0"
                     value={newEstHeads.machine_cost}
                     onChange={(e) => setNewEstHeads({ ...newEstHeads, machine_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1465,7 +1465,7 @@ export default function JobCostingPage() {
                     min="0"
                     value={newEstHeads.finishing_cost}
                     onChange={(e) => setNewEstHeads({ ...newEstHeads, finishing_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1476,7 +1476,7 @@ export default function JobCostingPage() {
                     min="0"
                     value={newEstHeads.labor_cost}
                     onChange={(e) => setNewEstHeads({ ...newEstHeads, labor_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1487,7 +1487,7 @@ export default function JobCostingPage() {
                     min="0"
                     value={newEstHeads.fabrication_cost}
                     onChange={(e) => setNewEstHeads({ ...newEstHeads, fabrication_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1498,7 +1498,7 @@ export default function JobCostingPage() {
                     min="0"
                     value={newEstHeads.installation_cost}
                     onChange={(e) => setNewEstHeads({ ...newEstHeads, installation_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1509,7 +1509,7 @@ export default function JobCostingPage() {
                     min="0"
                     value={newEstHeads.transport_cost}
                     onChange={(e) => setNewEstHeads({ ...newEstHeads, transport_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1520,7 +1520,7 @@ export default function JobCostingPage() {
                     min="0"
                     value={newEstHeads.other_cost}
                     onChange={(e) => setNewEstHeads({ ...newEstHeads, other_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                   />
                 </div>
               </div>
@@ -1538,17 +1538,17 @@ export default function JobCostingPage() {
                   min="0"
                   value={newSellingPrice}
                   onChange={(e) => setNewSellingPrice(Number(e.target.value))}
-                  className="w-32 h-8 text-xs font-mono font-black text-right"
+                  className="w-32 h-8 text-xs tabular-nums font-black text-right"
                   required
                 />
               </div>
 
-              <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200 dark:border-slate-800 font-mono">
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200 dark:border-slate-800 tabular-nums">
                 <span className="text-slate-500">Estimated Gross Profit:</span>
                 <span className="font-bold text-blue-600">{formatBDT(newEstProfit)}</span>
               </div>
 
-              <div className="flex items-center justify-between text-xs font-mono">
+              <div className="flex items-center justify-between text-xs tabular-nums">
                 <span className="text-slate-500">Estimated Profit Margin:</span>
                 <span
                   className={`font-black px-2 py-0.5 rounded ${
@@ -1600,7 +1600,7 @@ export default function JobCostingPage() {
                   <Label htmlFor="discSlider" className="font-bold text-blue-900 dark:text-blue-200">
                     Proposed Discount Percentage (%)
                   </Label>
-                  <div className="flex items-center gap-1 font-mono font-black text-sm text-blue-700">
+                  <div className="flex items-center gap-1 tabular-nums font-black text-sm text-blue-700">
                     <Input
                       id="discSlider"
                       type="number"
@@ -1608,7 +1608,7 @@ export default function JobCostingPage() {
                       max="50"
                       value={discountPercent}
                       onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                      className="w-16 h-7 text-xs text-right font-mono font-bold rounded-lg"
+                      className="w-16 h-7 text-xs text-right tabular-nums font-bold rounded-lg"
                     />
                     <span>%</span>
                   </div>
@@ -1626,7 +1626,7 @@ export default function JobCostingPage() {
               </div>
 
               {/* Live Impact Waterfall */}
-              <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 space-y-2 text-xs font-mono">
+              <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 space-y-2 text-xs tabular-nums">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Original List Price:</span>
                   <span className="font-bold">{formatBDT(negotiatingJob.selling_price)}</span>
@@ -1742,10 +1742,10 @@ export default function JobCostingPage() {
                     min="0"
                     value={actHeads.material_cost}
                     onChange={(e) => setActHeads({ ...actHeads, material_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                     required
                   />
-                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.material_cost)}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums block">Est: {formatBDT(editingJob.est.material_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1755,10 +1755,10 @@ export default function JobCostingPage() {
                     min="0"
                     value={actHeads.ink_cost}
                     onChange={(e) => setActHeads({ ...actHeads, ink_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                     required
                   />
-                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.ink_cost)}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums block">Est: {formatBDT(editingJob.est.ink_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1768,10 +1768,10 @@ export default function JobCostingPage() {
                     min="0"
                     value={actHeads.machine_cost}
                     onChange={(e) => setActHeads({ ...actHeads, machine_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                     required
                   />
-                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.machine_cost)}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums block">Est: {formatBDT(editingJob.est.machine_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1781,10 +1781,10 @@ export default function JobCostingPage() {
                     min="0"
                     value={actHeads.finishing_cost}
                     onChange={(e) => setActHeads({ ...actHeads, finishing_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                     required
                   />
-                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.finishing_cost)}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums block">Est: {formatBDT(editingJob.est.finishing_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1794,10 +1794,10 @@ export default function JobCostingPage() {
                     min="0"
                     value={actHeads.labor_cost}
                     onChange={(e) => setActHeads({ ...actHeads, labor_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                     required
                   />
-                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.labor_cost)}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums block">Est: {formatBDT(editingJob.est.labor_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1807,10 +1807,10 @@ export default function JobCostingPage() {
                     min="0"
                     value={actHeads.fabrication_cost}
                     onChange={(e) => setActHeads({ ...actHeads, fabrication_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                     required
                   />
-                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.fabrication_cost)}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums block">Est: {formatBDT(editingJob.est.fabrication_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1820,10 +1820,10 @@ export default function JobCostingPage() {
                     min="0"
                     value={actHeads.installation_cost}
                     onChange={(e) => setActHeads({ ...actHeads, installation_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                     required
                   />
-                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.installation_cost)}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums block">Est: {formatBDT(editingJob.est.installation_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1833,10 +1833,10 @@ export default function JobCostingPage() {
                     min="0"
                     value={actHeads.transport_cost}
                     onChange={(e) => setActHeads({ ...actHeads, transport_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                     required
                   />
-                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.transport_cost)}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums block">Est: {formatBDT(editingJob.est.transport_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1846,10 +1846,10 @@ export default function JobCostingPage() {
                     min="0"
                     value={actHeads.other_cost}
                     onChange={(e) => setActHeads({ ...actHeads, other_cost: Number(e.target.value) })}
-                    className="h-7 text-xs font-mono"
+                    className="h-7 text-xs tabular-nums"
                     required
                   />
-                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.other_cost)}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums block">Est: {formatBDT(editingJob.est.other_cost)}</span>
                 </div>
               </div>
 

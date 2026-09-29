@@ -136,7 +136,7 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
               <span className="text-base font-black text-slate-900 dark:text-white">
                 {tBilingual('Mobile Quick Quotation', 'দ্রুত কোটেশন ক্যালকুলেটর')}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                 Counter POS
               </Badge>
             </div>
@@ -183,7 +183,7 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
                 >
                   <div className="min-w-0 pr-2">
                     <div className="text-xs font-bold truncate">{mat.name}</div>
-                    <div className="text-2xs font-mono text-blue-600 dark:text-blue-400 font-semibold mt-0.5">
+                    <div className="text-2xs tabular-nums text-blue-600 dark:text-blue-400 font-semibold mt-0.5">
                       ৳{mat.rate}/sft
                     </div>
                   </div>
@@ -209,7 +209,7 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
                 {tBilingual('Dimensions & Quantity', 'পরিমাপ ও পরিমাণ')}
               </h3>
             </div>
-            <Badge variant="outline" className="text-xs font-mono bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+            <Badge variant="outline" className="text-xs tabular-nums bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
               {totalSft} SFT ({width}×{height}ft × {quantity}pcs)
             </Badge>
           </div>
@@ -294,7 +294,7 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
                 placeholder="+8801..."
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
           </div>
@@ -321,7 +321,7 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
               {tBilingual('Estimated Total', 'সর্বমোট মূল্য')}
             </span>
             <div className="text-right">
-              <div className="text-2xl font-black text-emerald-400 font-mono">
+              <div className="text-2xl font-black text-emerald-400 tabular-nums">
                 ৳{grandTotal.toLocaleString()}
               </div>
               <div className="text-2xs text-slate-400">

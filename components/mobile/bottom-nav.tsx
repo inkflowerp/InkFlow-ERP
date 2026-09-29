@@ -46,7 +46,7 @@ export function MobileBottomNav() {
     <>
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-slate-950/95 backdrop-blur-md border-t border-slate-800 pb-[env(safe-area-inset-bottom)] select-none"
+        className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)] select-none shadow-lg"
       >
         <div className="grid grid-cols-5 h-16 items-center px-1">
           {/* 1. Dashboard */}
@@ -54,8 +54,8 @@ export function MobileBottomNav() {
             href={getTenantNavHref('/dashboard', pathname, tenantSlug)}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isDashboardActive
-                ? 'text-blue-400 font-bold'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-primary font-bold'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <LayoutDashboard className="h-5 w-5 shrink-0" />
@@ -69,8 +69,8 @@ export function MobileBottomNav() {
             href={getTenantNavHref('/operator', pathname, tenantSlug)}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isOperatorActive
-                ? 'text-blue-400 font-bold'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-primary font-bold'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Printer className="h-5 w-5 shrink-0" />
@@ -86,10 +86,10 @@ export function MobileBottomNav() {
             className="flex flex-col items-center justify-center -mt-5 min-h-[48px] min-w-[48px] cursor-pointer focus:outline-none"
             aria-label="Create New Work"
           >
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/40 border-2 border-slate-950 active:scale-95 transition-transform">
+            <div className="h-12 w-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-md border-2 border-background active:scale-95 transition-transform">
               <Plus className="h-6 w-6 stroke-[3]" />
             </div>
-            <span className="text-2xs font-black text-white mt-1 bangla-text whitespace-nowrap">
+            <span className="text-2xs font-bold text-foreground mt-1 bangla-text whitespace-nowrap">
               {tBilingual('New Work', 'নতুন কাজ')}
             </span>
           </button>
@@ -99,8 +99,8 @@ export function MobileBottomNav() {
             href={getTenantNavHref('/communications', pathname, tenantSlug)}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isMessagesActive
-                ? 'text-blue-400 font-bold'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-primary font-bold'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <MessageSquare className="h-5 w-5 shrink-0" />
@@ -113,7 +113,7 @@ export function MobileBottomNav() {
           <button
             type="button"
             onClick={handleOpenMobileDrawer}
-            className="flex flex-col items-center justify-center h-full min-h-[48px] py-1 text-slate-400 hover:text-slate-200 relative cursor-pointer focus:outline-none bangla-text"
+            className="flex flex-col items-center justify-center h-full min-h-[48px] py-1 text-muted-foreground hover:text-foreground relative cursor-pointer focus:outline-none bangla-text"
             aria-label="Open Full Menu and Modules"
           >
             <Menu className="h-5 w-5 shrink-0" />
@@ -121,7 +121,7 @@ export function MobileBottomNav() {
               {tBilingual('More', 'আরও')}
             </span>
             {(!isOnline || pendingCount > 0) && (
-              <span className="absolute top-2 right-3.5 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-slate-950 animate-pulse" />
+              <span className="absolute top-2 right-3.5 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-background animate-pulse" />
             )}
           </button>
         </div>

@@ -181,7 +181,7 @@ export function BranchManagementTable({
                       <span className="font-bold text-slate-900 dark:text-slate-100">
                         {b.name}
                       </span>
-                      <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs rounded font-mono font-bold">
+                      <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs rounded tabular-nums font-bold">
                         {b.code}
                       </span>
                       {b.is_main && (

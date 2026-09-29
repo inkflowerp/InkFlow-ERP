@@ -426,7 +426,7 @@ export default function NotificationSettingsPage() {
                     Master Chime Volume (সাউন্ড ভলিউম)
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                <span className="text-xs tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
                   {soundMuted ? 'Muted (0%)' : `${volume}%`}
                 </span>
               </div>
@@ -606,7 +606,7 @@ export default function NotificationSettingsPage() {
                             <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
                               {tBilingual(item.nameEn, item.nameBn)}
                             </div>
-                            <span className="text-2xs text-slate-400 uppercase font-mono tracking-wider">
+                            <span className="text-2xs text-slate-400 uppercase tabular-nums tracking-wider">
                               {item.category} • {item.waveform}
                             </span>
                           </div>
@@ -624,7 +624,7 @@ export default function NotificationSettingsPage() {
                         {tBilingual(item.descEn, item.descBn)}
                       </p>
 
-                      <div className="text-2xs font-mono text-slate-400 bg-slate-50 dark:bg-slate-950/60 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800 truncate">
+                      <div className="text-2xs tabular-nums text-slate-400 bg-slate-50 dark:bg-slate-950/60 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800 truncate">
                         {item.frequencies}
                       </div>
                     </div>
@@ -741,7 +741,7 @@ export default function NotificationSettingsPage() {
                   value={notif.sms_sender_id}
                   onChange={(e) => setNotif({ ...notif, sms_sender_id: e.target.value })}
                   disabled={!notif.sms_enabled}
-                  className="font-mono text-xs uppercase"
+                  className="tabular-nums text-xs uppercase"
                 />
               </div>
 
@@ -753,7 +753,7 @@ export default function NotificationSettingsPage() {
                   value={notif.sms_api_key}
                   onChange={(e) => setNotif({ ...notif, sms_api_key: e.target.value })}
                   disabled={!notif.sms_enabled}
-                  className="font-mono text-xs"
+                  className="tabular-nums text-xs"
                 />
               </div>
             </div>

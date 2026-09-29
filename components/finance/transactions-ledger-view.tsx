@@ -261,7 +261,7 @@ export function TransactionsLedgerView({
             <span className="font-semibold">{tBilingual('Total Money In (Income)', 'মোট জমা (ইনকাম)')}</span>
             <ArrowDownLeft className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+          <div className="text-xl sm:text-2xl font-black tabular-nums text-emerald-600 dark:text-emerald-400">
             +৳{totals.income.toLocaleString()}
           </div>
           <span className="text-3xs text-slate-400 block mt-1">{tBilingual('Collections & receipts', 'আদায় ও জমা')}</span>
@@ -272,7 +272,7 @@ export function TransactionsLedgerView({
             <span className="font-semibold">{tBilingual('Total Money Out (Expense)', 'মোট খরচ (ব্যয়)')}</span>
             <ArrowUpRight className="w-4 h-4 text-rose-500" />
           </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-rose-600 dark:text-rose-400">
+          <div className="text-xl sm:text-2xl font-black tabular-nums text-rose-600 dark:text-rose-400">
             -৳{totals.expense.toLocaleString()}
           </div>
           <span className="text-3xs text-slate-400 block mt-1">{tBilingual('Overheads & payouts', 'পরিচালন ও মহাজন বিল')}</span>
@@ -283,7 +283,7 @@ export function TransactionsLedgerView({
             <span className="font-semibold">{tBilingual('Total Transfers', 'অ্যাকাউন্ট ট্রান্সফার')}</span>
             <ArrowLeftRight className="w-4 h-4 text-blue-500" />
           </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
+          <div className="text-xl sm:text-2xl font-black tabular-nums text-blue-600 dark:text-blue-400">
             ৳{totals.transfer.toLocaleString()}
           </div>
           <span className="text-3xs text-slate-400 block mt-1">{tBilingual('Internal movements', 'অভ্যন্তরীণ স্থানান্তর')}</span>
@@ -294,7 +294,7 @@ export function TransactionsLedgerView({
             <span className="font-semibold">{tBilingual('Net Cash Movement', 'নিট নগদ প্রবাহ')}</span>
             <Receipt className="w-4 h-4 text-slate-400" />
           </div>
-          <div className={`text-xl sm:text-2xl font-black font-mono ${totals.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+          <div className={`text-xl sm:text-2xl font-black tabular-nums ${totals.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
             {totals.net >= 0 ? '+' : ''}৳{totals.net.toLocaleString()}
           </div>
           <span className="text-3xs text-slate-400 block mt-1">{totals.net >= 0 ? tBilingual('Net surplus', 'নগদ উদ্বৃত্ত') : tBilingual('Net deficit', 'ঘাটতি')}</span>
@@ -421,7 +421,7 @@ export function TransactionsLedgerView({
 
                   return (
                     <tr key={entry.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 font-mono text-slate-500 whitespace-nowrap">
+                      <td className="p-3 tabular-nums text-slate-500 whitespace-nowrap">
                         {entry.date}
                       </td>
                       <td className="p-3">
@@ -442,15 +442,15 @@ export function TransactionsLedgerView({
                         <div className="font-semibold text-slate-900 dark:text-white">
                           {entry.description}
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5 text-3xs text-slate-400 font-mono">
+                        <div className="flex items-center gap-2 mt-0.5 text-3xs text-slate-400 tabular-nums">
                           <span>{entry.number}</span>
                           {entry.referenceId && <span>• Ref: {entry.referenceId}</span>}
                         </div>
                       </td>
-                      <td className="p-3 font-mono text-2xs text-slate-600 dark:text-slate-400">
+                      <td className="p-3 tabular-nums text-2xs text-slate-600 dark:text-slate-400">
                         {entry.accountDisplay}
                       </td>
-                      <td className="p-3 text-right font-mono font-bold text-sm">
+                      <td className="p-3 text-right tabular-nums font-bold text-sm">
                         {isIncome && (
                           <span className="text-emerald-600 dark:text-emerald-400">
                             +৳{entry.amount.toLocaleString()}
@@ -468,7 +468,7 @@ export function TransactionsLedgerView({
                         )}
                       </td>
                       <td className="p-3 text-center">
-                        <Badge variant="outline" className="text-3xs uppercase font-mono px-1.5 py-0 h-4">
+                        <Badge variant="outline" className="text-3xs uppercase tabular-nums px-1.5 py-0 h-4">
                           {entry.status}
                         </Badge>
                       </td>

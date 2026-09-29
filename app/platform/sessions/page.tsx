@@ -184,7 +184,7 @@ export default function PlatformSessionsPage() {
                           Current Session
                         </span>
                       )}
-                      <span className="text-2xs font-mono px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
+                      <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
                         IP: {sess.ip_address || '127.0.0.1'}
                       </span>
                     </div>
@@ -269,7 +269,7 @@ export default function PlatformSessionsPage() {
                         </span>
                       )}
                     </td>
-                    <td className="py-2.5 px-3 font-mono text-slate-400">{item.ip_address}</td>
+                    <td className="py-2.5 px-3 tabular-nums text-slate-400">{item.ip_address}</td>
                     <td className="py-2.5 px-3 text-slate-300">{item.device_browser}</td>
                     <td className="py-2.5 px-3 text-slate-400">{item.location}</td>
                     <td className="py-2.5 px-3 text-right text-slate-400">

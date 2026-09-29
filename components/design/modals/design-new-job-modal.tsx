@@ -201,7 +201,7 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
                 value={dimensions}
                 onChange={(e) => setDimensions(e.target.value)}
                 placeholder="যেমন: 3.5 x 2 in, 10 x 3 ft, A4"
-                className="text-xs font-mono bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                className="text-xs tabular-nums bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
               />
             </div>
 
@@ -251,7 +251,7 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
               value={proofUrl}
               onChange={(e) => setProofUrl(e.target.value)}
               placeholder="https://... বা স্ক্রিনশট পেস্ট করুন"
-              className="text-xs font-mono bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+              className="text-xs tabular-nums bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700"
             />
           </div>
 

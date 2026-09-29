@@ -264,7 +264,7 @@ export function StockAdjustmentModal({
               </h2>
               <Badge
                 variant="outline"
-                className="text-2xs uppercase font-mono py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
+                className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
               >
                 Audit Log
               </Badge>
@@ -437,7 +437,7 @@ export function StockAdjustmentModal({
                   <Badge
                     key={idx}
                     variant="outline"
-                    className="text-2xs font-mono py-1 px-2.5 bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5"
+                    className="text-2xs tabular-nums py-1 px-2.5 bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5"
                   >
                     <span className="font-bold text-amber-600 dark:text-amber-400">
                       {item.width_ft}ft × {item.length_ft}ft:
@@ -479,7 +479,7 @@ export function StockAdjustmentModal({
                   min="0"
                   value={physicalCount}
                   onChange={(e) => setPhysicalCount(Number(e.target.value))}
-                  className="text-xs h-10 font-mono font-bold text-base"
+                  className="text-xs h-10 tabular-nums font-bold text-base"
                   required
                 />
               </div>
@@ -497,7 +497,7 @@ export function StockAdjustmentModal({
                   value={deltaQuantity}
                   onChange={(e) => setDeltaQuantity(Number(e.target.value))}
                   placeholder="e.g. +5 or -2.5"
-                  className="text-xs h-10 font-mono font-bold text-base"
+                  className="text-xs h-10 tabular-nums font-bold text-base"
                   required
                 />
               </div>
@@ -517,7 +517,7 @@ export function StockAdjustmentModal({
                   value={deltaQuantity ? Math.abs(deltaQuantity) : ''}
                   onChange={(e) => setDeltaQuantity(-Math.abs(Number(e.target.value)))}
                   placeholder="e.g. 2.0"
-                  className="text-xs h-10 font-mono font-bold text-base border-rose-300 dark:border-rose-700 text-rose-600"
+                  className="text-xs h-10 tabular-nums font-bold text-base border-rose-300 dark:border-rose-700 text-rose-600"
                   required
                 />
               </div>
@@ -527,7 +527,7 @@ export function StockAdjustmentModal({
               <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('Current System Balance', 'বর্তমান সিস্টেম স্টক')}
               </Label>
-              <div className="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center font-mono font-bold text-slate-800 dark:text-slate-200">
+              <div className="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center tabular-nums font-bold text-slate-800 dark:text-slate-200">
                 {currentSysStock} {activeMaterial?.unit || 'units'}
               </div>
             </div>
@@ -536,7 +536,7 @@ export function StockAdjustmentModal({
               <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('New Balance Post-Audit', 'সমন্বয় পরবর্তী ব্যালেন্স')}
               </Label>
-              <div className="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center font-mono font-black text-slate-900 dark:text-white">
+              <div className="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center tabular-nums font-black text-slate-900 dark:text-white">
                 {calculatedNewStock} {activeMaterial?.unit || 'units'}
               </div>
             </div>
@@ -548,7 +548,7 @@ export function StockAdjustmentModal({
               <span className="text-2xs text-slate-400 block font-semibold uppercase">Quantity Variance:</span>
               <div
                 className={cn(
-                  'text-base font-black font-mono flex items-center gap-1.5 mt-0.5',
+                  'text-base font-black tabular-nums flex items-center gap-1.5 mt-0.5',
                   variance > 0 ? 'text-emerald-600' : variance < 0 ? 'text-rose-600' : 'text-slate-500'
                 )}
               >
@@ -567,7 +567,7 @@ export function StockAdjustmentModal({
 
             <div>
               <span className="text-2xs text-slate-400 block font-semibold uppercase">Unit Valuation:</span>
-              <div className="text-base font-bold font-mono text-slate-700 dark:text-slate-300 mt-0.5">
+              <div className="text-base font-bold tabular-nums text-slate-700 dark:text-slate-300 mt-0.5">
                 {formatBDT(unitCost)} / {activeMaterial?.unit || 'unit'}
               </div>
             </div>
@@ -576,7 +576,7 @@ export function StockAdjustmentModal({
               <span className="text-2xs text-slate-400 block font-semibold uppercase">Financial Impact:</span>
               <div
                 className={cn(
-                  'text-base font-black font-mono mt-0.5',
+                  'text-base font-black tabular-nums mt-0.5',
                   valuationImpact > 0
                     ? 'text-emerald-600'
                     : valuationImpact < 0
@@ -638,7 +638,7 @@ export function StockAdjustmentModal({
               <Input
                 value={auditRefNumber}
                 onChange={(e) => setAuditRefNumber(e.target.value)}
-                className="text-xs h-9 font-mono bg-slate-50 dark:bg-slate-900"
+                className="text-xs h-9 tabular-nums bg-slate-50 dark:bg-slate-900"
               />
             </div>
           </div>

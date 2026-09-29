@@ -608,7 +608,7 @@ function PayrollContent() {
                   }`}
                 >
                   <span>{tBilingual('All Staff', 'সকল কর্মী')}</span>
-                  <span className="text-2xs opacity-75 font-mono">({selectedPeriod?.items?.length || 0})</span>
+                  <span className="text-2xs opacity-75 tabular-nums">({selectedPeriod?.items?.length || 0})</span>
                 </button>
 
                 <button
@@ -621,7 +621,7 @@ function PayrollContent() {
                   }`}
                 >
                   <span>{tBilingual('Fully Paid', 'সম্পূর্ণ পরিশোধিত')}</span>
-                  <span className="text-2xs opacity-75 font-mono">({paidCount})</span>
+                  <span className="text-2xs opacity-75 tabular-nums">({paidCount})</span>
                 </button>
 
                 <button
@@ -634,7 +634,7 @@ function PayrollContent() {
                   }`}
                 >
                   <span>{tBilingual('Partially Paid', 'আংশিক পরিশোধিত')}</span>
-                  <span className="text-2xs opacity-75 font-mono">({partialCount})</span>
+                  <span className="text-2xs opacity-75 tabular-nums">({partialCount})</span>
                 </button>
 
                 <button
@@ -647,7 +647,7 @@ function PayrollContent() {
                   }`}
                 >
                   <span>{tBilingual('Unpaid Due', 'বকেয়া')}</span>
-                  <span className="text-2xs opacity-75 font-mono">({unpaidCount})</span>
+                  <span className="text-2xs opacity-75 tabular-nums">({unpaidCount})</span>
                 </button>
               </div>
 
@@ -685,7 +685,7 @@ function PayrollContent() {
                   <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                     {tBilingual('Payroll Period Line Items', 'বেতন শিটের আইটেম তালিকা')}
                   </CardTitle>
-                  <Badge variant="outline" className="text-xs font-mono">
+                  <Badge variant="outline" className="text-xs tabular-nums">
                     {filteredPayrollItems.length} records
                   </Badge>
                 </div>
@@ -718,7 +718,7 @@ function PayrollContent() {
                             </div>
                           </td>
 
-                          <td className="p-3.5 font-mono text-slate-700 dark:text-slate-300">
+                          <td className="p-3.5 tabular-nums text-slate-700 dark:text-slate-300">
                             {formatBDT(item.base_salary || 0)}
                           </td>
 
@@ -731,7 +731,7 @@ function PayrollContent() {
                             )}
                           </td>
 
-                          <td className="p-3.5 font-mono">
+                          <td className="p-3.5 tabular-nums">
                             {Number(item.overtime_amount || 0) > 0 ? (
                               <span className="text-purple-600 dark:text-purple-400 font-medium">
                                 +{formatBDT(item.overtime_amount || 0)} ({item.overtime_hours}h)
@@ -741,7 +741,7 @@ function PayrollContent() {
                             )}
                           </td>
 
-                          <td className="p-3.5 font-mono text-amber-600 dark:text-amber-400 font-medium">
+                          <td className="p-3.5 tabular-nums text-amber-600 dark:text-amber-400 font-medium">
                             {Number(item.advance_salary_deducted || 0) > 0 ? (
                               <span>-{formatBDT(item.advance_salary_deducted || 0)}</span>
                             ) : (
@@ -749,11 +749,11 @@ function PayrollContent() {
                             )}
                           </td>
 
-                          <td className="p-3.5 font-mono font-bold text-slate-900 dark:text-white">
+                          <td className="p-3.5 tabular-nums font-bold text-slate-900 dark:text-white">
                             {formatBDT(item.net_salary || 0)}
                           </td>
 
-                          <td className="p-3.5 font-mono text-xs">
+                          <td className="p-3.5 tabular-nums text-xs">
                             <div className="text-emerald-600 dark:text-emerald-400 font-semibold">
                               Paid: {formatBDT(item.paid_amount || 0)}
                             </div>
@@ -839,7 +839,7 @@ function PayrollContent() {
                   <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                     {tBilingual('Advances & Emergency Disbursements', 'অগ্রিম প্রদান ও সমন্বয় তালিকা')}
                   </CardTitle>
-                  <Badge variant="outline" className="text-xs font-mono">
+                  <Badge variant="outline" className="text-xs tabular-nums">
                     {advances.length} records
                   </Badge>
                 </div>
@@ -865,10 +865,10 @@ function PayrollContent() {
                         <td className="p-3.5 text-slate-500 dark:text-slate-400">
                           {formatDate(adv.disbursed_date)}
                         </td>
-                        <td className="p-3.5 font-mono font-bold text-amber-600 dark:text-amber-400">
+                        <td className="p-3.5 tabular-nums font-bold text-amber-600 dark:text-amber-400">
                           {formatBDT(adv.amount || 0)}
                         </td>
-                        <td className="p-3.5 capitalize font-mono text-slate-600 dark:text-slate-300">
+                        <td className="p-3.5 capitalize tabular-nums text-slate-600 dark:text-slate-300">
                           {adv.payment_method}
                         </td>
                         <td className="p-3.5 text-slate-500 dark:text-slate-400 italic">

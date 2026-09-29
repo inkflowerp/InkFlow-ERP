@@ -576,17 +576,17 @@ export default function ProductDetailPage() {
             )}
 
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-1">
-              <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{product.sku}</span>
+              <span className="tabular-nums font-bold text-slate-700 dark:text-slate-300">{product.sku}</span>
               <span>•</span>
               <span className="capitalize">{product.category?.replace('_', ' ')}</span>
               <span>•</span>
-              <span className="uppercase font-mono font-semibold text-blue-600">
+              <span className="uppercase tabular-nums font-semibold text-blue-600">
                 Sell: {product.selling_unit || product.unit}
               </span>
               {product.purchase_price && product.purchase_price > 0 ? (
                 <>
                   <span>•</span>
-                  <span className="font-mono text-slate-600 dark:text-slate-400">
+                  <span className="tabular-nums text-slate-600 dark:text-slate-400">
                     Buy: ৳{product.purchase_price}/{product.purchase_unit || 'roll'}
                   </span>
                 </>
@@ -755,12 +755,12 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2">
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
                 <span className="text-slate-400 block">Pricing Method</span>
-                <span className="font-mono font-bold text-blue-700 uppercase">{commercialEconomics?.pricingMethod?.replace('_', ' ')}</span>
+                <span className="tabular-nums font-bold text-blue-700 uppercase">{commercialEconomics?.pricingMethod?.replace('_', ' ')}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
                 <span className="text-slate-400 block">Selling Unit</span>
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200 uppercase">{product.selling_unit || product.unit}</span>
+                <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200 uppercase">{product.selling_unit || product.unit}</span>
               </div>
 
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
@@ -770,7 +770,7 @@ export default function ProductDetailPage() {
 
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
                 <span className="text-slate-400 block">Tax Rate</span>
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{product.tax_rate}% VAT</span>
+                <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">{product.tax_rate}% VAT</span>
               </div>
             </div>
 
@@ -802,7 +802,7 @@ export default function ProductDetailPage() {
                       {product.vendor_name || product.outsource_config?.vendor_name || 'Third-Party Vendor'}
                     </strong>
                     {(product.vendor_phone || product.outsource_config?.vendor_phone) && (
-                      <span className="text-2xs text-slate-500 font-mono">
+                      <span className="text-2xs text-slate-500 tabular-nums">
                         📞 {product.vendor_phone || product.outsource_config?.vendor_phone}
                       </span>
                     )}
@@ -818,7 +818,7 @@ export default function ProductDetailPage() {
 
                   <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-purple-100 dark:border-purple-900/40">
                     <span className="text-2xs text-slate-400 uppercase tracking-wider block">Vendor Item Code / Ref</span>
-                    <strong className="text-slate-900 dark:text-white font-mono text-xs block mt-0.5">
+                    <strong className="text-slate-900 dark:text-white tabular-nums text-xs block mt-0.5">
                       {product.vendor_item_code || product.outsource_config?.vendor_item_code || '—'}
                     </strong>
                     <span className="text-2xs text-slate-400">Supplier Reference ID</span>
@@ -873,7 +873,7 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                   <span className="text-slate-400 uppercase text-2xs tracking-wider block">Purchase Tariff</span>
-                  <div className="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">
+                  <div className="text-lg font-bold tabular-nums text-slate-900 dark:text-white mt-1">
                     ৳{commercialEconomics.purchasePrice}
                   </div>
                   <span className="text-2xs text-slate-500">per 1 {commercialEconomics.purchaseUnit}</span>
@@ -881,7 +881,7 @@ export default function ProductDetailPage() {
 
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                   <span className="text-slate-400 uppercase text-2xs tracking-wider block">Conversion Ratio</span>
-                  <div className="text-lg font-bold font-mono text-blue-600 mt-1">
+                  <div className="text-lg font-bold tabular-nums text-blue-600 mt-1">
                     1 : {commercialEconomics.conversionRatio}
                   </div>
                   <span className="text-2xs text-slate-500">{commercialEconomics.sellingUnit} per {commercialEconomics.purchaseUnit}</span>
@@ -889,7 +889,7 @@ export default function ProductDetailPage() {
 
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                   <span className="text-slate-400 uppercase text-2xs tracking-wider block">Expected Wastage</span>
-                  <div className="text-lg font-bold font-mono text-amber-600 mt-1">
+                  <div className="text-lg font-bold tabular-nums text-amber-600 mt-1">
                     {commercialEconomics.wastage}%
                   </div>
                   <span className="text-2xs text-slate-500">Yield: {commercialEconomics.usableUnits} usable {commercialEconomics.sellingUnit}</span>
@@ -897,7 +897,7 @@ export default function ProductDetailPage() {
 
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                   <span className="text-slate-400 uppercase text-2xs tracking-wider block">Effective Material Cost</span>
-                  <div className="text-lg font-bold font-mono text-emerald-600 mt-1">
+                  <div className="text-lg font-bold tabular-nums text-emerald-600 mt-1">
                     ৳{commercialEconomics.effectiveMaterialCost}
                   </div>
                   <span className="text-2xs text-slate-500">per {commercialEconomics.sellingUnit} (yield-adjusted)</span>
@@ -917,17 +917,17 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
                   <span className="text-slate-400 block text-2xs uppercase font-bold">1. Physical MOQ</span>
-                  <div className="text-sm font-bold font-mono mt-0.5">{product.min_order_quantity || 1} {commercialEconomics.sellingUnit}</div>
+                  <div className="text-sm font-bold tabular-nums mt-0.5">{product.min_order_quantity || 1} {commercialEconomics.sellingUnit}</div>
                   <p className="text-2xs text-slate-500 mt-1">Minimum physical quantity the workshop accepts.</p>
                 </div>
                 <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
                   <span className="text-slate-400 block text-2xs uppercase font-bold">2. Min Billable Qty</span>
-                  <div className="text-sm font-bold font-mono mt-0.5 text-blue-600">{product.min_billable_quantity || 0} {commercialEconomics.sellingUnit}</div>
+                  <div className="text-sm font-bold tabular-nums mt-0.5 text-blue-600">{product.min_billable_quantity || 0} {commercialEconomics.sellingUnit}</div>
                   <p className="text-2xs text-slate-500 mt-1">Minimum quantity used for invoice billing.</p>
                 </div>
                 <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
                   <span className="text-slate-400 block text-2xs uppercase font-bold">3. Minimum Charge</span>
-                  <div className="text-sm font-bold font-mono mt-0.5 text-emerald-600">৳{product.minimum_charge || 0}</div>
+                  <div className="text-sm font-bold tabular-nums mt-0.5 text-emerald-600">৳{product.minimum_charge || 0}</div>
                   <p className="text-2xs text-slate-500 mt-1">Minimum monetary amount charged per item.</p>
                 </div>
               </div>
@@ -937,25 +937,25 @@ export default function ProductDetailPage() {
             <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-600 dark:text-slate-400 font-semibold">Pricing Method:</span>
-                <span className="font-mono font-bold text-purple-700 uppercase">{commercialEconomics.pricingMethod.replace('_', ' ')}</span>
+                <span className="tabular-nums font-bold text-purple-700 uppercase">{commercialEconomics.pricingMethod.replace('_', ' ')}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-600 dark:text-slate-400 font-semibold">Target Gross Margin %:</span>
-                <span className="font-mono font-bold">{commercialEconomics.targetMargin}%</span>
+                <span className="tabular-nums font-bold">{commercialEconomics.targetMargin}%</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-600 dark:text-slate-400 font-semibold">Suggested Selling Price:</span>
-                <span className="font-mono font-bold text-emerald-600">৳{commercialEconomics.suggestedSellingPrice} / {commercialEconomics.sellingUnit}</span>
+                <span className="tabular-nums font-bold text-emerald-600">৳{commercialEconomics.suggestedSellingPrice} / {commercialEconomics.sellingUnit}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-600 dark:text-slate-400 font-semibold">Actual Catalog Selling Rate:</span>
-                <span className="font-mono font-bold text-blue-600 text-sm">৳{product.selling_price} / {commercialEconomics.sellingUnit}</span>
+                <span className="tabular-nums font-bold text-blue-600 text-sm">৳{product.selling_price} / {commercialEconomics.sellingUnit}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-600 dark:text-slate-400 font-semibold">
                   Calculated Margin ({commercialEconomics.costBasisType === 'direct_cost' ? 'Direct Cost Basis' : 'Material Cost Basis'}):
                 </span>
-                <span className="font-mono font-bold text-emerald-600 text-sm">{commercialEconomics.grossMarginPercent}%</span>
+                <span className="tabular-nums font-bold text-emerald-600 text-sm">{commercialEconomics.grossMarginPercent}%</span>
               </div>
             </div>
           </CardContent>
@@ -990,7 +990,7 @@ export default function ProductDetailPage() {
                 return (
                   <div key={tier.key} className={cn('p-3.5 rounded-xl border bg-slate-50/50 dark:bg-slate-900/50 border-l-4 shadow-xs', tier.color)}>
                     <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block">{tier.label}</span>
-                    <div className="text-lg font-black font-mono text-slate-900 dark:text-white mt-1">
+                    <div className="text-lg font-black tabular-nums text-slate-900 dark:text-white mt-1">
                       ৳{tierPrice}
                     </div>
                     <div className="text-2xs text-emerald-600 font-semibold mt-1">
@@ -1022,35 +1022,35 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
                 <span className="text-slate-400 block">Raw Material</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{commercialEconomics?.effectiveMaterialCost || product.base_cost}</span>
+                <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{commercialEconomics?.effectiveMaterialCost || product.base_cost}</span>
               </div>
               <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
                 <span className="text-slate-400 block">Ink & Consumables</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.ink_cost || 0}</span>
+                <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.ink_cost || 0}</span>
               </div>
               <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
                 <span className="text-slate-400 block">Machine Depreciation</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.machine_cost || 0}</span>
+                <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.machine_cost || 0}</span>
               </div>
               <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
                 <span className="text-slate-400 block">Direct Labor</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.labor_cost || 0}</span>
+                <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.labor_cost || 0}</span>
               </div>
               <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
                 <span className="text-slate-400 block">Finishing Work</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.finishing_cost || 0}</span>
+                <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.finishing_cost || 0}</span>
               </div>
               <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
                 <span className="text-slate-400 block">Sign / Frame Fabrication</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.fabrication_cost || 0}</span>
+                <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.fabrication_cost || 0}</span>
               </div>
               <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
                 <span className="text-slate-400 block">Site Installation</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.installation_cost || 0}</span>
+                <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.installation_cost || 0}</span>
               </div>
               <div className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900">
                 <span className="text-slate-400 block">Delivery Dispatch</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.delivery_cost || 0}</span>
+                <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{product.cost_breakdown?.delivery_cost || 0}</span>
               </div>
             </div>
 
@@ -1063,7 +1063,7 @@ export default function ProductDetailPage() {
                   Margin calculation basis: <strong>{commercialEconomics?.costBasisType === 'direct_cost' ? 'Estimated Direct Cost' : 'Estimated Material Cost'}</strong>
                 </span>
               </div>
-              <div className="text-right font-mono">
+              <div className="text-right tabular-nums">
                 <span className="text-slate-500 block text-2xs uppercase">Selling Tariff</span>
                 <span className="text-base font-bold text-blue-600">৳{product.selling_price}</span>
               </div>
@@ -1113,11 +1113,11 @@ export default function ProductDetailPage() {
                       <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
                         <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{c.component_name}</td>
                         <td className="py-3 px-3 capitalize text-slate-500">{c.production_role || 'material'}</td>
-                        <td className="py-3 px-3 font-mono">{c.quantity}</td>
-                        <td className="py-3 px-3 font-mono uppercase">{c.unit}</td>
-                        <td className="py-3 px-3 font-mono text-amber-600">{c.waste_percent || 0}%</td>
-                        <td className="py-3 px-3 font-mono">৳{c.unit_cost}</td>
-                        <td className="py-3 px-4 text-right font-mono font-bold text-emerald-600">৳{lineCost.toFixed(2)}</td>
+                        <td className="py-3 px-3 tabular-nums">{c.quantity}</td>
+                        <td className="py-3 px-3 tabular-nums uppercase">{c.unit}</td>
+                        <td className="py-3 px-3 tabular-nums text-amber-600">{c.waste_percent || 0}%</td>
+                        <td className="py-3 px-3 tabular-nums">৳{c.unit_cost}</td>
+                        <td className="py-3 px-4 text-right tabular-nums font-bold text-emerald-600">৳{lineCost.toFixed(2)}</td>
                       </tr>
                     )
                   })
@@ -1166,11 +1166,11 @@ export default function ProductDetailPage() {
                   supplierPrices.map((sp) => (
                     <tr key={sp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
                       <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{sp.supplier_name}</td>
-                      <td className="py-3 px-3 font-mono text-slate-500">{sp.notes || '-'}</td>
-                      <td className="py-3 px-3 uppercase font-mono">{sp.purchase_unit}</td>
-                      <td className="py-3 px-3 font-mono font-bold text-blue-600">৳{sp.purchase_price}</td>
-                      <td className="py-3 px-3 font-mono">{sp.moq || 1}</td>
-                      <td className="py-3 px-3 font-mono">{sp.lead_time_days ? `${sp.lead_time_days} days` : '-'}</td>
+                      <td className="py-3 px-3 tabular-nums text-slate-500">{sp.notes || '-'}</td>
+                      <td className="py-3 px-3 uppercase tabular-nums">{sp.purchase_unit}</td>
+                      <td className="py-3 px-3 tabular-nums font-bold text-blue-600">৳{sp.purchase_price}</td>
+                      <td className="py-3 px-3 tabular-nums">{sp.moq || 1}</td>
+                      <td className="py-3 px-3 tabular-nums">{sp.lead_time_days ? `${sp.lead_time_days} days` : '-'}</td>
                       <td className="py-3 px-4 text-right">
                         {sp.is_preferred ? (
                           <Badge className="bg-emerald-500 text-white text-2xs">Preferred Vendor</Badge>
@@ -1207,7 +1207,7 @@ export default function ProductDetailPage() {
 
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
                 <span className="text-slate-400 block">Estimated Production Time</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
+                <span className="font-bold text-slate-800 dark:text-slate-200 tabular-nums">
                   {product.estimated_production_time_hours || 4} Hours
                 </span>
               </div>
@@ -1298,15 +1298,15 @@ export default function ProductDetailPage() {
                   product.variants.map((v) => (
                     <tr key={v.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
                       <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{v.variant_name}</td>
-                      <td className="py-3 px-3 font-mono text-slate-500">{v.sku_suffix || '-'}</td>
+                      <td className="py-3 px-3 tabular-nums text-slate-500">{v.sku_suffix || '-'}</td>
                       <td className="py-3 px-3 text-slate-600 dark:text-slate-300">
                         {v.gsm ? `${v.gsm} GSM` : ''} {v.thickness_mm ? `${v.thickness_mm}mm` : ''}
                       </td>
                       <td className="py-3 px-3 text-slate-500">{v.finish || v.color || 'Standard'}</td>
-                      <td className="py-3 px-3 font-mono font-bold text-blue-600">
+                      <td className="py-3 px-3 tabular-nums font-bold text-blue-600">
                         {v.price_adjustment > 0 ? `+৳${v.price_adjustment}` : `৳${v.price_adjustment}`}
                       </td>
-                      <td className="py-3 px-3 font-mono text-slate-500">
+                      <td className="py-3 px-3 tabular-nums text-slate-500">
                         {v.cost_adjustment > 0 ? `+৳${v.cost_adjustment}` : `৳${v.cost_adjustment}`}
                       </td>
                       <td className="py-3 px-4 text-right">
@@ -1365,16 +1365,16 @@ export default function ProductDetailPage() {
                   ) : (
                     priceHistory.map((h) => (
                       <tr key={h.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                        <td className="py-3 px-4 text-slate-500 font-mono">
+                        <td className="py-3 px-4 text-slate-500 tabular-nums">
                           {h.created_at ? new Date(h.created_at).toLocaleString() : '-'}
                         </td>
-                        <td className="py-3 px-3 line-through text-slate-400 font-mono">
+                        <td className="py-3 px-3 line-through text-slate-400 tabular-nums">
                           <CurrencyDisplay amount={h.old_price} />
                         </td>
-                        <td className="py-3 px-3 font-bold text-blue-600 font-mono">
+                        <td className="py-3 px-3 font-bold text-blue-600 tabular-nums">
                           <CurrencyDisplay amount={h.new_price} />
                         </td>
-                        <td className="py-3 px-3 font-mono text-slate-600 dark:text-slate-300">
+                        <td className="py-3 px-3 tabular-nums text-slate-600 dark:text-slate-300">
                           {h.new_purchase_price ? `৳${h.new_purchase_price}` : '-'}
                         </td>
                         <td className="py-3 px-4 text-slate-700 dark:text-slate-300 font-medium">{h.reason}</td>
@@ -1421,19 +1421,19 @@ export default function ProductDetailPage() {
                   ) : (
                     priceOverrides.map((po) => (
                       <tr key={po.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                        <td className="py-3 px-4 text-slate-500 font-mono">
+                        <td className="py-3 px-4 text-slate-500 tabular-nums">
                           {po.created_at ? new Date(po.created_at).toLocaleString() : '-'}
                         </td>
-                        <td className="py-3 px-3 font-mono line-through text-slate-400">
+                        <td className="py-3 px-3 tabular-nums line-through text-slate-400">
                           ৳{po.original_price}
                         </td>
-                        <td className="py-3 px-3 font-bold font-mono text-rose-600">
+                        <td className="py-3 px-3 font-bold tabular-nums text-rose-600">
                           ৳{po.overridden_price}
                         </td>
-                        <td className="py-3 px-3 font-mono text-slate-500">
+                        <td className="py-3 px-3 tabular-nums text-slate-500">
                           {po.original_margin_percent ? `${po.original_margin_percent}%` : '-'}
                         </td>
-                        <td className="py-3 px-3 font-mono font-bold text-rose-600">
+                        <td className="py-3 px-3 tabular-nums font-bold text-rose-600">
                           {po.overridden_margin_percent ? `${po.overridden_margin_percent}%` : '-'}
                         </td>
                         <td className="py-3 px-4 text-slate-700 dark:text-slate-300 font-medium">
@@ -1458,7 +1458,7 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Card className="p-4 shadow-xs">
               <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Used in Quotations</span>
-              <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
+              <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 tabular-nums">
                 {usageStats?.quotationCount || 0}
               </div>
               <span className="text-2xs text-slate-400">Formal quotes created</span>
@@ -1466,7 +1466,7 @@ export default function ProductDetailPage() {
 
             <Card className="p-4 shadow-xs">
               <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Used in Invoices</span>
-              <div className="text-2xl font-black text-blue-600 mt-1 font-mono">
+              <div className="text-2xl font-black text-blue-600 mt-1 tabular-nums">
                 {usageStats?.invoiceCount || 0}
               </div>
               <span className="text-2xs text-blue-600/80 font-medium">Billed commercial sales</span>
@@ -1474,7 +1474,7 @@ export default function ProductDetailPage() {
 
             <Card className="p-4 shadow-xs">
               <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Active Job Orders</span>
-              <div className="text-2xl font-black text-amber-600 mt-1 font-mono">
+              <div className="text-2xl font-black text-amber-600 mt-1 tabular-nums">
                 {usageStats?.jobCount || 0}
               </div>
               <span className="text-2xs text-slate-400">Production floor tasks</span>
@@ -1482,7 +1482,7 @@ export default function ProductDetailPage() {
 
             <Card className="p-4 shadow-xs">
               <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Total Billed Revenue</span>
-              <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">
+              <div className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">
                 ৳{(usageStats?.totalRevenueBDT || 0).toLocaleString()}
               </div>
               <span className="text-2xs text-emerald-600/80 font-medium">
@@ -1512,15 +1512,15 @@ export default function ProductDetailPage() {
           <div className="p-3 bg-blue-50/50 dark:bg-blue-950/30 rounded-xl text-xs space-y-1.5 border border-blue-200 dark:border-blue-800">
             <div className="flex justify-between">
               <span className="text-slate-500">Current Base Cost:</span>
-              <span className="font-mono font-bold">৳{product.base_cost}</span>
+              <span className="tabular-nums font-bold">৳{product.base_cost}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Current Selling Price:</span>
-              <span className="font-mono font-bold text-blue-600">৳{product.selling_price} / {product.selling_unit || product.unit}</span>
+              <span className="tabular-nums font-bold text-blue-600">৳{product.selling_price} / {product.selling_unit || product.unit}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Minimum Floor Price:</span>
-              <span className="font-mono font-bold text-amber-600">৳{product.min_price}</span>
+              <span className="tabular-nums font-bold text-amber-600">৳{product.min_price}</span>
             </div>
           </div>
 
@@ -1532,7 +1532,7 @@ export default function ProductDetailPage() {
                 step="1"
                 value={newPurchasePrice}
                 onChange={(e) => setNewPurchasePrice(Number(e.target.value))}
-                className="text-xs h-9 font-mono font-semibold"
+                className="text-xs h-9 tabular-nums font-semibold"
               />
             </div>
             <div>
@@ -1542,7 +1542,7 @@ export default function ProductDetailPage() {
                 step="0.1"
                 value={newPrice}
                 onChange={(e) => setNewPrice(Number(e.target.value))}
-                className="text-xs h-9 font-mono font-bold text-blue-600"
+                className="text-xs h-9 tabular-nums font-bold text-blue-600"
                 required
               />
             </div>
@@ -1604,7 +1604,7 @@ export default function ProductDetailPage() {
                 placeholder="e.g. 440GSM"
                 value={newVariant.sku_suffix}
                 onChange={(e) => setNewVariant({ ...newVariant, sku_suffix: e.target.value })}
-                className="text-xs h-9 font-mono uppercase"
+                className="text-xs h-9 tabular-nums uppercase"
               />
             </div>
             <div>
@@ -1614,7 +1614,7 @@ export default function ProductDetailPage() {
                 placeholder="440"
                 value={newVariant.gsm || ''}
                 onChange={(e) => setNewVariant({ ...newVariant, gsm: Number(e.target.value) })}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
           </div>
@@ -1627,7 +1627,7 @@ export default function ProductDetailPage() {
                 placeholder="+5"
                 value={newVariant.price_adjustment || ''}
                 onChange={(e) => setNewVariant({ ...newVariant, price_adjustment: Number(e.target.value) })}
-                className="text-xs h-9 font-mono font-bold text-blue-600"
+                className="text-xs h-9 tabular-nums font-bold text-blue-600"
               />
             </div>
             <div>
@@ -1637,7 +1637,7 @@ export default function ProductDetailPage() {
                 placeholder="+3"
                 value={newVariant.cost_adjustment || ''}
                 onChange={(e) => setNewVariant({ ...newVariant, cost_adjustment: Number(e.target.value) })}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
           </div>

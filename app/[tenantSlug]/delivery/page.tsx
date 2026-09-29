@@ -725,7 +725,7 @@ export default function DeliveryLogisticsPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span>{tBilingual('Delivery Challans & Dispatches', 'ডেলিভারি চালান ও ট্রানজিট তালিকা')}</span>
-                  <Badge variant="secondary" className="text-2xs font-mono font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                  <Badge variant="secondary" className="text-2xs tabular-nums font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                     {filteredChallans.length}
                   </Badge>
                 </CardTitle>
@@ -765,7 +765,7 @@ export default function DeliveryLogisticsPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span>{tBilingual('On-Site Signage Installations', 'অন-সাইট সাইনেজ ইনস্টলেশন')}</span>
-                  <Badge variant="secondary" className="text-2xs font-mono font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                  <Badge variant="secondary" className="text-2xs tabular-nums font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
                     {filteredInstallations.length}
                   </Badge>
                 </CardTitle>
@@ -841,7 +841,7 @@ export default function DeliveryLogisticsPage() {
 
                   return (
                     <div key={dateStr} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2.5">
-                      <div className="flex items-center justify-between font-mono text-xs">
+                      <div className="flex items-center justify-between tabular-nums text-xs">
                         <span className="font-black text-sm text-slate-900 dark:text-white">
                           📅 {dateStr}
                         </span>
@@ -855,7 +855,7 @@ export default function DeliveryLogisticsPage() {
                         {dayChallans.map((ch: DeliveryChallanRecord) => (
                           <div key={ch.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-blue-200 dark:border-blue-900 space-y-1 text-xs">
                             <div className="flex justify-between font-bold">
-                              <span className="text-blue-600 font-mono">{ch.challan_number}</span>
+                              <span className="text-blue-600 tabular-nums">{ch.challan_number}</span>
                               <span className="capitalize text-2xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                                 {ch.status.replace('_', ' ')}
                               </span>
@@ -869,14 +869,14 @@ export default function DeliveryLogisticsPage() {
                         {dayInstallations.map((ins: InstallationRecord) => (
                           <div key={ins.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-900 space-y-1 text-xs">
                             <div className="flex justify-between font-bold">
-                              <span className="text-purple-600 font-mono">{ins.installation_number}</span>
+                              <span className="text-purple-600 tabular-nums">{ins.installation_number}</span>
                               <span className="capitalize text-2xs px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
                                 {ins.status.replace('_', ' ')}
                               </span>
                             </div>
                             <div className="font-semibold text-slate-800 dark:text-slate-200">{ins.customer_name}</div>
                             <div className="text-2xs text-slate-500 truncate">📍 {ins.site_location}</div>
-                            <div className="text-2xs text-slate-400 font-mono">Lead: {ins.installer_lead_name}</div>
+                            <div className="text-2xs text-slate-400 tabular-nums">Lead: {ins.installer_lead_name}</div>
                           </div>
                         ))}
                       </div>
@@ -903,7 +903,7 @@ export default function DeliveryLogisticsPage() {
                 <span className="text-base font-black text-slate-900 dark:text-white">
                   {tBilingual('Delivery & Consignment Handover', 'ডেলিভারি হ্যান্ডওভার ও প্রাপ্তিস্বীকার')}
                 </span>
-                <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                   {selectedChallanForDelivery?.status === 'partially_delivered' ? 'Partial Fulfillment' : 'Consignment Proof'}
                 </Badge>
               </div>
@@ -928,20 +928,20 @@ export default function DeliveryLogisticsPage() {
           return (
             <form onSubmit={handleConfirmDelivery} className="space-y-4 pt-1">
               {/* 1. Header: Invoice ID & Customer Information */}
-              <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 dark:from-blue-950/40 dark:to-indigo-950/30 p-4 space-y-2 text-xs">
-                <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-blue-200/60 dark:border-blue-800/50">
+              <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2 text-xs">
+                <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-border">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-500 uppercase tracking-wider text-2xs">Invoice ID:</span>
-                    <Badge className="font-mono font-black text-xs bg-blue-600 text-white px-2.5 py-0.5 shadow-xs">
+                    <span className="font-bold text-muted-foreground uppercase tracking-wider text-2xs">Invoice ID:</span>
+                    <Badge className="tabular-nums font-bold text-xs px-2.5 py-0.5 shadow-xs">
                       {selectedChallanForDelivery.invoice_number || `INV-${selectedChallanForDelivery.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                     </Badge>
                     {selectedChallanForDelivery.order_number && (
-                      <Badge variant="outline" className="font-mono text-2xs text-slate-600 dark:text-slate-300">
+                      <Badge variant="outline" className="tabular-nums text-2xs">
                         Order: {selectedChallanForDelivery.order_number}
                       </Badge>
                     )}
                   </div>
-                  <Badge variant="outline" className="font-mono text-2xs bg-white dark:bg-slate-900 font-bold">
+                  <Badge variant="outline" className="tabular-nums text-2xs font-bold">
                     Challan #{selectedChallanForDelivery.challan_number}
                   </Badge>
                 </div>
@@ -950,13 +950,13 @@ export default function DeliveryLogisticsPage() {
                   <div>
                     <span className="text-slate-500 block font-medium">Customer:</span>
                     <strong className="text-slate-900 dark:text-slate-100 text-xs">{selectedChallanForDelivery.customer_name}</strong>
-                    <div className="text-slate-600 dark:text-slate-400 font-mono mt-0.5">📞 {selectedChallanForDelivery.customer_phone}</div>
+                    <div className="text-slate-600 dark:text-slate-400 tabular-nums mt-0.5">📞 {selectedChallanForDelivery.customer_phone}</div>
                   </div>
                   <div>
                     <span className="text-slate-500 block font-medium">Destination & Dispatch:</span>
                     <div className="text-slate-700 dark:text-slate-300 line-clamp-2">📍 {selectedChallanForDelivery.delivery_address}</div>
                     <div className="text-slate-500 text-2xs mt-0.5">
-                      📅 Scheduled: <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{selectedChallanForDelivery.scheduled_date}</span>
+                      📅 Scheduled: <span className="tabular-nums font-semibold text-slate-700 dark:text-slate-300">{selectedChallanForDelivery.scheduled_date}</span>
                     </div>
                   </div>
                 </div>
@@ -987,7 +987,7 @@ export default function DeliveryLogisticsPage() {
                     </p>
                   </div>
                 </div>
-                <div className="text-right shrink-0 font-mono">
+                <div className="text-right shrink-0 tabular-nums">
                   <div className="text-2xs text-slate-500">মোট: {formatBDT(selectedChallanForDelivery.grand_total || 0)}</div>
                   {(selectedChallanForDelivery.due_amount || 0) > 0 ? (
                     <div className="font-black text-rose-600 dark:text-rose-400 text-sm">
@@ -1059,7 +1059,7 @@ export default function DeliveryLogisticsPage() {
                           <div className="min-w-0">
                             <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
                               <span>Item {idx + 1}: {it.product_description}</span>
-                              <span className="font-mono text-slate-500 text-2xs">
+                              <span className="tabular-nums text-slate-500 text-2xs">
                                 - {it.quantity} {it.unit}
                               </span>
                               {it.item_kind === 'ready_product' ? (
@@ -1077,7 +1077,7 @@ export default function DeliveryLogisticsPage() {
                               )}
                             </div>
                             {it.dimensions_spec && (
-                              <div className="text-2xs text-slate-500 font-mono mt-0.5">
+                              <div className="text-2xs text-slate-500 tabular-nums mt-0.5">
                                 📐 Specs: {it.dimensions_spec}
                               </div>
                             )}
@@ -1121,7 +1121,7 @@ export default function DeliveryLogisticsPage() {
                     <Input
                       value={receiverPhone}
                       onChange={(e) => setReceiverPhone(e.target.value)}
-                      className="text-xs h-9 font-mono"
+                      className="text-xs h-9 tabular-nums"
                       placeholder="+8801700000000"
                       required
                     />
@@ -1196,7 +1196,7 @@ export default function DeliveryLogisticsPage() {
                 <span className="text-base font-black text-slate-900 dark:text-white">
                   {tBilingual('Generate New Delivery Challan', 'নতুন ডেলিভারি চালানপত্র তৈরি করুন')}
                 </span>
-                <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                   Logistics
                 </Badge>
               </div>
@@ -1293,7 +1293,7 @@ export default function DeliveryLogisticsPage() {
                   placeholder="e.g. Dhaka Metro-Tha 11-4829 or SBN-9948102"
                   value={chVehicle}
                   onChange={(e) => setChVehicle(e.target.value)}
-                  className="text-xs h-9 font-mono"
+                  className="text-xs h-9 tabular-nums"
                 />
               </div>
 
@@ -1358,7 +1358,7 @@ export default function DeliveryLogisticsPage() {
                   type="number"
                   value={chCost || ''}
                   onChange={(e) => setChCost(Number(e.target.value))}
-                  className="text-xs h-9 font-mono"
+                  className="text-xs h-9 tabular-nums"
                 />
               </div>
 
@@ -1412,7 +1412,7 @@ export default function DeliveryLogisticsPage() {
                 <span className="text-base font-black text-slate-900 dark:text-white">
                   {tBilingual('Schedule On-Site Signage Installation', 'সাইট ইনস্টলেশন শিডিউল করুন')}
                 </span>
-                <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                   Rigging & Setup
                 </Badge>
               </div>

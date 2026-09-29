@@ -102,7 +102,7 @@ export function PlatformTicketInfo({
       <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-2.5 shadow-xs">
         <div className="flex items-center justify-between">
           <span className="text-slate-400 font-medium">Ticket #</span>
-          <span className="font-mono font-bold text-indigo-400 text-xs">{conversation.ticket_number}</span>
+          <span className="tabular-nums font-bold text-indigo-400 text-xs">{conversation.ticket_number}</span>
         </div>
 
         <div className="flex items-center justify-between">
@@ -140,14 +140,14 @@ export function PlatformTicketInfo({
             <Building2 className="w-3.5 h-3.5 text-blue-400" />
             <span>Tenant Workspace</span>
           </div>
-          <span className="text-2xs font-mono px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400">
+          <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400">
             /{conversation.company_slug || 'tenant'}
           </span>
         </div>
 
         <div>
           <div className="font-bold text-slate-100 text-sm truncate">{conversation.company_name || 'Organization'}</div>
-          <div className="text-2xs text-slate-400 font-mono flex items-center gap-1 mt-0.5">
+          <div className="text-2xs text-slate-400 tabular-nums flex items-center gap-1 mt-0.5">
             <span>ID: {conversation.company_id.slice(0, 8)}...</span>
             <button
               type="button"
@@ -237,7 +237,7 @@ export function PlatformTicketInfo({
             <span>Attached Context</span>
           </div>
 
-          <div className="space-y-1.5 text-slate-300 font-mono text-2xs bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
+          <div className="space-y-1.5 text-slate-300 tabular-nums text-2xs bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
             {Object.entries(conversation.context_metadata).map(([key, val]) => (
               <div key={key} className="flex justify-between gap-2">
                 <span className="text-slate-400 shrink-0">{key}:</span>

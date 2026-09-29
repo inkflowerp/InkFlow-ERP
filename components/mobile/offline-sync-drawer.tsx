@@ -115,7 +115,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
           <div>
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center justify-between">
               <span>Mutation Queue ({queue.length})</span>
-              <span className="text-2xs text-slate-500 font-mono">FIFO Execution</span>
+              <span className="text-2xs text-slate-500 tabular-nums">FIFO Execution</span>
             </h3>
 
             {queue.length === 0 ? (
@@ -132,14 +132,14 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="font-bold text-white text-xs">{item.title}</div>
-                        <div className="text-2xs font-mono text-slate-400 mt-0.5">
+                        <div className="text-2xs tabular-nums text-slate-400 mt-0.5">
                           {item.actionType} • {formatTime(item.timestamp)}
                         </div>
                       </div>
 
                       {/* Status badge */}
                       <span
-                        className={`px-2 py-0.5 rounded-full text-2xs font-mono font-bold uppercase border ${
+                        className={`px-2 py-0.5 rounded-full text-2xs tabular-nums font-bold uppercase border ${
                           item.status === 'synced'
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                             : item.status === 'syncing'
@@ -223,7 +223,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                         <FileText className="h-3.5 w-3.5 text-indigo-400" />
                         <span>{draft.title}</span>
                       </div>
-                      <div className="text-2xs text-slate-500 font-mono">
+                      <div className="text-2xs text-slate-500 tabular-nums">
                         Type: {draft.formType} • Saved {formatTime(draft.updatedAt)}
                       </div>
                     </div>

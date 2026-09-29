@@ -55,7 +55,7 @@ export function MarketingFooter() {
               )}
             </p>
 
-            <div className="space-y-1.5 text-xs text-slate-400 pt-1 font-mono">
+            <div className="space-y-1.5 text-xs text-slate-400 pt-1 tabular-nums">
               <div className="flex items-center gap-2">
                 <MapPin className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
                 <span>{contactAddress || 'Arambagh Press Cluster, Motijheel, Dhaka-1000'}</span>

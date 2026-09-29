@@ -65,7 +65,7 @@ export function HowItWorksSection() {
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                    <span className="font-mono text-2xs sm:text-xs font-black text-cyan-400">
+                    <span className="tabular-nums text-2xs sm:text-xs font-black text-cyan-400">
                       {s.step}
                     </span>
                     <span
@@ -92,7 +92,7 @@ export function HowItWorksSection() {
         {/* Highlight Focus Card for Active Step */}
         <div className="mt-6 sm:mt-8 max-w-3xl mx-auto p-4 sm:p-6 rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-slate-900/80 to-slate-950/90 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-start sm:items-center gap-3 sm:gap-4">
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-mono font-black text-base sm:text-lg shrink-0 border border-cyan-500/40">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center tabular-nums font-black text-base sm:text-lg shrink-0 border border-cyan-500/40">
               {WORKFLOW_STEPS[activeStep].step}
             </div>
             <div>

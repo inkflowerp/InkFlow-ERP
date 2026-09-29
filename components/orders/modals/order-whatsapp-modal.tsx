@@ -124,7 +124,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
             {tBilingual('Order #:', 'অর্ডার নং:')}{' '}
-            <span className="font-mono font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
+            <span className="tabular-nums font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
             {tBilingual('Customer:', 'কাস্টমার:')}{' '}
             <span className="font-semibold text-slate-800 dark:text-slate-200">{order.customerName}</span>
           </DialogDescription>
@@ -166,7 +166,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="01711-XXXXXX"
-                className="font-mono text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                className="tabular-nums text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
               />
             </div>
             <div className="text-2xs text-slate-500 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-md border border-slate-200 dark:border-slate-700">

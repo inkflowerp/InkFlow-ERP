@@ -149,7 +149,7 @@ export function ProductPriceEditModal({
               <span className="text-base font-black text-slate-900 dark:text-white">
                 {tBilingual('Edit Selling Rate & Customer Tiers', 'বিক্রয় দর ও গ্রাহক রেট নির্ধারণ')}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
                 {product.unit || 'sft'}
               </Badge>
             </div>
@@ -180,7 +180,7 @@ export function ProductPriceEditModal({
             {profitMargin !== null && (
               <Badge
                 variant="outline"
-                className={`text-xs font-mono font-bold py-0.5 px-2 ${
+                className={`text-xs tabular-nums font-bold py-0.5 px-2 ${
                   profitMargin >= 30
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                     : 'bg-amber-50 text-amber-800 border-amber-300'
@@ -204,7 +204,7 @@ export function ProductPriceEditModal({
                   placeholder="25.00"
                   value={sellingPrice || ''}
                   onChange={(e) => setSellingPrice(Number(e.target.value))}
-                  className="text-xs h-9 pl-7 font-mono font-black text-slate-900 dark:text-white"
+                  className="text-xs h-9 pl-7 tabular-nums font-black text-slate-900 dark:text-white"
                   required
                 />
               </div>
@@ -222,7 +222,7 @@ export function ProductPriceEditModal({
                   placeholder="14.50"
                   value={costPrice || ''}
                   onChange={(e) => setCostPrice(Number(e.target.value))}
-                  className="text-xs h-9 pl-7 font-mono text-slate-600 dark:text-slate-300"
+                  className="text-xs h-9 pl-7 tabular-nums text-slate-600 dark:text-slate-300"
                 />
               </div>
             </div>
@@ -239,7 +239,7 @@ export function ProductPriceEditModal({
                   placeholder="18.00"
                   value={minPrice || ''}
                   onChange={(e) => setMinPrice(Number(e.target.value))}
-                  className="text-xs h-9 pl-7 font-mono text-slate-600 dark:text-slate-300"
+                  className="text-xs h-9 pl-7 tabular-nums text-slate-600 dark:text-slate-300"
                 />
               </div>
             </div>
@@ -256,7 +256,7 @@ export function ProductPriceEditModal({
                 placeholder="10"
                 value={minBillableQty || ''}
                 onChange={(e) => setMinBillableQty(Number(e.target.value))}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
 
@@ -270,7 +270,7 @@ export function ProductPriceEditModal({
                 placeholder="100"
                 value={minCharge || ''}
                 onChange={(e) => setMinCharge(Number(e.target.value))}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
           </div>
@@ -349,7 +349,7 @@ export function ProductPriceEditModal({
                       step="0.01"
                       value={currentTierVal || ''}
                       onChange={(e) => handleTierChange(key, Number(e.target.value))}
-                      className="text-xs h-9 pl-7 font-mono font-bold"
+                      className="text-xs h-9 pl-7 tabular-nums font-bold"
                     />
                   </div>
                 </div>

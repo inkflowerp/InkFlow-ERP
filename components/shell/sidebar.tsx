@@ -522,25 +522,17 @@ export function Sidebar() {
                             href={getTenantNavHref(item.href, pathname, company?.slug)}
                             aria-label={`${item.title} - ${item.titleBn}`}
                             className={cn(
-                              'flex flex-1 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all cursor-pointer bangla-text min-h-[38px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                              isPrimary
-                                ? isActive
-                                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
-                                  : 'bg-gradient-to-r from-blue-600/95 to-indigo-600/95 text-white font-bold hover:from-blue-600 hover:to-indigo-600 shadow-sm shadow-blue-500/20 active:scale-98'
-                                : isActive && !hasChildren
-                                ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
-                                : isChildActive
-                                ? 'bg-blue-50 text-blue-800 font-semibold dark:bg-blue-950/40 dark:text-blue-300'
-                                : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+                              'flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer bangla-text min-h-[40px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                              isActive || isChildActive
+                                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold'
+                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
                               collapsed && 'justify-center px-2'
                             )}
                           >
                             <Icon
                               className={cn(
                                 'h-4 w-4 shrink-0 transition-transform group-hover/nav:scale-105',
-                                isPrimary || (isActive && !hasChildren)
-                                  ? 'text-white'
-                                  : isChildActive
+                                isActive || isChildActive
                                   ? 'text-blue-600 dark:text-blue-400'
                                   : 'text-slate-400 group-hover/nav:text-slate-600 dark:group-hover/nav:text-slate-200'
                               )}
@@ -616,17 +608,17 @@ export function Sidebar() {
                                   href={getTenantNavHref(child.href, pathname, company?.slug)}
                                   aria-label={`${child.title} - ${child.titleBn}`}
                                   className={cn(
-                                    'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer bangla-text min-h-[32px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                                    'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer bangla-text min-h-[32px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                                     isSubActive
-                                      ? 'bg-blue-600 text-white font-bold shadow-xs shadow-blue-500/20'
-                                      : 'text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
+                                      ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold'
+                                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
                                   )}
                                 >
                                   <ChildIcon
                                     className={cn(
                                       'h-3.5 w-3.5 shrink-0 transition-transform',
                                       isSubActive
-                                        ? 'text-white'
+                                        ? 'text-blue-600 dark:text-blue-400'
                                         : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'
                                     )}
                                   />
@@ -731,15 +723,15 @@ export function Sidebar() {
         <div className="shrink-0 border-t border-slate-100 p-3 dark:border-slate-800 space-y-2">
           {/* Plan / Upgrade Box */}
           {isTrial ? (
-            <div className="rounded-xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-blue-500/10 p-2.5 border border-indigo-200/80 dark:border-indigo-800/60 space-y-1.5">
+            <div className="rounded-lg bg-muted/40 p-2.5 border border-border space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                  <span className="text-xs font-bold text-slate-900 dark:text-white truncate bangla-text">
+                  <span className="text-xs font-bold text-foreground truncate bangla-text">
                     {tBilingual(currentPlan?.name || 'Free Trial', currentPlan?.name_bn || 'ফ্রি ট্রায়াল')}
                   </span>
                 </div>
-                <Badge suppressHydrationWarning className="text-2xs bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border-amber-300 px-1.5 py-0.2 shrink-0">
+                <Badge suppressHydrationWarning className="text-2xs bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 font-bold border-amber-200 dark:border-amber-800 px-1.5 py-0.2 shrink-0">
                   {timeRemainingInTrial ? (tBilingual(timeRemainingInTrial.statusBadgeEn, timeRemainingInTrial.statusBadgeBn || timeRemainingInTrial.statusBadgeEn)) : `${daysRemainingInTrial} ${tBilingual('d left', 'দিন বাকি')}`}
                 </Badge>
               </div>
@@ -747,7 +739,7 @@ export function Sidebar() {
               <button
                 type="button"
                 onClick={() => openUpgradeModal('business')}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold shadow-xs hover:from-blue-700 hover:to-indigo-700 active:scale-98 transition-all cursor-pointer bangla-text"
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary/90 transition-colors cursor-pointer bangla-text"
               >
                 <Crown className="h-3.5 w-3.5 text-amber-300" />
                 <span>{tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড')}</span>
@@ -808,7 +800,7 @@ export function Sidebar() {
                 {tBilingual('Reset All Data', 'সব ডাটা রিসেট')}
               </span>
             </div>
-            <Badge className="text-2xs bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 font-mono px-1 py-0 shrink-0">
+            <Badge className="text-2xs bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 tabular-nums px-1 py-0 shrink-0">
               Zero State
             </Badge>
           </button>

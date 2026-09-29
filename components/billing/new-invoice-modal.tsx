@@ -388,12 +388,12 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
                       <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                      <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
                         ৳{p.selling_price}
                       </span>
                       {isHighlighted && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
@@ -434,12 +434,12 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
                       <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
                         ৳{p.selling_price}
                       </span>
                       {isHighlighted && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
@@ -480,12 +480,12 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
                       <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
+                      <span className="tabular-nums font-bold text-purple-600 dark:text-purple-400">
                         ৳{p.selling_price}
                       </span>
                       {isHighlighted && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
@@ -557,7 +557,7 @@ function CustomerSuggestionsDropdown({
                   </span>
                 )}
               </div>
-              <div className="text-2xs text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-2 mt-0.5">
+              <div className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
                 <span>📞 {cust.mobile}</span>
                 {cust.email && <span className="truncate">✉️ {cust.email}</span>}
               </div>
@@ -1912,7 +1912,7 @@ export function NewInvoiceModal({
                     }
                   }}
                   onKeyDown={(e) => handleCustomerKeyDown('phone', e)}
-                  className="text-xs h-9 pr-8 font-mono"
+                  className="text-xs h-9 pr-8 tabular-nums"
                   required
                 />
               </div>
@@ -2021,17 +2021,17 @@ export function NewInvoiceModal({
             <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs animate-in fade-in-0">
               <div>
                 <span className="text-2xs uppercase font-bold text-slate-400 block">Outstanding Balance</span>
-                <span className="font-mono font-bold text-rose-600 text-sm">{formatBDT(customerOutstanding)}</span>
+                <span className="tabular-nums font-bold text-rose-600 text-sm">{formatBDT(customerOutstanding)}</span>
               </div>
               <div>
                 <span className="text-2xs uppercase font-bold text-slate-400 block">Credit Limit</span>
-                <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-sm">
+                <span className="tabular-nums font-bold text-slate-700 dark:text-slate-300 text-sm">
                   {customerCreditLimit > 0 ? `${formatBDT(customerCreditLimit)}` : 'No Limit'}
                 </span>
               </div>
               <div>
                 <span className="text-2xs uppercase font-bold text-slate-400 block">Available Credit</span>
-                <span className={cn('font-mono font-bold text-sm', availableCredit > 0 ? 'text-emerald-600' : 'text-rose-600')}>
+                <span className={cn('tabular-nums font-bold text-sm', availableCredit > 0 ? 'text-emerald-600' : 'text-rose-600')}>
                   {customerCreditLimit > 0 ? `${formatBDT(Math.max(0, availableCredit))}` : 'Unlimited'}
                 </span>
               </div>
@@ -2051,7 +2051,7 @@ export function NewInvoiceModal({
                 <AlertOctagon className="h-4 w-4 text-amber-600 shrink-0" />
                 <span>Credit Limit Warning: Projected Outstanding Exceeds Credit Limit</span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-2xs font-mono">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-2xs tabular-nums">
                 <div>Outstanding: <strong>{formatBDT(customerOutstanding)}</strong></div>
                 <div>New Due: <strong>{formatBDT(dueAmount)}</strong></div>
                 <div>Limit: <strong>{formatBDT(customerCreditLimit)}</strong></div>
@@ -2099,7 +2099,7 @@ export function NewInvoiceModal({
               </div>
             </div>
 
-            <Badge variant="outline" className="text-2xs font-mono uppercase bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+            <Badge variant="outline" className="text-2xs tabular-nums uppercase bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
               {items.length} Item{items.length > 1 ? 's' : ''}
             </Badge>
           </div>
@@ -2129,7 +2129,7 @@ export function NewInvoiceModal({
                   {/* Item Header & Badges */}
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800 pb-2.5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
+                      <span className="tabular-nums text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
                         Item #{index + 1}
                       </span>
 
@@ -2351,7 +2351,7 @@ export function NewInvoiceModal({
                           placeholder="0"
                           value={item.width}
                           onChange={(e) => handleItemChange(index, 'width', e.target.value)}
-                          className="text-xs h-9 font-mono w-full"
+                          className="text-xs h-9 tabular-nums w-full"
                         />
                       </div>
 
@@ -2365,7 +2365,7 @@ export function NewInvoiceModal({
                           placeholder="0"
                           value={item.height}
                           onChange={(e) => handleItemChange(index, 'height', e.target.value)}
-                          className="text-xs h-9 font-mono w-full"
+                          className="text-xs h-9 tabular-nums w-full"
                         />
                       </div>
 
@@ -2393,7 +2393,7 @@ export function NewInvoiceModal({
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 font-mono font-bold w-full"
+                          className="text-xs h-9 tabular-nums font-bold w-full"
                           required
                         />
                       </div>
@@ -2402,7 +2402,7 @@ export function NewInvoiceModal({
                         <div className="h-5 flex items-center justify-between mb-1 gap-1">
                           <Label className="text-2xs font-semibold truncate whitespace-nowrap">Finishing</Label>
                           {(item.finishing_rate ?? 0) > 0 && (
-                            <span className="text-2xs text-indigo-600 dark:text-indigo-400 font-mono font-bold whitespace-nowrap shrink-0">
+                            <span className="text-2xs text-indigo-600 dark:text-indigo-400 tabular-nums font-bold whitespace-nowrap shrink-0">
                               +৳{item.finishing_rate}
                             </span>
                           )}
@@ -2433,7 +2433,7 @@ export function NewInvoiceModal({
                         <div className="h-5 flex items-center justify-between mb-1 gap-1">
                           <Label className="text-2xs font-semibold truncate whitespace-nowrap">Add on</Label>
                           {(item.add_on_rate ?? 0) > 0 && (
-                            <span className="text-2xs text-purple-600 dark:text-purple-400 font-mono font-bold whitespace-nowrap shrink-0">
+                            <span className="text-2xs text-purple-600 dark:text-purple-400 tabular-nums font-bold whitespace-nowrap shrink-0">
                               +৳{item.add_on_rate}
                             </span>
                           )}
@@ -2466,7 +2466,7 @@ export function NewInvoiceModal({
                             Rate ({item.dimension_unit || 'sft'})
                           </Label>
                           {((item.finishing_rate ?? 0) > 0 || (item.add_on_rate ?? 0) > 0) && (
-                            <span className="text-2xs text-slate-400 font-mono whitespace-nowrap shrink-0" title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
+                            <span className="text-2xs text-slate-400 tabular-nums whitespace-nowrap shrink-0" title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
                               Base ৳{item.base_rate ?? 0}
                             </span>
                           )}
@@ -2476,7 +2476,7 @@ export function NewInvoiceModal({
                           step="0.5"
                           value={item.rate}
                           onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
-                          className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400 w-full"
+                          className="text-xs h-9 tabular-nums font-bold text-blue-600 dark:text-blue-400 w-full"
                           required
                         />
                       </div>
@@ -2490,7 +2490,7 @@ export function NewInvoiceModal({
                         <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">Physical Specs & Packaging</span>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
                           {item.dimensions_spec ? (
-                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-2xs">
+                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums text-2xs">
                               📐 {item.dimensions_spec}
                             </span>
                           ) : (
@@ -2516,7 +2516,7 @@ export function NewInvoiceModal({
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 font-mono font-bold"
+                          className="text-xs h-9 tabular-nums font-bold"
                           required
                         />
                       </div>
@@ -2549,7 +2549,7 @@ export function NewInvoiceModal({
                           step="1"
                           value={item.rate}
                           onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
-                          className="text-xs h-9 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+                          className="text-xs h-9 tabular-nums font-bold text-emerald-600 dark:text-emerald-400"
                           required
                         />
                       </div>
@@ -2567,7 +2567,7 @@ export function NewInvoiceModal({
                           step="0.1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 font-mono font-bold"
+                          className="text-xs h-9 tabular-nums font-bold"
                           required
                         />
                       </div>
@@ -2606,7 +2606,7 @@ export function NewInvoiceModal({
                           step="1"
                           value={item.rate}
                           onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
-                          className="text-xs h-9 font-mono font-bold text-purple-600 dark:text-purple-400"
+                          className="text-xs h-9 tabular-nums font-bold text-purple-600 dark:text-purple-400"
                           required
                         />
                       </div>
@@ -2823,7 +2823,7 @@ export function NewInvoiceModal({
                                   letter_height_inch: Number(e.target.value) || 0,
                                 })
                               }
-                              className="text-xs h-8 font-mono"
+                              className="text-xs h-8 tabular-nums"
                             />
                           </div>
 
@@ -2895,7 +2895,7 @@ export function NewInvoiceModal({
                             placeholder="0"
                             value={item.unit_cost || ''}
                             onChange={(e) => handleItemChange(index, 'unit_cost', Number(e.target.value) || 0)}
-                            className="text-xs h-8 font-mono"
+                            className="text-xs h-8 tabular-nums"
                           />
                         </div>
                       </div>
@@ -2916,7 +2916,7 @@ export function NewInvoiceModal({
                       )}
 
                       {estimatedDirectCost > 0 && (
-                        <span className="text-2xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono">
+                        <span className="text-2xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums">
                           Est. Cost: ৳{Math.round(estimatedDirectCost)} • Margin: {estMarginPercent}%
                         </span>
                       )}
@@ -2924,7 +2924,7 @@ export function NewInvoiceModal({
 
                     <div className="text-right">
                       <span className="text-2xs text-slate-400 mr-2">Line Total:</span>
-                      <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
+                      <span className="tabular-nums font-bold text-slate-900 dark:text-white text-sm">
                         {formatBDT(calc?.lineTotal || 0)}
                       </span>
                     </div>
@@ -3095,7 +3095,7 @@ export function NewInvoiceModal({
                 <span className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400">
                   {tBilingual('Subtotal', 'মোট বিল')}
                 </span>
-                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-slate-100 dark:bg-slate-800 rounded-md font-mono font-bold text-slate-900 dark:text-white">
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-slate-100 dark:bg-slate-800 rounded-md tabular-nums font-bold text-slate-900 dark:text-white">
                   {formatBDT(subtotal)}
                 </div>
               </div>
@@ -3110,7 +3110,7 @@ export function NewInvoiceModal({
                     type="number"
                     value={discountAmount || ''}
                     onChange={(e) => setDiscountAmount(Math.max(0, Number(e.target.value) || 0))}
-                    className="h-8.5 text-xs font-mono font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="h-8.5 text-xs tabular-nums font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="0.00"
                     min={0}
                   />
@@ -3128,7 +3128,7 @@ export function NewInvoiceModal({
                       type="number"
                       value={vatPercentage || ''}
                       onChange={(e) => setVatPercentage(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
-                      className="w-8 h-6 text-2xs font-mono font-bold text-center bg-transparent focus:outline-none no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-8 h-6 text-2xs tabular-nums font-bold text-center bg-transparent focus:outline-none no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       placeholder="0"
                       min={0}
                       max={100}
@@ -3136,7 +3136,7 @@ export function NewInvoiceModal({
                     <span className="pr-1 text-2xs text-slate-400 font-medium">%</span>
                   </div>
                 </div>
-                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-slate-100 dark:bg-slate-800 rounded-md font-mono font-semibold text-slate-700 dark:text-slate-300">
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-slate-100 dark:bg-slate-800 rounded-md tabular-nums font-semibold text-slate-700 dark:text-slate-300">
                   {formatBDT(vatAmount)}
                 </div>
               </div>
@@ -3146,7 +3146,7 @@ export function NewInvoiceModal({
                 <span className="col-span-5 text-xs font-bold text-slate-900 dark:text-white">
                   {tBilingual('Grand Total', 'সর্বমোট বিল')}
                 </span>
-                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md font-mono font-black text-blue-700 dark:text-blue-300">
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md tabular-nums font-black text-blue-700 dark:text-blue-300">
                   {formatBDT(grandTotal)}
                 </div>
               </div>
@@ -3167,7 +3167,7 @@ export function NewInvoiceModal({
                         setAdvancePercentage(Math.round((val / grandTotal) * 100))
                       }
                     }}
-                    className="h-8.5 text-xs font-mono font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="h-8.5 text-xs tabular-nums font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="0.00"
                     min={0}
                     max={grandTotal}
@@ -3181,7 +3181,7 @@ export function NewInvoiceModal({
                   {tBilingual('Due', 'বাকি')}
                 </span>
                 <div className={cn(
-                  'col-span-7 h-8.5 px-3 flex items-center justify-end text-right rounded-md font-mono font-black border',
+                  'col-span-7 h-8.5 px-3 flex items-center justify-end text-right rounded-md tabular-nums font-black border',
                   dueAmount > 0
                     ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
                     : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'

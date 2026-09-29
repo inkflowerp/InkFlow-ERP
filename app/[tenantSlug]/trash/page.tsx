@@ -557,7 +557,7 @@ function TrashContent() {
                         </td>
 
                         {/* Reference Number */}
-                        <td className="py-3.5 px-4 font-mono text-xs text-slate-600 dark:text-slate-300">
+                        <td className="py-3.5 px-4 tabular-nums text-xs text-slate-600 dark:text-slate-300">
                           {item.reference_number || '—'}
                         </td>
 
@@ -674,7 +674,7 @@ function TrashContent() {
                           {daysLeft === 0 ? 'Expires today' : `${daysLeft}d left`}
                         </span>
                       </div>
-                      <span className="text-2xs font-mono text-slate-400">
+                      <span className="text-2xs tabular-nums text-slate-400">
                         {new Date(item.deleted_at).toLocaleDateString()}
                       </span>
                     </div>
@@ -683,7 +683,7 @@ function TrashContent() {
                       <div className="font-bold text-sm text-slate-900 dark:text-white">{item.title}</div>
                       {item.subtitle && <div className="text-xs text-slate-500">{item.subtitle}</div>}
                       {item.reference_number && (
-                        <div className="text-xs font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">
+                        <div className="text-xs tabular-nums text-indigo-600 dark:text-indigo-400 mt-0.5">
                           Ref: {item.reference_number}
                         </div>
                       )}
@@ -798,7 +798,7 @@ function TrashContent() {
         hideFooter
       >
         <div className="space-y-4 pt-1 max-h-[60vh] overflow-y-auto">
-          <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg text-2xs font-mono overflow-x-auto">
+          <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg text-2xs tabular-nums overflow-x-auto">
             {JSON.stringify(inspectedItem?.payload || {}, null, 2)}
           </pre>
           <div className="flex justify-end">

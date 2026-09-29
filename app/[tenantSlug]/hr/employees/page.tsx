@@ -1409,7 +1409,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
               <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                 {tBilingual('Employee Directory', 'কর্মীদের তালিকা')}
               </CardTitle>
-              <Badge variant="outline" className="text-xs font-mono">
+              <Badge variant="outline" className="text-xs tabular-nums">
                 {filteredEmployees.length} records
               </Badge>
             </div>
@@ -1464,7 +1464,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               <button
                                 type="button"
                                 onClick={() => handleOpen360(emp, 'notes', false)}
-                                className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-3xs font-mono font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200 dark:border-blue-900 hover:bg-blue-100 transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-3xs tabular-nums font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200 dark:border-blue-900 hover:bg-blue-100 transition-colors cursor-pointer"
                                 title="Click to view/manage login credentials"
                               >
                                 <Key className="w-2.5 h-2.5 text-blue-600" />
@@ -1486,7 +1486,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                       </div>
                     </td>
 
-                    <td className="p-3.5 font-mono text-2xs text-slate-500">
+                    <td className="p-3.5 tabular-nums text-2xs text-slate-500">
                       {emp.employee_id_number}
                     </td>
 
@@ -1529,7 +1529,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
 
                     <td className="p-3.5">
                       {Number(emp.current_advance_balance || 0) > 0 ? (
-                        <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs font-mono font-bold">
+                        <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs tabular-nums font-bold">
                           {formatBDT(emp.current_advance_balance || 0)}
                         </Badge>
                       ) : (
@@ -1674,12 +1674,12 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         )}
                       </h4>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-xs text-slate-500 font-mono">{emp.employee_id_number}</p>
+                        <p className="text-xs text-slate-500 tabular-nums">{emp.employee_id_number}</p>
                         {emp.portal_credentials?.create_login ? (
                           <button
                             type="button"
                             onClick={() => handleOpen360(emp, 'notes', false)}
-                            className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-3xs font-mono font-medium bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-900 hover:bg-blue-100 cursor-pointer"
+                            className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-3xs tabular-nums font-medium bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-900 hover:bg-blue-100 cursor-pointer"
                             title="Portal Login Active"
                           >
                             <Key className="w-2.5 h-2.5 text-blue-600" />
@@ -1728,7 +1728,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                   </div>
                   <div className="flex items-center justify-between">
                     <span>{tBilingual('Advance Bal:', 'অগ্রিম স্থিতি:')}</span>
-                    <span className="font-mono text-amber-600 dark:text-amber-400">
+                    <span className="tabular-nums text-amber-600 dark:text-amber-400">
                       {formatBDT(emp.current_advance_balance || 0)}
                     </span>
                   </div>
@@ -1849,7 +1849,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                 {modalTab === 'banking' && tBilingual('Step 5 of 6: Bank Account & MFS Mobile Wallets', 'ধাপ ৫/৬: ব্যাংক অ্যাকাউন্ট ও মোবাইল ওয়ালেট')}
                 {modalTab === 'access_docs' && tBilingual('Step 6 of 6: Portal Login & Media Document Uploads', 'ধাপ ৬/৬: পোর্টাল অ্যাকাউন্ট ও ডকুমেন্ট ফাইল আপলোড')}
               </span>
-              <span className="text-2xs font-mono text-slate-400 font-medium">
+              <span className="text-2xs tabular-nums text-slate-400 font-medium">
                 {modalTab === 'personal' && '1 / 6'}
                 {modalTab === 'role' && '2 / 6'}
                 {modalTab === 'duty' && '3 / 6'}
@@ -1895,7 +1895,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         className="w-16 h-16 rounded-2xl object-cover ring-2 ring-blue-500/40 shadow-sm shrink-0"
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0 ring-2 ring-blue-500/20">
+                      <div className="w-16 h-16 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-xs shrink-0">
                         {empForm.name ? empForm.name.slice(0, 2).toUpperCase() : 'EMP'}
                       </div>
                     )}
@@ -1978,7 +1978,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         placeholder="017XXXXXXXX / +88017XXXXXXXX"
                         value={empForm.mobile}
                         onChange={(e) => setEmpForm({ ...empForm, mobile: e.target.value })}
-                        className="text-xs h-9 pl-9 font-mono"
+                        className="text-xs h-9 pl-9 tabular-nums"
                       />
                     </div>
                   </div>
@@ -1993,7 +1993,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         placeholder="018XXXXXXXX (Optional)"
                         value={empForm.phone}
                         onChange={(e) => setEmpForm({ ...empForm, phone: e.target.value })}
-                        className="text-xs h-9 pl-9 font-mono"
+                        className="text-xs h-9 pl-9 tabular-nums"
                       />
                     </div>
                   </div>
@@ -2033,7 +2033,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         placeholder="10 / 13 / 17 Digit NID"
                         value={empForm.nid_number}
                         onChange={(e) => setEmpForm({ ...empForm, nid_number: e.target.value })}
-                        className="text-xs h-9 pl-9 font-mono"
+                        className="text-xs h-9 pl-9 tabular-nums"
                       />
                     </div>
                   </div>
@@ -2286,7 +2286,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         max="30"
                         value={empForm.allowed_monthly_leaves}
                         onChange={(e) => setEmpForm({ ...empForm, allowed_monthly_leaves: Number(e.target.value || 0) })}
-                        className="text-xs h-9 pl-9 font-mono"
+                        className="text-xs h-9 pl-9 tabular-nums"
                         placeholder="e.g. 2 Days"
                       />
                     </div>
@@ -2340,7 +2340,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             },
                           })
                         }}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
 
@@ -2363,7 +2363,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             },
                           })
                         }}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
 
@@ -2406,7 +2406,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             duty_settings: { ...empForm.duty_settings, daily_duty_hours: Number(e.target.value || 0) },
                           })
                         }
-                        className="text-xs h-9 font-mono font-bold text-slate-900 dark:text-white"
+                        className="text-xs h-9 tabular-nums font-bold text-slate-900 dark:text-white"
                       />
                     </div>
 
@@ -2425,7 +2425,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             duty_settings: { ...empForm.duty_settings, late_grace_minutes: Number(e.target.value || 0) },
                           })
                         }
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                         placeholder="e.g. 15 Mins"
                       />
                     </div>
@@ -2531,7 +2531,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             duty_settings: { ...empForm.duty_settings, overtime_rate_value: val },
                           })
                         }}
-                        className="text-xs h-9 font-mono font-bold text-amber-600 dark:text-amber-400"
+                        className="text-xs h-9 tabular-nums font-bold text-amber-600 dark:text-amber-400"
                       />
                     </div>
                   </div>
@@ -2604,7 +2604,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                                 },
                               })
                             }
-                            className="text-xs h-9 font-mono"
+                            className="text-xs h-9 tabular-nums"
                           />
                         </div>
                       )}
@@ -2651,13 +2651,13 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                   <div className="space-y-1.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                       <span>{tBilingual('Base Salary (Monthly)', 'মূল মাসিক বেতন')}</span>
-                      <span className="text-2xs text-blue-600 font-mono">৳ BDT</span>
+                      <span className="text-2xs text-blue-600 tabular-nums">৳ BDT</span>
                     </Label>
                     <Input
                       type="number"
                       value={empForm.base_salary}
                       onChange={(e) => handleBaseSalaryChange(Number(e.target.value || 0))}
-                      className="text-sm h-9 font-bold font-mono"
+                      className="text-sm h-9 font-bold tabular-nums"
                     />
                     <p className="text-2xs text-slate-400">
                       {tBilingual('Auto-calculates hourly & overtime rates', 'ঘণ্টা ও ওভারটাইম রেট স্বয়ংক্রিয় হিসাব হবে')}
@@ -2667,13 +2667,13 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                   <div className="space-y-1.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                       <span>{tBilingual('Daily Rate', 'দৈনিক রেট')}</span>
-                      <span className="text-2xs text-blue-600 font-mono">৳/day</span>
+                      <span className="text-2xs text-blue-600 tabular-nums">৳/day</span>
                     </Label>
                     <Input
                       type="number"
                       value={empForm.daily_rate}
                       onChange={(e) => setEmpForm({ ...empForm, daily_rate: Number(e.target.value || 0) })}
-                      className="text-sm h-9 font-bold font-mono"
+                      className="text-sm h-9 font-bold tabular-nums"
                     />
                     <p className="text-2xs text-slate-400">
                       {tBilingual('Used for daily floor wage calculation', 'দৈনিক শ্রমিকের হাজিরা মজুরি')}
@@ -2683,13 +2683,13 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                   <div className="space-y-1.5 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20">
                     <Label className="text-xs font-semibold text-amber-700 dark:text-amber-300 flex items-center justify-between">
                       <span>{tBilingual('OT Hourly Rate', 'ওভারটাইম রেট')}</span>
-                      <span className="text-2xs text-amber-600 font-mono">৳/hour</span>
+                      <span className="text-2xs text-amber-600 tabular-nums">৳/hour</span>
                     </Label>
                     <Input
                       type="number"
                       value={empForm.overtime_hourly_rate}
                       onChange={(e) => setEmpForm({ ...empForm, overtime_hourly_rate: Number(e.target.value || 0) })}
-                      className="text-sm h-9 font-bold font-mono text-amber-600 dark:text-amber-400"
+                      className="text-sm h-9 font-bold tabular-nums text-amber-600 dark:text-amber-400"
                     />
                     <div className="flex items-center gap-1.5 pt-1">
                       <button
@@ -2735,28 +2735,28 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Basic Salary (60%)', 'মূল বেতন (৬০%)')}</span>
-                      <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
                         {formatBDT(empForm.salary_structure?.basic || Math.round(empForm.base_salary * 0.6))}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('House Rent (20%)', 'বাড়ি ভাড়া (২০%)')}</span>
-                      <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
                         {formatBDT(empForm.salary_structure?.house_allowance || Math.round(empForm.base_salary * 0.2))}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Medical (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
-                      <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
                         {formatBDT(empForm.salary_structure?.medical_allowance || Math.round(empForm.base_salary * 0.1))}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Conveyance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
-                      <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
                         {formatBDT(empForm.salary_structure?.transport_allowance || Math.round(empForm.base_salary * 0.1))}
                       </span>
                     </div>
@@ -2776,7 +2776,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               salary_structure: { ...empForm.salary_structure, basic: Number(e.target.value || 0) },
                             })
                           }
-                          className="h-8 text-xs font-mono"
+                          className="h-8 text-xs tabular-nums"
                         />
                       </div>
                       <div>
@@ -2790,7 +2790,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               salary_structure: { ...empForm.salary_structure, house_allowance: Number(e.target.value || 0) },
                             })
                           }
-                          className="h-8 text-xs font-mono"
+                          className="h-8 text-xs tabular-nums"
                         />
                       </div>
                       <div>
@@ -2804,7 +2804,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               salary_structure: { ...empForm.salary_structure, food_allowance: Number(e.target.value || 0) },
                             })
                           }
-                          className="h-8 text-xs font-mono"
+                          className="h-8 text-xs tabular-nums"
                         />
                       </div>
                       <div>
@@ -2818,7 +2818,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               salary_structure: { ...empForm.salary_structure, other_allowances: Number(e.target.value || 0) },
                             })
                           }
-                          className="h-8 text-xs font-mono"
+                          className="h-8 text-xs tabular-nums"
                         />
                       </div>
                     </div>
@@ -2894,7 +2894,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               },
                             })
                           }
-                          className="text-xs h-9 font-mono font-bold"
+                          className="text-xs h-9 tabular-nums font-bold"
                           placeholder="e.g. 2.5%"
                         />
                       </div>
@@ -2915,7 +2915,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               },
                             })
                           }
-                          className="text-xs h-9 font-mono"
+                          className="text-xs h-9 tabular-nums"
                           placeholder="e.g. 100000"
                         />
                       </div>
@@ -3001,7 +3001,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         placeholder="e.g. 115.120.45892"
                         value={empForm.account_number}
                         onChange={(e) => setEmpForm({ ...empForm, account_number: e.target.value })}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
 
@@ -3021,7 +3021,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         placeholder="e.g. 090271234 (For BEFTN/NPSB)"
                         value={empForm.routing_number}
                         onChange={(e) => setEmpForm({ ...empForm, routing_number: e.target.value })}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
                   </div>
@@ -3080,7 +3080,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         placeholder="017XXXXXXXX"
                         value={empForm.mfs_number}
                         onChange={(e) => setEmpForm({ ...empForm, mfs_number: e.target.value })}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
 
@@ -3209,7 +3209,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               },
                             })
                           }
-                          className="text-xs h-9 font-mono"
+                          className="text-xs h-9 tabular-nums"
                         />
                         {empForm.portal_credentials.username && (
                           <div className="text-3xs mt-0.5">
@@ -3256,7 +3256,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               portal_credentials: { ...empForm.portal_credentials, password: e.target.value },
                             })
                           }
-                          className="text-xs h-9 font-mono"
+                          className="text-xs h-9 tabular-nums"
                         />
                       </div>
 
@@ -3471,7 +3471,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                                 />
                                 <div className="flex items-center gap-2 text-2xs text-slate-400">
                                   {doc.size && (
-                                    <span className="font-mono bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 font-semibold">
+                                    <span className="tabular-nums bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 font-semibold">
                                       {doc.size}
                                     </span>
                                   )}
@@ -3581,7 +3581,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         placeholder="+88018XXXXXXXX"
                         value={empForm.emergency_contact_phone}
                         onChange={(e) => setEmpForm({ ...empForm, emergency_contact_phone: e.target.value })}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
                   </div>
@@ -3714,7 +3714,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
               <div className="flex items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="font-mono text-2xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
+                  className="tabular-nums text-2xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
                 >
                   {selectedEmployee.employee_id_number}
                 </Badge>
@@ -3737,16 +3737,16 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
         >
           <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-1">
             {/* Hero Profile Banner */}
-            <div className="p-4 sm:p-5 rounded-2xl border border-blue-500/20 bg-gradient-to-r from-blue-500/10 via-indigo-500/5 to-slate-50 dark:from-blue-950/40 dark:via-indigo-950/20 dark:to-slate-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-4 sm:p-5 rounded-xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
               <div className="flex items-center gap-4">
                 {selectedEmployee.profile_picture_url ? (
                   <img
                     src={selectedEmployee.profile_picture_url}
                     alt={selectedEmployee.name}
-                    className="w-14 h-14 rounded-2xl object-cover ring-2 ring-blue-500/30 shadow-md shrink-0"
+                    className="w-14 h-14 rounded-xl object-cover shadow-xs shrink-0"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md ring-2 ring-blue-500/30 shrink-0">
+                  <div className="w-14 h-14 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
                     {selectedEmployee.name.slice(0, 2).toUpperCase()}
                   </div>
                 )}
@@ -3840,7 +3840,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                 <span className="text-2xs text-slate-500 uppercase font-medium block">
                   {tBilingual('Base Pay / Rate', 'মূল বেতন')}
                 </span>
-                <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5 font-mono">
+                <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5 tabular-nums">
                   {selectedEmployee.salary_basis === 'daily_rate'
                     ? `${formatBDT(selectedEmployee.daily_rate || 0)} / day`
                     : selectedEmployee.salary_basis === 'hourly_rate'
@@ -3858,7 +3858,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                 <span className="text-2xs text-slate-500 uppercase font-medium block">
                   {tBilingual('Hourly Regular Rate', 'ঘণ্টাপ্রতি সাধারণ রেট')}
                 </span>
-                <div className="text-base sm:text-lg font-bold text-blue-600 dark:text-blue-400 mt-0.5 font-mono">
+                <div className="text-base sm:text-lg font-bold text-blue-600 dark:text-blue-400 mt-0.5 tabular-nums">
                   {formatBDT(selectedEmployee.hourly_rate || (selectedEmployee.base_salary ? Math.round(selectedEmployee.base_salary / 208) : 0))} / hr
                 </div>
                 <span className="text-2xs text-slate-400 block mt-0.5">
@@ -3870,7 +3870,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                 <span className="text-2xs text-amber-700 dark:text-amber-400 uppercase font-medium block">
                   {tBilingual('Overtime Hourly Rate', 'ওভারটাইম ঘণ্টার রেট')}
                 </span>
-                <div className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 mt-0.5 font-mono">
+                <div className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 mt-0.5 tabular-nums">
                   {formatBDT(selectedEmployee.overtime_hourly_rate || (selectedEmployee.hourly_rate ? Math.round(selectedEmployee.hourly_rate * 1.5) : 0))} / hr
                 </div>
                 <span className="text-2xs text-amber-600/80 block mt-0.5">
@@ -3883,7 +3883,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                   {tBilingual('Advance Balance', 'বকেয়া অগ্রিম')}
                 </span>
                 <div
-                  className={`text-base sm:text-lg font-bold mt-0.5 font-mono ${
+                  className={`text-base sm:text-lg font-bold mt-0.5 tabular-nums ${
                     Number(selectedEmployee.current_advance_balance || 0) > 0
                       ? 'text-rose-600 dark:text-rose-400'
                       : 'text-emerald-600 dark:text-emerald-400'
@@ -3942,7 +3942,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">{tBilingual('Primary Mobile:', 'প্রধান মোবাইল:')}</span>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-semibold text-slate-900 dark:text-white">{selectedEmployee.mobile}</span>
+                        <span className="tabular-nums font-semibold text-slate-900 dark:text-white">{selectedEmployee.mobile}</span>
                         <button
                           type="button"
                           onClick={() => {
@@ -3960,7 +3960,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                     {selectedEmployee.phone && (
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500">{tBilingual('Secondary / WhatsApp:', 'বিকল্প / হোয়াটসঅ্যাপ:')}</span>
-                        <span className="font-mono font-medium text-slate-900 dark:text-white">{selectedEmployee.phone}</span>
+                        <span className="tabular-nums font-medium text-slate-900 dark:text-white">{selectedEmployee.phone}</span>
                       </div>
                     )}
 
@@ -3971,7 +3971,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
 
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">{tBilingual('National ID (NID):', 'জাতীয় পরিচয়পত্র:')}</span>
-                      <span className="font-mono font-medium text-slate-900 dark:text-white">
+                      <span className="tabular-nums font-medium text-slate-900 dark:text-white">
                         {selectedEmployee.notes?.match(/NID:\s*([^\n]+)/)?.[1] || 'Verified on file'}
                       </span>
                     </div>
@@ -4017,7 +4017,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
 
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">{tBilingual('Allowed Monthly Paid Leaves:', 'মাসিক অনুমোদিত ছুটি:')}</span>
-                      <span className="font-semibold text-slate-900 dark:text-white font-mono">
+                      <span className="font-semibold text-slate-900 dark:text-white tabular-nums">
                         {selectedEmployee.allowed_monthly_leaves ?? 2} {tBilingual('Days / Month', 'দিন / মাস')}
                       </span>
                     </div>
@@ -4025,7 +4025,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                     {selectedEmployee.contract_end_date && (
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500">{tBilingual('Contract Expiry Date:', 'চুক্তির মেয়াদ শেষ:')}</span>
-                        <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
+                        <span className="tabular-nums text-amber-600 dark:text-amber-400 font-semibold">
                           {formatDate(selectedEmployee.contract_end_date)}
                         </span>
                       </div>
@@ -4042,7 +4042,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500">{tBilingual('Emergency Phone:', 'জরুরি ফোন:')}</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                          <span className="tabular-nums font-semibold text-slate-900 dark:text-white">
                             {selectedEmployee.emergency_contact_phone || 'N/A'}
                           </span>
                           {selectedEmployee.emergency_contact_phone && (
@@ -4143,19 +4143,19 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                     <div className="space-y-2 text-slate-600 dark:text-slate-400">
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500">{tBilingual('Office Timings:', 'অফিস সময়:')}</span>
-                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                        <span className="tabular-nums font-bold text-slate-900 dark:text-white">
                           {selectedEmployee.duty_settings?.office_start_time || '09:00'} - {selectedEmployee.duty_settings?.office_end_time || '18:00'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500">{tBilingual('Daily Duty Hours:', 'দৈনিক ডিউটি ঘণ্টা:')}</span>
-                        <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                        <span className="tabular-nums font-semibold text-slate-900 dark:text-white">
                           {selectedEmployee.duty_settings?.daily_duty_hours || 9} Hours
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500">{tBilingual('Late Grace Period:', 'বিলম্ব ছাড়:')}</span>
-                        <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
+                        <span className="tabular-nums font-semibold text-amber-600 dark:text-amber-400">
                           {selectedEmployee.duty_settings?.late_grace_minutes || 15} Mins
                         </span>
                       </div>
@@ -4183,7 +4183,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500">{tBilingual('OT Hourly Rate:', 'ওভারটাইম রেট:')}</span>
-                        <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                        <span className="tabular-nums font-bold text-amber-600 dark:text-amber-400">
                           {formatBDT(selectedEmployee.duty_settings?.overtime_rate_value || selectedEmployee.overtime_hourly_rate || 0)} / hr
                         </span>
                       </div>
@@ -4234,28 +4234,28 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Basic Salary (60%)', 'মূল বেতন (৬০%)')}</span>
-                      <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                      <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
                         {formatBDT(selectedEmployee.salary_structure?.basic || Math.round((selectedEmployee.base_salary || 0) * 0.6))}
                       </span>
                     </div>
 
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('House Rent (20%)', 'বাড়ি ভাড়া (২০%)')}</span>
-                      <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                      <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
                         {formatBDT(selectedEmployee.salary_structure?.house_allowance || Math.round((selectedEmployee.base_salary || 0) * 0.2))}
                       </span>
                     </div>
 
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Medical Allowance (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
-                      <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                      <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
                         {formatBDT(selectedEmployee.salary_structure?.medical_allowance || Math.round((selectedEmployee.base_salary || 0) * 0.1))}
                       </span>
                     </div>
 
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
                       <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Conveyance Allowance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
-                      <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
+                      <span className="text-base font-bold text-slate-900 dark:text-white tabular-nums mt-0.5 block">
                         {formatBDT(selectedEmployee.salary_structure?.transport_allowance || Math.round((selectedEmployee.base_salary || 0) * 0.1))}
                       </span>
                     </div>
@@ -4291,13 +4291,13 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                       </div>
                       <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-indigo-500/10">
                         <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Commission Rate', 'কমিশন রেট')}</span>
-                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 block font-mono">
+                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 block tabular-nums">
                           {selectedEmployee.commission_settings.rate_pct || 2}%
                         </span>
                       </div>
                       <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-indigo-500/10">
                         <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Monthly Sales Target', 'মাসিক টার্গেট')}</span>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 block font-mono">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 block tabular-nums">
                           {formatBDT(selectedEmployee.commission_settings.monthly_target || 100000)}
                         </span>
                       </div>
@@ -4338,7 +4338,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">{tBilingual('Account Number:', 'অ্যাকাউন্ট নম্বর:')}</span>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                        <span className="tabular-nums font-semibold text-slate-900 dark:text-white">
                           {selectedEmployee.bank_payment_info?.account_number || 'N/A'}
                         </span>
                         {selectedEmployee.bank_payment_info?.account_number && (
@@ -4367,7 +4367,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                     {selectedEmployee.bank_payment_info?.routing_number && (
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500">{tBilingual('Routing Number:', 'রাউটিং নম্বর:')}</span>
-                        <span className="font-mono text-slate-900 dark:text-white">
+                        <span className="tabular-nums text-slate-900 dark:text-white">
                           {selectedEmployee.bank_payment_info?.routing_number}
                         </span>
                       </div>
@@ -4401,7 +4401,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">{tBilingual('Wallet Number:', 'ওয়ালেট নম্বর:')}</span>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                        <span className="tabular-nums font-bold text-slate-900 dark:text-white">
                           {selectedEmployee.mfs_payment_info?.wallet_number || selectedEmployee.mobile}
                         </span>
                         <button
@@ -4444,7 +4444,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                 {/* Physical ID Card Mockup Frame */}
                 <div className="w-full max-w-md p-5 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-xl space-y-4 text-center relative overflow-hidden">
                   {/* Card Security Header Stripe */}
-                  <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 -mx-5 -mt-5 p-3 text-white flex items-center justify-between px-4">
+                  <div className="bg-primary -mx-5 -mt-5 p-3 text-primary-foreground flex items-center justify-between px-4">
                     <div className="text-left">
                       <span className="text-2xs uppercase font-bold tracking-wider opacity-90 block">InkFlow ERP Security Pass</span>
                       <span className="text-xs font-black tracking-wide">PRODUCTION FLOOR PASS</span>
@@ -4458,10 +4458,10 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                       <img
                         src={selectedEmployee.profile_picture_url}
                         alt={selectedEmployee.name}
-                        className="w-20 h-20 rounded-2xl object-cover shadow-lg ring-4 ring-blue-500/20"
+                        className="w-20 h-20 rounded-xl object-cover shadow-md"
                       />
                     ) : (
-                      <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-lg ring-4 ring-blue-500/20">
+                      <div className="w-20 h-20 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black text-2xl shadow-md">
                         {selectedEmployee.name.slice(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -4482,7 +4482,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                   <div className="grid grid-cols-2 gap-2 text-2xs text-left border-y border-slate-100 dark:border-slate-800 py-3">
                     <div>
                       <span className="text-slate-400 block text-2xs">EMPLOYEE ID</span>
-                      <span className="font-mono font-bold text-slate-900 dark:text-white">{selectedEmployee.employee_id_number}</span>
+                      <span className="tabular-nums font-bold text-slate-900 dark:text-white">{selectedEmployee.employee_id_number}</span>
                     </div>
                     <div>
                       <span className="text-slate-400 block text-2xs">DEPARTMENT</span>
@@ -4490,11 +4490,11 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                     </div>
                     <div>
                       <span className="text-slate-400 block text-2xs">JOINED DATE</span>
-                      <span className="font-mono text-slate-900 dark:text-white">{formatDate(selectedEmployee.joining_date)}</span>
+                      <span className="tabular-nums text-slate-900 dark:text-white">{formatDate(selectedEmployee.joining_date)}</span>
                     </div>
                     <div>
                       <span className="text-slate-400 block text-2xs">EMERGENCY HELPLINE</span>
-                      <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                      <span className="tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">
                         {selectedEmployee.emergency_contact_phone || selectedEmployee.mobile}
                       </span>
                     </div>
@@ -4510,7 +4510,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         />
                       ))}
                     </div>
-                    <span className="text-2xs font-mono text-slate-400 tracking-widest uppercase">
+                    <span className="text-2xs tabular-nums text-slate-400 tracking-widest uppercase">
                       *{selectedEmployee.employee_id_number}*
                     </span>
                   </div>
@@ -4579,7 +4579,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                                   <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
                                     {doc.type}
                                   </Badge>
-                                  {doc.size && <span className="text-2xs text-slate-400 font-mono">{doc.size}</span>}
+                                  {doc.size && <span className="text-2xs text-slate-400 tabular-nums">{doc.size}</span>}
                                 </div>
                               </div>
                             </div>
@@ -4722,7 +4722,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             {tBilingual('Login Email', 'লগইন ইমেইল')}
                           </span>
                           <div className="flex items-center justify-between gap-1.5 mt-1">
-                            <span className="font-mono text-xs font-bold text-slate-900 dark:text-white truncate">
+                            <span className="tabular-nums text-xs font-bold text-slate-900 dark:text-white truncate">
                               {selectedEmployee.portal_credentials.email || selectedEmployee.email || '—'}
                             </span>
                             {(selectedEmployee.portal_credentials.email || selectedEmployee.email) && (
@@ -4747,7 +4747,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             {tBilingual('Login Username', 'লগইন ইউজারনেম')}
                           </span>
                           <div className="flex items-center justify-between gap-1.5 mt-1">
-                            <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-300 truncate">
+                            <span className="tabular-nums text-xs font-bold text-blue-700 dark:text-blue-300 truncate">
                               {selectedEmployee.portal_credentials.username || '—'}
                             </span>
                             {selectedEmployee.portal_credentials.username && (
@@ -4771,7 +4771,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             {tBilingual('Login Mobile', 'লগইন মোবাইল')}
                           </span>
                           <div className="flex items-center justify-between gap-1.5 mt-1">
-                            <span className="font-mono text-xs font-bold text-slate-900 dark:text-white truncate">
+                            <span className="tabular-nums text-xs font-bold text-slate-900 dark:text-white truncate">
                               {selectedEmployee.mobile || '—'}
                             </span>
                             {selectedEmployee.mobile && (
@@ -4858,7 +4858,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
 
                         <Button
                           size="sm"
-                          className="h-8 text-xs gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-xs"
+                          className="h-8 text-xs gap-1.5 font-semibold"
                           onClick={() => handleSendInvitation(selectedEmployee)}
                           disabled={isInviting}
                         >
@@ -4991,7 +4991,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             placeholder="e.g. rahim.op"
                             value={credsForm.username}
                             onChange={(e) => setCredsForm({ ...credsForm, username: sanitizeUsername(e.target.value) })}
-                            className="text-xs h-9 font-mono"
+                            className="text-xs h-9 tabular-nums"
                           />
                           {credsForm.username && (
                             <div className="text-2xs flex items-center gap-1">
@@ -5031,7 +5031,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               placeholder="Min 6 chars"
                               value={credsForm.password}
                               onChange={(e) => setCredsForm({ ...credsForm, password: e.target.value })}
-                              className="text-xs h-9 font-mono pr-8"
+                              className="text-xs h-9 tabular-nums pr-8"
                             />
                             <button
                               type="button"
@@ -5447,7 +5447,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">{tBilingual('Recipient Email:', 'ইমেইল:')}</span>
-                <span className="font-mono font-medium text-slate-800 dark:text-slate-200">{inviteModalData.email}</span>
+                <span className="tabular-nums font-medium text-slate-800 dark:text-slate-200">{inviteModalData.email}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">{tBilingual('Assigned Role:', 'রোল:')}</span>
@@ -5466,7 +5466,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                 <Input
                   readOnly
                   value={inviteModalData.inviteUrl}
-                  className="font-mono text-xs h-9 bg-slate-50 dark:bg-slate-900 select-all"
+                  className="tabular-nums text-xs h-9 bg-slate-50 dark:bg-slate-900 select-all"
                 />
                 <Button
                   size="sm"

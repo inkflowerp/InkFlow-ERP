@@ -556,24 +556,24 @@ export default function BusinessReportsPage() {
             variant={activeTab === 'overview' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('overview')}
-            className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all cursor-pointer ${
+            className={`rounded-lg text-xs px-3.5 h-8.5 shrink-0 font-semibold transition-colors cursor-pointer gap-1.5 ${
               activeTab === 'overview'
-                ? 'bg-indigo-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
-            <Activity className="w-3.5 h-3.5 mr-1.5" />
-            Executive Overview
+            <Activity className="w-3.5 h-3.5" />
+            <span>Executive Overview</span>
           </Button>
 
           <Button
             variant={activeTab === 'sales' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('sales')}
-            className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`rounded-lg text-xs px-3.5 h-8.5 shrink-0 font-semibold transition-colors gap-1.5 cursor-pointer ${
               activeTab === 'sales'
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
-                : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
@@ -584,10 +584,10 @@ export default function BusinessReportsPage() {
             variant={activeTab === 'production' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('production')}
-            className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`rounded-lg text-xs px-3.5 h-8.5 shrink-0 font-semibold transition-colors gap-1.5 cursor-pointer ${
               activeTab === 'production'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
             <ClipboardList className="w-3.5 h-3.5" />
@@ -598,10 +598,10 @@ export default function BusinessReportsPage() {
             variant={activeTab === 'profitability' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('profitability')}
-            className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`rounded-lg text-xs px-3.5 h-8.5 shrink-0 font-semibold transition-colors gap-1.5 cursor-pointer ${
               activeTab === 'profitability'
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
             <Scale className="w-3.5 h-3.5" />
@@ -612,10 +612,10 @@ export default function BusinessReportsPage() {
             variant={activeTab === 'customers' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('customers')}
-            className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`rounded-lg text-xs px-3.5 h-8.5 shrink-0 font-semibold transition-colors gap-1.5 cursor-pointer ${
               activeTab === 'customers'
-                ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -626,10 +626,10 @@ export default function BusinessReportsPage() {
             variant={activeTab === 'quick_reports' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('quick_reports')}
-            className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`rounded-lg text-xs px-3.5 h-8.5 shrink-0 font-semibold transition-colors gap-1.5 cursor-pointer ${
               activeTab === 'quick_reports'
-                ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -894,7 +894,7 @@ export default function BusinessReportsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="font-mono font-bold text-slate-900 dark:text-white">
+                          <span className="tabular-nums font-bold text-slate-900 dark:text-white">
                             ৳ {item.amount.toLocaleString()}
                           </span>
 
@@ -957,7 +957,7 @@ export default function BusinessReportsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="font-mono font-bold text-slate-900 dark:text-white">
+                          <span className="tabular-nums font-bold text-slate-900 dark:text-white">
                             ৳ {item.amount.toLocaleString()}
                           </span>
 
@@ -1008,7 +1008,7 @@ export default function BusinessReportsPage() {
                               {st.label}
                             </span>
                           </div>
-                          <span className="font-mono text-2xs font-bold text-slate-600 dark:text-slate-400">
+                          <span className="tabular-nums text-2xs font-bold text-slate-600 dark:text-slate-400">
                             {st.count} ({st.percentage}%)
                           </span>
                         </div>
@@ -1070,15 +1070,15 @@ export default function BusinessReportsPage() {
                             <td className="py-2.5 2xl:py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">
                               {row.month}
                             </td>
-                            <td className="py-2.5 2xl:py-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
+                            <td className="py-2.5 2xl:py-3 text-right tabular-nums font-semibold text-slate-800 dark:text-slate-200">
                               ৳ {row.sales.toLocaleString()}
                             </td>
-                            <td className="py-2.5 2xl:py-3 text-right font-mono text-slate-500">
+                            <td className="py-2.5 2xl:py-3 text-right tabular-nums text-slate-500">
                               ৳ {row.cost.toLocaleString()}
                             </td>
                             <td
                               className={cn(
-                                'py-2.5 2xl:py-3 text-right font-mono font-bold',
+                                'py-2.5 2xl:py-3 text-right tabular-nums font-bold',
                                 row.profit >= 0
                                   ? 'text-emerald-600 dark:text-emerald-400'
                                   : 'text-rose-600 dark:text-rose-400'
@@ -1086,7 +1086,7 @@ export default function BusinessReportsPage() {
                             >
                               ৳ {row.profit.toLocaleString()}
                             </td>
-                            <td className="py-2.5 2xl:py-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            <td className="py-2.5 2xl:py-3 text-right tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
                               {row.margin}%
                             </td>
                           </tr>

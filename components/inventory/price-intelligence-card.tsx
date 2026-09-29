@@ -59,7 +59,7 @@ export function PriceIntelligenceCard({
           <div>
             <span className="text-xs font-black tracking-tight text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
               Price Intelligence & Market Reference
-              <Badge variant="outline" className="text-2xs font-mono px-1.5 py-0 h-4 bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/50 dark:text-indigo-300">
+              <Badge variant="outline" className="text-2xs tabular-nums px-1.5 py-0 h-4 bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/50 dark:text-indigo-300">
                 {summary.size_label}
               </Badge>
             </span>
@@ -98,7 +98,7 @@ export function PriceIntelligenceCard({
         {/* Metric 1: Inward Price */}
         <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
           <div className="text-2xs font-medium text-slate-500 dark:text-slate-400">Current Inward Price</div>
-          <div className="text-sm font-black text-indigo-700 dark:text-indigo-300 font-mono mt-0.5">
+          <div className="text-sm font-black text-indigo-700 dark:text-indigo-300 tabular-nums mt-0.5">
             {formatBDT(currentUnitPrice)}
           </div>
           <div className="text-2xs text-slate-400 font-sans">per {purchaseUnit}</div>
@@ -107,7 +107,7 @@ export function PriceIntelligenceCard({
         {/* Metric 2: Normalized / sqft */}
         <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
           <div className="text-2xs font-medium text-slate-500 dark:text-slate-400">Normalized Cost</div>
-          <div className="text-sm font-black text-slate-900 dark:text-white font-mono mt-0.5">
+          <div className="text-sm font-black text-slate-900 dark:text-white tabular-nums mt-0.5">
             {summary.normalized_cost_per_sft !== undefined
               ? formatBDT(summary.normalized_cost_per_sft)
               : formatBDT(currentUnitPrice)}
@@ -120,7 +120,7 @@ export function PriceIntelligenceCard({
         {/* Metric 3: Lowest Recorded */}
         <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-emerald-100 dark:border-emerald-900/40 shadow-2xs">
           <div className="text-2xs font-medium text-emerald-700 dark:text-emerald-400">Lowest Recorded</div>
-          <div className="text-sm font-black text-emerald-700 dark:text-emerald-300 font-mono mt-0.5">
+          <div className="text-sm font-black text-emerald-700 dark:text-emerald-300 tabular-nums mt-0.5">
             {formatBDT(summary.lowest_cost)}
           </div>
           <div className="text-2xs text-emerald-600/80 dark:text-emerald-400 truncate" title={summary.lowest_supplier_name}>
@@ -131,7 +131,7 @@ export function PriceIntelligenceCard({
         {/* Metric 4: Market Average */}
         <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
           <div className="text-2xs font-medium text-slate-500 dark:text-slate-400">Recorded Average</div>
-          <div className="text-sm font-black text-slate-800 dark:text-slate-200 font-mono mt-0.5">
+          <div className="text-sm font-black text-slate-800 dark:text-slate-200 tabular-nums mt-0.5">
             {formatBDT(summary.average_cost)}
           </div>
           <div className="text-2xs text-slate-400 font-sans">{summary.total_records_count} past purchase(s)</div>
@@ -173,16 +173,16 @@ export function PriceIntelligenceCard({
               >
                 <div className="truncate pr-2">
                   <div className="font-bold text-slate-900 dark:text-white truncate">{sup.supplier_name}</div>
-                  <div className="text-2xs text-slate-400 flex items-center gap-1 font-mono">
+                  <div className="text-2xs text-slate-400 flex items-center gap-1 tabular-nums">
                     <Calendar className="h-2.5 w-2.5" /> {sup.last_purchase_date || 'Recent'}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-mono font-black text-slate-900 dark:text-white">
+                  <div className="tabular-nums font-black text-slate-900 dark:text-white">
                     {formatBDT(sup.latest_price)}
                   </div>
                   {sup.normalized_price_per_sft && (
-                    <div className="text-2xs text-indigo-600 font-mono">
+                    <div className="text-2xs text-indigo-600 tabular-nums">
                       {formatBDT(sup.normalized_price_per_sft)}/sqft
                     </div>
                   )}
@@ -199,7 +199,7 @@ export function PriceIntelligenceCard({
               </div>
               <div className="max-h-36 overflow-y-auto space-y-1 divide-y divide-slate-100 dark:divide-slate-900 text-xs">
                 {summary.history.map((h, i) => (
-                  <div key={i} className="pt-1 flex items-center justify-between font-mono text-2xs">
+                  <div key={i} className="pt-1 flex items-center justify-between tabular-nums text-2xs">
                     <div>
                       <span className="font-bold text-slate-800 dark:text-slate-200">{h.supplier_name}</span>
                       <span className="text-slate-400 text-2xs ml-1.5 font-sans">

@@ -405,7 +405,7 @@ export function PermissionSimulator({
                       <div className="text-xs opacity-90 text-slate-600 dark:text-slate-300">
                         User <span className="font-semibold text-slate-900 dark:text-white">{getUserDisplayName(selectedUser)}</span> is{' '}
                         {evaluationResult.finalGranted ? 'authorized' : 'not permitted'} to execute{' '}
-                        <Badge variant="outline" className="mx-1 px-1.5 py-0 text-2xs uppercase font-mono">
+                        <Badge variant="outline" className="mx-1 px-1.5 py-0 text-2xs uppercase tabular-nums">
                           {selectedModule}.{selectedAction}
                         </Badge>
                       </div>
@@ -437,7 +437,7 @@ export function PermissionSimulator({
                       {/* Step 1: User Account & Ownership */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-2xs mt-0.5">01</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 tabular-nums text-2xs mt-0.5">01</div>
                           <div>
                             <div className="font-medium text-slate-900 dark:text-slate-200">Account Status & Base Role</div>
                             <div className="text-slate-500 dark:text-slate-400 text-2xs">
@@ -457,7 +457,7 @@ export function PermissionSimulator({
                       {/* Step 2: Inherited Responsibilities */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-2xs mt-0.5">02</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 tabular-nums text-2xs mt-0.5">02</div>
                           <div>
                             <div className="font-medium text-slate-900 dark:text-slate-200">Role & Responsibilities Matrix</div>
                             <div className="text-slate-500 dark:text-slate-400 text-2xs">
@@ -481,7 +481,7 @@ export function PermissionSimulator({
                       {/* Step 3: Explicit User Overrides */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-2xs mt-0.5">03</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 tabular-nums text-2xs mt-0.5">03</div>
                           <div>
                             <div className="font-medium text-slate-900 dark:text-slate-200">Direct User Overrides (+Grant / -Deny)</div>
                             <div className="text-slate-500 dark:text-slate-400 text-2xs">
@@ -513,7 +513,7 @@ export function PermissionSimulator({
                       {/* Step 4: Branch Scope & Data Isolation */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-2xs mt-0.5">04</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 tabular-nums text-2xs mt-0.5">04</div>
                           <div>
                             <div className="font-medium text-slate-900 dark:text-slate-200">Branch & Data Scope Filter</div>
                             <div className="text-slate-500 dark:text-slate-400 text-2xs">
@@ -542,7 +542,7 @@ export function PermissionSimulator({
                       Authoritative resolution: <span className="font-semibold text-slate-900 dark:text-white">{evaluationResult.detail.sourceDetail}</span>
                     </div>
                     <div className="text-slate-500 text-2xs">
-                      Module: <span className="text-slate-700 dark:text-slate-300 font-mono font-medium">{selectedModule}</span>
+                      Module: <span className="text-slate-700 dark:text-slate-300 tabular-nums font-medium">{selectedModule}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -601,7 +601,7 @@ export function PermissionSimulator({
                       >
                         <div className="flex items-center justify-between gap-1">
                           <span className="font-semibold text-xs text-slate-900 dark:text-slate-200">{item.label}</span>
-                          <Badge variant="outline" className="text-2xs font-mono px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+                          <Badge variant="outline" className="text-2xs tabular-nums px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
                             {item.code}
                           </Badge>
                         </div>
@@ -655,7 +655,7 @@ export function PermissionSimulator({
                           <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
                             <td className="px-4 py-3">
                               <div className="font-semibold text-slate-900 dark:text-white">{getUserDisplayName(user)}</div>
-                              <div className="text-slate-500 dark:text-slate-400 text-2xs font-mono">{getUserEmail(user)}</div>
+                              <div className="text-slate-500 dark:text-slate-400 text-2xs tabular-nums">{getUserEmail(user)}</div>
                             </td>
 
                             <td className="px-4 py-3">

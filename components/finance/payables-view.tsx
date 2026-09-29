@@ -197,25 +197,25 @@ export function PayablesView({
           <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 1</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Purchase Billed</span>
-            <span className="text-xs font-mono text-slate-900 dark:text-white font-semibold">৳80,000</span>
+            <span className="text-xs tabular-nums text-slate-900 dark:text-white font-semibold">৳80,000</span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 2</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Paid to Vendor</span>
-            <span className="text-xs font-mono text-emerald-600 font-semibold">-৳30,000</span>
+            <span className="text-xs tabular-nums text-emerald-600 font-semibold">-৳30,000</span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 3</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Outstanding Due</span>
-            <span className="text-xs font-mono text-rose-600 font-bold">৳50,000</span>
+            <span className="text-xs tabular-nums text-rose-600 font-bold">৳50,000</span>
           </div>
 
           <div className="col-span-2 sm:col-span-1 p-2.5 rounded-xl bg-rose-500/10 dark:bg-rose-950/40 border border-rose-500/30">
             <span className="text-3xs text-rose-600 dark:text-rose-400 font-bold block uppercase">Disbursement</span>
             <span className="text-xs font-bold text-rose-800 dark:text-rose-300 block">Supplier Payout</span>
-            <span className="text-xs font-mono text-rose-600 font-black">Cash / Bank / Cheque</span>
+            <span className="text-xs tabular-nums text-rose-600 font-black">Cash / Bank / Cheque</span>
           </div>
         </div>
       </div>
@@ -226,7 +226,7 @@ export function PayablesView({
           <span className="text-3xs text-slate-400 uppercase font-semibold block">
             {tBilingual('Total Supplier Due', 'মোট মহাজন দেনা')}
           </span>
-          <span className="text-xl sm:text-2xl font-black font-mono text-rose-600 dark:text-rose-400">
+          <span className="text-xl sm:text-2xl font-black tabular-nums text-rose-600 dark:text-rose-400">
             ৳{totalPayables.toLocaleString()}
           </span>
           <span className="text-3xs text-slate-400 block mt-1">
@@ -238,7 +238,7 @@ export function PayablesView({
           <span className="text-3xs text-slate-400 uppercase font-semibold block">
             {tBilingual('Total Material Purchases', 'মোট কাঁচামাল ক্রয়')}
           </span>
-          <span className="text-xl sm:text-2xl font-black font-mono text-slate-800 dark:text-slate-200">
+          <span className="text-xl sm:text-2xl font-black tabular-nums text-slate-800 dark:text-slate-200">
             ৳{totalPurchases.toLocaleString()}
           </span>
           <span className="text-3xs text-slate-400 block mt-1">{items.length} {tBilingual('purchase bills', 'টি ক্রয় চালান')}</span>
@@ -248,7 +248,7 @@ export function PayablesView({
           <span className="text-3xs text-slate-400 uppercase font-semibold block">
             {tBilingual('Total Paid', 'মোট পরিশোধ')}
           </span>
-          <span className="text-xl sm:text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+          <span className="text-xl sm:text-2xl font-black tabular-nums text-emerald-600 dark:text-emerald-400">
             ৳{totalPaid.toLocaleString()}
           </span>
           <span className="text-3xs text-slate-400 block mt-1">
@@ -260,7 +260,7 @@ export function PayablesView({
           <span className="text-3xs text-slate-400 uppercase font-semibold block">
             {tBilingual('Overdue Liabilities', 'মেয়াদোত্তীর্ণ দেনা')}
           </span>
-          <span className="text-xl sm:text-2xl font-black font-mono text-rose-600 dark:text-rose-400">
+          <span className="text-xl sm:text-2xl font-black tabular-nums text-rose-600 dark:text-rose-400">
             ৳{((payables?.bucket_31_60 || 0) + (payables?.bucket_61_90 || 0) + (payables?.bucket_90_plus || 0)).toLocaleString()}
           </span>
           <span className="text-3xs text-rose-500 font-semibold block mt-1">{tBilingual('Payment required soon', 'দ্রুত পরিশোধ বাঞ্ছনীয়')}</span>
@@ -356,21 +356,21 @@ export function PayablesView({
                       <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
                         {supp.name}
                       </td>
-                      <td className="p-3 font-mono text-slate-500">
+                      <td className="p-3 tabular-nums text-slate-500">
                         {supp.phone || '-'}
                       </td>
-                      <td className="p-3 text-center font-mono">
+                      <td className="p-3 text-center tabular-nums">
                         <Badge variant="outline" className="text-3xs px-1.5 py-0 h-4">
                           {supp.billsCount} bills
                         </Badge>
                       </td>
-                      <td className="p-3 text-right font-mono text-slate-700 dark:text-slate-300">
+                      <td className="p-3 text-right tabular-nums text-slate-700 dark:text-slate-300">
                         ৳{supp.totalAmount.toLocaleString()}
                       </td>
-                      <td className="p-3 text-right font-mono text-emerald-600">
+                      <td className="p-3 text-right tabular-nums text-emerald-600">
                         ৳{supp.paidAmount.toLocaleString()}
                       </td>
-                      <td className="p-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
+                      <td className="p-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
                         ৳{supp.dueAmount.toLocaleString()}
                       </td>
                       <td className="p-3 text-center">
@@ -434,22 +434,22 @@ export function PayablesView({
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                   {filteredPurchases.map((bill) => (
                     <tr key={bill.reference_id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 font-mono font-medium text-slate-700 dark:text-slate-300">
+                      <td className="p-3 tabular-nums font-medium text-slate-700 dark:text-slate-300">
                         {bill.reference_id}
                       </td>
                       <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
                         {bill.party_name}
                       </td>
-                      <td className="p-3 font-mono text-slate-500">
+                      <td className="p-3 tabular-nums text-slate-500">
                         {bill.issue_date || bill.due_date}
                       </td>
-                      <td className="p-3 text-right font-mono">
+                      <td className="p-3 text-right tabular-nums">
                         ৳{bill.total_amount.toLocaleString()}
                       </td>
-                      <td className="p-3 text-right font-mono text-emerald-600">
+                      <td className="p-3 text-right tabular-nums text-emerald-600">
                         ৳{bill.paid_amount.toLocaleString()}
                       </td>
-                      <td className="p-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
+                      <td className="p-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
                         ৳{bill.due_amount.toLocaleString()}
                       </td>
                       <td className="p-3 text-center">
@@ -502,17 +502,17 @@ export function PayablesView({
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                   {disbursementHistory.map((t) => (
                     <tr key={t.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 font-mono text-slate-500 whitespace-nowrap">{t.transaction_date}</td>
-                      <td className="p-3 font-mono font-medium text-rose-600 dark:text-rose-400">
+                      <td className="p-3 tabular-nums text-slate-500 whitespace-nowrap">{t.transaction_date}</td>
+                      <td className="p-3 tabular-nums font-medium text-rose-600 dark:text-rose-400">
                         {t.transaction_number}
                       </td>
                       <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
                         {t.narration?.replace(/^(Payment to supplier |Supplier payment: )/i, '') || 'Supplier'}
                       </td>
-                      <td className="p-3 text-slate-500 text-3xs font-mono">
+                      <td className="p-3 text-slate-500 text-3xs tabular-nums">
                         {t.reference_id || t.narration || '-'}
                       </td>
-                      <td className="p-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
+                      <td className="p-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
                         -৳{Number(t.total_amount || 0).toLocaleString()}
                       </td>
                       <td className="p-3 text-center">
@@ -545,7 +545,7 @@ export function PayablesView({
               <span className="text-3xs font-bold uppercase text-emerald-700 dark:text-emerald-400 block">
                 0 – 30 Days (Current)
               </span>
-              <span className="text-2xl font-black font-mono text-emerald-800 dark:text-emerald-200 block mt-1">
+              <span className="text-2xl font-black tabular-nums text-emerald-800 dark:text-emerald-200 block mt-1">
                 ৳{(payables?.bucket_0_30 || 0).toLocaleString()}
               </span>
               <p className="text-3xs text-emerald-600/80 mt-1">{tBilingual('Regular supplier credit window', 'স্বাভাবিক ক্রেডিট বিল')}</p>
@@ -555,7 +555,7 @@ export function PayablesView({
               <span className="text-3xs font-bold uppercase text-amber-700 dark:text-amber-400 block">
                 31 – 60 Days
               </span>
-              <span className="text-2xl font-black font-mono text-amber-800 dark:text-amber-200 block mt-1">
+              <span className="text-2xl font-black tabular-nums text-amber-800 dark:text-amber-200 block mt-1">
                 ৳{(payables?.bucket_31_60 || 0).toLocaleString()}
               </span>
               <p className="text-3xs text-amber-600/80 mt-1">{tBilingual('Due for settlement this week', 'চলতি সপ্তাহে পরিশোধ যোগ্য')}</p>
@@ -565,7 +565,7 @@ export function PayablesView({
               <span className="text-3xs font-bold uppercase text-orange-700 dark:text-orange-400 block">
                 61 – 90 Days
               </span>
-              <span className="text-2xl font-black font-mono text-orange-800 dark:text-orange-200 block mt-1">
+              <span className="text-2xl font-black tabular-nums text-orange-800 dark:text-orange-200 block mt-1">
                 ৳{(payables?.bucket_61_90 || 0).toLocaleString()}
               </span>
               <p className="text-3xs text-orange-600/80 mt-1">{tBilingual('Overdue credit, vendor follow-up', 'মহাজন তাগাদা আসতে পারে')}</p>
@@ -575,7 +575,7 @@ export function PayablesView({
               <span className="text-3xs font-bold uppercase text-rose-700 dark:text-rose-400 block">
                 90+ Days (Critical)
               </span>
-              <span className="text-2xl font-black font-mono text-rose-800 dark:text-rose-200 block mt-1">
+              <span className="text-2xl font-black tabular-nums text-rose-800 dark:text-rose-200 block mt-1">
                 ৳{(payables?.bucket_90_plus || 0).toLocaleString()}
               </span>
               <p className="text-3xs text-rose-600/80 mt-1">{tBilingual('Supply block risk, prioritize payment', 'কাঁচামাল সরবরাহ বন্ধের ঝুঁকি')}</p>

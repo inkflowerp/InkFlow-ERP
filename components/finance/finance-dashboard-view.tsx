@@ -184,7 +184,7 @@ export function FinanceDashboardView({
               </span>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-white">
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-black tabular-nums tracking-tight text-white">
                 ৳{totalAvailable.toLocaleString()}
               </span>
               <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
@@ -255,7 +255,7 @@ export function FinanceDashboardView({
                 <span className="text-2xs font-semibold text-slate-400 block uppercase tracking-wider">
                   {tBilingual('Cash Balance', 'নগদ ক্যাশ ব্যালেন্স')}
                 </span>
-                <span className="text-base sm:text-lg font-black font-mono text-white">
+                <span className="text-base sm:text-lg font-black tabular-nums text-white">
                   ৳{cashBalance.toLocaleString()}
                 </span>
               </div>
@@ -276,7 +276,7 @@ export function FinanceDashboardView({
                 <span className="text-2xs font-semibold text-slate-400 block uppercase tracking-wider">
                   {tBilingual('Bank Balance', 'ব্যাংক অ্যাকাউন্ট ব্যালেন্স')}
                 </span>
-                <span className="text-base sm:text-lg font-black font-mono text-white">
+                <span className="text-base sm:text-lg font-black tabular-nums text-white">
                   ৳{bankBalance.toLocaleString()}
                 </span>
               </div>
@@ -297,7 +297,7 @@ export function FinanceDashboardView({
                 <span className="text-2xs font-semibold text-slate-400 block uppercase tracking-wider">
                   {tBilingual('bKash / Nagad / MFS', 'বিকাশ / নগদ ওয়ালেট')}
                 </span>
-                <span className="text-base sm:text-lg font-black font-mono text-white">
+                <span className="text-base sm:text-lg font-black tabular-nums text-white">
                   ৳{mfsBalance.toLocaleString()}
                 </span>
               </div>
@@ -407,7 +407,7 @@ export function FinanceDashboardView({
 
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right">
-                      <span className="font-mono font-bold text-xs text-amber-600 dark:text-amber-400 block">
+                      <span className="tabular-nums font-bold text-xs text-amber-600 dark:text-amber-400 block">
                         ৳{cust.amount.toLocaleString()}
                       </span>
                     </div>
@@ -491,7 +491,7 @@ export function FinanceDashboardView({
 
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right">
-                      <span className="font-mono font-bold text-xs text-rose-600 dark:text-rose-400 block">
+                      <span className="tabular-nums font-bold text-xs text-rose-600 dark:text-rose-400 block">
                         ৳{supp.amount.toLocaleString()}
                       </span>
                     </div>
@@ -559,7 +559,7 @@ export function FinanceDashboardView({
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {txnsList.map((t) => (
                   <tr key={t.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="p-3 font-mono text-slate-500 whitespace-nowrap">{t.date || t.time}</td>
+                    <td className="p-3 tabular-nums text-slate-500 whitespace-nowrap">{t.date || t.time}</td>
                     <td className="p-3">
                       <Badge
                         variant={t.isCredit ? 'success' : t.type === 'ACCOUNT_TRANSFER' ? 'info' : 'destructive'}
@@ -572,10 +572,10 @@ export function FinanceDashboardView({
                       <div>{t.title}</div>
                       {t.subtitle && <div className="text-2xs text-slate-400 truncate max-w-xs">{t.subtitle}</div>}
                     </td>
-                    <td className="p-3 text-slate-600 dark:text-slate-400 font-mono text-2xs">
+                    <td className="p-3 text-slate-600 dark:text-slate-400 tabular-nums text-2xs">
                       {t.type === 'ACCOUNT_TRANSFER' ? 'Cash → Bank' : t.isCredit ? 'Cash / MFS' : 'Main Account'}
                     </td>
-                    <td className="p-3 text-right font-mono font-bold">
+                    <td className="p-3 text-right tabular-nums font-bold">
                       <span className={t.isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
                         {t.isCredit ? `+৳${t.amount.toLocaleString()}` : `-৳${t.amount.toLocaleString()}`}
                       </span>

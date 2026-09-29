@@ -87,7 +87,7 @@ export function JobTicketPrintModal({
         <div className="bg-white text-slate-900 p-6 sm:p-8 rounded-xl border border-slate-300 dark:border-slate-700 text-xs space-y-4 shadow-xs print:border-none print:shadow-none print:p-0">
           {/* Header */}
           <div className="text-center space-y-1 pb-3 border-b-2 border-slate-900 relative">
-            <div className="absolute right-0 top-0 text-2xs font-mono px-2 py-0.5 rounded bg-slate-100 font-bold border border-slate-400">
+            <div className="absolute right-0 top-0 text-2xs tabular-nums px-2 py-0.5 rounded bg-slate-100 font-bold border border-slate-400">
               TASK: {task.task_number}
             </div>
             <h1 className="text-lg font-black tracking-tight uppercase">
@@ -102,7 +102,7 @@ export function JobTicketPrintModal({
           </div>
 
           {/* Job & Client Meta Matrix */}
-          <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-slate-50 border border-slate-300 font-mono text-xs">
+          <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-slate-50 border border-slate-300 tabular-nums text-xs">
             <div className="space-y-1">
               <div>Job / Order No: <strong className="text-sm font-black text-blue-700">{task.job_number || 'JOB-0000'}</strong></div>
               <div>Customer Name: <strong className="font-sans font-bold">{task.customer_name || 'Direct Client'}</strong></div>
@@ -132,7 +132,7 @@ export function JobTicketPrintModal({
                 <td className="p-2.5 border border-slate-300 font-bold">
                   {task.task_name}
                 </td>
-                <td className="p-2.5 border border-slate-300 text-center font-mono">
+                <td className="p-2.5 border border-slate-300 text-center tabular-nums">
                   {task.width && task.height ? (
                     <div>
                       {task.width} × {task.height} {task.unit || 'inch'}
@@ -142,7 +142,7 @@ export function JobTicketPrintModal({
                     'Standard Size'
                   )}
                 </td>
-                <td className="p-2.5 border border-slate-300 text-center font-mono font-black text-sm">
+                <td className="p-2.5 border border-slate-300 text-center tabular-nums font-black text-sm">
                   {task.quantity || 1} {task.unit || 'pcs'}
                 </td>
                 <td className="p-2.5 border border-slate-300">
@@ -181,7 +181,7 @@ export function JobTicketPrintModal({
           {/* Dual Signatures Block */}
           <div className="pt-8 flex justify-between items-end text-xs">
             <div className="text-center space-y-1">
-              <div className="font-mono text-slate-500 text-2xs">{task.operator_name || 'Machine Operator'}</div>
+              <div className="tabular-nums text-slate-500 text-2xs">{task.operator_name || 'Machine Operator'}</div>
               <div className="border-t border-slate-400 w-48 pt-1 font-bold">
                 মেশিন অপারেটরের স্বাক্ষর
                 <div className="text-2xs font-normal text-slate-500">(Operator Signature)</div>
@@ -189,7 +189,7 @@ export function JobTicketPrintModal({
             </div>
 
             <div className="text-center space-y-1">
-              <div className="font-mono text-slate-500 text-2xs">Production Manager</div>
+              <div className="tabular-nums text-slate-500 text-2xs">Production Manager</div>
               <div className="border-t border-slate-400 w-48 pt-1 font-bold">
                 ফ্লোর ইন-চার্জ / কিউসি স্বাক্ষর
                 <div className="text-2xs font-normal text-slate-500">(QC & Floor Supervisor)</div>

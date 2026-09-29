@@ -106,7 +106,7 @@ export function MachineQueueView({
                   >
                     {group.machine_name}
                   </Link>
-                  <Badge variant="outline" className="text-2xs uppercase font-mono">
+                  <Badge variant="outline" className="text-2xs uppercase tabular-nums">
                     {group.machine_code}
                   </Badge>
                   {getStatusBadge(group.operating_status)}
@@ -194,7 +194,7 @@ export function MachineQueueView({
                     <Link
                       href={getTenantNavHref(`/production/${group.next.task_id || group.next.job_number}`, pathname, tenantSlug)}
                     >
-                      <Badge variant="outline" className="text-2xs font-mono hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer">
+                      <Badge variant="outline" className="text-2xs tabular-nums hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer">
                         Job #{group.next.job_number}
                       </Badge>
                     </Link>

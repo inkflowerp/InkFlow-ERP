@@ -403,7 +403,7 @@ export default function HrmDashboardPage() {
                 <div className="text-2xs font-bold text-emerald-800 dark:text-emerald-300">
                   {tBilingual('Salary Disbursed', 'বেতন পরিশোধিত')}
                 </div>
-                <div className="mt-1.5 flex items-baseline gap-2 font-mono">
+                <div className="mt-1.5 flex items-baseline gap-2 tabular-nums">
                   <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                     {salaryDisbursedPct}%
                   </span>
@@ -417,7 +417,7 @@ export default function HrmDashboardPage() {
                 <div className="text-2xs font-bold text-rose-800 dark:text-rose-300">
                   {tBilingual('Salary Pending', 'বেতন বকেয়া')}
                 </div>
-                <div className="mt-1.5 flex items-baseline gap-2 font-mono">
+                <div className="mt-1.5 flex items-baseline gap-2 tabular-nums">
                   <span className="text-2xl font-black text-rose-600 dark:text-rose-400">
                     {salaryPendingPct}%
                   </span>
@@ -432,7 +432,7 @@ export default function HrmDashboardPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span>{tBilingual('Disbursal Progress', 'পরিশোধের অগ্রগতি')}</span>
-                <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
                   {formatBDT(totalPaidSalary)} / {formatBDT(totalNetSalary)}
                 </span>
               </div>
@@ -482,7 +482,7 @@ export default function HrmDashboardPage() {
                 <div className="text-2xs font-bold text-emerald-800 dark:text-emerald-300">
                   {tBilingual('Present Rate', 'উপস্থিতির হার')}
                 </div>
-                <div className="mt-1.5 flex items-baseline gap-2 font-mono">
+                <div className="mt-1.5 flex items-baseline gap-2 tabular-nums">
                   <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                     {presentRate}%
                   </span>
@@ -496,7 +496,7 @@ export default function HrmDashboardPage() {
                 <div className="text-2xs font-bold text-blue-800 dark:text-blue-300">
                   {tBilingual('Approved Leaves', 'অনুমোদিত ছুটি')}
                 </div>
-                <div className="mt-1.5 flex items-baseline gap-2 font-mono">
+                <div className="mt-1.5 flex items-baseline gap-2 tabular-nums">
                   <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
                     {leaveRate}%
                   </span>
@@ -528,7 +528,7 @@ export default function HrmDashboardPage() {
                     {absentTodayCount} {tBilingual('Absent', 'অনুপস্থিত')}
                   </span>
                 </div>
-                <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
                   {totalEmployeesCount} {tBilingual('Staff', 'কর্মী')}
                 </span>
               </div>
@@ -622,7 +622,7 @@ export default function HrmDashboardPage() {
                         </div>
 
                         <div className="text-right text-xs">
-                          <div className="font-mono text-muted-foreground">
+                          <div className="tabular-nums text-muted-foreground">
                             <span className="text-foreground font-medium">{record.check_in_time || '--:--'}</span>
                             {' → '}
                             <span>{record.check_out_time || 'Working'}</span>
@@ -665,12 +665,12 @@ export default function HrmDashboardPage() {
                       <div key={dept} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex flex-col justify-between">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold capitalize text-slate-900 dark:text-white">{dept}</span>
-                          <Badge variant="secondary" className="text-2xs px-1.5 py-0 font-mono font-bold">
+                          <Badge variant="secondary" className="text-2xs px-1.5 py-0 tabular-nums font-bold">
                             {count}
                           </Badge>
                         </div>
                         <div className="mt-3">
-                          <div className="flex justify-between text-2xs text-slate-500 mb-1 font-mono">
+                          <div className="flex justify-between text-2xs text-slate-500 mb-1 tabular-nums">
                             <span>{pct}% of team</span>
                           </div>
                           <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
@@ -700,7 +700,7 @@ export default function HrmDashboardPage() {
                   {tBilingual('Requests awaiting floor manager verification', 'ম্যানেজারের অনুমোদনের অপেক্ষায় থাকা আবেদন')}
                 </CardDescription>
               </div>
-              <Badge variant="outline" className="text-xs bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 font-mono font-bold">
+              <Badge variant="outline" className="text-xs bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 tabular-nums font-bold">
                 {pendingOvertime.length}
               </Badge>
             </CardHeader>
@@ -717,12 +717,12 @@ export default function HrmDashboardPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="text-xs font-bold text-slate-900 dark:text-white">{ot.employee_name}</div>
-                          <div className="text-2xs text-slate-500 font-mono">
+                          <div className="text-2xs text-slate-500 tabular-nums">
                             {formatDate(ot.ot_date)} • {Math.round(ot.duration_minutes / 60 * 10) / 10}h ({ot.duration_minutes}m)
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs font-bold text-amber-600 dark:text-amber-400 font-mono">
+                          <div className="text-xs font-bold text-amber-600 dark:text-amber-400 tabular-nums">
                             {formatBDT(ot.calculated_amount || 0)}
                           </div>
                           <span className="text-2xs text-slate-400 capitalize">{ot.ot_type.replace('_', ' ')}</span>

@@ -430,7 +430,7 @@ export default function CompanySettingsPage() {
                   <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${item.color} shrink-0`}>
                     <Icon className="h-4.5 w-4.5" />
                   </div>
-                  <Badge variant="outline" className="text-2xs font-mono font-semibold px-2 py-0.5">
+                  <Badge variant="outline" className="text-2xs tabular-nums font-semibold px-2 py-0.5">
                     {item.badge}
                   </Badge>
                 </div>

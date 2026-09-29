@@ -255,7 +255,7 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
               </h5>
             </div>
 
-            <span className="text-2xs text-slate-400 shrink-0 font-mono">
+            <span className="text-2xs text-slate-400 shrink-0 tabular-nums">
               {tBilingual('Just now', 'এইমাত্র')}
             </span>
           </div>

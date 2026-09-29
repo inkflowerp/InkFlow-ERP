@@ -230,7 +230,7 @@ export function PlatformChatPane({
             </button>
           )}
 
-          <span className="font-mono font-bold text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-800/80 shrink-0">
+          <span className="tabular-nums font-bold text-xs text-indigo-400 bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-800/80 shrink-0">
             {conversation.ticket_number}
           </span>
           <div className="min-w-0">
@@ -330,7 +330,7 @@ export function PlatformChatPane({
         {loading && messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-slate-500 space-y-2">
             <div className="w-6 h-6 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-            <span className="text-xs font-mono">Loading message stream...</span>
+            <span className="text-xs tabular-nums">Loading message stream...</span>
           </div>
         ) : (
           messageGroups.map((group) => (

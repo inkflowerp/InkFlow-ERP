@@ -188,15 +188,15 @@ export default function CompanyProfileSettingsPage() {
       />
 
       {/* Account Type & Subscription Tier Card */}
-      <Card className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-0 shadow-md">
+      <Card className="p-4 bg-card text-card-foreground border border-border shadow-xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+            <div className="h-10 w-10 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0">
               <Crown className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-300">Account Type:</span>
+                <span className="text-xs font-semibold text-muted-foreground">Account Type:</span>
                 <span
                   className={cn(
                     'text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide border',
@@ -206,16 +206,16 @@ export default function CompanyProfileSettingsPage() {
                   {isTrial ? `Trial (${daysRemainingInTrial} Days Left)` : accountTypeMeta.badgeTextEn}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {accountTypeMeta.nameEn} • {accountTypeMeta.maxUsers} Users • {accountTypeMeta.maxBranches} Branch(es)
               </p>
             </div>
           </div>
 
           <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
-            <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shrink-0">
+            <Button size="sm" variant="default" className="text-xs shrink-0 gap-1.5">
               <span>{isTrial ? 'Upgrade Account' : 'Manage Subscription'}</span>
-              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </div>

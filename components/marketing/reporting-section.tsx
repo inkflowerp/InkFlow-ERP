@@ -59,7 +59,7 @@ export function ReportingSection() {
         {/* 4 Executive Metric Widgets Banner */}
         <div className="mt-8 sm:mt-12 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 max-w-5xl mx-auto">
           <div className="p-3.5 sm:p-5 rounded-2xl border border-cyan-500/30 bg-slate-900/90 shadow-lg space-y-1 sm:space-y-2">
-            <span className="text-2xs sm:text-xs text-slate-400 uppercase font-mono bangla-text truncate block">
+            <span className="text-2xs sm:text-xs text-slate-400 uppercase tabular-nums bangla-text truncate block">
               {tBilingual('Monthly Sales', 'মাসিক বিক্রয়')}
             </span>
             <div className="text-xl sm:text-3xl font-black text-white tabular-nums tracking-tight">
@@ -71,7 +71,7 @@ export function ReportingSection() {
           </div>
 
           <div className="p-3.5 sm:p-5 rounded-2xl border border-emerald-500/30 bg-slate-900/90 shadow-lg space-y-1 sm:space-y-2">
-            <span className="text-2xs sm:text-xs text-slate-400 uppercase font-mono bangla-text truncate block">
+            <span className="text-2xs sm:text-xs text-slate-400 uppercase tabular-nums bangla-text truncate block">
               {tBilingual('Collected Cash', 'আদায়কৃত নগদ')}
             </span>
             <div className="text-xl sm:text-3xl font-black text-emerald-400 tabular-nums tracking-tight">
@@ -81,7 +81,7 @@ export function ReportingSection() {
           </div>
 
           <div className="p-3.5 sm:p-5 rounded-2xl border border-amber-500/30 bg-slate-900/90 shadow-lg space-y-1 sm:space-y-2">
-            <span className="text-2xs sm:text-xs text-slate-400 uppercase font-mono bangla-text truncate block">
+            <span className="text-2xs sm:text-xs text-slate-400 uppercase tabular-nums bangla-text truncate block">
               {tBilingual('Remaining Due', 'বকেয়া বিল')}
             </span>
             <div className="text-xl sm:text-3xl font-black text-amber-400 tabular-nums tracking-tight">
@@ -91,7 +91,7 @@ export function ReportingSection() {
           </div>
 
           <div className="p-3.5 sm:p-5 rounded-2xl border border-blue-500/30 bg-slate-900/90 shadow-lg space-y-1 sm:space-y-2">
-            <span className="text-2xs sm:text-xs text-slate-400 uppercase font-mono bangla-text truncate block">
+            <span className="text-2xs sm:text-xs text-slate-400 uppercase tabular-nums bangla-text truncate block">
               {tBilingual('Estimated Profit', 'আনুমানিক নিট লাভ')}
             </span>
             <div className="text-xl sm:text-3xl font-black text-cyan-300 tabular-nums tracking-tight">
@@ -112,7 +112,7 @@ export function ReportingSection() {
                 <span className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-slate-900 text-cyan-400 flex items-center justify-center font-bold text-xs border border-slate-800 shrink-0">
                   {idx + 1}
                 </span>
-                <span className="text-2xs sm:text-2xs text-slate-500 font-mono">Export: XLS / PDF</span>
+                <span className="text-2xs sm:text-2xs text-slate-500 tabular-nums">Export: XLS / PDF</span>
               </div>
 
               <h4 className="text-sm font-bold text-white bangla-text">

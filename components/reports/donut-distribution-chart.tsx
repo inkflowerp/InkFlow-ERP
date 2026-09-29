@@ -105,7 +105,7 @@ export function DonutDistributionChart({
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2 pointer-events-none">
             {activeItem ? (
               <>
-                <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white font-mono truncate max-w-[85px] 2xl:max-w-[100px]">
+                <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white tabular-nums truncate max-w-[85px] 2xl:max-w-[100px]">
                   ৳ {activeItem.amount.toLocaleString()}
                 </span>
                 <span className="text-2xs text-blue-600 dark:text-blue-400 font-bold truncate max-w-[85px]">
@@ -114,7 +114,7 @@ export function DonutDistributionChart({
               </>
             ) : (
               <>
-                <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white font-mono truncate max-w-[85px] 2xl:max-w-[100px]">
+                <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white tabular-nums truncate max-w-[85px] 2xl:max-w-[100px]">
                   ৳ {totalAmount.toLocaleString()}
                 </span>
                 <span className="text-2xs text-slate-400 font-medium">
@@ -153,7 +153,7 @@ export function DonutDistributionChart({
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                    <span className="tabular-nums font-bold text-slate-900 dark:text-white">
                       ৳ {item.amount.toLocaleString()}
                     </span>
                     <span className="text-slate-400 text-2xs w-7 text-right font-medium">

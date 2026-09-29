@@ -1529,7 +1529,7 @@ function UnifiedInventoryContent() {
                   >
                     <span>{st.label}</span>
                     <span className={cn(
-                      'text-2xs px-1.5 py-0.2 rounded-full font-mono font-black',
+                      'text-2xs px-1.5 py-0.2 rounded-full tabular-nums font-black',
                       stockStatusFilter === st.id ? 'bg-white/25 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
                     )}>
                       {st.count}
@@ -1589,9 +1589,9 @@ function UnifiedInventoryContent() {
                               </Link>
                               {row.name_bn && <div className="text-2xs text-slate-400 font-bengali mt-0.5">{row.name_bn}</div>}
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                <span className="text-2xs text-slate-500 font-mono font-medium">SKU: {row.sku}</span>
+                                <span className="text-2xs text-slate-500 tabular-nums font-medium">SKU: {row.sku}</span>
                                 {row.width_ft > 0 && row.length_ft > 0 && (
-                                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-2xs font-bold font-mono bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-2xs font-bold tabular-nums bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                                     {row.width_ft}ft × {row.length_ft}ft
                                   </span>
                                 )}
@@ -1617,12 +1617,12 @@ function UnifiedInventoryContent() {
                                 {row.category?.replace('_', ' ') || 'Substrate'}
                               </span>
                               {row.is_roll && row.width_ft * row.length_ft > 0 && (
-                                <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 font-mono">
+                                <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 tabular-nums">
                                   {(row.width_ft * row.length_ft).toLocaleString()} SFT / roll
                                 </div>
                               )}
                               {!row.is_roll && row.width_ft * row.length_ft > 0 && (
-                                <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 font-mono">
+                                <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 tabular-nums">
                                   {(row.width_ft * row.length_ft).toLocaleString()} SFT / unit
                                 </div>
                               )}
@@ -1630,7 +1630,7 @@ function UnifiedInventoryContent() {
                                 <div className="text-2xs text-slate-400 mt-0.5 line-clamp-1">{row.specification}</div>
                               )}
                             </td>
-                            <td className="py-3.5 px-4 text-right font-black font-mono text-sm whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right font-black tabular-nums text-sm whitespace-nowrap">
                               <div>
                                 <span className={cn(
                                   'font-extrabold',
@@ -1650,11 +1650,11 @@ function UnifiedInventoryContent() {
                               </div>
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono font-bold uppercase text-2xs border border-slate-200 dark:border-slate-700">
+                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 tabular-nums font-bold uppercase text-2xs border border-slate-200 dark:border-slate-700">
                                 {row.is_roll ? 'ROLL' : row.stock_unit.toUpperCase()}
                               </span>
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
+                            <td className="py-3.5 px-4 text-right tabular-nums text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
                               <div>
                                 <span className="font-semibold text-slate-900 dark:text-white">{row.cost_display_primary}</span>
                                 {row.cost_display_secondary && (
@@ -1664,7 +1664,7 @@ function UnifiedInventoryContent() {
                                 )}
                               </div>
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right tabular-nums whitespace-nowrap">
                               {row.total_valuation > 0 ? (
                                 <span className="font-extrabold text-slate-900 dark:text-white">
                                   <CurrencyDisplay amount={row.total_valuation} />
@@ -1673,7 +1673,7 @@ function UnifiedInventoryContent() {
                                 <span className="text-slate-400 font-medium"><CurrencyDisplay amount={0} /></span>
                               )}
                             </td>
-                            <td className="py-3.5 px-4 font-mono text-xs text-slate-500 text-center whitespace-nowrap">
+                            <td className="py-3.5 px-4 tabular-nums text-xs text-slate-500 text-center whitespace-nowrap">
                               {row.reorder_level > 0 ? `${row.reorder_level} ${row.stock_unit}` : '—'}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -1909,17 +1909,17 @@ function UnifiedInventoryContent() {
                             <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                               <div className="font-bold text-slate-900 dark:text-white">{p.name}</div>
                               {p.name_bn && <div className="text-2xs text-slate-400 font-bengali font-normal mt-0.5">{p.name_bn}</div>}
-                              <div className="text-2xs text-slate-500 font-mono mt-0.5 font-medium">SKU: {p.sku}</div>
+                              <div className="text-2xs text-slate-500 tabular-nums mt-0.5 font-medium">SKU: {p.sku}</div>
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="text-xs text-slate-700 dark:text-slate-300 font-medium">
                                 {p.dimensions_spec || p.material_spec || 'Standard Spec'}
                               </div>
                               {(p.min_order_quantity || (p as any).moq) && (
-                                <div className="text-2xs text-slate-400 font-mono mt-0.5">MOQ: {p.min_order_quantity || (p as any).moq}</div>
+                                <div className="text-2xs text-slate-400 tabular-nums mt-0.5">MOQ: {p.min_order_quantity || (p as any).moq}</div>
                               )}
                             </td>
-                            <td className="py-3.5 px-4 text-right font-black font-mono text-sm whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right font-black tabular-nums text-sm whitespace-nowrap">
                               {stockQty <= 0 ? (
                                 <span className="text-slate-400 font-bold">0</span>
                               ) : (
@@ -1927,17 +1927,17 @@ function UnifiedInventoryContent() {
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono font-bold uppercase text-2xs border border-slate-200 dark:border-slate-700">
+                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 tabular-nums font-bold uppercase text-2xs border border-slate-200 dark:border-slate-700">
                                 {p.selling_unit || p.unit || 'pcs'}
                               </span>
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
+                            <td className="py-3.5 px-4 text-right tabular-nums text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
                               <CurrencyDisplay amount={cost} />
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right tabular-nums font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
                               <CurrencyDisplay amount={sellingRate} />
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right tabular-nums whitespace-nowrap">
                               {totalValuation > 0 ? (
                                 <span className="font-extrabold text-slate-900 dark:text-white"><CurrencyDisplay amount={totalValuation} /></span>
                               ) : (
@@ -2170,7 +2170,7 @@ function UnifiedInventoryContent() {
                                         <div className="text-2xs text-slate-400 font-normal">{group.material_name_bn}</div>
                                       )}
                                       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                                        <span className="text-2xs text-slate-500 font-mono font-medium">SKU: {group.sku}</span>
+                                        <span className="text-2xs text-slate-500 tabular-nums font-medium">SKU: {group.sku}</span>
                                         {group.gsm > 0 && (
                                           <span className="inline-flex items-center px-1.5 py-0.2 rounded text-2xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                                             {group.gsm} GSM
@@ -2190,21 +2190,21 @@ function UnifiedInventoryContent() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
                                   {group.width_ft}ft
                                 </td>
-                                <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
                                   {group.length_ft}ft
                                 </td>
-                                <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
                                   <CurrencyDisplay amount={group.purchase_price} />
                                 </td>
                                 <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 font-mono shadow-2xs">
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 tabular-nums shadow-2xs">
                                     {group.quantity_rolls} {group.quantity_rolls === 1 ? 'Roll' : 'Rolls'}
                                   </span>
                                 </td>
-                                <td className="py-3.5 px-4 text-right font-mono whitespace-nowrap text-xs">
+                                <td className="py-3.5 px-4 text-right tabular-nums whitespace-nowrap text-xs">
                                   <div className="font-black text-emerald-600 dark:text-emerald-400">
                                     {Math.round(group.total_area_sft).toLocaleString()} Sft
                                   </div>
@@ -2267,7 +2267,7 @@ function UnifiedInventoryContent() {
                                     <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-2">
                                       <div className="flex items-center justify-between text-2xs font-bold text-slate-600 dark:text-slate-400">
                                         <span>Serialized Master Rolls ({group.rolls.length} items registered):</span>
-                                        <span className="font-mono text-emerald-600 dark:text-emerald-400">{group.width_ft}ft × {group.length_ft}ft</span>
+                                        <span className="tabular-nums text-emerald-600 dark:text-emerald-400">{group.width_ft}ft × {group.length_ft}ft</span>
                                       </div>
                                       <div className="overflow-x-auto">
                                         <table className="w-full text-2xs">
@@ -2281,7 +2281,7 @@ function UnifiedInventoryContent() {
                                               <th className="py-1 px-2 text-right font-semibold">Action</th>
                                             </tr>
                                           </thead>
-                                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 tabular-nums">
                                             {group.rolls.map((r) => {
                                               const curLen = Number(r.current_length_ft ?? r.remaining_area_sft / (r.width_ft || 1))
                                               const area = Number(r.remaining_area_sft || curLen * r.width_ft)
@@ -2407,21 +2407,21 @@ function UnifiedInventoryContent() {
 
                           return (
                             <tr key={roll.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                              <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                              <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                                 {roll.roll_code || roll.roll_tag || roll.id.slice(0, 8)}
                               </td>
                               <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-200">
                                 <div>{isBn && roll.material?.name_bn ? roll.material.name_bn : (roll.material?.name || 'Roll Media')}</div>
-                                {roll.material?.sku && <div className="text-2xs text-slate-400 font-mono font-normal">{roll.material.sku}</div>}
+                                {roll.material?.sku && <div className="text-2xs text-slate-400 tabular-nums font-normal">{roll.material.sku}</div>}
                               </td>
-                              <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                              <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                                 {roll.width_ft} ft
                               </td>
-                              <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                              <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                                 <div>{currentLen.toFixed(2)} ft <span className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400 font-sans">— 1 Pcs</span></div>
                                 <div className="text-2xs text-slate-400 font-normal font-sans">Initial: {roll.initial_length_ft} ft</div>
                               </td>
-                              <td className="py-3.5 px-4 text-right font-mono text-emerald-600 font-black whitespace-nowrap">
+                              <td className="py-3.5 px-4 text-right tabular-nums text-emerald-600 font-black whitespace-nowrap">
                                 {area.toFixed(1)} SFT
                               </td>
                               <td className="py-3.5 px-4">
@@ -2566,7 +2566,7 @@ function UnifiedInventoryContent() {
                     ) : (
                       filteredRequests.map((req) => (
                         <tr key={req.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                             {req.request_number}
                           </td>
                           <td className="py-3.5 px-4">
@@ -2574,7 +2574,7 @@ function UnifiedInventoryContent() {
                               {req.production_task?.title || 'Production Task'}
                             </div>
                             {req.production_task?.task_code && (
-                              <div className="text-2xs text-slate-400 font-mono mt-0.5">{req.production_task.task_code}</div>
+                              <div className="text-2xs text-slate-400 tabular-nums mt-0.5">{req.production_task.task_code}</div>
                             )}
                           </td>
                           <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-medium">
@@ -2595,10 +2595,10 @@ function UnifiedInventoryContent() {
                               {req.priority}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-4 font-mono text-xs text-center whitespace-nowrap">
+                          <td className="py-3.5 px-4 tabular-nums text-xs text-center whitespace-nowrap">
                             {req.items?.length || 1} items
                           </td>
-                          <td className="py-3.5 px-4 text-slate-500 font-mono text-2xs whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">
                             {new Date(req.created_at).toLocaleDateString()}
                           </td>
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -2732,16 +2732,16 @@ function UnifiedInventoryContent() {
 
                         return (
                           <tr key={rem.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                            <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                            <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                               {rem.remnant_code}
                             </td>
                             <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
                               {rem.parent_material?.name || 'Raw Material'}
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                               {rem.width} {rem.dimension_unit} × {rem.length} {rem.dimension_unit}
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono font-black text-purple-600 whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right tabular-nums font-black text-purple-600 whitespace-nowrap">
                               {area.toFixed(1)} SFT
                             </td>
                             <td className="py-3.5 px-4 text-slate-500 font-medium">
@@ -2843,7 +2843,7 @@ function UnifiedInventoryContent() {
                   <Card key={loc.id} className="p-4 space-y-3 border shadow-xs">
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="font-mono text-xs font-bold text-blue-600">{loc.location_code}</div>
+                        <div className="tabular-nums text-xs font-bold text-blue-600">{loc.location_code}</div>
                         <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-0.5">{loc.location_name}</h4>
                       </div>
                       <Badge variant="outline" className="capitalize text-2xs">
@@ -2936,7 +2936,7 @@ function UnifiedInventoryContent() {
                     ) : (
                       filteredOrders.map((po) => (
                         <tr key={po.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                             <Link href={getTenantNavHref(`/purchases/${po.id}`, pathname, slug)} className="hover:underline text-indigo-600 dark:text-indigo-400">
                               {po.po_number}
                             </Link>
@@ -2944,12 +2944,12 @@ function UnifiedInventoryContent() {
                           <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-200">
                             {po.supplier_name}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-500 font-mono text-2xs whitespace-nowrap">{po.po_date}</td>
-                          <td className="py-3.5 px-4 text-slate-500 font-mono text-2xs whitespace-nowrap">{po.expected_delivery_date || '—'}</td>
-                          <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">{po.po_date}</td>
+                          <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">{po.expected_delivery_date || '—'}</td>
+                          <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                             <CurrencyDisplay amount={po.grand_total} />
                           </td>
-                          <td className="py-3.5 px-4 text-right font-mono text-slate-500 whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-right tabular-nums text-slate-500 whitespace-nowrap">
                             <CurrencyDisplay amount={po.due_amount} />
                           </td>
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -3037,7 +3037,7 @@ function UnifiedInventoryContent() {
                       className="p-3 rounded-lg border bg-white dark:bg-slate-900 flex items-center justify-between gap-2 shadow-xs"
                     >
                       <div className="space-y-0.5">
-                        <div className="font-mono font-bold text-xs text-indigo-600">{po.po_number}</div>
+                        <div className="tabular-nums font-bold text-xs text-indigo-600">{po.po_number}</div>
                         <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">{po.supplier_name}</div>
                         <div className="text-2xs text-slate-500">
                           {po.items?.length || 0} line items • Expected: {po.expected_delivery_date || 'ASAP'}
@@ -3091,21 +3091,21 @@ function UnifiedInventoryContent() {
                     ) : (
                       goodsReceivedNotes.map((grn) => (
                         <tr key={grn.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                             {grn.grn_number}
                           </td>
-                          <td className="py-3.5 px-4 font-mono text-indigo-600 whitespace-nowrap">
+                          <td className="py-3.5 px-4 tabular-nums text-indigo-600 whitespace-nowrap">
                             {grn.purchase_order_id ? 'PO' : 'Direct'}
                           </td>
                           <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-200">
                             {grn.supplier_name}
                           </td>
-                          <td className="py-3.5 px-4 font-mono text-slate-500 whitespace-nowrap">
+                          <td className="py-3.5 px-4 tabular-nums text-slate-500 whitespace-nowrap">
                             {grn.challan_number || '—'}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-500 font-mono text-2xs whitespace-nowrap">{grn.received_date}</td>
+                          <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">{grn.received_date}</td>
                           <td className="py-3.5 px-4 text-slate-500 font-medium">{grn.received_by_name}</td>
-                          <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                             <CurrencyDisplay amount={grn.accepted_total || 0} />
                           </td>
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -3197,7 +3197,7 @@ function UnifiedInventoryContent() {
 
                         return (
                           <tr key={entry.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                            <td className="py-3.5 px-4 text-slate-500 font-mono text-2xs whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">
                               {entry.created_at ? new Date(entry.created_at).toLocaleString() : '—'}
                             </td>
                             <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
@@ -3208,22 +3208,22 @@ function UnifiedInventoryContent() {
                             </td>
                             <td
                               className={cn(
-                                'py-3.5 px-4 text-right font-black font-mono text-sm whitespace-nowrap',
+                                'py-3.5 px-4 text-right font-black tabular-nums text-sm whitespace-nowrap',
                                 isPositive ? 'text-emerald-600' : 'text-slate-900 dark:text-white'
                               )}
                             >
                               {isPositive ? `+${qtyChange.toLocaleString()}` : qtyChange.toLocaleString()}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono font-bold uppercase text-2xs border border-slate-200 dark:border-slate-700">
+                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 tabular-nums font-bold uppercase text-2xs border border-slate-200 dark:border-slate-700">
                                 {entry.unit || 'pcs'}
                               </span>
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                               {Number(entry.balance_after || 0).toLocaleString()}
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="font-mono text-2xs text-slate-600 dark:text-slate-400">
+                              <div className="tabular-nums text-2xs text-slate-600 dark:text-slate-400">
                                 {entry.reference_id || '—'}
                               </div>
                               <div className="text-2xs text-slate-400">
@@ -3420,7 +3420,7 @@ function UnifiedInventoryContent() {
                   <div className="text-slate-600 dark:text-slate-400 font-medium">
                     {rollToMount.material?.name || 'Roll Media'}
                   </div>
-                  <div className="text-2xs text-slate-500 font-mono">
+                  <div className="text-2xs text-slate-500 tabular-nums">
                     Remaining: {Number(rollToMount.remaining_area_sft || 0).toFixed(1)} SFT ({Number(rollToMount.current_length_ft || (rollToMount.remaining_area_sft / (rollToMount.width_ft || 1))).toFixed(1)} LF)
                   </div>
                 </div>

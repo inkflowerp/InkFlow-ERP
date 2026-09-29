@@ -1037,7 +1037,7 @@ export function NewPurchaseModal({
               </h2>
               <Badge
                 variant="outline"
-                className="text-2xs uppercase font-mono py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
+                className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
               >
                 Procurement
               </Badge>
@@ -1123,7 +1123,7 @@ export function NewPurchaseModal({
           >
             <div
               className={cn(
-                'h-5 w-5 rounded-full flex items-center justify-center text-2xs font-mono',
+                'h-5 w-5 rounded-full flex items-center justify-center text-2xs tabular-nums',
                 activeStep === 1
                   ? 'bg-amber-600 text-white'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -1146,7 +1146,7 @@ export function NewPurchaseModal({
           >
             <div
               className={cn(
-                'h-5 w-5 rounded-full flex items-center justify-center text-2xs font-mono',
+                'h-5 w-5 rounded-full flex items-center justify-center text-2xs tabular-nums',
                 activeStep === 2
                   ? 'bg-amber-600 text-white'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -1171,7 +1171,7 @@ export function NewPurchaseModal({
           >
             <div
               className={cn(
-                'h-5 w-5 rounded-full flex items-center justify-center text-2xs font-mono',
+                'h-5 w-5 rounded-full flex items-center justify-center text-2xs tabular-nums',
                 activeStep === 3
                   ? 'bg-amber-600 text-white'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -1322,7 +1322,7 @@ export function NewPurchaseModal({
                         if (fieldErrors.supplierPhone) setFieldErrors((prev) => ({ ...prev, supplierPhone: '' }))
                       }}
                       className={cn(
-                        "text-xs h-9 font-mono",
+                        "text-xs h-9 tabular-nums",
                         fieldErrors.supplierPhone && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
                       )}
                       required
@@ -1480,7 +1480,7 @@ export function NewPurchaseModal({
                     placeholder="e.g. SQ-2026-881"
                     value={supplierReference}
                     onChange={(e) => setSupplierReference(e.target.value)}
-                    className="text-xs h-9 font-mono"
+                    className="text-xs h-9 tabular-nums"
                   />
                 </div>
               </div>
@@ -1523,14 +1523,14 @@ export function NewPurchaseModal({
                 >
                   <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                      <span className="h-5 w-5 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 font-mono font-bold flex items-center justify-center text-2xs">
+                      <span className="h-5 w-5 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 tabular-nums font-bold flex items-center justify-center text-2xs">
                         #{idx + 1}
                       </span>
                       <span className="font-bold text-slate-800 dark:text-slate-200">
                         {item.material_name || 'Select Material or Hardware Item'}
                       </span>
                       {item.category && (
-                        <Badge variant="outline" className="text-2xs py-0 px-1.5 uppercase font-mono">
+                        <Badge variant="outline" className="text-2xs py-0 px-1.5 uppercase tabular-nums">
                           {item.category}
                         </Badge>
                       )}
@@ -1683,7 +1683,7 @@ export function NewPurchaseModal({
                         step="any"
                         value={item.unit_cost}
                         onChange={(e) => handleItemChange(idx, 'unit_cost', Number(e.target.value))}
-                        className="h-8.5 text-xs font-mono font-semibold"
+                        className="h-8.5 text-xs tabular-nums font-semibold"
                         required
                       />
                     </div>
@@ -1693,7 +1693,7 @@ export function NewPurchaseModal({
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-2xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                       {item.config_description && (
-                        <span className="font-mono text-slate-700 dark:text-slate-300">
+                        <span className="tabular-nums text-slate-700 dark:text-slate-300">
                           {item.config_description}
                         </span>
                       )}
@@ -1708,7 +1708,7 @@ export function NewPurchaseModal({
                       <span>
                         {item.quantity} {item.unit} × {formatBDT(item.unit_cost)}
                       </span>
-                      <span className="font-mono font-black text-slate-900 dark:text-white text-xs">
+                      <span className="tabular-nums font-black text-slate-900 dark:text-white text-xs">
                         {formatBDT(item.total_cost)}
                       </span>
                     </div>
@@ -1720,14 +1720,14 @@ export function NewPurchaseModal({
             {/* Quick Total Bar for Step 2 */}
             <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex justify-between items-center text-xs">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="font-mono text-2xs">
+                <Badge variant="outline" className="tabular-nums text-2xs">
                   {items.length} Order Line(s)
                 </Badge>
                 <span className="text-slate-500 dark:text-slate-400">Total Quantities Configured</span>
               </div>
               <div className="text-right">
                 <span className="text-2xs text-slate-400 uppercase font-bold tracking-wider">Subtotal:</span>{' '}
-                <span className="text-lg font-black text-amber-700 dark:text-amber-400 font-mono">
+                <span className="text-lg font-black text-amber-700 dark:text-amber-400 tabular-nums">
                   {formatBDT(itemsSubtotal)}
                 </span>
               </div>
@@ -1767,7 +1767,7 @@ export function NewPurchaseModal({
                       min="0"
                       value={discountValue}
                       onChange={(e) => setDiscountValue(Number(e.target.value))}
-                      className="text-xs h-9 font-mono"
+                      className="text-xs h-9 tabular-nums"
                       placeholder="0"
                     />
                   </div>
@@ -1801,7 +1801,7 @@ export function NewPurchaseModal({
                     min="0"
                     value={shippingCost}
                     onChange={(e) => setShippingCost(Number(e.target.value))}
-                    className="text-xs h-9 font-mono"
+                    className="text-xs h-9 tabular-nums"
                     placeholder="0"
                   />
                 </div>
@@ -1817,7 +1817,7 @@ export function NewPurchaseModal({
                     min="0"
                     value={customVatAmount}
                     onChange={(e) => setCustomVatAmount(Number(e.target.value))}
-                    className="text-xs h-9 font-mono w-full sm:w-60"
+                    className="text-xs h-9 tabular-nums w-full sm:w-60"
                   />
                 </div>
               )}
@@ -1859,7 +1859,7 @@ export function NewPurchaseModal({
                     min="0"
                     value={advancePaid}
                     onChange={(e) => setAdvancePaid(Number(e.target.value))}
-                    className="text-xs h-9 font-mono font-bold"
+                    className="text-xs h-9 tabular-nums font-bold"
                     placeholder="0"
                   />
                 </div>
@@ -1890,7 +1890,7 @@ export function NewPurchaseModal({
                     placeholder="e.g. Bank Cheque #991024 or bKash TrxID"
                     value={advanceRefNumber}
                     onChange={(e) => setAdvanceRefNumber(e.target.value)}
-                    className="text-xs h-9 font-mono"
+                    className="text-xs h-9 tabular-nums"
                   />
                 </div>
               )}
@@ -1930,7 +1930,7 @@ export function NewPurchaseModal({
                 <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold uppercase">
                   Items Subtotal
                 </span>
-                <div className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
+                <div className="text-sm font-bold tabular-nums text-slate-800 dark:text-slate-200 mt-0.5">
                   {formatBDT(itemsSubtotal)}
                 </div>
               </div>
@@ -1939,7 +1939,7 @@ export function NewPurchaseModal({
                 <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold uppercase">
                   VAT & Freight
                 </span>
-                <div className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
+                <div className="text-sm font-bold tabular-nums text-slate-800 dark:text-slate-200 mt-0.5">
                   +{formatBDT(calculatedVatAmount + (Number(shippingCost) || 0))}
                 </div>
               </div>
@@ -1948,7 +1948,7 @@ export function NewPurchaseModal({
                 <span className="text-2xs text-amber-700 dark:text-amber-300 block font-bold uppercase">
                   PO Grand Total
                 </span>
-                <div className="text-base font-black font-mono text-amber-700 dark:text-amber-400 mt-0.5">
+                <div className="text-base font-black tabular-nums text-amber-700 dark:text-amber-400 mt-0.5">
                   {formatBDT(grandTotal)}
                 </div>
               </div>
@@ -1957,7 +1957,7 @@ export function NewPurchaseModal({
                 <span className="text-2xs text-rose-600 dark:text-rose-400 block font-bold uppercase">
                   Due on Delivery
                 </span>
-                <div className="text-base font-black font-mono text-rose-600 dark:text-rose-400 mt-0.5">
+                <div className="text-base font-black tabular-nums text-rose-600 dark:text-rose-400 mt-0.5">
                   {formatBDT(dueAmount)}
                 </div>
               </div>

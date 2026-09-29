@@ -341,7 +341,7 @@ export function CompleteTaskModal({
               </Badge>
             </div>
             <div className="flex items-center gap-1.5">
-              <Badge variant="outline" className="text-2xs font-mono font-bold">
+              <Badge variant="outline" className="text-2xs tabular-nums font-bold">
                 {task.task_number}
               </Badge>
               <Badge className={
@@ -358,7 +358,7 @@ export function CompleteTaskModal({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-2xs pt-1 border-t border-slate-200/80 dark:border-slate-800">
             <div className="space-y-0.5">
               <span className="text-slate-400 font-semibold uppercase tracking-wider block">Job / Invoice:</span>
-              <strong className="text-slate-800 dark:text-slate-200 font-mono text-xs">{task.job_number || task.invoice_number || 'N/A'}</strong>
+              <strong className="text-slate-800 dark:text-slate-200 tabular-nums text-xs">{task.job_number || task.invoice_number || 'N/A'}</strong>
             </div>
 
             <div className="space-y-0.5">
@@ -450,7 +450,7 @@ export function CompleteTaskModal({
                 step="any"
                 value={goodQty}
                 onChange={(e) => setGoodQty(Number(e.target.value))}
-                className="font-mono font-bold text-base h-10"
+                className="tabular-nums font-bold text-base h-10"
                 required
               />
               <span className="text-xs font-bold uppercase text-slate-500 shrink-0">
@@ -458,7 +458,7 @@ export function CompleteTaskModal({
               </span>
             </div>
             {taskAreaSft > 0 && (
-              <p className="text-2xs text-emerald-600 font-semibold font-mono">
+              <p className="text-2xs text-emerald-600 font-semibold tabular-nums">
                 ✓ Total Net Print Area: {taskAreaSft} Sq.Ft.
               </p>
             )}
@@ -484,7 +484,7 @@ export function CompleteTaskModal({
             <select
               value={selectedRollId}
               onChange={(e) => setSelectedRollId(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-mono font-bold"
+              className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs tabular-nums font-bold"
             >
               <option value="">-- No roll deduction (Sheet-fed / Pre-cut / Manual) --</option>
               {availableRolls.map((roll) => (
@@ -520,7 +520,7 @@ export function CompleteTaskModal({
                 <Scissors className="h-3.5 w-3.5 text-blue-600" />
                 <span>Dimensional Roll Feed Engine ({selectedRoll.width_ft}ft Roll)</span>
               </span>
-              <span className="text-2xs font-mono font-bold text-blue-700 dark:text-blue-300">
+              <span className="text-2xs tabular-nums font-bold text-blue-700 dark:text-blue-300">
                 Available: {selectedRoll.current_length_ft ?? (selectedRoll.remaining_area_sft / selectedRoll.width_ft)} ft
               </span>
             </div>
@@ -564,7 +564,7 @@ export function CompleteTaskModal({
               <div className="space-y-1">
                 <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                   <span>Bleed / Lead-in Allowance</span>
-                  <span className="text-2xs font-mono text-slate-500">
+                  <span className="text-2xs tabular-nums text-slate-500">
                     = {(bleedInches / 12).toFixed(2)} ft
                   </span>
                 </Label>
@@ -575,7 +575,7 @@ export function CompleteTaskModal({
                     step="0.5"
                     value={bleedInches}
                     onChange={(e) => setBleedInches(Number(e.target.value))}
-                    className="h-8 font-mono text-xs font-bold"
+                    className="h-8 tabular-nums text-xs font-bold"
                     placeholder="e.g. 3"
                   />
                   <span className="text-xs font-bold text-slate-500 shrink-0">inches</span>
@@ -599,29 +599,29 @@ export function CompleteTaskModal({
             {/* LIVE TELEMETRY CALCULATION HUD */}
             {rollCalc && (
               <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-blue-100 dark:border-blue-900/40 text-xs space-y-1.5">
-                <div className="flex items-center justify-between font-mono text-2xs text-slate-600 dark:text-slate-400">
+                <div className="flex items-center justify-between tabular-nums text-2xs text-slate-600 dark:text-slate-400">
                   <span>Good Linear Feed:</span>
                   <strong className="text-slate-900 dark:text-white">{rollCalc.linear_feed_ft} ft</strong>
                 </div>
                 {rollCalc.bleed_allowance_ft > 0 && (
-                  <div className="flex items-center justify-between font-mono text-2xs text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between tabular-nums text-2xs text-slate-600 dark:text-slate-400">
                     <span>+ Bleed Allowance ({bleedInches}&quot;):</span>
                     <strong className="text-blue-600">+{rollCalc.bleed_allowance_ft} ft</strong>
                   </div>
                 )}
                 {rollCalc.wastage_length_ft > 0 && (
-                  <div className="flex items-center justify-between font-mono text-2xs text-rose-600">
+                  <div className="flex items-center justify-between tabular-nums text-2xs text-rose-600">
                     <span>+ Scrap Wastage Run:</span>
                     <strong>+{rollCalc.wastage_length_ft} ft</strong>
                   </div>
                 )}
-                <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between font-mono text-xs">
+                <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between tabular-nums text-xs">
                   <span className="font-bold text-slate-800 dark:text-slate-200">Total Linear Deduction:</span>
                   <span className="font-black text-rose-600 dark:text-rose-400 text-sm">
                     -{rollCalc.total_linear_deduction_ft} ft ({rollCalc.total_utilized_area_sft} SFT)
                   </span>
                 </div>
-                <div className="flex items-center justify-between font-mono text-xs pt-0.5">
+                <div className="flex items-center justify-between tabular-nums text-xs pt-0.5">
                   <span className="font-bold text-slate-800 dark:text-slate-200">Remaining Roll Length:</span>
                   <span className="font-black text-emerald-600 dark:text-emerald-400">
                     {rollCalc.roll_current_length_ft} ft ➔ {rollCalc.new_remaining_length_ft} ft
@@ -639,7 +639,7 @@ export function CompleteTaskModal({
                     <strong className="text-rose-900 dark:text-rose-200 font-black block">
                       Roll Length Shortage Detected! (রোলে পর্যাপ্ত দৈর্ঘ্য নেই)
                     </strong>
-                    <p className="text-rose-800 dark:text-rose-300 font-mono mt-0.5">
+                    <p className="text-rose-800 dark:text-rose-300 tabular-nums mt-0.5">
                       Required: <strong>{rollCalc.total_linear_deduction_ft}ft</strong> | Available: <strong>{rollCalc.roll_current_length_ft}ft</strong> (Shortage of <strong>{rollCalc.shortage_amount_ft}ft</strong>)
                     </p>
                   </div>
@@ -702,12 +702,12 @@ export function CompleteTaskModal({
                       setScrapWastageLengthFt(val)
                       setScrapQty(val)
                     }}
-                    className="h-9 font-mono font-bold text-sm bg-white dark:bg-slate-900 border-rose-300 dark:border-rose-800"
+                    className="h-9 tabular-nums font-bold text-sm bg-white dark:bg-slate-900 border-rose-300 dark:border-rose-800"
                     placeholder={selectedRoll ? 'e.g. 2.5 ft' : 'e.g. 5'}
                     required={hasScrap}
                   />
                   {scrapAreaSft > 0 && (
-                    <span className="text-2xs text-rose-700 font-mono block">
+                    <span className="text-2xs text-rose-700 tabular-nums block">
                       = {scrapAreaSft} SFT Scrap Material
                     </span>
                   )}
@@ -762,7 +762,7 @@ export function CompleteTaskModal({
               value={machineMeter}
               onChange={(e) => setMachineMeter(e.target.value)}
               placeholder="e.g. 14520"
-              className="h-9 font-mono text-xs"
+              className="h-9 tabular-nums text-xs"
             />
           </div>
 

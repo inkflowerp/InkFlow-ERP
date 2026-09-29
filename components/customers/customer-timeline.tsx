@@ -136,7 +136,7 @@ export function CustomerTimeline({
       return (
         <Link
           href={getTenantNavHref(`/billing/${evt.referenceId || refNum}`, pathname, baseSlug)}
-          className="inline-flex items-center gap-1 font-mono text-2xs font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 hover:underline bg-blue-50/70 dark:bg-blue-950/50 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-900"
+          className="inline-flex items-center gap-1 tabular-nums text-2xs font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 hover:underline bg-blue-50/70 dark:bg-blue-950/50 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-900"
           title="Open Invoice"
         >
           <span>{refNum}</span>
@@ -149,7 +149,7 @@ export function CustomerTimeline({
       return (
         <Link
           href={getTenantNavHref('/quotations', pathname, baseSlug)}
-          className="inline-flex items-center gap-1 font-mono text-2xs font-bold text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:underline bg-amber-50/70 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900"
+          className="inline-flex items-center gap-1 tabular-nums text-2xs font-bold text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:underline bg-amber-50/70 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900"
           title="Open Quotations"
         >
           <span>{refNum}</span>
@@ -162,7 +162,7 @@ export function CustomerTimeline({
       return (
         <Link
           href={getTenantNavHref('/orders', pathname, baseSlug)}
-          className="inline-flex items-center gap-1 font-mono text-2xs font-bold text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 hover:underline bg-cyan-50/70 dark:bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-200 dark:border-cyan-900"
+          className="inline-flex items-center gap-1 tabular-nums text-2xs font-bold text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 hover:underline bg-cyan-50/70 dark:bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-200 dark:border-cyan-900"
           title="Open Orders"
         >
           <span>{refNum}</span>
@@ -173,14 +173,14 @@ export function CustomerTimeline({
 
     if (evt.referenceType === 'payment' || evt.type === 'payment_received') {
       return (
-        <span className="inline-flex items-center gap-1 font-mono text-2xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-900">
+        <span className="inline-flex items-center gap-1 tabular-nums text-2xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-900">
           MR #{refNum}
         </span>
       )
     }
 
     return (
-      <span className="font-mono text-2xs font-medium text-slate-600 dark:text-slate-400">
+      <span className="tabular-nums text-2xs font-medium text-slate-600 dark:text-slate-400">
         Ref: {refNum}
       </span>
     )

@@ -159,7 +159,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                       placeholder="01712-XXXXXX"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs font-mono"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs tabular-nums"
                     />
                   </div>
                 </div>

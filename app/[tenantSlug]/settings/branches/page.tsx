@@ -478,7 +478,7 @@ export default function BranchesSettingsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400">
+                    <span className="tabular-nums text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400">
                       {branch.code}
                     </span>
                     <h3 className="font-bold text-base text-slate-900 dark:text-white">
@@ -504,7 +504,7 @@ export default function BranchesSettingsPage() {
                     {branch.phone && (
                       <a href={`tel:${branch.phone}`} className="flex items-center gap-1 hover:text-blue-600">
                         <Phone className="h-3.5 w-3.5 text-slate-400" />
-                        <span className="font-mono">{branch.phone}</span>
+                        <span className="tabular-nums">{branch.phone}</span>
                       </a>
                     )}
                     {branch.address && (
@@ -596,7 +596,7 @@ export default function BranchesSettingsPage() {
                 placeholder="e.g. TEJ-PLANT"
                 value={newBranch.code}
                 onChange={(e) => setNewBranch({ ...newBranch, code: e.target.value })}
-                className="h-9 text-xs font-mono uppercase"
+                className="h-9 text-xs tabular-nums uppercase"
                 required
               />
             </div>
@@ -707,7 +707,7 @@ export default function BranchesSettingsPage() {
                   id="editCode"
                   value={editingBranch.code}
                   onChange={(e) => setEditingBranch({ ...editingBranch, code: e.target.value })}
-                  className="h-9 text-xs font-mono uppercase"
+                  className="h-9 text-xs tabular-nums uppercase"
                   required
                 />
               </div>

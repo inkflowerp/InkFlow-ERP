@@ -227,7 +227,7 @@ export function FeatureDeepDiveSection() {
                   </div>
                   <div>
                     <h4 className="text-xs sm:text-sm font-bold text-white">Live SFT Quotation Engine</h4>
-                    <span className="text-2xs sm:text-2xs text-slate-400 font-mono">Formula: W × H × Qty × Rate</span>
+                    <span className="text-2xs sm:text-2xs text-slate-400 tabular-nums">Formula: W × H × Qty × Rate</span>
                   </div>
                 </div>
                 <Badge variant="outline" className="text-2xs sm:text-2xs text-cyan-300 border-cyan-500/30 shrink-0">
@@ -237,7 +237,7 @@ export function FeatureDeepDiveSection() {
 
               {/* Quick Size Presets */}
               <div className="space-y-1.5">
-                <span className="text-2xs text-slate-400 font-mono uppercase">Quick Size Presets:</span>
+                <span className="text-2xs text-slate-400 tabular-nums uppercase">Quick Size Presets:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {SIZE_PRESETS.map((sz, idx) => (
                     <button
@@ -258,7 +258,7 @@ export function FeatureDeepDiveSection() {
 
               {/* Media Rate Presets */}
               <div className="space-y-1.5">
-                <span className="text-2xs text-slate-400 font-mono uppercase">Media & Roll Rate:</span>
+                <span className="text-2xs text-slate-400 tabular-nums uppercase">Media & Roll Rate:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {MEDIA_PRESETS.map((m, idx) => (
                     <button
@@ -280,7 +280,7 @@ export function FeatureDeepDiveSection() {
               {/* Input Adjusters */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
                 <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                  <label className="text-slate-400 block text-2xs font-mono">Width (ft)</label>
+                  <label className="text-slate-400 block text-2xs tabular-nums">Width (ft)</label>
                   <input
                     type="number"
                     value={calcWidth}
@@ -289,7 +289,7 @@ export function FeatureDeepDiveSection() {
                   />
                 </div>
                 <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                  <label className="text-slate-400 block text-2xs font-mono">Height (ft)</label>
+                  <label className="text-slate-400 block text-2xs tabular-nums">Height (ft)</label>
                   <input
                     type="number"
                     value={calcHeight}
@@ -298,7 +298,7 @@ export function FeatureDeepDiveSection() {
                   />
                 </div>
                 <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                  <label className="text-slate-400 block text-2xs font-mono">Rate (৳/sft)</label>
+                  <label className="text-slate-400 block text-2xs tabular-nums">Rate (৳/sft)</label>
                   <input
                     type="number"
                     value={calcRate}
@@ -307,7 +307,7 @@ export function FeatureDeepDiveSection() {
                   />
                 </div>
                 <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                  <label className="text-slate-400 block text-2xs font-mono">Quantity</label>
+                  <label className="text-slate-400 block text-2xs tabular-nums">Quantity</label>
                   <input
                     type="number"
                     value={calcQty}
@@ -323,19 +323,19 @@ export function FeatureDeepDiveSection() {
                   <span className="truncate pr-2">
                     Total Square Footage ({calcWidth}ft × {calcHeight}ft × {calcQty} pcs):
                   </span>
-                  <span className="font-mono font-bold text-white shrink-0">{totalSft} SFT</span>
+                  <span className="tabular-nums font-bold text-white shrink-0">{totalSft} SFT</span>
                 </div>
                 <div className="flex justify-between text-slate-300">
                   <span className="truncate pr-2">Base Subtotal ({totalSft} SFT × ৳{calcRate}):</span>
-                  <span className="font-mono text-white shrink-0">৳ {subtotal.toLocaleString()}</span>
+                  <span className="tabular-nums text-white shrink-0">৳ {subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-emerald-400">
                   <span className="truncate pr-2">Discount ({calcDiscount}%):</span>
-                  <span className="font-mono shrink-0">- ৳ {Math.round(discountAmount).toLocaleString()}</span>
+                  <span className="tabular-nums shrink-0">- ৳ {Math.round(discountAmount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-cyan-400">
                   <span className="truncate pr-2">NBR Tax ({calcVat}% VAT):</span>
-                  <span className="font-mono shrink-0">+ ৳ {Math.round(vatAmount).toLocaleString()}</span>
+                  <span className="tabular-nums shrink-0">+ ৳ {Math.round(vatAmount).toLocaleString()}</span>
                 </div>
 
                 <div className="pt-3 border-t border-slate-800 flex flex-col xs:flex-row xs:items-center justify-between gap-2 text-sm">
@@ -382,7 +382,7 @@ export function FeatureDeepDiveSection() {
                   <Printer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
                   <span className="font-bold text-xs sm:text-sm text-white">Floor Kanban Station</span>
                 </div>
-                <span className="text-2xs sm:text-2xs font-mono text-slate-400">Live Press Queue</span>
+                <span className="text-2xs sm:text-2xs tabular-nums text-slate-400">Live Press Queue</span>
               </div>
 
               {/* 5 Department Status Stages */}
@@ -540,7 +540,7 @@ export function FeatureDeepDiveSection() {
                   </div>
                   <div>
                     <h4 className="text-xs sm:text-sm font-bold text-white">Job Costing Audit & Margins</h4>
-                    <span className="text-2xs sm:text-2xs text-slate-400 font-mono">BOM Cost Breakdown</span>
+                    <span className="text-2xs sm:text-2xs text-slate-400 tabular-nums">BOM Cost Breakdown</span>
                   </div>
                 </div>
                 <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-2xs sm:text-xs shrink-0">
@@ -582,26 +582,26 @@ export function FeatureDeepDiveSection() {
 
                   <div className="flex justify-between text-slate-300">
                     <span className="truncate pr-2">• Raw Media & Inks ({costData.mediaDesc}):</span>
-                    <span className="font-mono text-red-300 shrink-0">- ৳ {costData.mediaCost.toLocaleString()}</span>
+                    <span className="tabular-nums text-red-300 shrink-0">- ৳ {costData.mediaCost.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-slate-300">
                     <span className="truncate pr-2">• Machine Operator & Labor ({costData.laborDesc}):</span>
-                    <span className="font-mono text-red-300 shrink-0">- ৳ {costData.laborCost.toLocaleString()}</span>
+                    <span className="tabular-nums text-red-300 shrink-0">- ৳ {costData.laborCost.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-slate-300">
                     <span className="truncate pr-2">• Logistics & Transport ({costData.transportDesc}):</span>
-                    <span className="font-mono text-red-300 shrink-0">- ৳ {costData.transportCost.toLocaleString()}</span>
+                    <span className="tabular-nums text-red-300 shrink-0">- ৳ {costData.transportCost.toLocaleString()}</span>
                   </div>
                   {costData.installCost > 0 && (
                     <div className="flex justify-between text-slate-300">
                       <span className="truncate pr-2">• Site Rigging & Fitting ({costData.installDesc}):</span>
-                      <span className="font-mono text-red-300 shrink-0">- ৳ {costData.installCost.toLocaleString()}</span>
+                      <span className="tabular-nums text-red-300 shrink-0">- ৳ {costData.installCost.toLocaleString()}</span>
                     </div>
                   )}
 
                   <div className="pt-2 border-t border-slate-800 flex justify-between text-slate-200 font-bold">
                     <span>Total Job Cost:</span>
-                    <span className="font-mono text-red-400">৳ {totalCost.toLocaleString()}</span>
+                    <span className="tabular-nums text-red-400">৳ {totalCost.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -636,7 +636,7 @@ export function FeatureDeepDiveSection() {
                   <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 shrink-0" />
                   <div>
                     <h4 className="text-xs sm:text-sm font-bold text-white">Receivable Ledger & Recovery</h4>
-                    <span className="text-2xs sm:text-2xs text-slate-400 font-mono">
+                    <span className="text-2xs sm:text-2xs text-slate-400 tabular-nums">
                       Invoice: {invoiceData.id} • {tBilingual(invoiceData.client, invoiceData.clientBn)}
                     </span>
                   </div>
@@ -670,19 +670,19 @@ export function FeatureDeepDiveSection() {
               {/* Outstanding Amounts Breakdown */}
               <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 text-center">
                 <div className="p-2 sm:p-3 rounded-lg bg-slate-950 border border-slate-800">
-                  <span className="text-2xs sm:text-2xs text-slate-400 uppercase font-mono truncate block">Total Invoice</span>
+                  <span className="text-2xs sm:text-2xs text-slate-400 uppercase tabular-nums truncate block">Total Invoice</span>
                   <div className="text-xs xs:text-sm sm:text-base font-black text-white tabular-nums mt-0.5 sm:mt-1">
                     ৳ {invoiceData.total.toLocaleString()}
                   </div>
                 </div>
                 <div className="p-2 sm:p-3 rounded-lg bg-slate-950 border border-slate-800">
-                  <span className="text-2xs sm:text-2xs text-emerald-400 uppercase font-mono truncate block">Advance Paid</span>
+                  <span className="text-2xs sm:text-2xs text-emerald-400 uppercase tabular-nums truncate block">Advance Paid</span>
                   <div className="text-xs xs:text-sm sm:text-base font-black text-emerald-400 tabular-nums mt-0.5 sm:mt-1">
                     ৳ {invoiceData.advance.toLocaleString()}
                   </div>
                 </div>
                 <div className="p-2 sm:p-3 rounded-lg bg-amber-950/30 border border-amber-500/40">
-                  <span className="text-2xs sm:text-2xs text-amber-400 uppercase font-mono truncate block">Remaining Due</span>
+                  <span className="text-2xs sm:text-2xs text-amber-400 uppercase tabular-nums truncate block">Remaining Due</span>
                   <div className="text-xs xs:text-sm sm:text-base font-black text-amber-300 tabular-nums mt-0.5 sm:mt-1">
                     ৳ {invoiceData.due.toLocaleString()}
                   </div>
@@ -695,7 +695,7 @@ export function FeatureDeepDiveSection() {
                   <span className="text-slate-300 font-semibold flex items-center gap-1.5 text-2xs sm:text-xs">
                     <MessageSquare className="h-3.5 w-3.5 text-emerald-400 shrink-0" /> WhatsApp Payment Reminder
                   </span>
-                  <span className="text-2xs text-slate-400 font-mono">{invoiceData.phone}</span>
+                  <span className="text-2xs text-slate-400 tabular-nums">{invoiceData.phone}</span>
                 </div>
 
                 <div className="p-2.5 sm:p-3 rounded-lg bg-slate-900 border border-slate-800 text-2xs sm:text-xs text-slate-300 italic leading-relaxed">

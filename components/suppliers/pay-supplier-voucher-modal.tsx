@@ -161,7 +161,7 @@ export function PaySupplierVoucherModal({
               <span className="text-base font-black text-slate-900 dark:text-white">
                 {tBilingual('Issue Payment Voucher to Supplier', 'মহাজনকে বিল পরিশোধ / পেমেন্ট ভাউচার')}
               </span>
-              <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+              <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
                 {voucherNumber || 'PV-NEW'}
               </Badge>
             </div>
@@ -177,25 +177,25 @@ export function PaySupplierVoucherModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {/* VENDOR BALANCE SUMMARY BANNER */}
-        <div className="p-4 rounded-xl bg-gradient-to-r from-teal-50 to-slate-50 dark:from-teal-950/40 dark:to-slate-900/60 border border-teal-200 dark:border-teal-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div>
-            <span className="text-2xs uppercase font-bold text-teal-700 dark:text-teal-300 tracking-wider">
+            <span className="text-2xs uppercase font-bold text-muted-foreground tracking-wider">
               {tBilingual('Current Payable Balance', 'বর্তমান বকেয়া পাওনা')}
             </span>
-            <div className="text-2xl font-black text-teal-900 dark:text-teal-100 font-mono mt-0.5">
+            <div className="text-2xl font-bold text-foreground font-sans tabular-nums mt-0.5">
               {formatBDT(currentBalance)}
             </div>
-            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Terms: <strong className="text-slate-700 dark:text-slate-300">{supplier.payment_terms.replace('_', ' ').toUpperCase()}</strong>
+            <div className="text-2xs text-muted-foreground mt-0.5">
+              Terms: <strong className="text-foreground">{supplier.payment_terms.replace('_', ' ').toUpperCase()}</strong>
               {supplier.market_hub && ` • 📍 ${supplier.market_hub}`}
             </div>
           </div>
 
-          <div className="text-left sm:text-right border-t sm:border-t-0 sm:border-l border-teal-200 dark:border-teal-800 pt-2 sm:pt-0 sm:pl-4">
+          <div className="text-left sm:text-right border-t sm:border-t-0 sm:border-l border-border pt-2 sm:pt-0 sm:pl-4">
             <span className="text-2xs uppercase font-bold text-slate-400">
               {tBilingual('Balance After Payment', 'পেমেন্ট পরবর্তী অবশিষ্ট')}
             </span>
-            <div className="text-xl font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
+            <div className="text-xl font-bold tabular-nums text-slate-800 dark:text-slate-200 mt-0.5">
               {formatBDT(remainingBalance)}
             </div>
             {numAmount > 0 && numAmount >= currentBalance && (
@@ -243,7 +243,7 @@ export function PaySupplierVoucherModal({
                 if (fieldErrors.amount) setFieldErrors((prev) => ({ ...prev, amount: '' }))
               }}
               className={cn(
-                "text-base h-11 pl-9 font-mono font-black text-slate-900 dark:text-white",
+                "text-base h-11 pl-9 tabular-nums font-black text-slate-900 dark:text-white",
                 fieldErrors.amount && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
               )}
               required
@@ -323,7 +323,7 @@ export function PaySupplierVoucherModal({
                     if (fieldErrors.chequeNumber) setFieldErrors((prev) => ({ ...prev, chequeNumber: '' }))
                   }}
                   className={cn(
-                    "text-xs h-9 font-mono",
+                    "text-xs h-9 tabular-nums",
                     fieldErrors.chequeNumber && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
                   )}
                   required
@@ -344,7 +344,7 @@ export function PaySupplierVoucherModal({
                   type="date"
                   value={chequeDate}
                   onChange={(e) => setChequeDate(e.target.value)}
-                  className="text-xs h-9 font-mono"
+                  className="text-xs h-9 tabular-nums"
                 />
               </div>
             </div>
@@ -377,7 +377,7 @@ export function PaySupplierVoucherModal({
                   placeholder="e.g. BEFTN-20240828-9812"
                   value={transactionRef}
                   onChange={(e) => setTransactionRef(e.target.value)}
-                  className="text-xs h-9 font-mono"
+                  className="text-xs h-9 tabular-nums"
                 />
               </div>
             </div>
@@ -393,7 +393,7 @@ export function PaySupplierVoucherModal({
                   placeholder="017XXXXXXXX"
                   value={mfsNumber}
                   onChange={(e) => setMfsNumber(e.target.value)}
-                  className="text-xs h-9 font-mono"
+                  className="text-xs h-9 tabular-nums"
                 />
               </div>
 
@@ -405,7 +405,7 @@ export function PaySupplierVoucherModal({
                   placeholder="e.g. 9B27X8KL9"
                   value={transactionRef}
                   onChange={(e) => setTransactionRef(e.target.value)}
-                  className="text-xs h-9 font-mono uppercase"
+                  className="text-xs h-9 tabular-nums uppercase"
                 />
               </div>
             </div>

@@ -136,17 +136,17 @@ export function FollowUpModal({
         {/* Quotation Summary Card */}
         <div className="p-3 rounded-xl bg-slate-900 text-white space-y-1.5 text-xs shadow-inner">
           <div className="flex items-center justify-between">
-            <span className="font-mono font-bold text-cyan-300">
+            <span className="tabular-nums font-bold text-cyan-300">
               #{quotation.quotation_number}
             </span>
-            <span className="font-mono font-black text-sm text-emerald-400">
+            <span className="tabular-nums font-black text-sm text-emerald-400">
               {formatBDT(quotation.grand_total)}
             </span>
           </div>
           <div className="text-slate-300 font-semibold truncate">
             {quotation.customer_name} {quotation.customer_company && `(${quotation.customer_company})`}
           </div>
-          <div className="text-2xs text-slate-400 font-mono flex items-center gap-3">
+          <div className="text-2xs text-slate-400 tabular-nums flex items-center gap-3">
             <span>📞 {quotation.customer_phone}</span>
             <span>•</span>
             <span>Valid Until: {quotation.valid_until}</span>

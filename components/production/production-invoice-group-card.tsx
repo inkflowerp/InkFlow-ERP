@@ -107,7 +107,7 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
             <div className="flex items-center gap-2 flex-wrap">
               <Link
                 href={invoiceHref}
-                className="font-mono text-sm font-bold text-slate-950 dark:text-blue-200 hover:underline inline-flex items-center gap-1"
+                className="tabular-nums text-sm font-bold text-slate-950 dark:text-blue-200 hover:underline inline-flex items-center gap-1"
               >
                 <span>Invoice #{invoiceNumber}</span>
                 <ExternalLink className="h-3 w-3 opacity-60" />
@@ -130,7 +130,7 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-0.5">
               <span className="font-semibold text-slate-900 dark:text-white">{customerName}</span>
               {customerPhone && (
-                <span className="text-2xs font-mono text-emerald-700 dark:text-emerald-400">
+                <span className="text-2xs tabular-nums text-emerald-700 dark:text-emerald-400">
                   • {customerPhone}
                 </span>
               )}

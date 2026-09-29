@@ -5,26 +5,28 @@
 @layer base {
   :root {
     color-scheme: light;
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --background: 210 40% 98%; /* #F8FAFC */
+    --foreground: 222.2 47.4% 11.2%; /* #0F172A */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 222.2 47.4% 11.2%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    --primary: 221.2 83.2% 53.3%; /* #2563EB */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 224.3 76.3% 48%; /* #1D4ED8 */
+    --primary-surface: 213.8 100% 96.9%; /* #EFF6FF */
+    --secondary: 210 40% 96.1%; /* #F1F5F9 */
+    --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
-    --radius: 0.75rem;
+    --muted-foreground: 215.4 16.3% 46.9%; /* #64748B Secondary Text */
+    --accent: 213.8 100% 96.9%; /* #EFF6FF Light Blue Surface */
+    --accent-foreground: 221.2 83.2% 53.3%;
+    --destructive: 0 84.2% 60.2%; /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
+    --border: 214.3 31.8% 91.4%; /* #E2E8F0 */
+    --input: 212.7 26.8% 83.9%; /* #CBD5E1 Input Border */
+    --ring: 221.2 83.2% 53.3%; /* #2563EB Focus Ring */
+    --radius: 0.5rem; /* 8px controls, 12px cards, 16px containers */
 
     /* Semantic Feedback Accents */
     --success: 142 76% 36%;
@@ -34,7 +36,7 @@
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
-    /* Printing & Signage CMYK Industry Accents */
+    /* Printing & Signage CMYK Industry Accents (Subtle Brand Identity) */
     --cmyk-cyan: 191 97% 45%;
     --cmyk-magenta: 326 100% 50%;
     --cmyk-yellow: 48 100% 50%;
@@ -43,33 +45,36 @@
 
   .dark {
     color-scheme: dark;
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 9%;
+    --background: 222.2 47.4% 11.2%; /* #0F172A */
+    --foreground: 210 40% 98%; /* #F8FAFC */
+    --card: 220.9 39.3% 11%; /* #111827 */
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 9%;
+    --card-elevated: 217.2 32.6% 17.5%; /* #1E293B */
+    --popover: 220.9 39.3% 11%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11.2%;
-    --secondary: 217.2 32.6% 15%;
+    --primary: 217.2 91.2% 67.8%; /* #60A5FA */
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-hover: 221.2 83.2% 53.3%;
+    --primary-surface: 217.2 32.6% 17.5%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 15%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 212.7 26.8% 83.9%; /* #CBD5E1 Secondary Text */
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 84.2% 62%;
-    --destructive-foreground: 224 71% 4%;
-    --border: 217.2 32.6% 18%;
-    --input: 217.2 32.6% 18%;
-    --ring: 217 91% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 27.5%; /* #334155 */
+    --input: 217.2 32.6% 27.5%; /* #334155 */
+    --ring: 217.2 91.2% 67.8%;
 
     /* Semantic Feedback Accents with WCAG AA compliant dark-mode contrast */
     --success: 142 70% 48%;
-    --success-foreground: 224 71% 4%;
+    --success-foreground: 222.2 47.4% 11.2%;
     --warning: 43 96% 56%;
-    --warning-foreground: 224 71% 4%;
+    --warning-foreground: 222.2 47.4% 11.2%;
     --info: 199 89% 58%;
-    --info-foreground: 224 71% 4%;
+    --info-foreground: 222.2 47.4% 11.2%;
 
     /* Printing & Signage CMYK Industry Accents in Dark Mode */
     --cmyk-cyan: 191 97% 55%;
@@ -115,7 +120,7 @@
 
   --font-sans: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-bangla: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono: var(--font-sans);
 
   /* Responsive Breakpoints */
   --breakpoint-xs: 480px;
@@ -292,58 +297,66 @@ input[data-numeric],
   font-feature-settings: "tnum" 1, "zero" 1 !important;
 }
 
-/* Explicit Code & Monospace Elements - JetBrains Mono with tabular alignment */
+/* Code, Pre, and any legacy Mono Elements - Standardized Clean Sans with Tabular Alignment */
 .font-mono,
 code,
 kbd,
 pre,
 [data-mono] {
-  font-family: var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-family: var(--font-sans) !important;
   font-variant-numeric: tabular-nums !important;
   font-feature-settings: "tnum" 1, "zero" 1 !important;
 }
 
 /* ==============================================================================
-   Authoritative UI/UX Design System Gradients & Surface Tokens
-   Consistent, premium enterprise printing SaaS aesthetic
+   Authoritative UI/UX Design System Surfaces & Micro-Accent Tokens
+   Consistent, clean, professional enterprise printing SaaS aesthetic
    ============================================================================== */
 
-/* 1. Primary InkFlow Blue-Indigo Brand Gradient */
+/* 1. Primary Solid Brand Action Surface (Replaces excessive gradients) */
 .bg-gradient-brand,
 .gradient-primary {
-  background-image: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #4f46e5 100%) !important;
+  background-color: #2563eb !important;
+  background-image: none !important;
 }
 
 .hover\:bg-gradient-brand-hover:hover {
-  background-image: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #4338ca 100%) !important;
+  background-color: #1d4ed8 !important;
+  background-image: none !important;
 }
 
-/* 2. Dark Hero & Financial Command Surface Gradient */
+/* 2. Flat Dark Surface for Command Console */
 .bg-gradient-dark-hero,
 .gradient-dark-hero {
-  background-image: linear-gradient(145deg, #020617 0%, #0f172a 45%, #1e1b4b 100%) !important;
+  background-color: #0f172a !important;
+  background-image: none !important;
 }
 
-/* 3. Subtle Clean Dashboard Card Header Gradient */
+/* 3. Flat Neutral Card Header Surface */
 .bg-gradient-card-light {
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.9) 60%, rgba(238, 242, 255, 0.6) 100%) !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
 }
 .dark .bg-gradient-card-light {
-  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.85) 60%, rgba(30, 27, 75, 0.5) 100%) !important;
+  background-color: #111827 !important;
+  background-image: none !important;
 }
 
-/* 4. Semantic Action Gradients */
+/* 4. Semantic Action Solid Surfaces */
 .bg-gradient-success {
-  background-image: linear-gradient(135deg, #059669 0%, #10b981 50%, #0d9488 100%) !important;
+  background-color: #10b981 !important;
+  background-image: none !important;
 }
 .bg-gradient-warning {
-  background-image: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #ea580c 100%) !important;
+  background-color: #f59e0b !important;
+  background-image: none !important;
 }
 .bg-gradient-danger {
-  background-image: linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #dc2626 100%) !important;
+  background-color: #ef4444 !important;
+  background-image: none !important;
 }
 
-/* 5. Printing Industry CMYK Signature Rainbow Accent Line */
+/* 5. Printing Industry CMYK Signature Rainbow Micro Accent Line (2px) */
 .cmyk-rainbow-bar {
   background: linear-gradient(90deg, #00A3E0 0%, #E4007C 33%, #FFD100 66%, #1E293B 100%) !important;
 }
@@ -351,29 +364,25 @@ pre,
   background: linear-gradient(90deg, #00A3E0 0%, #E4007C 33%, #FFD100 66%, #F8FAFC 100%) !important;
 }
 
-/* 6. UI/UX Pro Max Glass Card (Rule 301-309: Light mode >= 80% opacity, border-slate-200, crisp contrast) */
+/* 6. Clean Flat Structured Cards */
 .glass-card {
-  background-color: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.85);
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
 }
 .dark .glass-card {
-  background-color: rgba(15, 23, 42, 0.82);
-  border-color: rgba(51, 65, 85, 0.7);
+  background-color: #111827;
+  border-color: #334155;
 }
 
 .glass-card-elevated {
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
 }
 .dark .glass-card-elevated {
-  background-color: rgba(15, 23, 42, 0.92);
-  border-color: rgba(51, 65, 85, 0.8);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  background-color: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
 }
 
 .nav-link-nowrap {

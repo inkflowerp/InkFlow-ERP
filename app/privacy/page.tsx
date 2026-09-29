@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
               <span>4. Contact & Data Inquiries</span>
             </h2>
             <p>
-              If you have any questions regarding data compliance, export requests, or security audits, contact our Dhaka data protection desk at <span className="text-cyan-400 font-mono">privacy@printerp.com.bd</span>.
+              If you have any questions regarding data compliance, export requests, or security audits, contact our Dhaka data protection desk at <span className="text-cyan-400 tabular-nums">privacy@printerp.com.bd</span>.
             </p>
           </section>
         </div>

@@ -460,7 +460,7 @@ export function NewCustomerModal({
                       <span className="font-bold text-slate-900 dark:text-white">
                         {m.customer.name}
                       </span>
-                      <Badge variant="outline" className="font-mono text-2xs px-1.5 py-0 text-blue-700 bg-blue-50/50 border-blue-200 dark:border-blue-900 dark:text-blue-300">
+                      <Badge variant="outline" className="tabular-nums text-2xs px-1.5 py-0 text-blue-700 bg-blue-50/50 border-blue-200 dark:border-blue-900 dark:text-blue-300">
                         {formatCustomerIdNo(m.customer)}
                       </Badge>
                       {m.customer.company_name && (
@@ -469,7 +469,7 @@ export function NewCustomerModal({
                         </span>
                       )}
                     </div>
-                    <div className="text-2xs text-slate-500 font-mono">
+                    <div className="text-2xs text-slate-500 tabular-nums">
                       {m.customer.mobile} {m.customer.whatsapp ? `• WA: ${m.customer.whatsapp}` : ''}
                     </div>
                     <div className="text-2xs text-amber-700 dark:text-amber-300 font-medium mt-0.5">
@@ -575,7 +575,7 @@ export function NewCustomerModal({
                     placeholder="Auto (e.g. CUST-0002)"
                     value={customerIdNo}
                     onChange={(e) => setCustomerIdNo(e.target.value)}
-                    className="text-xs h-9 font-mono"
+                    className="text-xs h-9 tabular-nums"
                   />
                   <p className="text-2xs text-slate-400 mt-1">Leave empty to auto-generate</p>
                 </div>
@@ -588,7 +588,7 @@ export function NewCustomerModal({
                     placeholder="e.g. APX-01 or REF-01"
                     value={customerCode}
                     onChange={(e) => setCustomerCode(e.target.value)}
-                    className="text-xs h-9 font-mono"
+                    className="text-xs h-9 tabular-nums"
                   />
                 </div>
 
@@ -644,7 +644,7 @@ export function NewCustomerModal({
                       if (fieldErrors.mobile) setFieldErrors((prev) => ({ ...prev, mobile: '' }))
                     }}
                     className={cn(
-                      "text-xs h-9 font-mono",
+                      "text-xs h-9 tabular-nums",
                       fieldErrors.mobile && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
                     )}
                   />
@@ -675,7 +675,7 @@ export function NewCustomerModal({
                     placeholder="01XXXXXXXXX"
                     value={whatsapp}
                     onChange={(e) => setWhatsapp(e.target.value)}
-                    className="text-xs h-9 font-mono disabled:opacity-60"
+                    className="text-xs h-9 tabular-nums disabled:opacity-60"
                   />
                 </div>
 
@@ -815,7 +815,7 @@ export function NewCustomerModal({
                         type="number"
                         value={creditLimit}
                         onChange={(e) => setCreditLimit(Number(e.target.value))}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
 
@@ -840,7 +840,7 @@ export function NewCustomerModal({
                         placeholder="e.g. 001234567-0101"
                         value={bin}
                         onChange={(e) => setBin(e.target.value)}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
 
@@ -850,7 +850,7 @@ export function NewCustomerModal({
                         placeholder="e.g. 123456789012"
                         value={tin}
                         onChange={(e) => setTin(e.target.value)}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
                   </div>
@@ -930,10 +930,10 @@ export function NewCustomerModal({
                                 return updated
                               })
                             }}
-                            className="h-8 pl-6 text-right text-xs font-bold font-mono bg-slate-50 dark:bg-slate-950"
+                            className="h-8 pl-6 text-right text-xs font-bold tabular-nums bg-slate-50 dark:bg-slate-950"
                           />
                         </div>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 uppercase font-mono w-8">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 uppercase tabular-nums w-8">
                           /{prod.unit}
                         </span>
                       </div>

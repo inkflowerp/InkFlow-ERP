@@ -284,7 +284,7 @@ export function FinancialReportsView({
               <span className="text-3xs uppercase font-semibold text-slate-400 block">
                 {tBilingual('Total Money In (Revenue/Collections)', 'মোট আয় ও কালেকশন')}
               </span>
-              <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
+              <span className="text-2xl sm:text-3xl font-black tabular-nums text-emerald-600 dark:text-emerald-400 mt-1 block">
                 +৳{totalInflow.toLocaleString()}
               </span>
               <p className="text-3xs text-emerald-600/80 mt-1">{tBilingual('Invoice receipts & deposits', 'আদায়কৃত বিল')}</p>
@@ -294,7 +294,7 @@ export function FinancialReportsView({
               <span className="text-3xs uppercase font-semibold text-slate-400 block">
                 {tBilingual('Total Money Out (Expenditures)', 'মোট খরচ ও বিল পরিশোধ')}
               </span>
-              <span className="text-2xl sm:text-3xl font-black font-mono text-rose-600 dark:text-rose-400 mt-1 block">
+              <span className="text-2xl sm:text-3xl font-black tabular-nums text-rose-600 dark:text-rose-400 mt-1 block">
                 -৳{totalOutflow.toLocaleString()}
               </span>
               <p className="text-3xs text-rose-600/80 mt-1">{tBilingual('Operating & supplier payouts', 'পরিচালন ও মহাজন বিল')}</p>
@@ -304,7 +304,7 @@ export function FinancialReportsView({
               <span className="text-3xs uppercase font-semibold text-slate-400 block">
                 {tBilingual('Net Cash Surplus / Margin', 'নিট নগদ উদ্বৃত্ত')}
               </span>
-              <span className={`text-2xl sm:text-3xl font-black font-mono mt-1 block ${netSurplus >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`text-2xl sm:text-3xl font-black tabular-nums mt-1 block ${netSurplus >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {netSurplus >= 0 ? '+' : ''}৳{netSurplus.toLocaleString()}
               </span>
               <p className="text-3xs text-slate-400 mt-1">
@@ -328,7 +328,7 @@ export function FinancialReportsView({
                   <div key={cat} className="space-y-1">
                     <div className="flex justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
                       <span>{cat}</span>
-                      <span className="font-mono text-rose-600">৳{amtNum.toLocaleString()} ({pct}%)</span>
+                      <span className="tabular-nums text-rose-600">৳{amtNum.toLocaleString()} ({pct}%)</span>
                     </div>
                     <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                       <div className="bg-rose-500 h-full rounded-full" style={{ width: `${Math.min(100, pct)}%` }} />
@@ -358,24 +358,24 @@ export function FinancialReportsView({
           <CardContent className="p-5 space-y-4 text-xs">
             <div className="flex justify-between font-bold pb-2 border-b">
               <span>{tBilingual('1. Cash Inflows (Operating Collections)', '১. নগদ জমা (আদায় ও কালেকশন)')}</span>
-              <span className="text-emerald-600 font-mono">+৳{totalInflow.toLocaleString()}</span>
+              <span className="text-emerald-600 tabular-nums">+৳{totalInflow.toLocaleString()}</span>
             </div>
 
             <div className="flex justify-between font-bold pb-2 border-b">
               <span>{tBilingual('2. Cash Outflows (Expenses & Payments)', '২. নগদ খরচ ও বিল পরিশোধ')}</span>
-              <span className="text-rose-600 font-mono">-৳{totalOutflow.toLocaleString()}</span>
+              <span className="text-rose-600 tabular-nums">-৳{totalOutflow.toLocaleString()}</span>
             </div>
 
             <div className="flex justify-between font-bold text-sm bg-slate-50 dark:bg-slate-850 p-3 rounded-xl">
               <span>{tBilingual('Net Liquid Cash Movement', 'নিট নগদ প্রবাহ')}</span>
-              <span className={`font-mono ${netSurplus >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span className={`tabular-nums ${netSurplus >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {netSurplus >= 0 ? '+' : ''}৳{netSurplus.toLocaleString()}
               </span>
             </div>
 
             <div className="flex justify-between font-bold text-base bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-xl text-emerald-900 dark:text-emerald-200 border border-emerald-200">
               <span>{tBilingual('Total Current Liquid Capital in Hand & Bank', 'বর্তমান মোট নগদ ও ব্যাংক স্থিতি')}</span>
-              <span className="font-mono">৳{currentTotalLiquid.toLocaleString()}</span>
+              <span className="tabular-nums">৳{currentTotalLiquid.toLocaleString()}</span>
             </div>
           </CardContent>
         </Card>
@@ -406,11 +406,11 @@ export function FinancialReportsView({
                   {(receivables?.items || []).map((i) => (
                     <tr key={i.reference_id} className="hover:bg-slate-50/50">
                       <td className="p-3 font-semibold">{i.party_name}</td>
-                      <td className="p-3 font-mono text-blue-600">{i.reference_id}</td>
-                      <td className="p-3 text-right font-mono">৳{i.total_amount.toLocaleString()}</td>
-                      <td className="p-3 text-right font-mono text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
-                      <td className="p-3 text-right font-mono font-bold text-amber-600">৳{i.due_amount.toLocaleString()}</td>
-                      <td className="p-3 text-center font-mono text-2xs">{i.bucket}</td>
+                      <td className="p-3 tabular-nums text-blue-600">{i.reference_id}</td>
+                      <td className="p-3 text-right tabular-nums">৳{i.total_amount.toLocaleString()}</td>
+                      <td className="p-3 text-right tabular-nums text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
+                      <td className="p-3 text-right tabular-nums font-bold text-amber-600">৳{i.due_amount.toLocaleString()}</td>
+                      <td className="p-3 text-center tabular-nums text-2xs">{i.bucket}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -445,11 +445,11 @@ export function FinancialReportsView({
                   {(payables?.items || []).map((i) => (
                     <tr key={i.reference_id} className="hover:bg-slate-50/50">
                       <td className="p-3 font-semibold">{i.party_name}</td>
-                      <td className="p-3 font-mono text-slate-600">{i.reference_id}</td>
-                      <td className="p-3 text-right font-mono">৳{i.total_amount.toLocaleString()}</td>
-                      <td className="p-3 text-right font-mono text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
-                      <td className="p-3 text-right font-mono font-bold text-rose-600">৳{i.due_amount.toLocaleString()}</td>
-                      <td className="p-3 text-center font-mono text-2xs">{i.bucket}</td>
+                      <td className="p-3 tabular-nums text-slate-600">{i.reference_id}</td>
+                      <td className="p-3 text-right tabular-nums">৳{i.total_amount.toLocaleString()}</td>
+                      <td className="p-3 text-right tabular-nums text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
+                      <td className="p-3 text-right tabular-nums font-bold text-rose-600">৳{i.due_amount.toLocaleString()}</td>
+                      <td className="p-3 text-center tabular-nums text-2xs">{i.bucket}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -483,7 +483,7 @@ export function FinancialReportsView({
             {selectedAccount && (
               <div className="text-right">
                 <span className="text-3xs text-slate-400 block uppercase font-semibold">Current Balance</span>
-                <span className="text-xl font-black font-mono text-blue-600 dark:text-blue-400">
+                <span className="text-xl font-black tabular-nums text-blue-600 dark:text-blue-400">
                   ৳{Number(selectedAccount.current_balance || 0).toLocaleString()}
                 </span>
               </div>
@@ -507,16 +507,16 @@ export function FinancialReportsView({
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                     {statementLines.map((l) => (
                       <tr key={l.id} className="hover:bg-slate-50/50">
-                        <td className="p-3 font-mono text-slate-500">{l.date}</td>
-                        <td className="p-3 font-mono text-blue-600">{l.number}</td>
+                        <td className="p-3 tabular-nums text-slate-500">{l.date}</td>
+                        <td className="p-3 tabular-nums text-blue-600">{l.number}</td>
                         <td className="p-3">{l.memo}</td>
-                        <td className="p-3 text-right font-mono text-emerald-600">
+                        <td className="p-3 text-right tabular-nums text-emerald-600">
                           {l.isInflow ? `+৳${l.amount.toLocaleString()}` : '-'}
                         </td>
-                        <td className="p-3 text-right font-mono text-rose-600">
+                        <td className="p-3 text-right tabular-nums text-rose-600">
                           {!l.isInflow ? `-৳${l.amount.toLocaleString()}` : '-'}
                         </td>
-                        <td className="p-3 text-right font-mono font-bold">
+                        <td className="p-3 text-right tabular-nums font-bold">
                           ৳{l.runningBalance.toLocaleString()}
                         </td>
                       </tr>

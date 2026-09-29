@@ -401,7 +401,7 @@ export function PlatformSupportConsole({
                     )}
                   >
                     <div className="flex items-center justify-between text-2xs">
-                      <span className="font-mono font-bold text-indigo-400">{conv.ticket_number}</span>
+                      <span className="tabular-nums font-bold text-indigo-400">{conv.ticket_number}</span>
                       <div className="flex items-center gap-1">
                         {conv.priority === 'urgent' && (
                           <span className="px-1.5 py-0.2 rounded text-2xs font-bold bg-rose-950 text-rose-300 border border-rose-800">

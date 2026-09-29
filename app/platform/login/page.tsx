@@ -412,7 +412,7 @@ function PlatformLoginForm() {
                   <div className="p-2.5 rounded-xl bg-indigo-950/50 border border-indigo-800/50 text-xs text-indigo-200 flex items-center gap-2">
                     <KeyRound className="h-4 w-4 text-indigo-400 shrink-0" />
                     <span className="truncate text-xs">
-                      Signing in: <strong className="text-white font-mono">{email}</strong>
+                      Signing in: <strong className="text-white tabular-nums">{email}</strong>
                     </span>
                   </div>
 
@@ -433,7 +433,7 @@ function PlatformLoginForm() {
                         value={mfaCode}
                         onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
                         placeholder="123456"
-                        className="w-full bg-[#070A16]/90 border border-slate-700/60 text-white placeholder:text-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 font-mono tracking-widest text-center text-base sm:text-lg h-10 sm:h-11 rounded-xl outline-none"
+                        className="w-full bg-[#070A16]/90 border border-slate-700/60 text-white placeholder:text-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 tabular-nums tracking-widest text-center text-base sm:text-lg h-10 sm:h-11 rounded-xl outline-none"
                       />
                     </div>
                   </div>

@@ -150,7 +150,7 @@ export default function PayrollDetailPage() {
           <div className="inline-block mt-2 px-5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 font-black text-xs tracking-wider uppercase border border-slate-300 dark:border-slate-700">
             EMPLOYEE PAY SLIP (কর্মচারী বেতন রসিদ)
           </div>
-          <div className="text-slate-500 font-mono text-2xs mt-1">
+          <div className="text-slate-500 tabular-nums text-2xs mt-1">
             Period: <strong>{period.period_name}</strong> ({period.start_date} to {period.end_date})
           </div>
         </div>
@@ -162,7 +162,7 @@ export default function PayrollDetailPage() {
             <div className="font-bold text-sm text-slate-900 dark:text-white">
               {currentItem.employee_name} {currentItem.employee_name_bn && `(${currentItem.employee_name_bn})`}
             </div>
-            <div className="text-slate-600 dark:text-slate-300 font-mono">
+            <div className="text-slate-600 dark:text-slate-300 tabular-nums">
               ID: <strong>{currentItem.employee_id_number || currentItem.employee_id}</strong> • Role: <strong>{currentItem.role}</strong>
             </div>
             <div className="text-slate-500 capitalize">
@@ -170,7 +170,7 @@ export default function PayrollDetailPage() {
             </div>
           </div>
 
-          <div className="space-y-1 text-right font-mono text-2xs">
+          <div className="space-y-1 text-right tabular-nums text-2xs">
             <div>Pay Slip No: <strong>PS-{period.id.slice(-6).toUpperCase()}</strong></div>
             <div>Days Present: <strong>{currentItem.days_present} / {period.working_days_count}</strong></div>
             <div>
@@ -189,7 +189,7 @@ export default function PayrollDetailPage() {
             <div className="bg-slate-100 dark:bg-slate-900 p-2.5 font-bold text-2xs border-b border-slate-200 dark:border-slate-800">
               EARNINGS & ALLOWANCES (আয় ও ভাতাসমূহ)
             </div>
-            <table className="w-full text-left text-xs font-mono">
+            <table className="w-full text-left text-xs tabular-nums">
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 <tr>
                   <td className="p-2.5">Basic Salary (মূল বেতন)</td>
@@ -242,7 +242,7 @@ export default function PayrollDetailPage() {
             <div className="bg-slate-100 dark:bg-slate-900 p-2.5 font-bold text-2xs border-b border-slate-200 dark:border-slate-800">
               DEDUCTIONS (কর্তনসমূহ)
             </div>
-            <table className="w-full text-left text-xs font-mono">
+            <table className="w-full text-left text-xs tabular-nums">
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 <tr>
                   <td className="p-2.5">Salary Advance Deducted (অগ্রিম কর্তন)</td>
@@ -311,7 +311,7 @@ export default function PayrollDetailPage() {
           </div>
 
           <div className="text-right">
-            <div className="text-2xl font-black text-emerald-400 font-mono">
+            <div className="text-2xl font-black text-emerald-400 tabular-nums">
               {formatBDT(currentItem.net_salary)}
             </div>
             <span className="text-2xs text-slate-400">
@@ -324,7 +324,7 @@ export default function PayrollDetailPage() {
         {currentItem.advance_remaining_balance > 0 && (
           <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-300 text-2xs border border-amber-200 dark:border-amber-800 flex items-center justify-between">
             <span>Remaining Salary Advance Balance carried forward to next month:</span>
-            <strong className="font-mono text-xs">{formatBDT(currentItem.advance_remaining_balance)}</strong>
+            <strong className="tabular-nums text-xs">{formatBDT(currentItem.advance_remaining_balance)}</strong>
           </div>
         )}
 

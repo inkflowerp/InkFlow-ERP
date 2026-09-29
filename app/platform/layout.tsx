@@ -75,7 +75,7 @@ export default function PlatformLayout({
       <div className="dark h-screen max-h-screen bg-slate-950 text-slate-400 flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
           <div className="h-6 w-6 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-          <span className="text-xs font-mono uppercase tracking-wider text-slate-500">
+          <span className="text-xs tabular-nums uppercase tracking-wider text-slate-500">
             Verifying Platform Clearance...
           </span>
         </div>

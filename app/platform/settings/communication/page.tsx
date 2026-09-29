@@ -454,7 +454,7 @@ export default function PlatformEmailGatewayPage() {
                   Connect official InkFlow platform Google Workspace or Gmail account for OAuth 2.0 authenticated system delivery.
                 </p>
               </div>
-              <div className="mt-3 text-2xs font-mono text-slate-500">
+              <div className="mt-3 text-2xs tabular-nums text-slate-500">
                 Scope: Platform Global Email
               </div>
             </div>
@@ -476,7 +476,7 @@ export default function PlatformEmailGatewayPage() {
                   Configure corporate SMTP host for platform registration, OTPs, password resets, and system notices.
                 </p>
               </div>
-              <div className="mt-3 text-2xs font-mono text-slate-500">
+              <div className="mt-3 text-2xs tabular-nums text-slate-500">
                 Scope: Platform Global Email
               </div>
             </div>
@@ -560,7 +560,7 @@ export default function PlatformEmailGatewayPage() {
                         <p className="text-2xs text-amber-400/90 leading-relaxed">
                           To enable Platform Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
                         </p>
-                        <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 font-mono text-2xs text-slate-300 space-y-1">
+                        <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 tabular-nums text-2xs text-slate-300 space-y-1">
                           <div className="flex items-center justify-between">
                             <span>GOOGLE_CLIENT_ID</span>
                             <span className={googleOAuthStatus.hasClientId ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
@@ -583,7 +583,7 @@ export default function PlatformEmailGatewayPage() {
                         {googleOAuthStatus.redirectUri && (
                           <div className="text-2xs text-slate-400">
                             <strong className="text-slate-300">Google Cloud Authorized Redirect URI:</strong>
-                            <code className="block mt-1 p-2 bg-slate-950 rounded font-mono text-2xs break-all select-all text-slate-300 border border-slate-800">
+                            <code className="block mt-1 p-2 bg-slate-950 rounded tabular-nums text-2xs break-all select-all text-slate-300 border border-slate-800">
                               {googleOAuthStatus.redirectUri}
                             </code>
                           </div>
@@ -617,7 +617,7 @@ export default function PlatformEmailGatewayPage() {
                         value={smtpHost}
                         onChange={(e) => setSmtpHost(e.target.value)}
                         placeholder="smtp.printerp.com"
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white font-mono rounded-xl"
+                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white tabular-nums rounded-xl"
                       />
                     </div>
                     <div className="space-y-1">
@@ -626,7 +626,7 @@ export default function PlatformEmailGatewayPage() {
                         type="number"
                         value={smtpPort}
                         onChange={(e) => setSmtpPort(Number(e.target.value))}
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white font-mono rounded-xl"
+                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white tabular-nums rounded-xl"
                       />
                     </div>
                   </div>
@@ -651,7 +651,7 @@ export default function PlatformEmailGatewayPage() {
                         value={smtpUsername}
                         onChange={(e) => setSmtpUsername(e.target.value)}
                         placeholder="notifications@printerp.com"
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white font-mono rounded-xl"
+                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white tabular-nums rounded-xl"
                       />
                     </div>
                   </div>
@@ -673,7 +673,7 @@ export default function PlatformEmailGatewayPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={gateway?.encrypted_credentials ? '•••••••••••• (Encrypted on disk)' : 'Enter SMTP password'}
-                      className="h-9 text-xs bg-slate-950 border-slate-800 text-white font-mono rounded-xl"
+                      className="h-9 text-xs bg-slate-950 border-slate-800 text-white tabular-nums rounded-xl"
                     />
                   </div>
 
@@ -729,7 +729,7 @@ export default function PlatformEmailGatewayPage() {
                         value={senderEmail}
                         onChange={(e) => setSenderEmail(e.target.value)}
                         placeholder="notifications@printerp.com"
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl font-mono"
+                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl tabular-nums"
                       />
                     </div>
 
@@ -740,7 +740,7 @@ export default function PlatformEmailGatewayPage() {
                         value={replyToEmail}
                         onChange={(e) => setReplyToEmail(e.target.value)}
                         placeholder="support@printerp.com"
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl font-mono"
+                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl tabular-nums"
                       />
                     </div>
                   </CardContent>
@@ -788,7 +788,7 @@ export default function PlatformEmailGatewayPage() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="truncate font-semibold">{tpl.name}</span>
-                      <span className={`text-2xs px-1.5 py-0.5 rounded font-mono ${isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                      <span className={`text-2xs px-1.5 py-0.5 rounded tabular-nums ${isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'}`}>
                         {tpl.event_type}
                       </span>
                     </div>
@@ -803,7 +803,7 @@ export default function PlatformEmailGatewayPage() {
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div>
                   <h4 className="font-bold text-sm text-white">{selectedTemplate.name}</h4>
-                  <span className="text-2xs font-mono text-indigo-400">{selectedTemplate.event_type}</span>
+                  <span className="text-2xs tabular-nums text-indigo-400">{selectedTemplate.event_type}</span>
                 </div>
 
                 <Button size="sm" onClick={handleSaveTemplate} className="h-8 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">
@@ -836,7 +836,7 @@ export default function PlatformEmailGatewayPage() {
                   rows={6}
                   value={selectedTemplate.body_template}
                   onChange={(e) => setSelectedTemplate({ ...selectedTemplate, body_template: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-slate-800 bg-slate-950 text-xs font-mono text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full p-3 rounded-xl border border-slate-800 bg-slate-950 text-xs tabular-nums text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
             </Card>
@@ -898,7 +898,7 @@ export default function PlatformEmailGatewayPage() {
                       )
                       .map((log) => (
                         <tr key={log.id} className="hover:bg-slate-800/30">
-                          <td className="py-3 px-4 font-mono text-2xs text-slate-400">
+                          <td className="py-3 px-4 tabular-nums text-2xs text-slate-400">
                             <div>{new Date(log.created_at).toLocaleDateString()}</div>
                             <span className="text-indigo-400 text-2xs">{log.event_type}</span>
                           </td>
@@ -944,7 +944,7 @@ export default function PlatformEmailGatewayPage() {
                 value={testRecipient}
                 onChange={(e) => setTestRecipient(e.target.value)}
                 placeholder="admin@printerp.com"
-                className="h-10 text-xs font-mono text-slate-900 bg-white border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                className="h-10 text-xs tabular-nums text-slate-900 bg-white border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
               />
             </div>
 

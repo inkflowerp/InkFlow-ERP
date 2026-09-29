@@ -328,7 +328,7 @@ export function StockTransferModal({
               </h2>
               <Badge
                 variant="outline"
-                className="text-2xs uppercase font-mono py-0.5 px-2 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700"
+                className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700"
               >
                 Movement
               </Badge>
@@ -485,14 +485,14 @@ export function StockTransferModal({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="h-5 w-5 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 font-mono font-bold flex items-center justify-center text-2xs">
+                      <span className="h-5 w-5 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 tabular-nums font-bold flex items-center justify-center text-2xs">
                         #{idx + 1}
                       </span>
                       <span className="font-bold text-slate-800 dark:text-slate-200">
                         {liveMat?.name || item.material_name}
                       </span>
                       {liveMat?.sku && (
-                        <Badge variant="outline" className="text-2xs font-mono py-0 px-1.5">
+                        <Badge variant="outline" className="text-2xs tabular-nums py-0 px-1.5">
                           {liveMat.sku}
                         </Badge>
                       )}
@@ -543,7 +543,7 @@ export function StockTransferModal({
                         value={item.quantity}
                         onChange={(e) => handleItemChange(idx, 'quantity', Number(e.target.value))}
                         className={cn(
-                          'h-8.5 text-xs font-bold font-mono',
+                          'h-8.5 text-xs font-bold tabular-nums',
                           isInsufficient ? 'border-rose-500 text-rose-600 focus:ring-rose-500' : ''
                         )}
                         required
@@ -553,7 +553,7 @@ export function StockTransferModal({
                     {/* Unit Valuation */}
                     <div className="sm:col-span-2">
                       <Label className="text-2xs text-slate-500 mb-0.5 block">Unit Rate (৳)</Label>
-                      <div className="h-8.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center font-mono text-slate-700 dark:text-slate-300">
+                      <div className="h-8.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center tabular-nums text-slate-700 dark:text-slate-300">
                         {formatBDT(item.unit_cost)}
                       </div>
                     </div>
@@ -564,7 +564,7 @@ export function StockTransferModal({
                       <select
                         value={item.roll_id || ''}
                         onChange={(e) => handleItemChange(idx, 'roll_id', e.target.value || null)}
-                        className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-2xs font-mono"
+                        className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-2xs tabular-nums"
                       >
                         <option value="">-- Bulk Units --</option>
                         {matchingRolls.map((r) => (
@@ -592,7 +592,7 @@ export function StockTransferModal({
 
                     <div className="flex items-center gap-2">
                       <span>Movement Value:</span>
-                      <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      <span className="tabular-nums font-bold text-slate-900 dark:text-white">
                         {formatBDT(item.total_cost)}
                       </span>
                     </div>
@@ -606,13 +606,13 @@ export function StockTransferModal({
           <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex justify-between items-center text-xs">
             <div>
               <span className="text-slate-500 dark:text-slate-400">Total Moving Items:</span>
-              <div className="font-mono text-slate-700 dark:text-slate-300 font-bold">
+              <div className="tabular-nums text-slate-700 dark:text-slate-300 font-bold">
                 {items.length} line(s) configured
               </div>
             </div>
             <div className="text-right">
               <span className="text-2xs text-slate-400 uppercase font-bold tracking-wider">Total Moving Valuation</span>
-              <div className="text-xl font-black text-blue-700 dark:text-blue-400 font-mono">
+              <div className="text-xl font-black text-blue-700 dark:text-blue-400 tabular-nums">
                 {formatBDT(totalValuation)}
               </div>
             </div>
@@ -649,7 +649,7 @@ export function StockTransferModal({
                 placeholder="e.g. Cart #2 / Forklift"
                 value={vehicleCartNo}
                 onChange={(e) => setVehicleCartNo(e.target.value)}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
 
@@ -660,7 +660,7 @@ export function StockTransferModal({
               <Input
                 value={transferOrderNo}
                 onChange={(e) => setTransferOrderNo(e.target.value)}
-                className="text-xs h-9 font-mono bg-slate-50 dark:bg-slate-900"
+                className="text-xs h-9 tabular-nums bg-slate-50 dark:bg-slate-900"
               />
             </div>
           </div>

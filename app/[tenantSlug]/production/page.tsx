@@ -1367,18 +1367,19 @@ export default function AdvancedProductionPage() {
                 size="sm"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 w-9 p-0 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl flex items-center justify-center shrink-0"
+                className="h-9 w-9 p-0"
                 title="Refresh Production Jobs"
                 aria-label="Refresh Production Jobs"
               >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
               </Button>
 
               <Button
+                size="sm"
                 onClick={() => setIsWorkOrderModalOpen(true)}
-                className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
+                className="gap-1.5"
               >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <Plus className="w-4 h-4" />
                 <span>{tBilingual('New Work Order', 'নতুন ওয়ার্ক অর্ডার')}</span>
               </Button>
             </>
@@ -1423,7 +1424,7 @@ export default function AdvancedProductionPage() {
               >
                 <span>{t.label}</span>
                 <span
-                  className={`text-2xs px-2 py-0.5 rounded-full font-bold font-mono ${
+                  className={`text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums ${
                     isActive
                       ? 'bg-white text-blue-600 dark:bg-white dark:text-blue-600'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -1551,7 +1552,7 @@ export default function AdvancedProductionPage() {
                       : `Live Floor Operations • Active Machine Tasks (${terminalRunningTasks.length})`}
                   </h3>
                 </div>
-                <span className="text-xs text-slate-500 font-mono hidden sm:inline">
+                <span className="text-xs text-slate-500 tabular-nums hidden sm:inline">
                   {isBn
                     ? 'সহজে টাচ করে স্টার্ট, পজ বা কমপ্লিট করুন'
                     : 'Touch cards to start, pause, or complete with automated roll deduction'}
@@ -1578,7 +1579,7 @@ export default function AdvancedProductionPage() {
                       className="p-4 bg-white dark:bg-slate-900 border-2 border-blue-500 dark:border-blue-600 rounded-2xl shadow-md space-y-3"
                     >
                       <div className="flex items-center justify-between">
-                        <Badge className="bg-blue-600 text-white font-mono text-2xs">
+                        <Badge className="bg-blue-600 text-white tabular-nums text-2xs">
                           {task.task_number}
                         </Badge>
                         <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-2xs font-bold">
@@ -1590,13 +1591,13 @@ export default function AdvancedProductionPage() {
                         <h4 className="font-black text-sm text-slate-900 dark:text-white">
                           {task.task_name}
                         </h4>
-                        <div className="text-xs text-slate-500 font-mono mt-0.5">
+                        <div className="text-xs text-slate-500 tabular-nums mt-0.5">
                           Job: <strong>{task.job_number}</strong> • Client: {task.customer_name}
                         </div>
                       </div>
 
                       {/* Specs & Machine */}
-                      <div className="p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl text-xs space-y-1 font-mono">
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl text-xs space-y-1 tabular-nums">
                         <div className="flex justify-between">
                           <span className="text-slate-500">{isBn ? 'মেশিন:' : 'Machine:'}</span>
                           <span className="font-bold text-blue-600 dark:text-blue-400">
@@ -1662,7 +1663,7 @@ export default function AdvancedProductionPage() {
                     className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl space-y-2.5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-slate-500">
+                      <span className="tabular-nums text-xs font-bold text-slate-500">
                         {task.task_number}
                       </span>
                       <Badge variant="outline" className="text-2xs capitalize">
@@ -1674,13 +1675,13 @@ export default function AdvancedProductionPage() {
                       <h4 className="font-bold text-xs text-slate-900 dark:text-white">
                         {task.task_name}
                       </h4>
-                      <p className="text-2xs text-slate-500 font-mono">
+                      <p className="text-2xs text-slate-500 tabular-nums">
                         {task.customer_name} • Qty: {task.quantity} {task.unit}
                       </p>
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
-                      <span className="text-2xs text-slate-500 font-mono">
+                      <span className="text-2xs text-slate-500 tabular-nums">
                         {task.assigned_machine_name || 'Unassigned Machine'}
                       </span>
                       <Button
@@ -1721,7 +1722,7 @@ export default function AdvancedProductionPage() {
                   <span>{isBn ? 'প্রোডাকশন টাস্ক তালিকা' : 'Production Work Order Tasks'}</span>
                   <Badge
                     variant="secondary"
-                    className="text-2xs font-mono font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                    className="text-2xs tabular-nums font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
                   >
                     {filteredTasks.length}
                   </Badge>

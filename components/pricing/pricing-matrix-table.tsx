@@ -155,7 +155,7 @@ export function PricingMatrixTable({
                           {p.name_bn}
                         </div>
                       )}
-                      <div className="flex items-center gap-2 text-2xs text-slate-400 font-mono mt-0.5">
+                      <div className="flex items-center gap-2 text-2xs text-slate-400 tabular-nums mt-0.5">
                         <span className="uppercase">{p.unit || 'sft'}</span>
                         {p.category && <span>• {p.category}</span>}
                         {marginPct !== null && (
@@ -167,32 +167,32 @@ export function PricingMatrixTable({
                     </td>
 
                     {/* Cost */}
-                    <td className="py-3 px-3 text-center font-mono text-slate-500">
+                    <td className="py-3 px-3 text-center tabular-nums text-slate-500">
                       {baseCost > 0 ? formatBDT(baseCost) : '—'}
                     </td>
 
                     {/* Retail */}
-                    <td className="py-3 px-3 text-center font-mono font-black text-emerald-700 dark:text-emerald-400">
+                    <td className="py-3 px-3 text-center tabular-nums font-black text-emerald-700 dark:text-emerald-400">
                       {formatBDT(retailPrice)}
                     </td>
 
                     {/* Reseller */}
-                    <td className="py-3 px-3 text-center font-mono font-bold text-blue-700 dark:text-blue-400">
+                    <td className="py-3 px-3 text-center tabular-nums font-bold text-blue-700 dark:text-blue-400">
                       {formatBDT(resellerPrice)}
                     </td>
 
                     {/* Corporate */}
-                    <td className="py-3 px-3 text-center font-mono font-bold text-purple-700 dark:text-purple-400">
+                    <td className="py-3 px-3 text-center tabular-nums font-bold text-purple-700 dark:text-purple-400">
                       {formatBDT(corporatePrice)}
                     </td>
 
                     {/* Agency */}
-                    <td className="py-3 px-3 text-center font-mono font-bold text-amber-700 dark:text-amber-400">
+                    <td className="py-3 px-3 text-center tabular-nums font-bold text-amber-700 dark:text-amber-400">
                       {formatBDT(agencyPrice)}
                     </td>
 
                     {/* Govt */}
-                    <td className="py-3 px-3 text-center font-mono font-bold text-rose-700 dark:text-rose-400">
+                    <td className="py-3 px-3 text-center tabular-nums font-bold text-rose-700 dark:text-rose-400">
                       {formatBDT(govtPrice)}
                     </td>
 

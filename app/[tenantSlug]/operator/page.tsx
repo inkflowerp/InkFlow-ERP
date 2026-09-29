@@ -666,7 +666,7 @@ function MobileOperatorPanelContent() {
             >
               <span>{tBilingual(tab.label, tab.labelBn)}</span>
               <span
-                className={`text-2xs px-1.5 py-0.5 rounded-full font-mono ${
+                className={`text-2xs px-1.5 py-0.5 rounded-full tabular-nums ${
                   selectedDepartment === tab.id
                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300'
                     : 'bg-slate-200/80 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
@@ -751,7 +751,7 @@ function MobileOperatorPanelContent() {
               </span>
               <span>{tBilingual('CURRENTLY ACTIVE TASKS', 'বর্তমানে সক্রিয় কাজ')} ({activeTasks.length})</span>
             </span>
-            <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-mono font-semibold">Live Telemetry Active</span>
+            <span className="text-2xs text-emerald-600 dark:text-emerald-400 tabular-nums font-semibold">Live Telemetry Active</span>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -781,7 +781,7 @@ function MobileOperatorPanelContent() {
                               Job #{task.job_number || 'N/A'}
                             </Badge>
                           </Link>
-                          <span className="text-xs font-mono text-slate-500">{task.task_number}</span>
+                          <span className="text-xs tabular-nums text-slate-500">{task.task_number}</span>
                           <Badge
                             className={cn(
                               'text-2xs uppercase font-bold tracking-wider',
@@ -834,12 +834,12 @@ function MobileOperatorPanelContent() {
 
                       <div className="text-right">
                         {isPaused ? (
-                          <div className="text-sm font-bold font-mono text-amber-700 dark:text-amber-400 flex items-center gap-1.5 justify-end">
+                          <div className="text-sm font-bold tabular-nums text-amber-700 dark:text-amber-400 flex items-center gap-1.5 justify-end">
                             <Pause className="h-3.5 w-3.5" />
                             <span>Paused at {elapsedTime}</span>
                           </div>
                         ) : (
-                          <div className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 justify-end">
+                          <div className="text-sm font-bold tabular-nums text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 justify-end">
                             <Activity className="h-3.5 w-3.5 animate-spin text-emerald-500" />
                             <span>{elapsedTime}</span>
                           </div>
@@ -953,7 +953,7 @@ function MobileOperatorPanelContent() {
                     <Link
                       href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
                     >
-                      <Badge variant="outline" className="text-2xs font-mono font-bold hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 cursor-pointer transition-colors border-slate-300 dark:border-slate-700">
+                      <Badge variant="outline" className="text-2xs tabular-nums font-bold hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 cursor-pointer transition-colors border-slate-300 dark:border-slate-700">
                         #{task.job_number || task.task_number}
                       </Badge>
                     </Link>
@@ -970,7 +970,7 @@ function MobileOperatorPanelContent() {
                   <div className="text-xs text-slate-500 flex items-center gap-2.5 flex-wrap">
                     <span className="font-medium text-slate-700 dark:text-slate-300">{task.customer_name}</span>
                     <span>•</span>
-                    <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono">
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
                       {task.quantity} {task.unit}
                     </span>
                     {task.width && task.height && (

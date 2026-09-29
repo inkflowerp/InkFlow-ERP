@@ -18,7 +18,7 @@ function TenantNotFoundContent() {
         </div>
 
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-mono">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 tabular-nums">
             404 • WORKSPACE NOT FOUND
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
@@ -30,7 +30,7 @@ function TenantNotFoundContent() {
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto pt-1 leading-relaxed">
             {slug ? (
               <>
-                The tenant subdomain <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-xs text-blue-600 dark:text-blue-400 font-bold">{slug}</code> is not registered, has been deleted, or may contain a typo.
+                The tenant subdomain <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 tabular-nums text-xs text-blue-600 dark:text-blue-400 font-bold">{slug}</code> is not registered, has been deleted, or may contain a typo.
               </>
             ) : (
               'The workspace subdomain you are trying to access does not exist or may have been moved.'

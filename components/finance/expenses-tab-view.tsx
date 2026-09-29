@@ -215,7 +215,7 @@ export function ExpensesTabView({
             </Badge>
           </div>
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl sm:text-4xl font-black font-mono tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight">
               ৳{totalExpenses.toLocaleString()}
             </span>
             <span className="text-xs text-slate-400">
@@ -315,10 +315,10 @@ export function ExpensesTabView({
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                   {filteredItems.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 font-mono text-slate-500 whitespace-nowrap">
+                      <td className="p-3 tabular-nums text-slate-500 whitespace-nowrap">
                         {item.transaction_date}
                       </td>
-                      <td className="p-3 font-mono font-medium text-rose-600 dark:text-rose-400">
+                      <td className="p-3 tabular-nums font-medium text-rose-600 dark:text-rose-400">
                         {item.transaction_number}
                       </td>
                       <td className="p-3">
@@ -339,10 +339,10 @@ export function ExpensesTabView({
                           </span>
                         )}
                       </td>
-                      <td className="p-3 font-mono text-2xs text-slate-600 dark:text-slate-400">
+                      <td className="p-3 tabular-nums text-2xs text-slate-600 dark:text-slate-400">
                         {item.payment_account_name} ({item.payment_account_code})
                       </td>
-                      <td className="p-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
+                      <td className="p-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
                         ৳{Number(item.amount || 0).toLocaleString()}
                       </td>
                       <td className="p-3 text-center">
@@ -406,7 +406,7 @@ export function ExpensesTabView({
                       </div>
                     </div>
 
-                    <Badge variant="outline" className="text-3xs font-mono font-bold">
+                    <Badge variant="outline" className="text-3xs tabular-nums font-bold">
                       {percentage}%
                     </Badge>
                   </div>
@@ -415,7 +415,7 @@ export function ExpensesTabView({
                     <span className="text-3xs text-slate-400 uppercase font-semibold">
                       {tBilingual('Total Spent', 'মোট ব্যয়')}
                     </span>
-                    <span className="text-lg font-mono font-black text-rose-600 dark:text-rose-400">
+                    <span className="text-lg tabular-nums font-black text-rose-600 dark:text-rose-400">
                       ৳{stats.total.toLocaleString()}
                     </span>
                   </div>
@@ -493,7 +493,7 @@ export function ExpensesTabView({
 
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <span className="font-mono font-bold text-sm text-slate-900 dark:text-white block">
+                        <span className="tabular-nums font-bold text-sm text-slate-900 dark:text-white block">
                           ৳{bill.amount.toLocaleString()}
                         </span>
                         <Badge

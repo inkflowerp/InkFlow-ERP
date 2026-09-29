@@ -1430,7 +1430,7 @@ function DesignDetailContent() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xl font-black text-slate-950 dark:text-white font-mono tracking-tight">
+              <span className="text-xl font-black text-slate-950 dark:text-white tabular-nums tracking-tight">
                 {job.design_number}
               </span>
               <Badge
@@ -1630,7 +1630,7 @@ function DesignDetailContent() {
                         <span className="h-5 w-5 rounded bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 flex items-center justify-center text-2xs font-black">
                           #{work.index + 1}
                         </span>
-                        <span className="font-mono text-2xs font-bold text-indigo-600 dark:text-indigo-400 truncate">
+                        <span className="tabular-nums text-2xs font-bold text-indigo-600 dark:text-indigo-400 truncate">
                           {work.designNumber}
                         </span>
                       </div>
@@ -1656,7 +1656,7 @@ function DesignDetailContent() {
                       {work.areaSft && (
                         <>
                           <span>•</span>
-                          <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{work.areaSft} SFT</span>
+                          <span className="tabular-nums font-semibold text-indigo-600 dark:text-indigo-400">{work.areaSft} SFT</span>
                         </>
                       )}
                     </div>
@@ -1671,7 +1671,7 @@ function DesignDetailContent() {
                       Qty: {work.quantity} {work.unit}
                     </span>
                     {work.totalPrice && (
-                      <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      <span className="tabular-nums font-bold text-slate-900 dark:text-white">
                         {formatBDT(work.totalPrice)}
                       </span>
                     )}
@@ -1712,7 +1712,7 @@ function DesignDetailContent() {
 
                 <div className="flex items-center gap-2">
                   <span
-                    className={`uppercase text-xs font-black px-2.5 py-0.5 rounded border font-mono ${getFormatBadgeColor(
+                    className={`uppercase text-xs font-black px-2.5 py-0.5 rounded border tabular-nums ${getFormatBadgeColor(
                       currentFormat
                     )}`}
                   >
@@ -1778,7 +1778,7 @@ function DesignDetailContent() {
                   {/* Top-Right Paste Helper Badge */}
                   <div className="absolute top-3 right-3 flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 text-2xs font-bold px-2 py-1 rounded bg-black/70 text-white backdrop-blur-sm border border-white/10">
-                      <Clipboard className="h-3 w-3 text-indigo-400" /> Paste (<kbd className="font-mono text-2xs">Ctrl+V</kbd>)
+                      <Clipboard className="h-3 w-3 text-indigo-400" /> Paste (<kbd className="tabular-nums text-2xs">Ctrl+V</kbd>)
                     </span>
                   </div>
 
@@ -1825,7 +1825,7 @@ function DesignDetailContent() {
               <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl text-xs border border-slate-100 dark:border-slate-800">
                 <div className="space-y-0.5">
                   <div className="font-bold text-slate-700 dark:text-slate-300">File Reference:</div>
-                  <code className="text-2xs text-slate-500 font-mono">
+                  <code className="text-2xs text-slate-500 tabular-nums">
                     {activeVersion.source_file_name || activeVersion.proof_file_name || 'proof.png'}
                   </code>
                 </div>
@@ -1875,7 +1875,7 @@ function DesignDetailContent() {
                           <div className="font-bold text-xs text-slate-900 dark:text-white truncate">
                             {att.name}
                           </div>
-                          <div className="text-2xs text-slate-400 font-mono">{att.size || 'Attachment'}</div>
+                          <div className="text-2xs text-slate-400 tabular-nums">{att.size || 'Attachment'}</div>
                         </div>
                       </div>
 
@@ -1953,7 +1953,7 @@ function DesignDetailContent() {
                     <Phone className="h-3.5 w-3.5 text-slate-400" />
                     Phone / WhatsApp:
                   </span>
-                  <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                  <span className="tabular-nums text-xs font-bold text-slate-900 dark:text-white">
                     {customerPhone || 'Not provided'}
                   </span>
                 </div>
@@ -2012,7 +2012,7 @@ function DesignDetailContent() {
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
                   <div className="flex items-center justify-between font-bold">
                     <span className="text-slate-500">Commercial Amount:</span>
-                    <span className="font-mono text-slate-900 dark:text-white">
+                    <span className="tabular-nums text-slate-900 dark:text-white">
                       {formatBDT((linkedInvoice as any).total_amount || linkedInvoice.grand_total || 0)}
                     </span>
                   </div>
@@ -2050,18 +2050,18 @@ function DesignDetailContent() {
 
             <CardContent className="p-4 space-y-4">
               {/* Item Title & Classification Header */}
-              <div className="p-3 rounded-xl bg-gradient-to-r from-purple-50/80 to-indigo-50/80 dark:from-purple-950/20 dark:to-indigo-950/20 border border-purple-200/80 dark:border-purple-900/50">
+              <div className="p-3 rounded-lg bg-muted/40 border border-border">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="text-2xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">
+                    <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                       Current Work Item
                     </span>
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-0.5">
+                    <h4 className="font-bold text-sm text-foreground mt-0.5">
                       {currentWork?.title || job.title}
                     </h4>
                     {currentWork?.productName && currentWork.productName !== currentWork.title && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        Product: <span className="font-medium text-slate-700 dark:text-slate-300">{currentWork.productName}</span>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Product: <span className="font-medium text-foreground">{currentWork.productName}</span>
                       </p>
                     )}
                   </div>
@@ -2092,7 +2092,7 @@ function DesignDetailContent() {
                       {currentWork?.dimensions || job.dimensions_spec || 'Standard'}
                     </p>
                     {(currentWork?.areaSft || (job as any).area_sft) && (
-                      <span className="inline-block mt-0.5 text-2xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-900">
+                      <span className="inline-block mt-0.5 text-2xs tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-900">
                         Area: {currentWork?.areaSft || (job as any).area_sft} SFT
                       </span>
                     )}
@@ -2153,7 +2153,7 @@ function DesignDetailContent() {
                         <span>{getFinishingBadgeEmoji(fin.name)}</span>
                         <span>{fin.name}</span>
                         {fin.cost && fin.cost > 0 && (
-                          <span className="font-mono text-2xs text-pink-700 dark:text-pink-300 font-bold">
+                          <span className="tabular-nums text-2xs text-pink-700 dark:text-pink-300 font-bold">
                             (+{formatBDT(fin.cost)})
                           </span>
                         )}
@@ -2184,7 +2184,7 @@ function DesignDetailContent() {
                         <span>📦</span>
                         <span>{addon.name}</span>
                         {addon.cost && addon.cost > 0 && (
-                          <span className="font-mono text-2xs text-amber-700 dark:text-amber-300 font-bold">
+                          <span className="tabular-nums text-2xs text-amber-700 dark:text-amber-300 font-bold">
                             (+{formatBDT(addon.cost)})
                           </span>
                         )}
@@ -2373,7 +2373,7 @@ function DesignDetailContent() {
                         >
                           <div className="truncate">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-mono text-2xs font-bold text-indigo-600">
+                              <span className="tabular-nums text-2xs font-bold text-indigo-600">
                                 #{sw.index + 1} • {sw.designNumber}
                               </span>
                               {sw.isCurrent && (
@@ -2403,7 +2403,7 @@ function DesignDetailContent() {
                               {sw.status.replace('_', ' ')}
                             </Badge>
                             {sw.totalPrice && (
-                              <div className="text-2xs font-mono font-bold text-slate-700 dark:text-slate-300 mt-0.5">
+                              <div className="text-2xs tabular-nums font-bold text-slate-700 dark:text-slate-300 mt-0.5">
                                 {formatBDT(sw.totalPrice)}
                               </div>
                             )}
@@ -2452,7 +2452,7 @@ function DesignDetailContent() {
                         </Badge>
                       )}
                     </div>
-                    <span className="text-2xs font-mono text-slate-400 uppercase">
+                    <span className="text-2xs tabular-nums text-slate-400 uppercase">
                       .{ver.file_format}
                     </span>
                   </div>
@@ -2490,7 +2490,7 @@ function DesignDetailContent() {
               >
                 <ZoomOut className="h-3.5 w-3.5 mr-1" /> Zoom Out
               </Button>
-              <span className="font-mono">{Math.round(lightboxZoom * 100)}%</span>
+              <span className="tabular-nums">{Math.round(lightboxZoom * 100)}%</span>
               <Button
                 size="sm"
                 variant="ghost"
@@ -2509,7 +2509,7 @@ function DesignDetailContent() {
               </Button>
             </div>
 
-            <div className="text-slate-400 text-2xs font-mono">
+            <div className="text-slate-400 text-2xs tabular-nums">
               Target: {currentWork?.dimensions || job.dimensions_spec || 'Standard'}
             </div>
           </div>
@@ -2584,14 +2584,14 @@ function DesignDetailContent() {
           <div className="space-y-2.5">
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
               <span className="font-bold text-slate-700 dark:text-slate-300">Dimensions Check:</span>
-              <span className="font-mono font-bold text-emerald-600">
+              <span className="tabular-nums font-bold text-emerald-600">
                 {currentWork?.dimensions || job.dimensions_spec || 'Standard'} (Verified)
               </span>
             </div>
 
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
               <span className="font-bold text-slate-700 dark:text-slate-300">Color Profile:</span>
-              <span className="font-mono font-bold text-slate-900 dark:text-white">CMYK / High Res</span>
+              <span className="tabular-nums font-bold text-slate-900 dark:text-white">CMYK / High Res</span>
             </div>
 
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">

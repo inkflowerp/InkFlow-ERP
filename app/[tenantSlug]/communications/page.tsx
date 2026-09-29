@@ -343,7 +343,7 @@ export default function CommunicationsHubPage() {
                   <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text">
                     {tBilingual(notif.message, notif.message_bn || notif.message)}
                   </p>
-                  <span className="text-2xs text-slate-400 font-mono block pt-0.5">
+                  <span className="text-2xs text-slate-400 tabular-nums block pt-0.5">
                     {notif.created_at}
                   </span>
                 </div>
@@ -405,21 +405,21 @@ export default function CommunicationsHubPage() {
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-1.5 font-bold capitalize">
                           {log.channel === 'whatsapp' ? (
-                            <span className="text-emerald-600 font-mono">WhatsApp</span>
+                            <span className="text-emerald-600 tabular-nums">WhatsApp</span>
                           ) : log.channel === 'sms' ? (
-                            <span className="text-blue-600 font-mono">SMS</span>
+                            <span className="text-blue-600 tabular-nums">SMS</span>
                           ) : (
-                            <span className="text-purple-600 font-mono">Email</span>
+                            <span className="text-purple-600 tabular-nums">Email</span>
                           )}
                         </div>
-                        <div className="text-2xs text-slate-400 font-mono mt-0.5">{log.created_at}</div>
+                        <div className="text-2xs text-slate-400 tabular-nums mt-0.5">{log.created_at}</div>
                       </td>
 
                       <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                         {log.recipient_name}
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300">
+                      <td className="py-3.5 px-4 tabular-nums text-slate-600 dark:text-slate-300">
                         {log.recipient_destination}
                       </td>
 
@@ -427,7 +427,7 @@ export default function CommunicationsHubPage() {
                         {log.message_content}
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono text-slate-500 text-2xs">
+                      <td className="py-3.5 px-4 tabular-nums text-slate-500 text-2xs">
                         {log.provider_used}
                       </td>
 
@@ -454,7 +454,7 @@ export default function CommunicationsHubPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`font-mono text-2xs font-bold px-2 py-0.5 rounded uppercase ${
+                          className={`tabular-nums text-2xs font-bold px-2 py-0.5 rounded uppercase ${
                             log.channel === 'whatsapp'
                               ? 'bg-emerald-100 text-emerald-700'
                               : log.channel === 'sms'
@@ -477,7 +477,7 @@ export default function CommunicationsHubPage() {
                       {log.message_content}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-2xs text-slate-400 font-mono">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-2xs text-slate-400 tabular-nums">
                       <span>Dest: {log.recipient_destination}</span>
                       <span>{log.created_at} • {log.provider_used}</span>
                     </div>
@@ -517,7 +517,7 @@ export default function CommunicationsHubPage() {
               </div>
             </div>
 
-            <span className="text-2xs sm:text-xs text-slate-400 font-mono break-all sm:break-normal">
+            <span className="text-2xs sm:text-xs text-slate-400 tabular-nums break-all sm:break-normal">
               Supported Variables: {'{{customer_name}}, {{order_number}}, {{invoice_number}}, {{amount}}, {{due_amount}}, {{delivery_date}}'}
             </span>
           </div>
@@ -528,14 +528,14 @@ export default function CommunicationsHubPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-bold text-sm text-slate-900 dark:text-white">{tpl.name}</h4>
-                    <span className="font-mono text-2xs text-blue-600">{tpl.template_key}</span>
+                    <span className="tabular-nums text-2xs text-blue-600">{tpl.template_key}</span>
                   </div>
                   <Badge variant="outline" className="uppercase text-2xs">
                     {tpl.channel}
                   </Badge>
                 </div>
 
-                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-mono whitespace-pre-wrap">
+                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs leading-relaxed text-slate-700 dark:text-slate-300 tabular-nums whitespace-pre-wrap">
                   {templateLang === 'bn' ? tpl.body_bn : tpl.body_en}
                 </div>
 
@@ -579,11 +579,11 @@ export default function CommunicationsHubPage() {
             <div className="space-y-2 text-xs">
               <div className="space-y-1">
                 <Label>Phone Number ID</Label>
-                <Input value={waPhoneId} onChange={(e) => setWaPhoneId(e.target.value)} className="h-10 sm:h-8 font-mono text-xs" />
+                <Input value={waPhoneId} onChange={(e) => setWaPhoneId(e.target.value)} className="h-10 sm:h-8 tabular-nums text-xs" />
               </div>
               <div className="space-y-1">
                 <Label>Access Token (Permanent)</Label>
-                <Input type="password" value="EAAG9••••••••••••••••••••" readOnly className="h-10 sm:h-8 font-mono text-xs bg-slate-100 dark:bg-slate-900" />
+                <Input type="password" value="EAAG9••••••••••••••••••••" readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-slate-100 dark:bg-slate-900" />
               </div>
             </div>
           </Card>
@@ -616,7 +616,7 @@ export default function CommunicationsHubPage() {
               </div>
               <div className="space-y-1">
                 <Label>Approved Masking Sender ID</Label>
-                <Input value={smsSenderId} onChange={(e) => setSmsSenderId(e.target.value)} className="h-10 sm:h-8 font-mono text-xs font-bold" />
+                <Input value={smsSenderId} onChange={(e) => setSmsSenderId(e.target.value)} className="h-10 sm:h-8 tabular-nums text-xs font-bold" />
               </div>
             </div>
           </Card>
@@ -636,11 +636,11 @@ export default function CommunicationsHubPage() {
             <div className="space-y-2 text-xs">
               <div className="space-y-1">
                 <Label>SMTP Host &amp; Port</Label>
-                <Input value={`smtp.${company?.slug || 'inkflow'}.com:587`} readOnly className="h-10 sm:h-8 font-mono text-xs bg-slate-100 dark:bg-slate-900" />
+                <Input value={`smtp.${company?.slug || 'inkflow'}.com:587`} readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-slate-100 dark:bg-slate-900" />
               </div>
               <div className="space-y-1">
                 <Label>Password</Label>
-                <Input type="password" value="••••••••••••" readOnly className="h-10 sm:h-8 font-mono text-xs bg-slate-100 dark:bg-slate-900" />
+                <Input type="password" value="••••••••••••" readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-slate-100 dark:bg-slate-900" />
               </div>
             </div>
           </Card>
@@ -725,7 +725,7 @@ export default function CommunicationsHubPage() {
           {/* Interpolated Preview Box */}
           <div className="p-3 bg-slate-50 dark:bg-slate-900 border rounded-xl space-y-1">
             <span className="text-2xs uppercase font-bold text-slate-400">Live Interpolated Preview:</span>
-            <p className="text-xs font-mono text-slate-800 dark:text-slate-200">
+            <p className="text-xs tabular-nums text-slate-800 dark:text-slate-200">
               {renderTemplate(
                 templateLang === 'bn'
                   ? (templates || []).find((t) => t.template_key === sendTemplateKey)?.body_bn || ''

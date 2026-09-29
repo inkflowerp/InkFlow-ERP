@@ -521,7 +521,7 @@ function QuotationDetailContent() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="font-mono font-black text-cyan-300 text-xl tracking-tight">
+                  <span className="tabular-nums font-black text-cyan-300 text-xl tracking-tight">
                     {quote.quotation_number}
                   </span>
                   <Badge variant="outline" className="bg-white/10 text-white border-white/20 text-xs font-bold capitalize">
@@ -529,14 +529,14 @@ function QuotationDetailContent() {
                   </Badge>
                   {quote.converted_order_id && (
                     <Link href={getTenantNavHref(`/orders?search=${quote.converted_order_id}`, pathname, slug)}>
-                      <Badge variant="outline" className="bg-purple-900/80 text-purple-200 border-purple-400/60 text-xs font-mono font-bold hover:bg-purple-800 transition-colors cursor-pointer flex items-center gap-1">
+                      <Badge variant="outline" className="bg-purple-900/80 text-purple-200 border-purple-400/60 text-xs tabular-nums font-bold hover:bg-purple-800 transition-colors cursor-pointer flex items-center gap-1">
                         <span>Job Order #{quote.converted_order_id}</span>
                         <ArrowUpRight className="h-3 w-3" />
                       </Badge>
                     </Link>
                   )}
                   {quote.converted_invoice_id && (
-                    <Badge variant="outline" className="bg-emerald-900/80 text-emerald-200 border-emerald-400/60 text-xs font-mono font-bold">
+                    <Badge variant="outline" className="bg-emerald-900/80 text-emerald-200 border-emerald-400/60 text-xs tabular-nums font-bold">
                       Invoice Converted
                     </Badge>
                   )}
@@ -547,7 +547,7 @@ function QuotationDetailContent() {
                   <span>•</span>
                   <span>Sales: <strong className="text-white">{quote.salesperson_name}</strong></span>
                   <span>•</span>
-                  <span className="font-mono text-cyan-200">Total: {formatBDT(quote.grand_total)}</span>
+                  <span className="tabular-nums text-cyan-200">Total: {formatBDT(quote.grand_total)}</span>
                 </div>
               </div>
 
@@ -579,21 +579,21 @@ function QuotationDetailContent() {
             <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
                 <span className="text-2xs uppercase font-bold text-slate-400 block">Total Quoted Value</span>
-                <span className="text-sm font-black font-mono text-white">{formatBDT(quote.grand_total)}</span>
+                <span className="text-sm font-black tabular-nums text-white">{formatBDT(quote.grand_total)}</span>
               </div>
               <div>
                 <span className="text-2xs uppercase font-bold text-amber-300 block">
                   Advance Required ({advancePct}%)
                 </span>
-                <span className="text-sm font-black font-mono text-amber-400">{formatBDT(advanceAmt)}</span>
+                <span className="text-sm font-black tabular-nums text-amber-400">{formatBDT(advanceAmt)}</span>
               </div>
               <div>
                 <span className="text-2xs uppercase font-bold text-slate-400 block">Balance on Delivery</span>
-                <span className="text-sm font-black font-mono text-slate-200">{formatBDT(dueOnDeliv)}</span>
+                <span className="text-sm font-black tabular-nums text-slate-200">{formatBDT(dueOnDeliv)}</span>
               </div>
               <div>
                 <span className="text-2xs uppercase font-bold text-slate-400 block">Internal Margin Floor</span>
-                <span className={`text-sm font-black font-mono ${quote.margin_percent && quote.margin_percent >= 30 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <span className={`text-sm font-black tabular-nums ${quote.margin_percent && quote.margin_percent >= 30 ? 'text-emerald-400' : 'text-amber-400'}`}>
                   {quote.margin_percent || 40}% ({formatBDT(quote.total_cost || Math.round(quote.subtotal * 0.55))})
                 </span>
               </div>
@@ -795,7 +795,7 @@ function QuotationDetailContent() {
               <div className="text-2xl font-black text-blue-800 dark:text-blue-400 uppercase tracking-wide print:text-blue-800">
                 {languageMode === 'bn' ? 'উদ্ধৃতিপত্র / প্রাক্কলন' : 'OFFICIAL QUOTATION'}
               </div>
-              <div className="text-sm font-mono font-bold text-slate-900 dark:text-slate-100 print:text-slate-900">
+              <div className="text-sm tabular-nums font-bold text-slate-900 dark:text-slate-100 print:text-slate-900">
                 {quote.quotation_number}
               </div>
               <div className="text-xs text-slate-500 dark:text-slate-400 print:text-slate-500">
@@ -805,7 +805,7 @@ function QuotationDetailContent() {
                 Valid Until: <strong>{quote.valid_until}</strong>
               </div>
               {quote.reference_no && (
-                <div className="text-xs text-slate-700 dark:text-slate-300 print:text-slate-700 font-mono">
+                <div className="text-xs text-slate-700 dark:text-slate-300 print:text-slate-700 tabular-nums">
                   Ref / PO: <strong>{quote.reference_no}</strong>
                 </div>
               )}
@@ -825,7 +825,7 @@ function QuotationDetailContent() {
                 )}
               </div>
               {quote.customer_address && <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">{quote.customer_address}</div>}
-              <div className="text-slate-600 dark:text-slate-400 print:text-slate-600 font-mono">Mobile: {quote.customer_phone}</div>
+              <div className="text-slate-600 dark:text-slate-400 print:text-slate-600 tabular-nums">Mobile: {quote.customer_phone}</div>
               {quote.customer_email && <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">Email: {quote.customer_email}</div>}
               {quote.customer_type && (
                 <div className="text-slate-500 dark:text-slate-400 print:text-slate-500 uppercase text-2xs font-bold pt-0.5">
@@ -857,7 +857,7 @@ function QuotationDetailContent() {
                 </div>
               )}
               {quote.customer_bin && (
-                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700 font-mono">
+                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700 tabular-nums">
                   Customer BIN: <strong>{quote.customer_bin}</strong>
                 </div>
               )}
@@ -895,7 +895,7 @@ function QuotationDetailContent() {
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 print:hover:bg-transparent">
-                      <td className="py-3 px-3 text-center font-mono font-bold text-slate-500 dark:text-slate-400 print:text-slate-500">
+                      <td className="py-3 px-3 text-center tabular-nums font-bold text-slate-500 dark:text-slate-400 print:text-slate-500">
                         {idx + 1}
                       </td>
                       <td className="py-3 px-3">
@@ -951,16 +951,16 @@ function QuotationDetailContent() {
                           </div>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-center font-mono">
+                      <td className="py-3 px-3 text-center tabular-nums">
                         {item.width > 0 && item.height > 0 ? `${item.width} × ${item.height} ${item.dimension_unit}` : '-'}
                       </td>
-                      <td className="py-3 px-3 text-center font-mono font-semibold">
+                      <td className="py-3 px-3 text-center tabular-nums font-semibold">
                         {item.area_sft > 0 ? `${item.area_sft} sft` : `${item.quantity} ${item.unit}`}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-medium">
+                      <td className="py-3 px-3 text-right tabular-nums font-medium">
                         {formatBDT(item.unit_rate)}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white print:text-slate-900">
+                      <td className="py-3 px-3 text-right tabular-nums font-bold text-slate-900 dark:text-white print:text-slate-900">
                         {formatBDT(item.item_total)}
                       </td>
                     </tr>
@@ -1006,35 +1006,35 @@ function QuotationDetailContent() {
             <div className="space-y-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 print:border-slate-200">
               <div className="flex justify-between py-1 text-slate-600 dark:text-slate-400 print:text-slate-600">
                 <span>{languageMode === 'bn' ? 'উপমোট (Subtotal):' : 'Subtotal:'}</span>
-                <span className="font-mono font-semibold">{formatBDT(quote.subtotal)}</span>
+                <span className="tabular-nums font-semibold">{formatBDT(quote.subtotal)}</span>
               </div>
 
               {quote.discount_amount > 0 && (
                 <div className="flex justify-between py-1 text-red-600 dark:text-red-400 font-semibold print:text-red-600">
                   <span>{languageMode === 'bn' ? 'বিশেষ ছাড় (Special Discount):' : 'Negotiated Discount:'}</span>
-                  <span className="font-mono">- {formatBDT(quote.discount_amount)}</span>
+                  <span className="tabular-nums">- {formatBDT(quote.discount_amount)}</span>
                 </div>
               )}
 
               <div className="flex justify-between py-1 text-slate-600 dark:text-slate-400 print:text-slate-600">
                 <span>{languageMode === 'bn' ? `ভ্যাট / মূসক (${quote.vat_rate}% - Mushak 6.3):` : `NBR VAT (${quote.vat_rate}%):`}</span>
-                <span className="font-mono">+ {formatBDT(quote.vat_amount)}</span>
+                <span className="tabular-nums">+ {formatBDT(quote.vat_amount)}</span>
               </div>
 
               <div className="flex justify-between py-2 border-t-2 border-slate-900 dark:border-slate-700 print:border-slate-900 font-black text-sm text-slate-900 dark:text-white print:text-slate-900">
                 <span>{languageMode === 'bn' ? 'সর্বমোট প্রাক্কলন (Grand Total):' : 'Grand Total (BDT):'}</span>
-                <span className="font-mono text-base text-blue-700 dark:text-blue-400 print:text-blue-700">{formatBDT(quote.grand_total)}</span>
+                <span className="tabular-nums text-base text-blue-700 dark:text-blue-400 print:text-blue-700">{formatBDT(quote.grand_total)}</span>
               </div>
 
               {/* Advance & Due Breakdown */}
               <div className="border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 pt-2 space-y-1">
                 <div className="flex justify-between py-0.5 text-amber-700 dark:text-amber-400 font-bold print:text-amber-800">
                   <span>{languageMode === 'bn' ? `প্রয়োজনীয় অগ্রিম (${advancePct}% Advance Required):` : `Advance Required (${advancePct}%):`}</span>
-                  <span className="font-mono">{formatBDT(advanceAmt)}</span>
+                  <span className="tabular-nums">{formatBDT(advanceAmt)}</span>
                 </div>
                 <div className="flex justify-between py-0.5 text-slate-600 dark:text-slate-400 font-semibold print:text-slate-600">
                   <span>{languageMode === 'bn' ? 'ডেলিভারির সময় প্রদেয় (Balance on Delivery):' : 'Balance on Delivery:'}</span>
-                  <span className="font-mono">{formatBDT(dueOnDeliv)}</span>
+                  <span className="tabular-nums">{formatBDT(dueOnDeliv)}</span>
                 </div>
               </div>
 
@@ -1093,7 +1093,7 @@ function QuotationDetailContent() {
                           <span className="font-bold capitalize text-slate-900 dark:text-white">
                             {act.action.replace('_', ' ')}
                           </span>
-                          <span className="text-slate-400 font-mono text-2xs">
+                          <span className="text-slate-400 tabular-nums text-2xs">
                             {new Date(act.created_at).toLocaleString('en-BD')}
                           </span>
                         </div>

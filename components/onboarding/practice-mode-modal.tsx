@@ -73,7 +73,7 @@ export function PracticeModeModal({ isOpen, onClose }: PracticeModeModalProps) {
                   <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 flex items-center justify-between">
                     <div>
                       <div className="font-bold text-xs text-slate-900 dark:text-slate-100">রহিম এন্টারপ্রাইজ (Rahim Enterprise)</div>
-                      <div className="text-2xs text-slate-500 font-mono">01711-223344</div>
+                      <div className="text-2xs text-slate-500 tabular-nums">01711-223344</div>
                     </div>
                     <Badge className="bg-emerald-600 text-white text-2xs">নমুনা কাস্টমার</Badge>
                   </div>
@@ -101,7 +101,7 @@ export function PracticeModeModal({ isOpen, onClose }: PracticeModeModalProps) {
                   <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 space-y-1.5 text-xs">
                     <div className="flex justify-between">
                       <span className="text-slate-500">মাপ:</span>
-                      <span className="font-bold font-mono">৮ ফুট × ৪ ফুট (৩২ স্কয়ার ফিট)</span>
+                      <span className="font-bold tabular-nums">৮ ফুট × ৪ ফুট (৩২ স্কয়ার ফিট)</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">মিডিয়া:</span>
@@ -109,7 +109,7 @@ export function PracticeModeModal({ isOpen, onClose }: PracticeModeModalProps) {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">মোট বিল:</span>
-                      <span className="font-bold font-mono text-emerald-600">৳৪৮০</span>
+                      <span className="font-bold tabular-nums text-emerald-600">৳৪৮০</span>
                     </div>
                   </div>
                   <Button

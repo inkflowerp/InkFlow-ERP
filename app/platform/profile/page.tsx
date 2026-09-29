@@ -226,7 +226,7 @@ export default function PlatformOwnerProfilePage() {
               </div>
 
               <CardTitle className="text-lg font-bold text-white">{profile.full_name}</CardTitle>
-              <CardDescription className="text-xs text-indigo-400 font-mono font-medium">
+              <CardDescription className="text-xs text-indigo-400 tabular-nums font-medium">
                 {profile.email}
               </CardDescription>
 
@@ -247,7 +247,7 @@ export default function PlatformOwnerProfilePage() {
                   <Calendar className="h-3.5 w-3.5 text-slate-500" />
                   Created Date
                 </span>
-                <span className="text-slate-200 font-mono">
+                <span className="text-slate-200 tabular-nums">
                   {formatDate(profile.created_at)}
                 </span>
               </div>
@@ -257,7 +257,7 @@ export default function PlatformOwnerProfilePage() {
                   <Clock className="h-3.5 w-3.5 text-slate-500" />
                   Last Login
                 </span>
-                <span className="text-slate-200 font-mono">
+                <span className="text-slate-200 tabular-nums">
                   {profile.last_login_at
                     ? formatDateTime(profile.last_login_at)
                     : 'Recent'}
@@ -269,7 +269,7 @@ export default function PlatformOwnerProfilePage() {
                   <Laptop className="h-3.5 w-3.5 text-slate-500" />
                   Active Sessions
                 </span>
-                <span className="text-indigo-400 font-bold font-mono">
+                <span className="text-indigo-400 font-bold tabular-nums">
                   {profile.active_sessions_count} device(s)
                 </span>
               </div>
@@ -409,7 +409,7 @@ export default function PlatformOwnerProfilePage() {
                         Unrestricted authority across all PrintERP SaaS clusters, billing, and tenants.
                       </div>
                     </div>
-                    <span className="text-2xs font-bold font-mono text-indigo-400 bg-indigo-950/60 px-2 py-1 rounded border border-indigo-800">
+                    <span className="text-2xs font-bold tabular-nums text-indigo-400 bg-indigo-950/60 px-2 py-1 rounded border border-indigo-800">
                       IMMUTABLE
                     </span>
                   </div>

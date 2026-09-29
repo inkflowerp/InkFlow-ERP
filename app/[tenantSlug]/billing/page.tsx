@@ -498,7 +498,7 @@ function BillingContent() {
   const pathname = usePathname()
   const { company } = useTenant()
   const { can } = usePermissions()
-  const { locale } = useI18n()
+  const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const [, setIsMounted] = useState(false)
 
@@ -1253,58 +1253,44 @@ function BillingContent() {
       {/* =========================================================================
           1. HEADER & PRIMARY WORKSPACE ACTIONS
          ========================================================================= */}
-      <div className="bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-800/40 p-5 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs relative overflow-hidden">
-        {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 -mb-10 w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2.5">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-sm shadow-blue-500/20">
-                <Receipt className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                  <span>{locale === 'bn' ? 'বিলিং ও কালেকশন' : 'Billing & Collections'}</span>
-                  <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-2xs font-bold py-0.5">
-                    Live BDT ৳
-                  </Badge>
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {locale === 'bn'
-                    ? 'চালান, পেমেন্ট আদায়, গ্রাহক বকেয়া ও কালেকশন নিয়ন্ত্রণ কেন্দ্র'
-                    : 'Canonical commercial finance workspace • Invoices, collection priorities & receivables'}
-                </p>
-              </div>
-            </div>
-          </div>
-
+      <PageHeader
+        titleEn="Billing & Collections"
+        titleBn="বিলিং ও কালেকশন"
+        descriptionEn="Canonical commercial finance workspace • Invoices, collection priorities & receivables"
+        descriptionBn="চালান, পেমেন্ট আদায়, গ্রাহক বকেয়া ও কালেকশন নিয়ন্ত্রণ কেন্দ্র"
+        icon={Receipt}
+        badge={
+          <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-2xs font-bold py-0.5">
+            Live BDT ৳
+          </Badge>
+        }
+        actions={
           <div className="flex flex-wrap items-center gap-2.5">
             <Button
+              variant="outline"
               size="sm"
               onClick={() => {
                 setSelectedCustomerIdForPayment(undefined)
                 setSelectedInvoiceIdForPayment(undefined)
                 setIsReceivePaymentOpen(true)
               }}
-              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-sm shadow-emerald-500/20 h-9 px-3.5 gap-1.5 cursor-pointer rounded-xl transition-transform active:scale-[0.98]"
+              className="gap-1.5"
             >
-              <DollarSign className="h-4 w-4" />
-              <span>Collect Due</span>
+              <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span>{tBilingual('Collect Due', 'বকেয়া আদায়')}</span>
             </Button>
 
             <Button
               size="sm"
               onClick={() => setIsNewInvoiceOpen(true)}
-              className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-sm shadow-blue-500/20 h-9 px-4 gap-1.5 cursor-pointer rounded-xl transition-transform active:scale-[0.98]"
+              className="gap-1.5"
             >
               <Plus className="h-4 w-4" />
-              <span>New Invoice</span>
+              <span>{tBilingual('New Invoice', 'নতুন চালান')}</span>
             </Button>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* =========================================================================
           2. KPI SUMMARY CARDS (TOTAL INVOICED, COLLECTED, DUE, OVERDUE)
@@ -1489,7 +1475,7 @@ function BillingContent() {
                 <option value="custom" className="bg-white dark:bg-slate-900">Custom Date</option>
               </select>
               {effectiveMetrics?.startDate && (
-                <span className="text-2xs text-slate-400 font-mono hidden sm:inline ml-1 border-l border-slate-200 dark:border-slate-700 pl-2">
+                <span className="text-2xs text-slate-400 tabular-nums hidden sm:inline ml-1 border-l border-slate-200 dark:border-slate-700 pl-2">
                   {effectiveMetrics?.startDate === effectiveMetrics?.endDate ? effectiveMetrics.startDate : `${effectiveMetrics.startDate} to ${effectiveMetrics.endDate}`}
                 </span>
               )}
@@ -1501,7 +1487,7 @@ function BillingContent() {
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+                  className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none"
                   title="From Date"
                 />
                 <span className="text-slate-400 font-bold px-0.5 text-xs">to</span>
@@ -1509,7 +1495,7 @@ function BillingContent() {
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+                  className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none"
                   title="To Date"
                 />
                 <Button
@@ -1655,7 +1641,7 @@ function BillingContent() {
                             <div className="flex items-center gap-1.5 flex-nowrap">
                               <Link
                                 href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
-                                className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+                                className="tabular-nums font-bold text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
                               >
                                 {inv.invoice_number}
                               </Link>
@@ -1666,7 +1652,7 @@ function BillingContent() {
                               )}
                             </div>
                             {inv.order_number && (
-                              <span className="text-2xs text-slate-400 font-mono block mt-0.5 whitespace-nowrap">
+                              <span className="text-2xs text-slate-400 tabular-nums block mt-0.5 whitespace-nowrap">
                                 Order: {inv.order_number}
                               </span>
                             )}
@@ -1676,7 +1662,7 @@ function BillingContent() {
                             {inv.customer_phone ? (
                               <a
                                 href={`tel:${inv.customer_phone}`}
-                                className="text-2xs text-slate-500 font-mono hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5 whitespace-nowrap"
+                                className="text-2xs text-slate-500 tabular-nums hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5 whitespace-nowrap"
                                 title="Call Customer"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -1684,18 +1670,18 @@ function BillingContent() {
                                 <span>{inv.customer_phone}</span>
                               </a>
                             ) : (
-                              <span className="text-2xs text-slate-400 font-mono">—</span>
+                              <span className="text-2xs text-slate-400 tabular-nums">—</span>
                             )}
                           </td>
-                          <td className="p-3.5 text-center font-mono tabular-nums text-slate-500 whitespace-nowrap">{inv.invoice_date}</td>
-                          <td className="p-3.5 text-center font-mono tabular-nums text-slate-500 whitespace-nowrap">{inv.due_date}</td>
-                          <td className="p-3.5 text-right font-mono tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="p-3.5 text-center tabular-nums text-slate-500 whitespace-nowrap">{inv.invoice_date}</td>
+                          <td className="p-3.5 text-center tabular-nums text-slate-500 whitespace-nowrap">{inv.due_date}</td>
+                          <td className="p-3.5 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                             {formatBDT(inv.grand_total)}
                           </td>
-                          <td className="p-3.5 text-right font-mono tabular-nums text-emerald-600 font-bold whitespace-nowrap">
+                          <td className="p-3.5 text-right tabular-nums text-emerald-600 font-bold whitespace-nowrap">
                             {formatBDT(inv.paid_amount || 0)}
                           </td>
-                          <td className="p-3.5 text-right font-mono tabular-nums font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                          <td className="p-3.5 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
                             {formatBDT(inv.due_amount || 0)}
                           </td>
                           <td className="p-3.5 text-center whitespace-nowrap">
@@ -1760,7 +1746,7 @@ function BillingContent() {
                                       <DollarSign className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                                       <div className="flex flex-col text-left">
                                         <span className="font-semibold">Collect Payment</span>
-                                        <span className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 font-mono">
+                                        <span className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 tabular-nums">
                                           Due: {formatBDT(inv.due_amount)}
                                         </span>
                                       </div>
@@ -1840,7 +1826,7 @@ function BillingContent() {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <Link
                             href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
-                            className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400"
+                            className="tabular-nums font-bold text-sm text-blue-600 dark:text-blue-400"
                           >
                             #{inv.invoice_number}
                           </Link>
@@ -1854,17 +1840,17 @@ function BillingContent() {
                         {inv.customer_phone ? (
                           <a
                             href={`tel:${inv.customer_phone}`}
-                            className="text-xs text-blue-600 dark:text-blue-400 font-mono inline-flex items-center gap-1 hover:underline mt-0.5"
+                            className="text-xs text-blue-600 dark:text-blue-400 tabular-nums inline-flex items-center gap-1 hover:underline mt-0.5"
                           >
                             <Phone className="h-3 w-3" />
                             <span>{inv.customer_phone}</span>
                           </a>
                         ) : (
-                          <div className="text-xs text-slate-400 font-mono">No phone</div>
+                          <div className="text-xs text-slate-400 tabular-nums">No phone</div>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 text-center font-mono text-xs bg-slate-50/70 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
+                      <div className="grid grid-cols-3 gap-2 text-center tabular-nums text-xs bg-slate-50/70 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
                         <div>
                           <span className="text-2xs text-slate-400 block">Total</span>
                           <span className="font-bold text-slate-800 dark:text-slate-200">{formatBDT(inv.grand_total)}</span>
@@ -1880,7 +1866,7 @@ function BillingContent() {
                       </div>
 
                       <div className="flex items-center justify-between pt-1">
-                        <span className="text-2xs text-slate-400 font-mono">Date: {inv.invoice_date}</span>
+                        <span className="text-2xs text-slate-400 tabular-nums">Date: {inv.invoice_date}</span>
                         <div className="flex items-center gap-2">
                           {inv.due_amount > 0 && inv.status !== 'cancelled' && (
                             <>
@@ -2029,7 +2015,7 @@ function BillingContent() {
           <div className="space-y-4">
             {/* Search Payments */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div className="text-xs text-slate-500 font-mono">
+              <div className="text-xs text-slate-500 tabular-nums">
                 Showing {filteredPayments.length} recorded payments
               </div>
 
@@ -2079,10 +2065,10 @@ function BillingContent() {
                     ) : (
                       filteredPayments.map((pay) => (
                         <tr key={pay.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
-                          <td className="p-3.5 font-mono font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                          <td className="p-3.5 tabular-nums font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                             {pay.receipt_number}
                           </td>
-                          <td className="p-3.5 text-center font-mono tabular-nums text-slate-500 whitespace-nowrap">{pay.payment_date}</td>
+                          <td className="p-3.5 text-center tabular-nums text-slate-500 whitespace-nowrap">{pay.payment_date}</td>
                           <td className="p-3.5 font-bold text-slate-900 dark:text-white leading-tight">
                             {pay.customer_name || 'Walk-in Customer'}
                           </td>
@@ -2091,10 +2077,10 @@ function BillingContent() {
                               {pay.payment_method}
                             </Badge>
                           </td>
-                          <td className="p-3.5 font-mono text-slate-500 text-2xs whitespace-nowrap">
+                          <td className="p-3.5 tabular-nums text-slate-500 text-2xs whitespace-nowrap">
                             {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name || '—'}
                           </td>
-                          <td className="p-3.5 text-right font-mono tabular-nums font-black text-emerald-600 text-sm whitespace-nowrap">
+                          <td className="p-3.5 text-right tabular-nums font-black text-emerald-600 text-sm whitespace-nowrap">
                             {formatBDT(pay.amount)}
                           </td>
                           <td className="p-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
@@ -2131,7 +2117,7 @@ function BillingContent() {
                   filteredPayments.map((pay) => (
                     <div key={pay.id} className="p-4 space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400">
+                        <span className="tabular-nums font-bold text-sm text-emerald-600 dark:text-emerald-400">
                           {pay.receipt_number}
                         </span>
                         <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-2xs rounded-md">
@@ -2144,16 +2130,16 @@ function BillingContent() {
                           <div className="font-bold text-sm text-slate-900 dark:text-white">
                             {pay.customer_name || 'Walk-in Customer'}
                           </div>
-                          <div className="text-2xs text-slate-400 font-mono mt-0.5">
+                          <div className="text-2xs text-slate-400 tabular-nums mt-0.5">
                             {pay.payment_date} • By: {pay.received_by_name || 'Cashier'}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-mono font-black text-emerald-600 text-base">
+                          <div className="tabular-nums font-black text-emerald-600 text-base">
                             {formatBDT(pay.amount)}
                           </div>
                           {(pay.mfs_transaction_id || pay.cheque_number || pay.bank_name) && (
-                            <span className="text-2xs text-slate-400 font-mono block">
+                            <span className="text-2xs text-slate-400 tabular-nums block">
                               Ref: {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name}
                             </span>
                           )}
@@ -2212,7 +2198,7 @@ function BillingContent() {
                     <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
                     <Badge
                       className={cn(
-                        'text-2xs px-1.5 py-0 font-mono font-bold',
+                        'text-2xs px-1.5 py-0 tabular-nums font-bold',
                         isSelected
                           ? 'bg-blue-800 text-white'
                           : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -2259,7 +2245,7 @@ function BillingContent() {
                   <div className="text-base font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
                     {formatBDT(receivablesAging.totalReceivables || 0)}
                   </div>
-                  <span className="text-2xs text-slate-500 font-mono">All Open Accounts</span>
+                  <span className="text-2xs text-slate-500 tabular-nums">All Open Accounts</span>
                 </Card>
               </div>
             )}
@@ -2314,7 +2300,7 @@ function BillingContent() {
                             <td className="p-3.5 min-w-[180px]">
                               <span className="font-bold text-slate-900 dark:text-white leading-tight">{c.customerName}</span>
                             </td>
-                            <td className="p-3.5 font-mono text-slate-500 whitespace-nowrap">
+                            <td className="p-3.5 tabular-nums text-slate-500 whitespace-nowrap">
                               {c.customerPhone ? (
                                 <a
                                   href={`tel:${c.customerPhone}`}
@@ -2328,10 +2314,10 @@ function BillingContent() {
                                 '—'
                               )}
                             </td>
-                            <td className="p-3.5 text-center font-mono font-bold text-blue-600 whitespace-nowrap">
+                            <td className="p-3.5 text-center tabular-nums font-bold text-blue-600 whitespace-nowrap">
                               {c.unpaidCount} Invoices
                             </td>
-                            <td className="p-3.5 text-center font-mono tabular-nums text-slate-500 whitespace-nowrap">{c.oldestDueDate}</td>
+                            <td className="p-3.5 text-center tabular-nums text-slate-500 whitespace-nowrap">{c.oldestDueDate}</td>
                             <td className="p-3.5 text-center whitespace-nowrap">
                               {c.maxDaysOverdue > 0 ? (
                                 <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-2xs rounded-md whitespace-nowrap">
@@ -2343,7 +2329,7 @@ function BillingContent() {
                                 </Badge>
                               )}
                             </td>
-                            <td className="p-3.5 text-right font-mono tabular-nums font-black text-rose-600 dark:text-rose-400 text-sm whitespace-nowrap">
+                            <td className="p-3.5 text-right tabular-nums font-black text-rose-600 dark:text-rose-400 text-sm whitespace-nowrap">
                               {formatBDT(c.totalDue)}
                             </td>
                             <td className="p-3.5 text-right whitespace-nowrap w-[180px] min-w-[180px]">
@@ -2404,11 +2390,11 @@ function BillingContent() {
                           )}
                         </div>
 
-                        <div className="flex items-center justify-between text-xs font-mono">
+                        <div className="flex items-center justify-between text-xs tabular-nums">
                           {c.customerPhone ? (
                             <a
                               href={`tel:${c.customerPhone}`}
-                              className="text-blue-600 dark:text-blue-400 font-mono inline-flex items-center gap-1 hover:underline"
+                              className="text-blue-600 dark:text-blue-400 tabular-nums inline-flex items-center gap-1 hover:underline"
                             >
                               <Phone className="h-3 w-3" />
                               <span>{c.customerPhone}</span>
@@ -2421,12 +2407,12 @@ function BillingContent() {
 
                         <div className="flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
                           <div>
-                            <span className="text-2xs text-slate-400 block font-mono">Oldest Due Date</span>
-                            <span className="text-xs font-mono text-slate-700 dark:text-slate-300">{c.oldestDueDate}</span>
+                            <span className="text-2xs text-slate-400 block tabular-nums">Oldest Due Date</span>
+                            <span className="text-xs tabular-nums text-slate-700 dark:text-slate-300">{c.oldestDueDate}</span>
                           </div>
                           <div className="text-right">
-                            <span className="text-2xs text-slate-400 block font-mono">Total Outstanding</span>
-                            <span className="font-mono font-black text-rose-600 text-sm">{formatBDT(c.totalDue)}</span>
+                            <span className="text-2xs text-slate-400 block tabular-nums">Total Outstanding</span>
+                            <span className="tabular-nums font-black text-rose-600 text-sm">{formatBDT(c.totalDue)}</span>
                           </div>
                         </div>
 
@@ -2564,7 +2550,7 @@ function BillingContent() {
               <div className="text-xs text-slate-600 dark:text-slate-400">
                 Invoice: <strong>#{selectedInvoiceForDelete.invoice_number}</strong><br />
                 Customer: <strong>{selectedInvoiceForDelete.customer_name}</strong><br />
-                Total Paid: <strong className="font-mono">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong>
+                Total Paid: <strong className="tabular-nums">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong>
               </div>
               <div className="flex justify-end pt-2">
                 <Button type="button" variant="outline" size="sm" onClick={() => setSelectedInvoiceForDelete(null)}>
@@ -2580,8 +2566,8 @@ function BillingContent() {
               <div className="text-xs text-slate-600 dark:text-slate-400">
                 Invoice: <strong>#{selectedInvoiceForDelete.invoice_number}</strong><br />
                 Customer: <strong>{selectedInvoiceForDelete.customer_name}</strong><br />
-                Paid: <strong className="font-mono text-emerald-600">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong><br />
-                Remaining Due: <strong className="font-mono text-rose-600">{formatBDT(selectedInvoiceForDelete.due_amount || 0)}</strong>
+                Paid: <strong className="tabular-nums text-emerald-600">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong><br />
+                Remaining Due: <strong className="tabular-nums text-rose-600">{formatBDT(selectedInvoiceForDelete.due_amount || 0)}</strong>
               </div>
               <div className="flex justify-end pt-2">
                 <Button type="button" variant="outline" size="sm" onClick={() => setSelectedInvoiceForDelete(null)}>
@@ -2591,7 +2577,7 @@ function BillingContent() {
             </div>
           ) : (
             <form onSubmit={handleConfirmDelete} className="space-y-4 pt-1">
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 font-mono">
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 tabular-nums">
                 <div>Invoice: <strong className="text-slate-900 dark:text-white">#{selectedInvoiceForDelete.invoice_number}</strong></div>
                 <div>Customer: <strong className="text-slate-900 dark:text-white">{selectedInvoiceForDelete.customer_name}</strong></div>
                 <div>Amount: <strong className="text-slate-900 dark:text-white font-bold">{formatBDT(selectedInvoiceForDelete.grand_total)}</strong></div>

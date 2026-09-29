@@ -294,8 +294,8 @@ export default function TaxPage() {
       )}
 
       {/* NBR Monthly VAT Return Cockpit (Mushak 9.1 Summary) */}
-      <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all duration-200">
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
+      <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-xs">
+        <div className="absolute top-0 inset-x-0 h-0.5 bg-emerald-500" />
         <div className="p-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -308,7 +308,7 @@ export default function TaxPage() {
                     <h3 className="font-bold text-base text-slate-900 dark:text-white">
                       {tBilingual('NBR Monthly VAT Return Summary (Mushak-9.1)', 'এনবিআর মাসিক মূসক রিটার্ন সারাংশ (মূসক-৯.১)')}
                     </h3>
-                    <Badge className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-2xs font-mono font-bold">
+                    <Badge className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-2xs tabular-nums font-bold">
                       {vatReturnSummary.period}
                     </Badge>
                   </div>
@@ -352,7 +352,7 @@ export default function TaxPage() {
                 <span className="text-2xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block">
                   {tBilingual('Net Treasury Payable', 'সরকারি কোষাগারে প্রদেয়')}
                 </span>
-                <div className="text-xl sm:text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+                <div className="text-xl sm:text-2xl font-black tabular-nums text-emerald-600 dark:text-emerald-400">
                   {formatBDT(vatReturnSummary.netPayableVat)}
                 </div>
               </div>
@@ -547,7 +547,7 @@ export default function TaxPage() {
                       setTaxSettings({ ...taxSettings, default_vat_rate: r })
                       setTestRate(r)
                     }}
-                    className="w-20 h-8 text-xs font-mono font-bold text-center"
+                    className="w-20 h-8 text-xs tabular-nums font-bold text-center"
                   />
                   <span className="text-xs font-bold text-slate-400">%</span>
                 </div>
@@ -623,7 +623,7 @@ export default function TaxPage() {
                         setTaxSettings({ ...taxSettings, vds_rate: val })
                         setTestVdsRate(val)
                       }}
-                      className="w-20 h-7 text-xs font-mono font-bold text-center"
+                      className="w-20 h-7 text-xs tabular-nums font-bold text-center"
                     />
                     <span className="text-xs font-bold text-slate-400">%</span>
                   </div>
@@ -676,7 +676,7 @@ export default function TaxPage() {
                         setTaxSettings({ ...taxSettings, tds_rate: val })
                         setTestTdsRate(val)
                       }}
-                      className="w-20 h-7 text-xs font-mono font-bold text-center"
+                      className="w-20 h-7 text-xs tabular-nums font-bold text-center"
                     />
                     <span className="text-xs font-bold text-slate-400">%</span>
                   </div>
@@ -710,7 +710,7 @@ export default function TaxPage() {
                 {taxSettings.bin_number && (
                   <Badge
                     variant="outline"
-                    className={`text-2xs font-mono ${
+                    className={`text-2xs tabular-nums ${
                       binIsValid
                         ? 'border-emerald-500 text-emerald-700 dark:text-emerald-300'
                         : 'border-amber-500 text-amber-700 dark:text-amber-300'
@@ -726,7 +726,7 @@ export default function TaxPage() {
                 value={taxSettings.bin_number || ''}
                 onChange={(e) => setTaxSettings({ ...taxSettings, bin_number: e.target.value })}
                 required
-                className="font-mono font-bold tracking-wider text-sm h-9"
+                className="tabular-nums font-bold tracking-wider text-sm h-9"
               />
             </div>
 
@@ -738,7 +738,7 @@ export default function TaxPage() {
                 {taxSettings.tin_number && (
                   <Badge
                     variant="outline"
-                    className={`text-2xs font-mono ${
+                    className={`text-2xs tabular-nums ${
                       tinIsValid
                         ? 'border-emerald-500 text-emerald-700 dark:text-emerald-300'
                         : 'border-amber-500 text-amber-700 dark:text-amber-300'
@@ -754,7 +754,7 @@ export default function TaxPage() {
                 value={taxSettings.tin_number || ''}
                 onChange={(e) => setTaxSettings({ ...taxSettings, tin_number: e.target.value })}
                 required
-                className="font-mono text-sm h-9"
+                className="tabular-nums text-sm h-9"
               />
             </div>
           </div>
@@ -770,7 +770,7 @@ export default function TaxPage() {
                 value={taxSettings.trade_license_number || ''}
                 onChange={(e) => setTaxSettings({ ...taxSettings, trade_license_number: e.target.value })}
                 required
-                className="font-mono text-xs h-9"
+                className="tabular-nums text-xs h-9"
               />
             </div>
 
@@ -832,7 +832,7 @@ export default function TaxPage() {
                 placeholder="e.g. 01712345678"
                 value={taxSettings.vat_responsible_phone || ''}
                 onChange={(e) => setTaxSettings({ ...taxSettings, vat_responsible_phone: e.target.value })}
-                className="font-mono text-xs h-9"
+                className="tabular-nums text-xs h-9"
               />
             </div>
           </div>
@@ -891,10 +891,12 @@ export default function TaxPage() {
             <Button
               type="submit"
               isLoading={isLoading}
-              className="bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold w-full sm:w-auto h-10 sm:h-9 px-6 rounded-xl shadow-xs transition-all"
+              variant="success"
+              size="sm"
+              className="gap-1.5 w-full sm:w-auto"
             >
-              <Save className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('Save Tax & VAT Settings', 'ভ্যাট ও ট্যাক্স সেটিংস সংরক্ষণ করুন')}
+              <Save className="h-3.5 w-3.5" />
+              <span>{tBilingual('Save Tax & VAT Settings', 'ভ্যাট ও ট্যাক্স সেটিংস সংরক্ষণ করুন')}</span>
             </Button>
           </div>
         </Card>
@@ -909,7 +911,7 @@ export default function TaxPage() {
               {tBilingual('Live Pricing, VAT & Withholding Simulator', 'লাইভ প্রাইসিং, ভ্যাট ও উৎসে কর সিমুলেটর')}
             </h3>
           </div>
-          <span className="text-2xs text-slate-500 font-mono">
+          <span className="text-2xs text-slate-500 tabular-nums">
             {testMode === 'inclusive' ? 'Base = Total / (1 + Rate)' : 'VAT = Base * Rate'}
           </span>
         </div>
@@ -923,7 +925,7 @@ export default function TaxPage() {
               type="number"
               value={testAmount}
               onChange={(e) => setTestAmount(Number(e.target.value))}
-              className="h-8 text-xs font-mono font-bold"
+              className="h-8 text-xs tabular-nums font-bold"
             />
           </div>
 
@@ -935,7 +937,7 @@ export default function TaxPage() {
               type="number"
               value={testRate}
               onChange={(e) => setTestRate(Number(e.target.value))}
-              className="h-8 text-xs font-mono font-bold"
+              className="h-8 text-xs tabular-nums font-bold"
             />
           </div>
 
@@ -962,7 +964,7 @@ export default function TaxPage() {
               step="0.5"
               value={testVdsRate}
               onChange={(e) => setTestVdsRate(Number(e.target.value))}
-              className="h-8 text-xs font-mono font-bold"
+              className="h-8 text-xs tabular-nums font-bold"
               placeholder="0%"
             />
           </div>
@@ -976,13 +978,13 @@ export default function TaxPage() {
               step="0.5"
               value={testTdsRate}
               onChange={(e) => setTestTdsRate(Number(e.target.value))}
-              className="h-8 text-xs font-mono font-bold"
+              className="h-8 text-xs tabular-nums font-bold"
               placeholder="0%"
             />
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs font-mono grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div className="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs tabular-nums grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div className="space-y-0.5">
             <span className="text-slate-500 text-2xs uppercase">{tBilingual('Base Price', 'মূল পণ্যের দাম')}:</span>
             <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">

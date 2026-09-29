@@ -118,14 +118,14 @@ export function LoadingState({
   return (
     <div
       className={cn(
-        'flex min-h-[250px] flex-col items-center justify-center space-y-3 p-6 text-slate-500',
+        'flex min-h-[220px] flex-col items-center justify-center space-y-3 p-6 text-muted-foreground',
         className
       )}
     >
-      <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+      <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
       </div>
-      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 bangla-text">
+      <span className="text-sm font-medium text-muted-foreground bangla-text">
         {displayText}
       </span>
     </div>

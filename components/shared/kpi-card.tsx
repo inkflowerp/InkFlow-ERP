@@ -370,16 +370,16 @@ export function KpiCard({
     return (
       <div
         className={cn(
-          'p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs animate-pulse flex flex-col justify-between',
+          'p-4 rounded-xl bg-card border border-border shadow-xs animate-pulse flex flex-col justify-between min-h-[105px]',
           className
         )}
       >
         <div className="flex items-center justify-between">
-          <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded" />
-          <div className="h-4 w-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
+          <div className="h-3.5 w-24 bg-muted rounded" />
+          <div className="h-7 w-7 bg-muted rounded-lg" />
         </div>
-        <div className="h-7 w-28 bg-slate-200 dark:bg-slate-800 rounded mt-1.5" />
-        <div className="h-2.5 w-24 bg-slate-200 dark:bg-slate-800 rounded mt-1" />
+        <div className="h-7 w-32 bg-muted rounded mt-2" />
+        <div className="h-3 w-20 bg-muted rounded mt-1.5" />
       </div>
     )
   }
@@ -388,23 +388,23 @@ export function KpiCard({
     <div
       onClick={onClick}
       className={cn(
-        'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 shadow-xs rounded-2xl transition-all duration-150 flex flex-col justify-between relative overflow-hidden',
+        'bg-card text-card-foreground border border-border p-4 shadow-xs rounded-xl transition-colors duration-150 flex flex-col justify-between relative overflow-hidden',
         onClick ? 'cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 active:scale-[0.99]' : '',
-        isSelected && 'ring-2 ring-blue-500/40 border-blue-500/50 bg-blue-50/10 dark:bg-blue-950/10',
+        isSelected && 'ring-2 ring-primary/40 border-primary bg-blue-50/10 dark:bg-blue-950/20',
         className
       )}
     >
-      {/* 1. TOP ROW: Title on Left, Icon/Pulse on Right */}
+      {/* 1. TOP ROW: Title on Left, Subtle Icon/Pulse on Right */}
       <div className="flex items-center justify-between gap-1.5">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">
             {title}
           </span>
           {badge && (
             <span
               className={cn(
                 'inline-block px-1.5 py-0.5 rounded text-3xs font-bold uppercase tracking-wider shrink-0',
-                badgeColor || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                badgeColor || 'bg-muted text-muted-foreground'
               )}
             >
               {badge}
@@ -419,7 +419,9 @@ export function KpiCard({
               <span className={cn('relative inline-flex rounded-full h-2.5 w-2.5', styleConfig.dot)} />
             </span>
           ) : Icon ? (
-            <Icon className={cn('h-4 w-4 shrink-0', styleConfig.icon)} />
+            <div className="h-7 w-7 rounded-lg bg-muted/50 dark:bg-muted/30 flex items-center justify-center shrink-0">
+              <Icon className={cn('h-4 w-4 shrink-0', styleConfig.icon)} />
+            </div>
           ) : null}
 
           {(showMenu || onMenuClick) && (
@@ -430,7 +432,7 @@ export function KpiCard({
                 onMenuClick?.(e)
               }}
               aria-label="Options"
-              className="p-0.5 -mr-1 rounded text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
+              className="p-1 -mr-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
             >
               <MoreVertical className="w-3.5 h-3.5" />
             </button>
@@ -438,11 +440,11 @@ export function KpiCard({
         </div>
       </div>
 
-      {/* 2. MIDDLE ROW: Large Value with Variant Color + Tabular Figures */}
-      <div className={cn('text-2xl font-bold font-mono tracking-tight mt-1.5 leading-none flex items-baseline gap-1', styleConfig.text)}>
+      {/* 2. MIDDLE ROW: Large Value with Clean Foreground Hierarchy + Tabular Figures (24-28px) */}
+      <div className="text-2xl font-bold font-sans tracking-tight mt-2 leading-none flex items-baseline gap-1 text-foreground tabular-nums">
         {isCurrency && typeof value === 'number' ? (
           <>
-            <span className="font-semibold text-xl">৳</span>
+            <span className="font-semibold text-xl text-muted-foreground mr-0.5">৳</span>
             {formatLakhCrore(value)}
           </>
         ) : (
@@ -450,7 +452,7 @@ export function KpiCard({
         )}
 
         {unit && (
-          <span className="text-xs font-normal text-slate-400 dark:text-slate-500 ml-1 font-sans">
+          <span className="text-xs font-normal text-muted-foreground ml-1 font-sans">
             {unit}
           </span>
         )}

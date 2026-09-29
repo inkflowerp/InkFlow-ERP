@@ -335,7 +335,7 @@ export default function DeliveryChallanDetailPage() {
               <div className="text-2xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
                 {locale === 'bn' ? 'মোট বকেয়া' : 'Pending Due'}
               </div>
-              <div className="text-lg font-black text-amber-950 dark:text-amber-200 font-mono">
+              <div className="text-lg font-black text-amber-950 dark:text-amber-200 tabular-nums">
                 {formatBDT(calculatedDue)}
               </div>
             </div>
@@ -355,7 +355,7 @@ export default function DeliveryChallanDetailPage() {
             >
               {/* Header */}
               <div className="text-center space-y-1 pb-3 border-b-2 border-slate-900 dark:border-slate-100 print:border-slate-900 relative">
-                <div className="absolute right-0 top-0 text-2xs font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-bold border border-slate-300 dark:border-slate-700 text-slate-700 print:text-slate-800">
+                <div className="absolute right-0 top-0 text-2xs tabular-nums px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-bold border border-slate-300 dark:border-slate-700 text-slate-700 print:text-slate-800">
                   {copyMeta.badge}
                 </div>
                 <h1 className="text-xl font-black tracking-tight print:text-slate-900">{company?.name || 'InkFlow Printing & Signage'}</h1>
@@ -376,7 +376,7 @@ export default function DeliveryChallanDetailPage() {
                     Consignee / Deliver To (প্রাপক):
                   </span>
                   <div className="font-bold text-sm text-slate-900 dark:text-white print:text-slate-900">{challan.customer_name}</div>
-                  <div className="text-slate-600 dark:text-slate-300 print:text-slate-700 font-mono flex items-center gap-1">
+                  <div className="text-slate-600 dark:text-slate-300 print:text-slate-700 tabular-nums flex items-center gap-1">
                     <Phone className="h-3 w-3 text-slate-400" /> {challan.customer_phone}
                   </div>
                   <div className="text-slate-500 print:text-slate-600 flex items-start gap-1 mt-1">
@@ -385,7 +385,7 @@ export default function DeliveryChallanDetailPage() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5 text-right font-mono print:text-slate-900">
+                <div className="space-y-1.5 text-right tabular-nums print:text-slate-900">
                   <div>
                     Challan No: <strong className="text-sm font-black text-blue-600 dark:text-blue-400 print:text-slate-900">{challan.challan_number}</strong>
                   </div>
@@ -436,7 +436,7 @@ export default function DeliveryChallanDetailPage() {
                 <tbody>
                   {(challan.items || []).map((item: any, idx: number) => (
                     <tr key={item.id || idx}>
-                      <td className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 text-center font-mono">
+                      <td className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 text-center tabular-nums">
                         {idx + 1}
                       </td>
                       <td className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 font-bold text-slate-900 dark:text-white print:text-slate-900">
@@ -447,10 +447,10 @@ export default function DeliveryChallanDetailPage() {
                           </span>
                         )}
                       </td>
-                      <td className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 text-center font-mono">
+                      <td className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 text-center tabular-nums">
                         {item.dimensions_spec || '—'}
                       </td>
-                      <td className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 text-center font-mono font-black text-sm print:text-slate-900">
+                      <td className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 text-center tabular-nums font-black text-sm print:text-slate-900">
                         {item.quantity} {item.unit || 'pcs'}
                       </td>
                       <td className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 text-slate-600 dark:text-slate-300 print:text-slate-600">
@@ -490,7 +490,7 @@ export default function DeliveryChallanDetailPage() {
                   </div>
                   <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200 dark:border-slate-800 print:border-slate-300">
                     <span className="text-slate-500 print:text-slate-600">ডেলিভারি কালেকশন / বকেয়া:</span>
-                    <strong className="text-sm font-black font-mono text-slate-900 dark:text-white print:text-slate-900">
+                    <strong className="text-sm font-black tabular-nums text-slate-900 dark:text-white print:text-slate-900">
                       {formatBDT(calculatedDue)}
                     </strong>
                   </div>
@@ -506,7 +506,7 @@ export default function DeliveryChallanDetailPage() {
               {/* 3-Party Signatures Block */}
               <div className="pt-10 grid grid-cols-3 gap-4 text-xs page-break-inside-avoid print-avoid-break">
                 <div className="text-center space-y-1.5">
-                  <div className="font-mono text-slate-400 print:text-slate-600 text-2xs">
+                  <div className="tabular-nums text-slate-400 print:text-slate-600 text-2xs">
                     {(challan as any).dispatched_by_name || (challan as any).created_by_name || 'Warehouse In-charge'}
                   </div>
                   <div className="border-t border-slate-400 pt-1 font-bold print:text-slate-900">
@@ -516,7 +516,7 @@ export default function DeliveryChallanDetailPage() {
                 </div>
 
                 <div className="text-center space-y-1.5">
-                  <div className="font-mono text-slate-400 print:text-slate-600 text-2xs">
+                  <div className="tabular-nums text-slate-400 print:text-slate-600 text-2xs">
                     {challan.delivery_person_name || 'Driver / Carrier'}
                   </div>
                   <div className="border-t border-slate-400 pt-1 font-bold print:text-slate-900">
@@ -527,11 +527,11 @@ export default function DeliveryChallanDetailPage() {
 
                 <div className="text-center space-y-1.5">
                   {challan.receiver_signature ? (
-                    <div className="font-mono text-emerald-600 print:text-emerald-800 font-bold text-2xs">
+                    <div className="tabular-nums text-emerald-600 print:text-emerald-800 font-bold text-2xs">
                       Signed: {challan.receiver_signature} ({challan.receiver_name})
                     </div>
                   ) : (
-                    <div className="font-mono text-slate-400 print:text-slate-600 italic text-2xs">
+                    <div className="tabular-nums text-slate-400 print:text-slate-600 italic text-2xs">
                       সিল ও স্বাক্ষর (Seal & Sign)
                     </div>
                   )}

@@ -126,7 +126,7 @@ export default function PlatformJobsPage() {
 
                 return (
                   <tr key={j.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4 font-mono">
+                    <td className="py-3.5 px-4 tabular-nums">
                       <div className="font-bold text-white text-xs">{j.job_type}</div>
                       <div className="text-2xs text-slate-500">{j.id}</div>
                     </td>
@@ -151,15 +151,15 @@ export default function PlatformJobsPage() {
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono">
+                    <td className="py-3.5 px-4 tabular-nums">
                       {j.attempts} / {j.max_attempts}
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-slate-400">
+                    <td className="py-3.5 px-4 tabular-nums text-slate-400">
                       {j.duration_ms ? `${j.duration_ms} ms` : '—'}
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-slate-400 text-2xs">
+                    <td className="py-3.5 px-4 tabular-nums text-slate-400 text-2xs">
                       {formatTime(j.scheduled_for)}
                     </td>
 
@@ -208,16 +208,16 @@ export default function PlatformJobsPage() {
 
             <div className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-2 text-slate-300">
-                <div>Type: <strong className="text-white font-mono">{inspectJob.job_type}</strong></div>
-                <div>Status: <strong className="text-white font-mono uppercase">{inspectJob.status}</strong></div>
-                <div>Attempts: <strong className="text-white font-mono">{inspectJob.attempts} / {inspectJob.max_attempts}</strong></div>
-                <div>Duration: <strong className="text-white font-mono">{inspectJob.duration_ms} ms</strong></div>
+                <div>Type: <strong className="text-white tabular-nums">{inspectJob.job_type}</strong></div>
+                <div>Status: <strong className="text-white tabular-nums uppercase">{inspectJob.status}</strong></div>
+                <div>Attempts: <strong className="text-white tabular-nums">{inspectJob.attempts} / {inspectJob.max_attempts}</strong></div>
+                <div>Duration: <strong className="text-white tabular-nums">{inspectJob.duration_ms} ms</strong></div>
               </div>
 
               {inspectJob.error_log && (
                 <div className="space-y-1">
                   <div className="font-bold text-red-400">Error Log Output:</div>
-                  <pre className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-2xs text-red-300 overflow-x-auto whitespace-pre-wrap">
+                  <pre className="p-3 rounded-xl bg-slate-950 border border-slate-800 tabular-nums text-2xs text-red-300 overflow-x-auto whitespace-pre-wrap">
                     {inspectJob.error_log}
                   </pre>
                 </div>

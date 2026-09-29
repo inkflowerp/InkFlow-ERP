@@ -229,7 +229,7 @@ export default function TenantSubscriptionPage() {
             <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
             <div className="text-xs text-amber-900 dark:text-amber-200">
               <strong>Cancellation Pending:</strong> Your subscription will remain active until{' '}
-              <span className="font-mono font-bold">{formatDate(subscription.current_period_end, locale)}</span>, after which it will not renew.
+              <span className="tabular-nums font-bold">{formatDate(subscription.current_period_end, locale)}</span>, after which it will not renew.
             </div>
           </div>
           <Button
@@ -250,7 +250,7 @@ export default function TenantSubscriptionPage() {
             <div className="text-xs text-blue-900 dark:text-blue-200">
               <strong>Scheduled Downgrade:</strong> Your plan will switch to{' '}
               <strong>{nextPlanRecord.name}</strong> on{' '}
-              <span className="font-mono font-bold">
+              <span className="tabular-nums font-bold">
                 {formatDate(subscription.change_effective_at || subscription.current_period_end, locale)}
               </span>.
             </div>
@@ -259,11 +259,11 @@ export default function TenantSubscriptionPage() {
       )}
 
       {/* Active Subscription Banner */}
-      <Card className="p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-950 text-white rounded-2xl shadow-md border-0 relative overflow-hidden">
+      <Card className="p-6 bg-card text-card-foreground rounded-xl shadow-xs border border-border relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <Badge className="bg-amber-400 text-slate-950 font-black tracking-wider uppercase text-2xs px-2.5 py-0.5">
+              <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-300 font-bold tracking-wider uppercase text-2xs px-2.5 py-0.5">
                 {isTrial ? 'Free Trial' : currentPlan.name}
               </Badge>
 
@@ -320,10 +320,10 @@ export default function TenantSubscriptionPage() {
             <div className="text-2xs text-slate-400 pt-1 flex items-center gap-3 flex-wrap">
               <span>
                 {isTrial ? 'Trial Ends:' : 'Period Ends:'}{' '}
-                <strong className="text-white font-mono">
+                <strong className="text-white tabular-nums">
                   {formatDate(trialExpiresAt || planExpiresAt || subscription.current_period_end, locale)}
                 </strong>{' '}
-                <span className="text-amber-300 font-mono text-2xs">
+                <span className="text-amber-300 tabular-nums text-2xs">
                   ({isTrial
                     ? isTrialExpired
                       ? 'Expired'
@@ -336,7 +336,7 @@ export default function TenantSubscriptionPage() {
               {subscription.last_payment_reference && (
                 <span>
                   Last Payment Reference:{' '}
-                  <strong className="text-indigo-300 font-mono">{subscription.last_payment_reference}</strong>{' '}
+                  <strong className="text-indigo-300 tabular-nums">{subscription.last_payment_reference}</strong>{' '}
                   ({subscription.payment_method_type?.toUpperCase()})
                 </span>
               )}
@@ -346,7 +346,7 @@ export default function TenantSubscriptionPage() {
           <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto shrink-0">
             <Button
               onClick={() => openUpgradeModal()}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black shadow-lg shadow-amber-500/20 text-xs px-5"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs px-5 shadow-xs"
             >
               <Zap className="mr-1.5 h-4 w-4" />
               {isTrial ? 'Upgrade Free Trial' : 'Change / Upgrade Plan'}
@@ -409,7 +409,7 @@ export default function TenantSubscriptionPage() {
                 <Users className="h-4 w-4 text-blue-500" />
                 Team Users
               </span>
-              <span className="font-mono text-slate-900 dark:text-white font-bold">
+              <span className="tabular-nums text-slate-900 dark:text-white font-bold">
                 {userLimit.current} / {userLimit.limit}
               </span>
             </div>
@@ -438,7 +438,7 @@ export default function TenantSubscriptionPage() {
                 <Building className="h-4 w-4 text-purple-500" />
                 Branches &amp; Hubs
               </span>
-              <span className="font-mono text-slate-900 dark:text-white font-bold">
+              <span className="tabular-nums text-slate-900 dark:text-white font-bold">
                 {branchLimit.current} / {branchLimit.limit}
               </span>
             </div>
@@ -463,7 +463,7 @@ export default function TenantSubscriptionPage() {
                 <HardDrive className="h-4 w-4 text-cyan-500" />
                 Cloud Artwork Storage
               </span>
-              <span className="font-mono text-slate-900 dark:text-white font-bold">
+              <span className="tabular-nums text-slate-900 dark:text-white font-bold">
                 {storageLimit.current} GB / {storageLimit.limit} GB
               </span>
             </div>
@@ -486,7 +486,7 @@ export default function TenantSubscriptionPage() {
                 <ShoppingCart className="h-4 w-4 text-emerald-500" />
                 Monthly Orders
               </span>
-              <span className="font-mono text-slate-900 dark:text-white font-bold">
+              <span className="tabular-nums text-slate-900 dark:text-white font-bold">
                 {orderLimit.current} / {orderLimit.limit}
               </span>
             </div>
@@ -509,7 +509,7 @@ export default function TenantSubscriptionPage() {
                 <Users className="h-4 w-4 text-amber-500" />
                 Client Directory
               </span>
-              <span className="font-mono text-slate-900 dark:text-white font-bold">
+              <span className="tabular-nums text-slate-900 dark:text-white font-bold">
                 {customerLimit.current} / {customerLimit.limit}
               </span>
             </div>
@@ -532,7 +532,7 @@ export default function TenantSubscriptionPage() {
                 <Layers className="h-4 w-4 text-pink-500" />
                 Catalog Products
               </span>
-              <span className="font-mono text-slate-900 dark:text-white font-bold">
+              <span className="tabular-nums text-slate-900 dark:text-white font-bold">
                 {productLimit.current} / {productLimit.limit}
               </span>
             </div>
@@ -596,16 +596,16 @@ export default function TenantSubscriptionPage() {
                           {ev.event_type}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-mono text-2xs">
+                      <td className="py-3 px-4 tabular-nums text-2xs">
                         {ev.previous_plan_code || 'trial'} → <strong className="text-slate-900 dark:text-white">{ev.new_plan_code || 'starter'}</strong>
                       </td>
-                      <td className="py-3 px-4 font-mono font-bold">
+                      <td className="py-3 px-4 tabular-nums font-bold">
                         {ev.amount ? <CurrencyDisplay amount={Number(ev.amount)} /> : '—'}
                       </td>
                       <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
                         {ev.reason || 'Lifecycle action'}
                       </td>
-                      <td className="py-3 px-4 font-mono text-slate-500">
+                      <td className="py-3 px-4 tabular-nums text-slate-500">
                         {new Date(ev.created_at).toLocaleString()}
                       </td>
                     </tr>
@@ -634,11 +634,11 @@ export default function TenantSubscriptionPage() {
                     }`}>
                       {ev.event_type}
                     </span>
-                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                    <span className="tabular-nums text-xs font-bold text-slate-900 dark:text-white">
                       {ev.amount ? <CurrencyDisplay amount={Number(ev.amount)} /> : '—'}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-700 dark:text-slate-300 font-mono">
+                  <div className="text-xs text-slate-700 dark:text-slate-300 tabular-nums">
                     {ev.previous_plan_code || 'trial'} → <strong className="text-slate-900 dark:text-white">{ev.new_plan_code || 'starter'}</strong>
                   </div>
                   <div className="flex items-center justify-between text-2xs text-slate-500 pt-1">
@@ -689,19 +689,19 @@ export default function TenantSubscriptionPage() {
                 ) : (
                   invoices.map((inv) => (
                     <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                      <td className="py-3 px-4 tabular-nums font-bold text-slate-900 dark:text-white">
                         {inv.invoice_number}
                       </td>
                       <td className="py-3 px-4 uppercase text-slate-700 dark:text-slate-300 font-semibold">
                         {inv.plan_name} <span className="text-2xs text-slate-400 font-normal">({inv.billing_interval})</span>
                       </td>
-                      <td className="py-3 px-4 font-mono font-bold">
+                      <td className="py-3 px-4 tabular-nums font-bold">
                         <CurrencyDisplay amount={inv.amount} />
                       </td>
                       <td className="py-3 px-4 uppercase text-slate-600 dark:text-slate-300">
                         {inv.payment_method}
                       </td>
-                      <td className="py-3 px-4 font-mono text-2xs text-slate-500">
+                      <td className="py-3 px-4 tabular-nums text-2xs text-slate-500">
                         {inv.transaction_ref}
                       </td>
                       <td className="py-3 px-4">
@@ -715,7 +715,7 @@ export default function TenantSubscriptionPage() {
                           {inv.status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-mono text-slate-500">
+                      <td className="py-3 px-4 tabular-nums text-slate-500">
                         {formatDate(inv.billing_date, locale)}
                       </td>
                     </tr>
@@ -735,7 +735,7 @@ export default function TenantSubscriptionPage() {
               invoices.map((inv) => (
                 <div key={inv.id} className="p-4 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                    <span className="tabular-nums text-xs font-bold text-slate-900 dark:text-white">
                       {inv.invoice_number}
                     </span>
                     <span className={`px-2 py-0.5 rounded-full text-2xs font-bold uppercase ${
@@ -752,11 +752,11 @@ export default function TenantSubscriptionPage() {
                     <span className="text-slate-600 dark:text-slate-300 font-semibold uppercase">
                       {inv.plan_name} ({inv.billing_interval})
                     </span>
-                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                    <span className="tabular-nums font-bold text-slate-900 dark:text-white">
                       <CurrencyDisplay amount={inv.amount} />
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-2xs text-slate-500 font-mono pt-1">
+                  <div className="flex items-center justify-between text-2xs text-slate-500 tabular-nums pt-1">
                     <span>{inv.payment_method?.toUpperCase()} • {inv.transaction_ref}</span>
                     <span>{formatDate(inv.billing_date, locale)}</span>
                   </div>

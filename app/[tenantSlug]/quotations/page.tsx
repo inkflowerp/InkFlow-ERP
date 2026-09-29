@@ -46,6 +46,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { FeatureGate } from '@/components/shared/feature-gate'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { PageHeader } from '@/components/shared/page-header'
 import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import {
   QuotationRecord,
@@ -960,33 +961,18 @@ export default function QuotationsPage() {
         {/* =========================================================================
             1. HEADER & PRIMARY WORKSPACE ACTIONS
            ========================================================================= */}
-        <div className="bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-800/40 p-5 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs relative overflow-hidden">
-          {/* Subtle decorative glow */}
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-1/3 -mb-10 w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2.5">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-sm shadow-blue-500/20">
-                  <FileSpreadsheet className="h-5 w-5" />
-                </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <span>{locale === 'bn' ? 'কোটেশন' : 'Quotations'}</span>
-                    <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-2xs font-bold py-0.5">
-                      Live BDT ৳
-                    </Badge>
-                  </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {locale === 'bn'
-                      ? 'বাণিজ্যিক সেলস কন্ট্রোল সেন্টার: চলতি কোটেশন, দ্রুত ফলো-আপ, মার্জিন ও অর্ডার কনভার্সন'
-                      : 'Commercial sales-control center: track active proposals, urgent follow-ups, margins & conversions'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
+        <PageHeader
+          titleEn="Quotations"
+          titleBn="কোটেশন"
+          descriptionEn="Commercial sales-control center: track active proposals, urgent follow-ups, margins & conversions"
+          descriptionBn="বাণিজ্যিক সেলস কন্ট্রোল সেন্টার: চলতি কোটেশন, দ্রুত ফলো-আপ, মার্জিন ও অর্ডার কনভার্সন"
+          icon={FileSpreadsheet}
+          badge={
+            <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-2xs font-bold py-0.5">
+              Live BDT ৳
+            </Badge>
+          }
+          actions={
             <div className="flex flex-wrap items-center gap-2.5">
               <Button
                 size="sm"
@@ -998,14 +984,14 @@ export default function QuotationsPage() {
                   }
                   setIsNewOpen(true)
                 }}
-                className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-sm shadow-blue-500/20 h-9 px-4 gap-1.5 cursor-pointer rounded-xl transition-transform active:scale-[0.98]"
+                className="gap-1.5"
               >
                 <Plus className="h-4 w-4" />
                 <span>{tBilingual('New Quotation', 'নতুন কোটেশন')}</span>
               </Button>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* =========================================================================
             2. KPI SUMMARY CARDS (TOTAL QUOTED, WON, PENDING, EXPIRING, AVG DEAL, WIN RATE)
@@ -1130,7 +1116,7 @@ export default function QuotationsPage() {
                     type="date"
                     value={customStartDate}
                     onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+                    className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none"
                     title="From Date"
                   />
                   <span className="text-slate-400 font-bold px-0.5 text-xs">to</span>
@@ -1138,7 +1124,7 @@ export default function QuotationsPage() {
                     type="date"
                     value={customEndDate}
                     onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+                    className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none"
                     title="To Date"
                   />
                   <Button
@@ -1152,7 +1138,7 @@ export default function QuotationsPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2.5 text-xs text-slate-500 font-mono">
+            <div className="flex items-center gap-2.5 text-xs text-slate-500 tabular-nums">
               <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
                 <Calendar className="h-3.5 w-3.5 text-blue-500" />
                 <span>
@@ -1232,7 +1218,7 @@ export default function QuotationsPage() {
                     <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                       Quotation Directory
                     </CardTitle>
-                    <Badge variant="outline" className="text-xs font-mono">
+                    <Badge variant="outline" className="text-xs tabular-nums">
                       {filteredQuotations.length} records
                     </Badge>
                   </div>

@@ -276,7 +276,7 @@ export function MoneyReceiptModal({
           </div>
 
           {/* RECEIPT META */}
-          <div className="flex flex-wrap justify-between items-center text-xs font-mono py-1 px-1 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex flex-wrap justify-between items-center text-xs tabular-nums py-1 px-1 border-b border-slate-200 dark:border-slate-800">
             <div>
               <span className="text-slate-500">Receipt No: </span>
               <strong className="text-emerald-700 dark:text-emerald-400 text-sm font-black">
@@ -315,17 +315,17 @@ export function MoneyReceiptModal({
               <div className="font-bold uppercase flex items-center gap-2 flex-wrap">
                 <span>{methodInfo.en}</span>
                 {payment.mfs_transaction_id && (
-                  <Badge variant="outline" className="font-mono text-2xs normal-case bg-white dark:bg-slate-900">
+                  <Badge variant="outline" className="tabular-nums text-2xs normal-case bg-white dark:bg-slate-900">
                     TrxID: {payment.mfs_transaction_id}
                   </Badge>
                 )}
                 {payment.cheque_number && (
-                  <Badge variant="outline" className="font-mono text-2xs normal-case bg-white dark:bg-slate-900">
+                  <Badge variant="outline" className="tabular-nums text-2xs normal-case bg-white dark:bg-slate-900">
                     Cheque #{payment.cheque_number} {payment.bank_name ? `(${payment.bank_name})` : ''}
                   </Badge>
                 )}
                 {payment.bank_name && !payment.cheque_number && (
-                  <Badge variant="outline" className="font-mono text-2xs normal-case bg-white dark:bg-slate-900">
+                  <Badge variant="outline" className="tabular-nums text-2xs normal-case bg-white dark:bg-slate-900">
                     Bank: {payment.bank_name}
                   </Badge>
                 )}

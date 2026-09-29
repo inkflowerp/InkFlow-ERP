@@ -509,7 +509,7 @@ export default function MachineriesListPage() {
                       {m.name}
                     </Link>
                     <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                      <span className="font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                      <span className="tabular-nums font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                         {m.code}
                       </span>
                       <span>•</span>
@@ -556,7 +556,7 @@ export default function MachineriesListPage() {
 
                 {/* Lifetime Production Meters */}
                 {(Number(m.total_sft_produced || 0) > 0 || Number(m.total_impressions || 0) > 0) && (
-                  <div className="flex items-center justify-between text-2xs px-2 py-1 rounded bg-slate-100/60 dark:bg-slate-800/40 font-mono text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-2xs px-2 py-1 rounded bg-slate-100/60 dark:bg-slate-800/40 tabular-nums text-slate-600 dark:text-slate-400">
                     <span>Meter:</span>
                     <span className="font-bold text-slate-800 dark:text-slate-200">
                       {m.total_sft_produced ? `${Number(m.total_sft_produced).toLocaleString()} SFT` : `${Number(m.total_impressions).toLocaleString()} Imp`}
@@ -694,7 +694,7 @@ export default function MachineriesListPage() {
                     >
                       {m.name}
                     </Link>
-                    <span className="block font-mono text-2xs text-slate-500">{m.code}</span>
+                    <span className="block tabular-nums text-2xs text-slate-500">{m.code}</span>
                     {m.active_mounted_roll_tag && (
                       <span className="inline-flex items-center gap-1 text-2xs text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mt-1">
                         <Disc className="h-3 w-3" />

@@ -631,7 +631,7 @@ export default function PlatformSupportPage() {
               </div>
             </div>
 
-            <span className="text-2xs font-mono text-amber-300/80 self-start sm:self-auto bg-amber-950/60 border border-amber-800/60 px-2.5 py-1 rounded-lg">
+            <span className="text-2xs tabular-nums text-amber-300/80 self-start sm:self-auto bg-amber-950/60 border border-amber-800/60 px-2.5 py-1 rounded-lg">
               Auto-Audit Active
             </span>
           </div>
@@ -649,7 +649,7 @@ export default function PlatformSupportPage() {
                       <span className="font-black text-white text-sm">
                         {sess.company_name || 'Tenant Organization'}
                       </span>
-                      <span className="text-2xs font-mono px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      <span className="text-2xs tabular-nums px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
                         /{sess.company_slug}
                       </span>
                       {getAccessLevelBadge(sess.access_level)}
@@ -821,7 +821,7 @@ export default function PlatformSupportPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-bold text-white text-xs truncate">{comp.name}</p>
-                      <p className="text-2xs text-slate-400 font-mono">/{comp.slug}</p>
+                      <p className="text-2xs text-slate-400 tabular-nums">/{comp.slug}</p>
                     </div>
                     <span className="shrink-0 text-2xs font-bold px-2 py-0.5 rounded-md bg-slate-900 text-amber-300 border border-slate-800 uppercase">
                       {comp.plan || 'starter'}
@@ -950,7 +950,7 @@ export default function PlatformSupportPage() {
                     <tr key={sess.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="py-3 px-3.5">
                         <span className="font-bold text-white block">{sess.company_name || 'Unknown Tenant'}</span>
-                        <span className="text-2xs text-slate-400 font-mono">/{sess.company_slug}</span>
+                        <span className="text-2xs text-slate-400 tabular-nums">/{sess.company_slug}</span>
                       </td>
 
                       <td className="py-3 px-3.5">

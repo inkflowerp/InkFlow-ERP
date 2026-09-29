@@ -1103,14 +1103,14 @@ export default function PlatformIntegrationsPage() {
                         {gateway?.last_tested_at && (
                           <div className="flex items-center justify-between text-2xs text-slate-500">
                             <span>Last Ping:</span>
-                            <span className="text-slate-700 dark:text-slate-300 font-mono">
+                            <span className="text-slate-700 dark:text-slate-300 tabular-nums">
                               {gateway.last_test_latency_ms ? `${gateway.last_test_latency_ms} ms` : '0 ms'}
                             </span>
                           </div>
                         )}
 
                         {gateway?.last_test_error && isError && (
-                          <div className="text-2xs text-rose-600 dark:text-rose-400 line-clamp-1 bg-rose-50 dark:bg-rose-950/50 p-1 rounded font-mono">
+                          <div className="text-2xs text-rose-600 dark:text-rose-400 line-clamp-1 bg-rose-50 dark:bg-rose-950/50 p-1 rounded tabular-nums">
                             {gateway.last_test_error}
                           </div>
                         )}
@@ -1119,7 +1119,7 @@ export default function PlatformIntegrationsPage() {
                       {/* Webhook Quick Path if applicable */}
                       {meta.webhookPath && (
                         <div className="flex items-center justify-between text-2xs text-slate-500 bg-slate-50 dark:bg-slate-900 p-1.5 rounded border border-slate-200/60 dark:border-slate-800">
-                          <span className="font-mono text-2xs truncate max-w-[170px]">{meta.webhookPath}</span>
+                          <span className="tabular-nums text-2xs truncate max-w-[170px]">{meta.webhookPath}</span>
                           <button
                             onClick={() => handleCopyWebhookUrl(meta.webhookPath!)}
                             className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 text-2xs font-semibold flex items-center gap-0.5 shrink-0"
@@ -1230,7 +1230,7 @@ export default function PlatformIntegrationsPage() {
                       <th className="p-3">Sent At</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 tabular-nums">
                     {commLogs.map((log) => (
                       <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
                         <td className="p-3 font-sans capitalize font-semibold">{log.channel}</td>
@@ -1287,7 +1287,7 @@ export default function PlatformIntegrationsPage() {
               <div className="p-12 text-center text-xs text-slate-500">No payment transactions recorded yet.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse font-mono">
+                <table className="w-full text-left text-xs border-collapse tabular-nums">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-2xs font-semibold text-slate-500 font-sans">
                       <th className="p-3">Internal TRX</th>
@@ -1350,7 +1350,7 @@ export default function PlatformIntegrationsPage() {
               <div className="p-12 text-center text-xs text-slate-500">No incoming webhook events detected yet.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse font-mono">
+                <table className="w-full text-left text-xs border-collapse tabular-nums">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-2xs font-semibold text-slate-500 font-sans">
                       <th className="p-3">Provider</th>
@@ -1420,7 +1420,7 @@ export default function PlatformIntegrationsPage() {
                       <th className="p-3">Timestamp</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 tabular-nums">
                     {auditLogs.map((log) => (
                       <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
                         <td className="p-3 font-semibold capitalize font-sans text-indigo-600 dark:text-indigo-400">
@@ -1529,7 +1529,7 @@ export default function PlatformIntegrationsPage() {
                           })
                         }
                         placeholder={field.placeholder}
-                        className="h-8 text-xs font-mono pr-8"
+                        className="h-8 text-xs tabular-nums pr-8"
                       />
                       {isPassword && (
                         <button
@@ -1597,7 +1597,7 @@ export default function PlatformIntegrationsPage() {
                               })
                             }
                             placeholder={field.placeholder}
-                            className="h-8 text-xs font-mono"
+                            className="h-8 text-xs tabular-nums"
                           />
                         )}
                       </div>
@@ -1654,7 +1654,7 @@ export default function PlatformIntegrationsPage() {
               onChange={(e) => setTestPayload({ ...testPayload, recipient: e.target.value })}
               placeholder={testPayload.category === 'email' ? 'admin@printerp.com' : '01711000000'}
               required
-              className="h-8 text-xs font-mono"
+              className="h-8 text-xs tabular-nums"
             />
           </div>
 

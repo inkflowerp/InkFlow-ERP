@@ -328,7 +328,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       headerBn: 'অর্ডার কোড',
       sortable: true,
       render: (row) => (
-        <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
+        <span className="tabular-nums text-xs font-bold text-blue-600 dark:text-blue-400">
           {row.code}
         </span>
       ),
@@ -902,7 +902,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
               >
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
+                    <span className="tabular-nums text-xs font-bold text-blue-600 dark:text-blue-400">
                       {item.code}
                     </span>
                     <Badge
@@ -931,7 +931,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
                     <strong className="text-slate-800 dark:text-slate-200">{item.customerName}</strong>
                   </p>
 
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">{item.specs}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">{item.specs}</p>
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">

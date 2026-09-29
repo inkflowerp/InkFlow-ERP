@@ -183,7 +183,7 @@ export function ScheduleTaskModal({
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
               {task.task_name}
             </span>
-            <Badge variant="outline" className="text-2xs uppercase font-mono">
+            <Badge variant="outline" className="text-2xs uppercase tabular-nums">
               {task.task_number}
             </Badge>
           </div>

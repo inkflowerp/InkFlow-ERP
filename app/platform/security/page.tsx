@@ -764,15 +764,15 @@ export default function PlatformSecurityPage() {
                         <Laptop className="h-4 w-4 text-slate-400 shrink-0" />
                         <span>{sess.device_name}</span>
                       </div>
-                      <div className="text-2xs text-slate-400 font-mono mt-0.5">{sess.user_email}</div>
+                      <div className="text-2xs text-slate-400 tabular-nums mt-0.5">{sess.user_email}</div>
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="font-mono text-cyan-400 text-xs">{sess.ip_address}</div>
+                      <div className="tabular-nums text-cyan-400 text-xs">{sess.ip_address}</div>
                       <div className="text-2xs text-slate-400">{sess.location}</div>
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-slate-300">
+                    <td className="py-3.5 px-4 tabular-nums text-slate-300">
                       {sess.is_current ? (
                         <span className="text-emerald-400 font-bold flex items-center gap-1.5">
                           <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -885,7 +885,7 @@ export default function PlatformSecurityPage() {
               {filteredLoginHistory && filteredLoginHistory.length > 0 ? (
                 filteredLoginHistory.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-4 font-mono text-slate-300">
+                    <td className="py-3 px-4 tabular-nums text-slate-300">
                       <div>
                         {formatDate(item.timestamp)}
                       </div>
@@ -902,7 +902,7 @@ export default function PlatformSecurityPage() {
                     </td>
 
                     <td className="py-3 px-4">
-                      <div className="font-mono text-cyan-400 text-xs">{item.ip_address}</div>
+                      <div className="tabular-nums text-cyan-400 text-xs">{item.ip_address}</div>
                       <div className="text-2xs text-slate-400">{item.location}</div>
                     </td>
 
@@ -960,7 +960,7 @@ export default function PlatformSecurityPage() {
               >
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono font-bold text-indigo-400 text-xs bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/40">
+                    <span className="tabular-nums font-bold text-indigo-400 text-xs bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/40">
                       {act.action}
                     </span>
                     <span className="text-slate-500">•</span>
@@ -972,10 +972,10 @@ export default function PlatformSecurityPage() {
                 </div>
 
                 <div className="sm:text-right">
-                  <div className="font-mono text-slate-300 text-xs">
+                  <div className="tabular-nums text-slate-300 text-xs">
                     {formatTime(act.created_at, 'en', { second: '2-digit' })}
                   </div>
-                  <div className="text-2xs text-slate-500 font-mono">{act.actor_email}</div>
+                  <div className="text-2xs text-slate-500 tabular-nums">{act.actor_email}</div>
                 </div>
               </div>
             ))
@@ -1115,7 +1115,7 @@ export default function PlatformSecurityPage() {
                     <rect x="68" y="78" width="24" height="6" fill="#0f172a" rx="1" />
                     <rect x="74" y="88" width="18" height="4" fill="#0f172a" rx="1" />
                   </svg>
-                  <span className="text-2xs font-mono font-bold text-slate-800 mt-1">
+                  <span className="text-2xs tabular-nums font-bold text-slate-800 mt-1">
                     PrintERP:PlatformAdmin
                   </span>
                 </div>
@@ -1129,7 +1129,7 @@ export default function PlatformSecurityPage() {
                     )}
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-cyan-400 text-xs font-bold tracking-wider">
+                    <span className="tabular-nums text-cyan-400 text-xs font-bold tracking-wider">
                       {totpSecretKey}
                     </span>
                     <Button
@@ -1155,7 +1155,7 @@ export default function PlatformSecurityPage() {
                     placeholder="000000"
                     value={totpCode}
                     onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
-                    className="font-mono text-center tracking-[0.5em] text-lg bg-slate-950 border-slate-800 text-white focus-visible:ring-cyan-500 font-bold"
+                    className="tabular-nums text-center tracking-[0.5em] text-lg bg-slate-950 border-slate-800 text-white focus-visible:ring-cyan-500 font-bold"
                   />
                 </div>
               </div>

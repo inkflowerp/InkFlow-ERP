@@ -84,7 +84,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                 {tBilingual('JOB ORDER TICKET', 'জব অর্ডার টিকেট')}
               </span>
             </div>
-            <div className="text-right font-mono">
+            <div className="text-right tabular-nums">
               <div className="text-lg font-black text-indigo-900">#{order.orderNumber}</div>
               {order.invoiceNumber && (
                 <div className="text-2xs text-slate-600 font-semibold">Inv: #{order.invoiceNumber}</div>
@@ -109,7 +109,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
               </span>
               <strong className="text-sm text-slate-900">{order.customerName}</strong>
               {order.customerPhone && (
-                <div className="text-slate-600 font-mono text-2xs">
+                <div className="text-slate-600 tabular-nums text-2xs">
                   {tBilingual('Phone: ', 'মোবাইল: ')}{order.customerPhone}
                 </div>
               )}
@@ -175,14 +175,14 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                       <td className="border border-slate-300 p-2 text-center font-bold">{idx + 1}</td>
                       <td className="border border-slate-300 p-2">
                         <strong className="text-slate-900 block">{specs.serviceName}</strong>
-                        <span className="text-2xs text-slate-700 font-mono font-medium block">
+                        <span className="text-2xs text-slate-700 tabular-nums font-medium block">
                           📄 {specs.material}
                         </span>
                       </td>
-                      <td className="border border-slate-300 p-2 font-mono font-bold">
+                      <td className="border border-slate-300 p-2 tabular-nums font-bold">
                         📐 {specs.size}
                       </td>
-                      <td className="border border-slate-300 p-2 font-mono font-bold text-indigo-900">
+                      <td className="border border-slate-300 p-2 tabular-nums font-bold text-indigo-900">
                         📦 {specs.quantity}
                       </td>
                       <td className="border border-slate-300 p-2">

@@ -4,29 +4,30 @@ import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer shadow-xs bangla-text select-none active:scale-[0.98]',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer shadow-xs bangla-text select-none active:scale-[0.98]',
   {
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs',
+        secondary: 'border border-border bg-card text-foreground hover:bg-muted shadow-xs',
+        outline: 'border border-border bg-transparent text-foreground hover:bg-muted',
+        ghost: 'shadow-none text-foreground hover:bg-muted',
         destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-xs',
-        outline: 'border border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'shadow-none text-foreground hover:bg-accent hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline shadow-none p-0 h-auto font-semibold',
-        gradient: 'bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-xs shadow-blue-500/20 active:scale-[0.98]',
-        success: 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold shadow-xs shadow-emerald-500/20 active:scale-[0.98]',
-        warning: 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold shadow-xs shadow-amber-500/20 active:scale-[0.98]',
-        subtle: 'bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 shadow-none font-medium',
+        success: 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs',
+        link: 'text-primary underline-offset-4 hover:underline shadow-none p-0 h-auto font-medium',
+        // Backward-compatibility aliases for legacy callers (rendered as solid, non-gradient)
+        gradient: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs',
+        warning: 'bg-amber-500 text-slate-950 hover:bg-amber-600 shadow-xs',
+        subtle: 'bg-muted text-foreground hover:bg-muted/80 shadow-none font-medium',
       },
       size: {
-        default: 'h-10 px-4 py-2 text-sm',
-        xs: 'h-7 rounded-md px-2.5 text-xs',
-        sm: 'h-8.5 rounded-lg px-3 text-xs',
-        md: 'h-9.5 rounded-lg px-3.5 text-xs sm:text-sm',
-        lg: 'h-11 rounded-xl px-6 text-base',
-        icon: 'h-9 w-9 p-0 rounded-lg',
-        'icon-sm': 'h-8 w-8 p-0 rounded-lg',
+        default: 'h-10 px-4 py-2 text-sm min-h-[40px]',
+        xs: 'h-7.5 rounded-md px-2.5 text-xs',
+        sm: 'h-9 rounded-lg px-3 text-xs min-h-[36px]',
+        md: 'h-9.5 rounded-lg px-3.5 text-xs sm:text-sm min-h-[38px]',
+        lg: 'h-11 rounded-lg px-5 text-sm sm:text-base min-h-[44px]',
+        icon: 'h-9 w-9 p-0 rounded-lg min-h-[36px] min-w-[36px]',
+        'icon-sm': 'h-8 w-8 p-0 rounded-lg min-h-[32px] min-w-[32px]',
         'icon-xs': 'h-7 w-7 p-0 rounded-md',
       },
     },

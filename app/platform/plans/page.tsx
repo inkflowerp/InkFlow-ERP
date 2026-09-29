@@ -805,13 +805,13 @@ export default function PlatformPlansPage() {
               </div>
               <div className="flex items-center justify-between text-xs text-slate-300">
                 <span>Max User Seats:</span>
-                <strong className="text-white font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
                   {trialPlan.max_users} seats
                 </strong>
               </div>
               <div className="flex items-center justify-between text-xs text-slate-300">
                 <span>Max Branches:</span>
-                <strong className="text-white font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
                   {trialPlan.max_branches} branch
                 </strong>
               </div>
@@ -825,13 +825,13 @@ export default function PlatformPlansPage() {
               </div>
               <div className="flex items-center justify-between text-xs text-slate-300">
                 <span>Cloud Storage:</span>
-                <strong className="text-white font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
                   {trialPlan.storage_gb} GB
                 </strong>
               </div>
               <div className="flex items-center justify-between text-xs text-slate-300">
                 <span>Monthly Orders:</span>
-                <strong className="text-white font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
                   {trialPlan.monthly_orders.toLocaleString()} orders
                 </strong>
               </div>
@@ -845,13 +845,13 @@ export default function PlatformPlansPage() {
               </div>
               <div className="flex items-center justify-between text-xs text-slate-300">
                 <span>Max Customers:</span>
-                <strong className="text-white font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
                   {trialPlan.max_customers.toLocaleString()}
                 </strong>
               </div>
               <div className="flex items-center justify-between text-xs text-slate-300">
                 <span>Max Products:</span>
-                <strong className="text-white font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
                   {trialPlan.max_products.toLocaleString()}
                 </strong>
               </div>
@@ -865,7 +865,7 @@ export default function PlatformPlansPage() {
                     <ShieldCheck className="h-4 w-4 text-emerald-400" />
                     Trial Modules
                   </span>
-                  <span className="font-mono text-2xs px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded font-bold">
+                  <span className="tabular-nums text-2xs px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded font-bold">
                     {trialPlan.features.length} / {ALL_FEATURES.length}
                   </span>
                 </div>
@@ -929,7 +929,7 @@ export default function PlatformPlansPage() {
                       </div>
 
                       <div className="flex flex-col items-end gap-1">
-                        <span className="uppercase text-2xs font-mono px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">
+                        <span className="uppercase text-2xs tabular-nums px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">
                           {plan.code}
                         </span>
                         {isArchived ? (
@@ -985,27 +985,27 @@ export default function PlatformPlansPage() {
                       <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
                         <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
                           <span className="flex items-center gap-1"><Users className="h-3 w-3 text-slate-400" /> Users:</span>
-                          <strong className="text-white font-mono">{plan.max_users}</strong>
+                          <strong className="text-white tabular-nums">{plan.max_users}</strong>
                         </div>
                         <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
                           <span className="flex items-center gap-1"><Building2 className="h-3 w-3 text-slate-400" /> Branches:</span>
-                          <strong className="text-white font-mono">{plan.max_branches}</strong>
+                          <strong className="text-white tabular-nums">{plan.max_branches}</strong>
                         </div>
                         <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
                           <span className="flex items-center gap-1"><HardDrive className="h-3 w-3 text-slate-400" /> Storage:</span>
-                          <strong className="text-white font-mono">{plan.storage_gb} GB</strong>
+                          <strong className="text-white tabular-nums">{plan.storage_gb} GB</strong>
                         </div>
                         <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
                           <span className="flex items-center gap-1"><Briefcase className="h-3 w-3 text-slate-400" /> Orders:</span>
-                          <strong className="text-white font-mono">{plan.monthly_orders.toLocaleString()}</strong>
+                          <strong className="text-white tabular-nums">{plan.monthly_orders.toLocaleString()}</strong>
                         </div>
                         <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
                           <span>Customers:</span>
-                          <strong className="text-white font-mono">{plan.max_customers.toLocaleString()}</strong>
+                          <strong className="text-white tabular-nums">{plan.max_customers.toLocaleString()}</strong>
                         </div>
                         <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
                           <span>Products:</span>
-                          <strong className="text-white font-mono">{plan.max_products.toLocaleString()}</strong>
+                          <strong className="text-white tabular-nums">{plan.max_products.toLocaleString()}</strong>
                         </div>
                       </div>
                     </div>
@@ -1014,7 +1014,7 @@ export default function PlatformPlansPage() {
                     <div className="space-y-1.5">
                       <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
                         <span>Modules Enabled</span>
-                        <span className="text-2xs font-mono text-indigo-300 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-900/60 font-semibold">
+                        <span className="text-2xs tabular-nums text-indigo-300 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-900/60 font-semibold">
                           {plan.features.length} / {ALL_FEATURES.length}
                         </span>
                       </div>
@@ -1149,7 +1149,7 @@ export default function PlatformPlansPage() {
                     <Users className="h-3.5 w-3.5 text-indigo-400" /> Max User Accounts
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center font-mono font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
                       {p.max_users}
                     </td>
                   ))}
@@ -1159,7 +1159,7 @@ export default function PlatformPlansPage() {
                     <Building2 className="h-3.5 w-3.5 text-indigo-400" /> Max Branches &amp; Hubs
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center font-mono font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
                       {p.max_branches}
                     </td>
                   ))}
@@ -1169,7 +1169,7 @@ export default function PlatformPlansPage() {
                     <HardDrive className="h-3.5 w-3.5 text-indigo-400" /> Cloud Media Storage
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center font-mono font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
                       {p.storage_gb} GB
                     </td>
                   ))}
@@ -1179,7 +1179,7 @@ export default function PlatformPlansPage() {
                     <Briefcase className="h-3.5 w-3.5 text-indigo-400" /> Monthly Orders Quota
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center font-mono font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
                       {p.monthly_orders.toLocaleString()}
                     </td>
                   ))}
@@ -1189,7 +1189,7 @@ export default function PlatformPlansPage() {
                     Directory: Max Customers
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center font-mono font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
                       {p.max_customers.toLocaleString()}
                     </td>
                   ))}
@@ -1199,7 +1199,7 @@ export default function PlatformPlansPage() {
                     Directory: Max Products
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center font-mono font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
                       {p.max_products.toLocaleString()}
                     </td>
                   ))}
@@ -1316,7 +1316,7 @@ export default function PlatformPlansPage() {
                         trial_days: Math.max(1, Number(e.target.value)),
                       }) : null)
                     }
-                    className="bg-slate-950 border-amber-500/50 text-amber-200 mt-1 h-9 font-mono font-bold"
+                    className="bg-slate-950 border-amber-500/50 text-amber-200 mt-1 h-9 tabular-nums font-bold"
                   />
                 </div>
               </div>
@@ -1351,7 +1351,7 @@ export default function PlatformPlansPage() {
                           max_users: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1366,7 +1366,7 @@ export default function PlatformPlansPage() {
                           max_branches: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1381,7 +1381,7 @@ export default function PlatformPlansPage() {
                           storage_gb: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1396,7 +1396,7 @@ export default function PlatformPlansPage() {
                           monthly_orders: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1411,7 +1411,7 @@ export default function PlatformPlansPage() {
                           max_customers: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1426,7 +1426,7 @@ export default function PlatformPlansPage() {
                           max_products: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1582,7 +1582,7 @@ export default function PlatformPlansPage() {
                   <Input
                     disabled
                     value={editingPlan.code}
-                    className="bg-slate-950/60 border-slate-800 text-slate-400 mt-1 h-9 font-mono"
+                    className="bg-slate-950/60 border-slate-800 text-slate-400 mt-1 h-9 tabular-nums"
                   />
                 </div>
               </div>
@@ -1627,7 +1627,7 @@ export default function PlatformPlansPage() {
                       min={0}
                       value={editingPlan.price_monthly}
                       onChange={(e) => setEditingPlan({ ...editingPlan, price_monthly: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                   <div>
@@ -1638,7 +1638,7 @@ export default function PlatformPlansPage() {
                       min={0}
                       value={editingPlan.price_yearly}
                       onChange={(e) => setEditingPlan({ ...editingPlan, price_yearly: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                 </div>
@@ -1659,7 +1659,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.max_users}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_users: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1669,7 +1669,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.max_branches}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_branches: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1679,7 +1679,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.storage_gb}
                       onChange={(e) => setEditingPlan({ ...editingPlan, storage_gb: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1689,7 +1689,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.monthly_orders}
                       onChange={(e) => setEditingPlan({ ...editingPlan, monthly_orders: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1699,7 +1699,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.max_customers}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_customers: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1709,7 +1709,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.max_products}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_products: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1812,7 +1812,7 @@ export default function PlatformPlansPage() {
                     type="number"
                     value={editingPlan.sort_order}
                     onChange={(e) => setEditingPlan({ ...editingPlan, sort_order: Number(e.target.value) })}
-                    className="w-16 h-8 text-xs bg-slate-900 border-slate-700 text-white font-mono"
+                    className="w-16 h-8 text-xs bg-slate-900 border-slate-700 text-white tabular-nums"
                   />
                 </div>
               </div>
@@ -1865,7 +1865,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.max_users}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_users: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 font-mono"
+                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1875,7 +1875,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.max_branches}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_branches: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 font-mono"
+                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1885,7 +1885,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.storage_gb}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, storage_gb: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 font-mono"
+                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1895,7 +1895,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.monthly_orders}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, monthly_orders: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 font-mono"
+                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1905,7 +1905,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.max_customers}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_customers: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 font-mono"
+                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1915,7 +1915,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.max_products}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_products: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 font-mono"
+                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
                   />
                 </div>
               </div>
@@ -1979,7 +1979,7 @@ export default function PlatformPlansPage() {
                     value={newPlan.code}
                     onChange={(e) => setNewPlan({ ...newPlan, code: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') as PlanCode })}
                     placeholder="e.g. agency, pro"
-                    className="bg-slate-950 border-slate-700 text-white mt-1 font-mono"
+                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -2047,7 +2047,7 @@ export default function PlatformPlansPage() {
                         const m = Number(e.target.value)
                         setNewPlan({ ...newPlan, price_monthly: m, price_yearly: m * 10 })
                       }}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                   <div>
@@ -2058,7 +2058,7 @@ export default function PlatformPlansPage() {
                       min={0}
                       value={newPlan.price_yearly}
                       onChange={(e) => setNewPlan({ ...newPlan, price_yearly: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                 </div>
@@ -2079,7 +2079,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.max_users}
                       onChange={(e) => setNewPlan({ ...newPlan, max_users: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2089,7 +2089,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.max_branches}
                       onChange={(e) => setNewPlan({ ...newPlan, max_branches: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2099,7 +2099,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.storage_gb}
                       onChange={(e) => setNewPlan({ ...newPlan, storage_gb: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2109,7 +2109,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.monthly_orders}
                       onChange={(e) => setNewPlan({ ...newPlan, monthly_orders: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2119,7 +2119,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.max_customers}
                       onChange={(e) => setNewPlan({ ...newPlan, max_customers: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2129,7 +2129,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.max_products}
                       onChange={(e) => setNewPlan({ ...newPlan, max_products: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs font-mono"
+                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>

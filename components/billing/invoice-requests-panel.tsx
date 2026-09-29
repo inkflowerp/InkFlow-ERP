@@ -272,7 +272,7 @@ export function InvoiceRequestsPanel({
                   <span>{tab.label}</span>
                   <span
                     className={cn(
-                      'text-2xs px-1 py-0.2 rounded-full font-mono font-bold',
+                      'text-2xs px-1 py-0.2 rounded-full tabular-nums font-bold',
                       activeSubFilter === tab.id
                         ? 'bg-white/20 text-white'
                         : tab.alert
@@ -349,7 +349,7 @@ export function InvoiceRequestsPanel({
                   {/* Left Column: Request Header & Customer Details */}
                   <div className="space-y-2 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono font-bold text-sm text-slate-900 dark:text-white">
+                      <span className="tabular-nums font-bold text-sm text-slate-900 dark:text-white">
                         #{req.request_number}
                       </span>
                       {getStatusBadge(req.status, req.invoice_number)}
@@ -374,7 +374,7 @@ export function InvoiceRequestsPanel({
                           </div>
                         )}
                         {req.customer_phone && (
-                          <div className="text-2xs text-slate-500 font-mono flex items-center gap-1">
+                          <div className="text-2xs text-slate-500 tabular-nums flex items-center gap-1">
                             <Phone className="h-3 w-3 text-slate-400 shrink-0" />
                             <a
                               href={`tel:${req.customer_phone}`}
@@ -399,20 +399,20 @@ export function InvoiceRequestsPanel({
                         <div className="flex flex-wrap items-center gap-1.5">
                           {req.order_number && (
                             <Link href={getTenantNavHref(`/orders/${req.sales_order_id || ''}`, pathname, tenantSlug)}>
-                              <Badge variant="outline" className="text-2xs font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
+                              <Badge variant="outline" className="text-2xs tabular-nums hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Order #{req.order_number}
                               </Badge>
                             </Link>
                           )}
                           {req.design_number && (
                             <Link href={getTenantNavHref(`/design/${req.design_job_id || ''}`, pathname, tenantSlug)}>
-                              <Badge variant="outline" className="text-2xs font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
+                              <Badge variant="outline" className="text-2xs tabular-nums hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Design #{req.design_number}
                               </Badge>
                             </Link>
                           )}
                           {req.job_number && (
-                            <Badge variant="outline" className="text-2xs font-mono">
+                            <Badge variant="outline" className="text-2xs tabular-nums">
                               Job #{req.job_number}
                             </Badge>
                           )}
@@ -431,7 +431,7 @@ export function InvoiceRequestsPanel({
                           {req.requested_by_name || 'Prepress Designer'}
                         </div>
                         {Number(req.estimated_amount) > 0 && (
-                          <div className="text-2xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                          <div className="text-2xs tabular-nums font-bold text-blue-600 dark:text-blue-400">
                             Est: {formatBDT(req.estimated_amount)}
                           </div>
                         )}
@@ -440,7 +440,7 @@ export function InvoiceRequestsPanel({
 
                     {/* Notes & Summary Callout */}
                     {(req.items_summary || req.notes) && (
-                      <div className="p-2.5 bg-slate-50 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-300 space-y-0.5 font-mono">
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-300 space-y-0.5 tabular-nums">
                         {req.items_summary && (
                           <div>
                             <strong className="text-slate-900 dark:text-white">Items:</strong> {req.items_summary}
@@ -527,7 +527,7 @@ export function InvoiceRequestsPanel({
               Are you sure you want to cancel this invoice request? This will mark the request as cancelled without creating an invoice.
             </p>
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-mono space-y-1">
+            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs tabular-nums space-y-1">
               <div>Request: <strong>#{selectedRequestForCancel.request_number}</strong></div>
               <div>Customer: <strong>{selectedRequestForCancel.customer_name}</strong></div>
               {selectedRequestForCancel.order_number && (

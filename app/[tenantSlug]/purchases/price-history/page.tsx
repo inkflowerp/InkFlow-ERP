@@ -86,7 +86,7 @@ export default function SupplierPriceHistoryPage() {
 
           return (
             <Card key={matId} className="p-4 border-slate-200 dark:border-slate-800">
-              <span className="font-mono text-2xs uppercase text-blue-600 font-bold block truncate">
+              <span className="tabular-nums text-2xs uppercase text-blue-600 font-bold block truncate">
                 {matId.toUpperCase()}
               </span>
               <h4 className="font-bold text-xs text-slate-900 dark:text-white mt-0.5 truncate">
@@ -96,25 +96,25 @@ export default function SupplierPriceHistoryPage() {
               <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
                 <div>
                   <span className="text-slate-400 text-2xs">Last Paid:</span>
-                  <div className="font-mono font-bold text-slate-900 dark:text-white">
+                  <div className="tabular-nums font-bold text-slate-900 dark:text-white">
                     {formatBDT(lastPrice)}
                   </div>
                 </div>
                 <div>
                   <span className="text-slate-400 text-2xs">Average:</span>
-                  <div className="font-mono font-bold text-blue-600">
+                  <div className="tabular-nums font-bold text-blue-600">
                     {formatBDT(avg)}
                   </div>
                 </div>
                 <div>
                   <span className="text-slate-400 text-2xs">Lowest:</span>
-                  <div className="font-mono font-bold text-emerald-600">
+                  <div className="tabular-nums font-bold text-emerald-600">
                     {formatBDT(lowest)}
                   </div>
                 </div>
                 <div>
                   <span className="text-slate-400 text-2xs">Highest:</span>
-                  <div className="font-mono font-bold text-red-600">
+                  <div className="tabular-nums font-bold text-red-600">
                     {formatBDT(highest)}
                   </div>
                 </div>
@@ -191,23 +191,23 @@ export default function SupplierPriceHistoryPage() {
 
                     return (
                       <tr key={item.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-4 font-mono text-slate-500">{item.po_date}</td>
+                        <td className="py-3 px-4 tabular-nums text-slate-500">{item.po_date}</td>
                         <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
                           {item.material_name}
                         </td>
                         <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
                           {item.supplier_name}
                         </td>
-                        <td className="py-3 px-4 text-right font-mono font-medium">
+                        <td className="py-3 px-4 text-right tabular-nums font-medium">
                           {item.quantity}
                         </td>
-                        <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
+                        <td className="py-3 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white">
                           {formatBDT(item.purchase_price)}
                         </td>
-                        <td className="py-3 px-4 text-right font-mono text-slate-400">
+                        <td className="py-3 px-4 text-right tabular-nums text-slate-400">
                           {item.previous_price ? formatBDT(item.previous_price) : 'N/A'}
                         </td>
-                        <td className="py-3 px-4 text-right font-mono text-xs">
+                        <td className="py-3 px-4 text-right tabular-nums text-xs">
                           {item.previous_price ? (
                             <span
                               className={`inline-flex items-center gap-0.5 font-bold ${
@@ -253,10 +253,10 @@ export default function SupplierPriceHistoryPage() {
                           <Building className="h-3 w-3 text-slate-400" /> {item.supplier_name}
                         </div>
                       </div>
-                      <span className="font-mono text-2xs text-slate-400 shrink-0">{item.po_date}</span>
+                      <span className="tabular-nums text-2xs text-slate-400 shrink-0">{item.po_date}</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 font-mono">
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 tabular-nums">
                       <div>
                         <div className="text-2xs text-slate-400">Qty: {item.quantity}</div>
                         <div className="text-sm font-black text-slate-900 dark:text-white">

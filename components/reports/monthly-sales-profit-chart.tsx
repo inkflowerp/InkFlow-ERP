@@ -80,7 +80,7 @@ export function MonthlySalesProfitChart({
         ) : (
           <>
             {/* Y Axis Grid Labels */}
-            <div className="absolute left-0 top-0 bottom-6 w-14 flex flex-col justify-between text-2xs font-mono text-slate-400 pointer-events-none select-none text-right pr-2">
+            <div className="absolute left-0 top-0 bottom-6 w-14 flex flex-col justify-between text-2xs tabular-nums text-slate-400 pointer-events-none select-none text-right pr-2">
               <span>{formatYAxis(maxVal)}</span>
               <span>{formatYAxis(maxVal * 0.75)}</span>
               <span>{formatYAxis(maxVal * 0.5)}</span>
@@ -116,14 +116,14 @@ export function MonthlySalesProfitChart({
                       <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-30 bg-slate-900 text-white text-2xs py-2 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none border border-slate-700">
                         <div className="font-bold text-slate-200 mb-0.5 flex items-center justify-between gap-2">
                           <span>{item.monthLabel}</span>
-                          <span className="text-2xs text-blue-300 font-mono">
+                          <span className="text-2xs text-blue-300 tabular-nums">
                             {item.margin}% margin
                           </span>
                         </div>
-                        <div className="text-emerald-400 font-mono">
+                        <div className="text-emerald-400 tabular-nums">
                           Sales: ৳ {item.sales.toLocaleString()}
                         </div>
-                        <div className="text-blue-400 font-mono">
+                        <div className="text-blue-400 tabular-nums">
                           Profit: ৳ {item.profit.toLocaleString()}
                         </div>
                       </div>

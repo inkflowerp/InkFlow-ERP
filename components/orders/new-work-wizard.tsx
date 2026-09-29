@@ -462,7 +462,7 @@ export function NewWorkWizard({
                       value={newCustomerPhone}
                       onChange={(e) => setNewCustomerPhone(e.target.value)}
                       placeholder="e.g. 01711223344"
-                      className="h-10 text-sm font-mono"
+                      className="h-10 text-sm tabular-nums"
                     />
                   </div>
                 </div>
@@ -503,7 +503,7 @@ export function NewWorkWizard({
                       <span className="text-sm font-bold text-emerald-900 dark:text-emerald-100">{selectedCustomer.name}</span>
                       <Badge className="bg-emerald-600 text-white text-2xs">{tBilingual('Selected', 'নির্বাচিত')}</Badge>
                     </div>
-                    <p className="text-xs text-emerald-700 dark:text-emerald-300 font-mono flex items-center gap-2">
+                    <p className="text-xs text-emerald-700 dark:text-emerald-300 tabular-nums flex items-center gap-2">
                       <span>📞 {(selectedCustomer as any).phone || selectedCustomer.mobile}</span>
                       {(selectedCustomer as any).current_balance ? (
                         <span className="text-rose-600 dark:text-rose-400 font-bold font-sans">
@@ -552,7 +552,7 @@ export function NewWorkWizard({
                     >
                       <div>
                         <div className="font-bold text-slate-900 dark:text-slate-100">{c.name}</div>
-                        <div className="text-2xs text-slate-500 font-mono">{(c as any).phone || c.mobile}</div>
+                        <div className="text-2xs text-slate-500 tabular-nums">{(c as any).phone || c.mobile}</div>
                       </div>
                       <div className="text-right">
                         {(c as any).current_balance && Number((c as any).current_balance) > 0 ? (
@@ -620,7 +620,7 @@ export function NewWorkWizard({
                     step="0.5"
                     value={width}
                     onChange={(e) => setWidth(parseFloat(e.target.value) || 0)}
-                    className="h-11 text-base font-bold font-mono text-center"
+                    className="h-11 text-base font-bold tabular-nums text-center"
                   />
                 </div>
 
@@ -632,7 +632,7 @@ export function NewWorkWizard({
                     step="0.5"
                     value={height}
                     onChange={(e) => setHeight(parseFloat(e.target.value) || 0)}
-                    className="h-11 text-base font-bold font-mono text-center"
+                    className="h-11 text-base font-bold tabular-nums text-center"
                   />
                 </div>
 
@@ -656,7 +656,7 @@ export function NewWorkWizard({
                     min="1"
                     value={quantity}
                     onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
-                    className="h-11 text-base font-bold font-mono text-center text-blue-700"
+                    className="h-11 text-base font-bold tabular-nums text-center text-blue-700"
                   />
                 </div>
               </div>
@@ -665,7 +665,7 @@ export function NewWorkWizard({
               <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900 flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div>
                   <span className="text-slate-500">মোট মাপ: </span>
-                  <span className="font-bold text-slate-900 dark:text-slate-100 font-mono text-sm">
+                  <span className="font-bold text-slate-900 dark:text-slate-100 tabular-nums text-sm">
                     {totalSqft.toFixed(1)} {unit === 'pcs' ? 'পিস' : 'স্কয়ার ফিট'}
                   </span>
                 </div>
@@ -676,13 +676,13 @@ export function NewWorkWizard({
                     type="number"
                     value={unitRate}
                     onChange={(e) => setUnitRate(parseFloat(e.target.value) || 0)}
-                    className="w-20 h-8 text-xs font-bold text-center font-mono"
+                    className="w-20 h-8 text-xs font-bold text-center tabular-nums"
                   />
                 </div>
 
                 <div>
                   <span className="text-slate-500">মোট বিল: </span>
-                  <span className="font-bold text-blue-700 dark:text-blue-300 font-mono text-base">
+                  <span className="font-bold text-blue-700 dark:text-blue-300 tabular-nums text-base">
                     ৳{totalAmount.toLocaleString()}
                   </span>
                 </div>
@@ -842,7 +842,7 @@ export function NewWorkWizard({
                   <span className="text-xs font-bold text-amber-900 dark:text-amber-200">
                     {tBilingual('Advance Payment Received', 'অগ্রিম টাকা জমা')}
                   </span>
-                  <span className="text-xs font-mono font-bold text-slate-600">
+                  <span className="text-xs tabular-nums font-bold text-slate-600">
                     {tBilingual('Total: ', 'মোট বিল: ')}{formatBDT(totalAmount)}
                   </span>
                 </div>
@@ -856,7 +856,7 @@ export function NewWorkWizard({
                       max={totalAmount}
                       value={advancePaid}
                       onChange={(e) => setAdvancePaid(parseFloat(e.target.value) || 0)}
-                      className="h-10 text-sm font-bold font-mono text-emerald-700"
+                      className="h-10 text-sm font-bold tabular-nums text-emerald-700"
                     />
                   </div>
 
@@ -877,7 +877,7 @@ export function NewWorkWizard({
 
                 <div className="flex items-center justify-between text-xs pt-1 border-t border-amber-200/60 dark:border-amber-900/60">
                   <span className="text-slate-600">বাকি থাকবে (Due):</span>
-                  <span className={`font-bold font-mono text-sm ${dueAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                  <span className={`font-bold tabular-nums text-sm ${dueAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                     ৳{dueAmount.toLocaleString()}
                   </span>
                 </div>

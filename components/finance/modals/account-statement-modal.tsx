@@ -143,11 +143,11 @@ export function AccountStatementModal({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm text-slate-900 dark:text-white">{account.name}</span>
-                <Badge variant="outline" className="text-3xs uppercase font-mono">
+                <Badge variant="outline" className="text-3xs uppercase tabular-nums">
                   {account.account_subtype}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-500 font-mono">
+              <p className="text-xs text-slate-500 tabular-nums">
                 {account.metadata?.bank_name || account.metadata?.mfs_provider || 'PrintERP Money Account'}
                 {account.metadata?.account_number_masked ? ` • ${account.metadata.account_number_masked}` : ''}
                 {account.metadata?.mfs_wallet_number ? ` • ${account.metadata.mfs_wallet_number}` : ''}
@@ -160,7 +160,7 @@ export function AccountStatementModal({
               <span className="text-3xs font-semibold text-slate-400 uppercase tracking-wider block">
                 {tBilingual('Opening Balance', 'প্রারম্ভিক ব্যালেন্স')}
               </span>
-              <span className="text-sm font-mono font-semibold text-slate-700 dark:text-slate-300">
+              <span className="text-sm tabular-nums font-semibold text-slate-700 dark:text-slate-300">
                 ৳{account.opening_balance.toLocaleString()}
               </span>
             </div>
@@ -168,7 +168,7 @@ export function AccountStatementModal({
               <span className="text-3xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">
                 {tBilingual('Current Balance', 'বর্তমান স্থিতি')}
               </span>
-              <span className="text-lg font-mono font-black text-slate-900 dark:text-white">
+              <span className="text-lg tabular-nums font-black text-slate-900 dark:text-white">
                 ৳{account.current_balance.toLocaleString()}
               </span>
             </div>
@@ -181,7 +181,7 @@ export function AccountStatementModal({
             <span className="text-3xs font-semibold text-emerald-700 dark:text-emerald-400 block uppercase">
               {tBilingual('Total Inflows (+)', 'মোট জমা (+)')}
             </span>
-            <span className="text-base font-mono font-bold text-emerald-700 dark:text-emerald-300">
+            <span className="text-base tabular-nums font-bold text-emerald-700 dark:text-emerald-300">
               +৳{totalInflow.toLocaleString()}
             </span>
           </div>
@@ -190,7 +190,7 @@ export function AccountStatementModal({
             <span className="text-3xs font-semibold text-rose-700 dark:text-rose-400 block uppercase">
               {tBilingual('Total Outflows (-)', 'মোট খরচ (-)')}
             </span>
-            <span className="text-base font-mono font-bold text-rose-700 dark:text-rose-300">
+            <span className="text-base tabular-nums font-bold text-rose-700 dark:text-rose-300">
               -৳{totalOutflow.toLocaleString()}
             </span>
           </div>
@@ -199,7 +199,7 @@ export function AccountStatementModal({
             <span className="text-3xs font-semibold text-blue-700 dark:text-blue-400 block uppercase">
               {tBilingual('Net Movement', 'নিট তারতম্য')}
             </span>
-            <span className="text-base font-mono font-bold text-blue-700 dark:text-blue-300">
+            <span className="text-base tabular-nums font-bold text-blue-700 dark:text-blue-300">
               {totalInflow - totalOutflow >= 0 ? '+' : ''}৳{(totalInflow - totalOutflow).toLocaleString()}
             </span>
           </div>
@@ -222,33 +222,33 @@ export function AccountStatementModal({
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 <tr className="bg-slate-50/50 dark:bg-slate-850/40 text-slate-500 font-medium italic">
                   <td className="p-2.5">-</td>
-                  <td className="p-2.5 font-mono text-3xs">OPENING</td>
+                  <td className="p-2.5 tabular-nums text-3xs">OPENING</td>
                   <td className="p-2.5">{tBilingual('Opening Balance brought forward', 'প্রারম্ভিক উদ্বৃত্ত')}</td>
-                  <td className="p-2.5 text-right font-mono">-</td>
-                  <td className="p-2.5 text-right font-mono">-</td>
-                  <td className="p-2.5 text-right font-mono font-bold text-slate-800 dark:text-slate-200">
+                  <td className="p-2.5 text-right tabular-nums">-</td>
+                  <td className="p-2.5 text-right tabular-nums">-</td>
+                  <td className="p-2.5 text-right tabular-nums font-bold text-slate-800 dark:text-slate-200">
                     ৳{account.opening_balance.toLocaleString()}
                   </td>
                 </tr>
 
                 {statementLines.map((line) => (
                   <tr key={line.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="p-2.5 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    <td className="p-2.5 tabular-nums text-slate-600 dark:text-slate-400 whitespace-nowrap">
                       {line.date}
                     </td>
-                    <td className="p-2.5 font-mono text-3xs font-medium text-blue-600 dark:text-blue-400">
+                    <td className="p-2.5 tabular-nums text-3xs font-medium text-blue-600 dark:text-blue-400">
                       {line.number}
                     </td>
                     <td className="p-2.5 font-medium text-slate-800 dark:text-slate-200 max-w-[220px] truncate">
                       {line.narration}
                     </td>
-                    <td className="p-2.5 text-right font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <td className="p-2.5 text-right tabular-nums text-emerald-600 dark:text-emerald-400 font-semibold">
                       {line.isInflow ? `+৳${line.amount.toLocaleString()}` : '-'}
                     </td>
-                    <td className="p-2.5 text-right font-mono text-rose-600 dark:text-rose-400 font-semibold">
+                    <td className="p-2.5 text-right tabular-nums text-rose-600 dark:text-rose-400 font-semibold">
                       {!line.isInflow ? `-৳${line.amount.toLocaleString()}` : '-'}
                     </td>
-                    <td className="p-2.5 text-right font-mono font-bold text-slate-900 dark:text-slate-100">
+                    <td className="p-2.5 text-right tabular-nums font-bold text-slate-900 dark:text-slate-100">
                       ৳{line.balanceAfter.toLocaleString()}
                     </td>
                   </tr>

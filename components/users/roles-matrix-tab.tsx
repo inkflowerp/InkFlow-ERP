@@ -562,7 +562,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                             <span className="text-2xs text-slate-400 dark:text-slate-500 truncate font-normal">({role.name_bn})</span>
                           )}
                         </div>
-                        <div className="text-2xs text-slate-400 dark:text-slate-500 font-mono">
+                        <div className="text-2xs text-slate-400 dark:text-slate-500 tabular-nums">
                           {role.permissions?.length || 0} permissions granted
                         </div>
                       </div>
@@ -769,7 +769,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                             <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
                               {spec.label}
                               <span className="text-slate-500 dark:text-slate-400 font-normal">({spec.labelBn})</span>
-                              <Badge variant="outline" className="text-2xs font-mono px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+                              <Badge variant="outline" className="text-2xs tabular-nums px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                                 {moduleKey}
                               </Badge>
                             </div>

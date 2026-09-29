@@ -198,7 +198,7 @@ export function FinishingOptionModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {finishing ? 'Edit Finishing Operation' : 'Add Finishing Operation'}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
                 Post-Press Master
               </Badge>
             </div>
@@ -363,7 +363,7 @@ export function FinishingOptionModal({
                     value={machineHourlyRate}
                     onChange={(e) => setMachineHourlyRate(e.target.value)}
                     placeholder="e.g. 400"
-                    className="h-8 text-xs font-mono font-bold text-purple-600 dark:text-purple-400"
+                    className="h-8 text-xs tabular-nums font-bold text-purple-600 dark:text-purple-400"
                   />
                 </div>
               )}
@@ -382,7 +382,7 @@ export function FinishingOptionModal({
                 value={sellingPrice}
                 onChange={(e) => setSellingPrice(e.target.value)}
                 placeholder="e.g. 15.00"
-                className="h-9 text-xs font-mono font-bold text-blue-600 dark:text-blue-400"
+                className="h-9 text-xs tabular-nums font-bold text-blue-600 dark:text-blue-400"
               />
             </div>
 
@@ -397,7 +397,7 @@ export function FinishingOptionModal({
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
                 placeholder="e.g. 7.00"
-                className="h-9 text-xs font-mono"
+                className="h-9 text-xs tabular-nums"
               />
             </div>
           </div>
@@ -407,7 +407,7 @@ export function FinishingOptionModal({
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Gross Profit: <span className="font-mono font-bold text-slate-900 dark:text-white">৳{marginMath.grossProfit.toFixed(2)}</span>
+                Gross Profit: <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{marginMath.grossProfit.toFixed(2)}</span>
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -415,7 +415,7 @@ export function FinishingOptionModal({
               <Badge
                 variant="outline"
                 className={cn(
-                  'font-mono font-bold text-xs py-0.5 px-2',
+                  'tabular-nums font-bold text-xs py-0.5 px-2',
                   marginMath.grossMarginPercent >= 30
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                     : marginMath.grossMarginPercent >= 15

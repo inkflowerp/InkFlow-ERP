@@ -173,14 +173,14 @@ export function DeliveryChallanTable({
                     <div className="flex items-center gap-1.5">
                       <Link
                         href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
-                        className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
+                        className="tabular-nums font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
                       >
                         <span>{ch.challan_number}</span>
                         <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </Link>
                     </div>
 
-                    <div className="flex items-center gap-1.5 mt-1 flex-wrap font-mono">
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap tabular-nums">
                       <Badge variant="outline" className="text-2xs py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
                         {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                       </Badge>
@@ -238,7 +238,7 @@ export function DeliveryChallanTable({
                   </td>
 
                   {/* Vehicle & Transit */}
-                  <td className="py-3.5 px-4 text-xs font-mono">
+                  <td className="py-3.5 px-4 text-xs tabular-nums">
                     <div className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[160px]">
                       {ch.vehicle_info || 'Company Transit'}
                     </div>
@@ -250,7 +250,7 @@ export function DeliveryChallanTable({
                   </td>
 
                   {/* Scheduled Date */}
-                  <td className="py-3.5 px-4 text-xs font-mono text-slate-600 dark:text-slate-300">
+                  <td className="py-3.5 px-4 text-xs tabular-nums text-slate-600 dark:text-slate-300">
                     {ch.scheduled_date}
                   </td>
 
@@ -352,7 +352,7 @@ export function DeliveryChallanTable({
               <div className="flex items-center justify-between gap-2">
                 <Link
                   href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
-                  className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                  className="tabular-nums font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                 >
                   <span>{ch.challan_number}</span>
                   <ExternalLink className="h-3.5 w-3.5 opacity-70" />
@@ -361,7 +361,7 @@ export function DeliveryChallanTable({
               </div>
 
               {/* Invoice & Due Alert Bar */}
-              <div className="flex items-center gap-2 font-mono flex-wrap">
+              <div className="flex items-center gap-2 tabular-nums flex-wrap">
                 <Badge variant="outline" className="text-2xs py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
                   {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                 </Badge>
@@ -384,7 +384,7 @@ export function DeliveryChallanTable({
                 <div className="font-semibold text-sm text-slate-900 dark:text-white flex items-center justify-between">
                   <span>{ch.customer_name}</span>
                   {ch.customer_phone && (
-                    <a href={`tel:${ch.customer_phone}`} className="text-xs font-mono text-blue-600 hover:underline">
+                    <a href={`tel:${ch.customer_phone}`} className="text-xs tabular-nums text-blue-600 hover:underline">
                       {ch.customer_phone}
                     </a>
                   )}
@@ -423,11 +423,11 @@ export function DeliveryChallanTable({
                 </div>
                 <div>
                   <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'ডেলিভারি তারিখ' : 'Scheduled Date'}</span>
-                  <span className="font-mono text-slate-700 dark:text-slate-300">{ch.scheduled_date}</span>
+                  <span className="tabular-nums text-slate-700 dark:text-slate-300">{ch.scheduled_date}</span>
                 </div>
                 {ch.vehicle_info && (
                   <div className="col-span-2 text-2xs text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                    {isBn ? 'গাড়ি:' : 'Vehicle:'} <strong className="font-mono text-slate-800 dark:text-slate-200">{ch.vehicle_info}</strong>
+                    {isBn ? 'গাড়ি:' : 'Vehicle:'} <strong className="tabular-nums text-slate-800 dark:text-slate-200">{ch.vehicle_info}</strong>
                     {ch.delivery_person_name && <span> ({ch.delivery_person_name})</span>}
                   </div>
                 )}

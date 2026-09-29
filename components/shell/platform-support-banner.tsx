@@ -82,7 +82,7 @@ export function PlatformSupportBanner() {
             Tenant: <strong className="underline text-white font-bold">{supportData.targetCompanyName}</strong>
           </span>
           {supportData.accessLevel && (
-            <span className="bg-black/20 text-amber-100 px-2 py-0.5 rounded text-2xs font-mono uppercase">
+            <span className="bg-black/20 text-amber-100 px-2 py-0.5 rounded text-2xs tabular-nums uppercase">
               {supportData.accessLevel.replace('_', ' ')}
             </span>
           )}
@@ -92,7 +92,7 @@ export function PlatformSupportBanner() {
             </span>
           )}
           {timeLeft && (
-            <span className="inline-flex items-center gap-1 bg-black/20 text-amber-100 px-2 py-0.5 rounded text-2xs font-mono">
+            <span className="inline-flex items-center gap-1 bg-black/20 text-amber-100 px-2 py-0.5 rounded text-2xs tabular-nums">
               <Clock className="h-3 w-3 text-amber-300" />
               {timeLeft}
             </span>

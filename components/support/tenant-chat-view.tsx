@@ -163,7 +163,7 @@ export function TenantChatView({
 
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200/60 dark:border-indigo-900/50">
+              <span className="tabular-nums font-bold text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200/60 dark:border-indigo-900/50">
                 {conversation.ticket_number}
               </span>
               <span className={cn('px-2 py-0.5 rounded-md text-2xs font-medium border', statusConfig.badgeClass)}>

@@ -344,7 +344,7 @@ export default function SalesManagerPage() {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {(quotations || []).map((q) => (
                     <tr key={q.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                      <td className="py-3.5 px-4 font-mono text-xs font-bold text-blue-600">
+                      <td className="py-3.5 px-4 tabular-nums text-xs font-bold text-blue-600">
                         <Link href={`/quotations/${q.id}`} className="hover:underline">
                           {q.quotation_number}
                         </Link>
@@ -401,7 +401,7 @@ export default function SalesManagerPage() {
                     <div>
                       <Link
                         href={`/quotations/${q.id}`}
-                        className="font-mono text-xs font-bold text-blue-600 hover:underline"
+                        className="tabular-nums text-xs font-bold text-blue-600 hover:underline"
                       >
                         {q.quotation_number}
                       </Link>
@@ -419,7 +419,7 @@ export default function SalesManagerPage() {
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
-                    <div className="font-black font-mono text-base text-slate-900 dark:text-white">
+                    <div className="font-black tabular-nums text-base text-slate-900 dark:text-white">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
                     {q.status !== 'converted' && !q.converted_order_id ? (
@@ -478,7 +478,7 @@ export default function SalesManagerPage() {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {(orders || []).map((o) => (
                     <tr key={o.id} className="hover:bg-slate-50/50">
-                      <td className="py-3.5 px-4 font-mono text-xs font-bold text-blue-600">
+                      <td className="py-3.5 px-4 tabular-nums text-xs font-bold text-blue-600">
                         <Link href={`/orders/${o.id}`} className="hover:underline">
                           {o.order_number}
                         </Link>
@@ -519,7 +519,7 @@ export default function SalesManagerPage() {
                     <div>
                       <Link
                         href={`/orders/${o.id}`}
-                        className="font-mono text-xs font-bold text-blue-600 hover:underline"
+                        className="tabular-nums text-xs font-bold text-blue-600 hover:underline"
                       >
                         {o.order_number}
                       </Link>
@@ -535,19 +535,19 @@ export default function SalesManagerPage() {
                   <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800/60 text-center">
                     <div>
                       <span className="text-2xs text-slate-400 uppercase block">Total</span>
-                      <div className="font-mono font-bold text-xs text-slate-900 dark:text-white">
+                      <div className="tabular-nums font-bold text-xs text-slate-900 dark:text-white">
                         {formatBDT(o.final_price || 0)}
                       </div>
                     </div>
                     <div>
                       <span className="text-2xs text-emerald-600 uppercase block">Paid</span>
-                      <div className="font-mono font-bold text-xs text-emerald-600">
+                      <div className="tabular-nums font-bold text-xs text-emerald-600">
                         {formatBDT(o.advance_amount || 0)}
                       </div>
                     </div>
                     <div>
                       <span className="text-2xs text-red-500 uppercase block">Due</span>
-                      <div className="font-mono font-bold text-xs text-red-600">
+                      <div className="tabular-nums font-bold text-xs text-red-600">
                         {formatBDT(o.due_amount || 0)}
                       </div>
                     </div>

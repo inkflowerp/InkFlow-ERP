@@ -86,7 +86,7 @@ export default function PublicContactPage() {
                     <Phone className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
                     <div>
                       <span className="font-bold text-white block">Direct Phone & Support Helpline</span>
-                      <span className="text-cyan-400 font-mono">
+                      <span className="text-cyan-400 tabular-nums">
                         {supportHelpline || contactPhone || '+880 1819-876543 / +880 1711-234567'}
                       </span>
                     </div>
@@ -96,7 +96,7 @@ export default function PublicContactPage() {
                     <Mail className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
                     <div>
                       <span className="font-bold text-white block">Email Inquiries</span>
-                      <span className="text-slate-400 font-mono">
+                      <span className="text-slate-400 tabular-nums">
                         {contactEmail || 'support@printerp.com.bd'}
                       </span>
                     </div>
@@ -198,7 +198,7 @@ export default function PublicContactPage() {
                             placeholder="01712-XXXXXX"
                             value={form.phone}
                             onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs font-mono"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs tabular-nums"
                           />
                         </div>
 

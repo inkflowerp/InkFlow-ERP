@@ -144,7 +144,7 @@ export default function CustomerSuccessPage() {
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white hover:text-indigo-400 text-sm">
                     {company.name}
                   </Link>
-                  <span className="font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded text-2xs font-bold">
+                  <span className="tabular-nums text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded text-2xs font-bold">
                     Day {trial_day} / {total_days}
                   </span>
                 </div>
@@ -152,11 +152,11 @@ export default function CustomerSuccessPage() {
                 <div className="text-slate-400 flex items-center gap-2 flex-wrap text-2xs">
                   <span>Owner: <strong className="text-slate-200">{company.owner_name}</strong></span>
                   <span>•</span>
-                  <span>Phone: <strong className="text-emerald-400 font-mono">{company.owner_phone}</strong></span>
+                  <span>Phone: <strong className="text-emerald-400 tabular-nums">{company.owner_phone}</strong></span>
                   <span>•</span>
-                  <span>Orders: <strong className="text-white font-mono">{company.orders_this_month}</strong></span>
+                  <span>Orders: <strong className="text-white tabular-nums">{company.orders_this_month}</strong></span>
                   <span>•</span>
-                  <span>Storage: <strong className="text-white font-mono">{company.storage_used_gb} GB</strong></span>
+                  <span>Storage: <strong className="text-white tabular-nums">{company.storage_used_gb} GB</strong></span>
                 </div>
 
                 <div className="flex items-center gap-1.5 text-2xs pt-1">
@@ -172,7 +172,7 @@ export default function CustomerSuccessPage() {
               <div className="flex items-center gap-2 shrink-0">
                 <div className="text-right mr-2">
                   <div className="font-bold text-amber-300">Expires in {expires_in_days} days</div>
-                  <div className="text-2xs text-slate-500 font-mono">Last active: {company.last_activity}</div>
+                  <div className="text-2xs text-slate-500 tabular-nums">Last active: {company.last_activity}</div>
                 </div>
 
                 <Link
@@ -207,7 +207,7 @@ export default function CustomerSuccessPage() {
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white text-sm hover:text-indigo-400">
                     {company.name}
                   </Link>
-                  <span className="capitalize px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-2xs">
+                  <span className="capitalize px-2 py-0.5 rounded bg-slate-800 text-slate-300 tabular-nums text-2xs">
                     {company.plan}
                   </span>
                 </div>
@@ -220,7 +220,7 @@ export default function CustomerSuccessPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="text-right font-mono">
+                <div className="text-right tabular-nums">
                   <div className="font-bold text-red-400 text-sm">{days_inactive} Days</div>
                   <div className="text-2xs text-slate-500">Inactive</div>
                 </div>
@@ -254,7 +254,7 @@ export default function CustomerSuccessPage() {
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white hover:text-indigo-300">
                     {company.name}
                   </Link>
-                  <span className="text-2xs font-mono font-bold text-red-400 bg-red-500/10 border border-red-500/30 px-2 py-0.5 rounded">
+                  <span className="text-2xs tabular-nums font-bold text-red-400 bg-red-500/10 border border-red-500/30 px-2 py-0.5 rounded">
                     Risk {risk_score}%
                   </span>
                 </div>
@@ -287,7 +287,7 @@ export default function CustomerSuccessPage() {
                     {order_volume.toLocaleString()} orders logged this month • {company.plan.toUpperCase()}
                   </div>
                 </div>
-                <span className="font-mono font-bold text-emerald-400 text-sm">
+                <span className="tabular-nums font-bold text-emerald-400 text-sm">
                   +{growth_rate_pct}%
                 </span>
               </div>

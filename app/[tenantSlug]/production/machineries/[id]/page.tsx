@@ -257,7 +257,7 @@ export default function MachineryDetailPage() {
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 {machine.name}
               </h1>
-              <span className="font-mono text-xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold border border-slate-200 dark:border-slate-700">
+              <span className="tabular-nums text-xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold border border-slate-200 dark:border-slate-700">
                 {machine.code}
               </span>
               <MachineryStatusBadge status={machine.status} />
@@ -394,7 +394,7 @@ export default function MachineryDetailPage() {
                 </div>
                 <div>
                   <span className="text-slate-400 block uppercase text-2xs font-bold">Serial Number</span>
-                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{machine.serial_number || '—'}</span>
+                  <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">{machine.serial_number || '—'}</span>
                 </div>
                 <div>
                   <span className="text-slate-400 block uppercase text-2xs font-bold">Supplier</span>

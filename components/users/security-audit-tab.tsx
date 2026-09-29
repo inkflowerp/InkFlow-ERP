@@ -205,7 +205,7 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
 
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-semibold text-xs text-slate-900 dark:text-slate-100 font-mono">
+                              <span className="font-semibold text-xs text-slate-900 dark:text-slate-100 tabular-nums">
                                 {log.action}
                               </span>
                               <Badge variant="outline" className="text-2xs px-1.5 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
@@ -221,7 +221,7 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
                               </span>
                               {log.entity_id && (
                                 <span>
-                                  Target: <span className="font-mono text-slate-600 dark:text-slate-400">{log.entity_id.slice(0, 8)}...</span>
+                                  Target: <span className="tabular-nums text-slate-600 dark:text-slate-400">{log.entity_id.slice(0, 8)}...</span>
                                 </span>
                               )}
                             </div>
@@ -229,7 +229,7 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <div className="text-right text-2xs text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
+                          <div className="text-right text-2xs text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">
                             {formatDateTime(getLogTimestamp(log))}
                           </div>
 
@@ -248,7 +248,7 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
 
                       {/* Expandable Before/After Diff */}
                       {isExpanded && hasDiff && (
-                        <div className="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-2xs font-mono grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-2xs tabular-nums grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <div className="text-rose-600 dark:text-rose-400 font-semibold mb-1 flex items-center gap-1">
                               <XCircle className="w-3 h-3" /> Previous State:

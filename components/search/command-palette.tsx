@@ -260,15 +260,15 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full shadow-2xl shadow-slate-900/20 dark:shadow-black/80 overflow-hidden flex flex-col max-h-[85vh] relative animate-in zoom-in-95 duration-150 cursor-default ring-1 ring-slate-950/5 dark:ring-white/10"
+        className="bg-card border border-border rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh] relative animate-in zoom-in-95 duration-150 cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Subtle top ambient glow line */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500" />
+        {/* Printing Industry Micro Accent */}
+        <div className="absolute top-0 inset-x-0 h-0.5 cmyk-rainbow-bar opacity-80" />
 
         {/* Search Header */}
-        <div className="p-3 sm:p-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-3 bg-slate-50/70 dark:bg-slate-950/70">
-          <div className="h-9 w-9 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/80 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 flex items-center justify-center shrink-0 shadow-xs">
+        <div className="p-3 sm:p-4 border-b border-border flex items-center gap-3 bg-muted/30">
+          <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-xs">
             <Search className="h-4 w-4" />
           </div>
 
@@ -356,7 +356,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                   maxLength={1}
                   value={shortcuts.openSearch}
                   onChange={(e) => updateShortcuts({ openSearch: e.target.value || '/' })}
-                  className="w-9 h-7 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg outline-none"
+                  className="w-9 h-7 text-center tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg outline-none"
                   style={{ outline: 'none', boxShadow: 'none' }}
                 />
               </div>
@@ -368,7 +368,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                   maxLength={1}
                   value={shortcuts.openNewMenu}
                   onChange={(e) => updateShortcuts({ openNewMenu: e.target.value || 'n' })}
-                  className="w-9 h-7 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg uppercase outline-none"
+                  className="w-9 h-7 text-center tabular-nums font-bold text-indigo-600 dark:text-indigo-400 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg uppercase outline-none"
                   style={{ outline: 'none', boxShadow: 'none' }}
                 />
               </div>
@@ -406,7 +406,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                   }`}
                 >
                   <span>{tBilingual(item.label, item.labelBn)}</span>
-                  <span className="font-mono text-2xs px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
+                  <span className="tabular-nums text-2xs px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
                     {count}
                   </span>
                 </button>
@@ -425,7 +425,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                   <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                   <span>{tBilingual('Quick Operations', 'দ্রুত অপারেশন কমান্ড')}</span>
                 </span>
-                <span className="text-2xs text-slate-400 dark:text-slate-500 font-mono">
+                <span className="text-2xs text-slate-400 dark:text-slate-500 tabular-nums">
                   {tBilingual('Press shortcut key to trigger', 'কীবোর্ড শর্টকাট চাপুন')}
                 </span>
               </div>
@@ -474,7 +474,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                       </div>
 
                       {cmd.shortcut && (
-                        <kbd className="h-7 min-w-7 px-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 text-xs font-mono text-slate-700 dark:text-slate-300 font-bold ml-2 shrink-0 flex items-center justify-center shadow-xs">
+                        <kbd className="h-7 min-w-7 px-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 text-xs tabular-nums text-slate-700 dark:text-slate-300 font-bold ml-2 shrink-0 flex items-center justify-center shadow-xs">
                           {cmd.shortcut}
                         </kbd>
                       )}
@@ -521,7 +521,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                         <div className="px-1 text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                           <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                           <span>{tBilingual(config.label, config.labelBn)}</span>
-                          <span className="font-mono text-2xs text-slate-400 dark:text-slate-500 font-bold">({items.length})</span>
+                          <span className="tabular-nums text-2xs text-slate-400 dark:text-slate-500 font-bold">({items.length})</span>
                         </div>
 
                         {/* Items */}
@@ -553,7 +553,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
                                     </span>
                                     {item.badge && (
                                       <span
-                                        className={`px-2 py-0.5 rounded-lg text-2xs font-mono font-bold uppercase border ${config.color}`}
+                                        className={`px-2 py-0.5 rounded-lg text-2xs tabular-nums font-bold uppercase border ${config.color}`}
                                       >
                                         {item.badge}
                                       </span>
@@ -588,25 +588,25 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
         <div className="p-3 sm:p-3.5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/90 dark:bg-slate-950/80 flex flex-wrap items-center justify-between gap-2 text-2xs text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs font-mono text-slate-600 dark:text-slate-400 font-bold shadow-xs">
+              <kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs tabular-nums text-slate-600 dark:text-slate-400 font-bold shadow-xs">
                 {shortcuts.openSearch}
               </kbd>
               <span>{tBilingual('Search', 'সার্চ')}</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs font-mono text-slate-600 dark:text-slate-400 font-bold uppercase shadow-xs">
+              <kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs tabular-nums text-slate-600 dark:text-slate-400 font-bold uppercase shadow-xs">
                 {shortcuts.openNewMenu}
               </kbd>
               <span>{tBilingual('New Action', 'নতুন কাজ')}</span>
             </span>
             <span className="hidden sm:flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs font-mono text-slate-600 dark:text-slate-400 font-bold shadow-xs">
+              <kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs tabular-nums text-slate-600 dark:text-slate-400 font-bold shadow-xs">
                 ↑↓
               </kbd>
               <span>{tBilingual('Navigate', 'নেভিগেট')}</span>
             </span>
             <span className="hidden sm:flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs font-mono text-slate-600 dark:text-slate-400 font-bold shadow-xs">
+              <kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs tabular-nums text-slate-600 dark:text-slate-400 font-bold shadow-xs">
                 ↵
               </kbd>
               <span>{tBilingual('Select', 'নির্বাচন')}</span>
@@ -614,14 +614,14 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
           </div>
 
           <div className="flex items-center gap-2.5">
-            <span className="hidden sm:flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-2xs font-mono font-medium">
+            <span className="hidden sm:flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-2xs tabular-nums font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>Multi-Tenant Isolated</span>
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-2xs font-mono text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors shadow-xs"
+              className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-2xs tabular-nums text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors shadow-xs"
               title="Close search"
             >
               ESC to close

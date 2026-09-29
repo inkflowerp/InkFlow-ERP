@@ -137,7 +137,7 @@ export default function MaterialDetailPage() {
               <h1 className="text-xl font-black text-slate-900 dark:text-white">{material.name}</h1>
               {material.name_bn && <p className="text-xs text-slate-500 font-normal">{material.name_bn}</p>}
               <div className="flex items-center gap-2 mt-1">
-                <span className="font-mono text-2xs text-slate-500 dark:text-slate-400 font-medium">SKU: {material.sku}</span>
+                <span className="tabular-nums text-2xs text-slate-500 dark:text-slate-400 font-medium">SKU: {material.sku}</span>
                 <Badge variant="outline" className="capitalize text-2xs">
                   {material.category.replace('_', ' ')}
                 </Badge>
@@ -191,7 +191,7 @@ export default function MaterialDetailPage() {
             <div className="text-2xl font-black text-emerald-600 mt-1">
               <CurrencyDisplay amount={breakdown.total_valuation} />
             </div>
-            <span className="text-2xs text-slate-400 font-mono block mt-0.5">
+            <span className="text-2xs text-slate-400 tabular-nums block mt-0.5">
               {breakdown.cost_display_primary || `Avg Cost: ৳ ${material.average_cost} / ${material.unit}`}
             </span>
             {breakdown.cost_display_secondary && (
@@ -238,9 +238,9 @@ export default function MaterialDetailPage() {
                       <strong className="text-slate-900 dark:text-white">
                         {bal.location?.location_name || 'Warehouse Location'}
                       </strong>
-                      <div className="text-2xs text-slate-400 font-mono">{bal.location?.location_code}</div>
+                      <div className="text-2xs text-slate-400 tabular-nums">{bal.location?.location_code}</div>
                     </div>
-                    <div className="font-mono font-bold text-sm text-emerald-600">
+                    <div className="tabular-nums font-bold text-sm text-emerald-600">
                       {bal.available_quantity} {bal.unit}
                     </div>
                   </div>
@@ -263,7 +263,7 @@ export default function MaterialDetailPage() {
                 {remnants.map((rem) => (
                   <div key={rem.id} className="p-3.5 flex items-center justify-between text-xs">
                     <div>
-                      <span className="font-mono text-purple-700 dark:text-purple-300 font-bold">
+                      <span className="tabular-nums text-purple-700 dark:text-purple-300 font-bold">
                         {rem.remnant_code}
                       </span>
                       <div className="font-medium text-slate-800 dark:text-slate-200">
@@ -310,12 +310,12 @@ export default function MaterialDetailPage() {
                       <tr key={l.id} className="hover:bg-slate-50/50">
                         <td className="py-2.5 px-4 text-slate-500">{new Date(l.created_at).toLocaleString()}</td>
                         <td className="py-2.5 px-4 font-bold uppercase">{l.transaction_type}</td>
-                        <td className="py-2.5 px-4 font-mono font-bold">
+                        <td className="py-2.5 px-4 tabular-nums font-bold">
                           <span className={l.quantity_change >= 0 ? 'text-emerald-600' : 'text-red-600'}>
                             {l.quantity_change >= 0 ? `+${l.quantity_change}` : l.quantity_change} {l.unit}
                           </span>
                         </td>
-                        <td className="py-2.5 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                        <td className="py-2.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white">
                           {l.balance_after} {l.unit}
                         </td>
                         <td className="py-2.5 px-4 text-slate-500">

@@ -74,7 +74,7 @@ export function SolutionSection() {
 
                 {/* Bottom subtle detail */}
                 <div className="pt-4 sm:pt-5 mt-4 sm:mt-6 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 group-hover:text-cyan-400 transition-colors">
-                  <span className="font-mono text-2xs sm:text-2xs">Module {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}</span>
+                  <span className="tabular-nums text-2xs sm:text-2xs">Module {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}</span>
                   <span className="flex items-center gap-1 font-semibold text-2xs sm:text-xs">
                     Explore Deep-Dive <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                   </span>

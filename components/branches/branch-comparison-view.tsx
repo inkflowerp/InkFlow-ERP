@@ -73,7 +73,7 @@ export function BranchComparisonView({ data }: BranchComparisonViewProps) {
                     <div className="font-bold text-slate-900 dark:text-slate-100">
                       {b.branch_name}
                     </div>
-                    <div className="text-xs text-slate-400 font-mono font-semibold">
+                    <div className="text-xs text-slate-400 tabular-nums font-semibold">
                       {b.branch_code}
                     </div>
                   </td>

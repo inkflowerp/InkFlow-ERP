@@ -269,7 +269,7 @@ export function PricingCalculatorSimulator({
                 {tBilingual('Commercial Job Specification', 'বাণিজ্যিক কাজের স্পেসিফিকেশন')}
               </h3>
             </div>
-            <Badge variant="outline" className="text-xs font-mono font-bold bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300">
+            <Badge variant="outline" className="text-xs tabular-nums font-bold bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300">
               Live Estimator
             </Badge>
           </div>
@@ -375,7 +375,7 @@ export function PricingCalculatorSimulator({
                   min="0.5"
                   value={widthFt}
                   onChange={(e) => setWidthFt(Math.max(0.1, Number(e.target.value) || 0))}
-                  className="text-xs h-9 font-mono font-bold"
+                  className="text-xs h-9 tabular-nums font-bold"
                 />
               </div>
 
@@ -389,7 +389,7 @@ export function PricingCalculatorSimulator({
                   min="0.5"
                   value={heightFt}
                   onChange={(e) => setHeightFt(Math.max(0.1, Number(e.target.value) || 0))}
-                  className="text-xs h-9 font-mono font-bold"
+                  className="text-xs h-9 tabular-nums font-bold"
                 />
               </div>
 
@@ -402,7 +402,7 @@ export function PricingCalculatorSimulator({
                   min="1"
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="text-xs h-9 font-mono font-bold"
+                  className="text-xs h-9 tabular-nums font-bold"
                 />
               </div>
             </div>
@@ -411,7 +411,7 @@ export function PricingCalculatorSimulator({
               <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
                   <span className="text-2xs font-bold text-slate-500 uppercase block">Billing Unit</span>
-                  <span className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase font-mono">
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tabular-nums">
                     Per {selectedProduct?.unit || 'Piece'} (Fixed Unit)
                   </span>
                 </div>
@@ -429,7 +429,7 @@ export function PricingCalculatorSimulator({
                   min="1"
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="text-xs h-10 font-mono font-bold"
+                  className="text-xs h-10 tabular-nums font-bold"
                 />
               </div>
             </div>
@@ -480,7 +480,7 @@ export function PricingCalculatorSimulator({
                         <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {fin.name}
                         </div>
-                        <div className="text-2xs text-slate-500 font-mono">
+                        <div className="text-2xs text-slate-500 tabular-nums">
                           + ৳{fin.selling_price || (fin as any).price_per_unit || 0} / {fin.pricing_method || 'sft'}
                         </div>
                       </div>
@@ -508,14 +508,14 @@ export function PricingCalculatorSimulator({
               <span className="text-2xs text-teal-400 uppercase font-bold tracking-wider">
                 {tBilingual('Calculated Commercial Tariff', 'গণনাকৃত বাণিজ্যিক মূল্য')}
               </span>
-              <div className="text-3xl font-black font-mono text-white mt-0.5">
+              <div className="text-3xl font-black tabular-nums text-white mt-0.5">
                 {formatBDT(simulation.totalClientPrice)}
               </div>
             </div>
             <div className="text-right">
               <span className="text-2xs text-slate-400 uppercase font-bold">Gross Margin</span>
               <div
-                className={`text-lg font-black font-mono ${
+                className={`text-lg font-black tabular-nums ${
                   simulation.marginPct >= 35 ? 'text-emerald-400' : 'text-amber-400'
                 }`}
               >
@@ -530,7 +530,7 @@ export function PricingCalculatorSimulator({
               <span className="text-slate-400">
                 {isAreaBased ? 'Total Billable Area:' : 'Total Billable Quantity:'}
               </span>
-              <span className="font-mono font-bold text-slate-200">
+              <span className="tabular-nums font-bold text-slate-200">
                 {isAreaBased
                   ? `${simulation.totalArea.toFixed(1)} sft (${quantity} pcs)`
                   : `${quantity} ${selectedProduct?.unit || 'pcs'}`}
@@ -539,38 +539,38 @@ export function PricingCalculatorSimulator({
 
             <div className="flex justify-between py-1 border-b border-slate-800/80">
               <span className="text-slate-400">Resolved Tier Rate ({customerType.toUpperCase()}):</span>
-              <span className="font-mono font-bold text-teal-300">
+              <span className="tabular-nums font-bold text-teal-300">
                 {formatBDT(simulation.tierUnitPrice)} / {isAreaBased ? 'sft' : (selectedProduct?.unit || 'pcs')}
               </span>
             </div>
 
             <div className="flex justify-between py-1 border-b border-slate-800/80">
               <span className="text-slate-400">Base Print Substrate:</span>
-              <span className="font-mono text-slate-200">{formatBDT(simulation.baseMediaCost)}</span>
+              <span className="tabular-nums text-slate-200">{formatBDT(simulation.baseMediaCost)}</span>
             </div>
 
             {simulation.machineSurcharge > 0 && (
               <div className="flex justify-between py-1 border-b border-slate-800/80">
                 <span className="text-slate-400">Machine Method Surcharge:</span>
-                <span className="font-mono text-slate-200">{formatBDT(simulation.machineSurcharge)}</span>
+                <span className="tabular-nums text-slate-200">{formatBDT(simulation.machineSurcharge)}</span>
               </div>
             )}
 
             {simulation.finishingTotal > 0 && (
               <div className="flex justify-between py-1 border-b border-slate-800/80">
                 <span className="text-slate-400">Finishing & Fabrication:</span>
-                <span className="font-mono text-slate-200">{formatBDT(simulation.finishingTotal)}</span>
+                <span className="tabular-nums text-slate-200">{formatBDT(simulation.finishingTotal)}</span>
               </div>
             )}
 
             <div className="flex justify-between py-1 border-b border-slate-800/80">
               <span className="text-slate-400">Estimated Raw Material Cost:</span>
-              <span className="font-mono text-slate-400">{formatBDT(simulation.estimatedBOMCost)}</span>
+              <span className="tabular-nums text-slate-400">{formatBDT(simulation.estimatedBOMCost)}</span>
             </div>
 
             <div className="flex justify-between py-1 pt-1.5 text-sm font-bold">
               <span className="text-emerald-400">Estimated Net Gross Profit:</span>
-              <span className="font-mono text-emerald-400">{formatBDT(simulation.grossProfit)}</span>
+              <span className="tabular-nums text-emerald-400">{formatBDT(simulation.grossProfit)}</span>
             </div>
           </div>
 

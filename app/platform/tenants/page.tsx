@@ -607,7 +607,7 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-2xl font-black text-white mt-2 flex items-baseline gap-2">
             {companies.length}
-            <span className="text-2xs font-normal text-slate-500 font-mono">orgs</span>
+            <span className="text-2xs font-normal text-slate-500 tabular-nums">orgs</span>
           </div>
           <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1.5">
             <span className="text-indigo-400 font-bold">
@@ -644,7 +644,7 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-2xl font-black text-blue-400 mt-2 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'trial').length}
-            <span className="text-2xs font-normal text-slate-500 font-mono">evaluating</span>
+            <span className="text-2xs font-normal text-slate-500 tabular-nums">evaluating</span>
           </div>
           <div className="text-2xs text-slate-400 mt-1">Trial evaluation accounts</div>
         </Card>
@@ -664,7 +664,7 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-2xl font-black text-amber-400 mt-2 flex items-baseline gap-2">
             {incompleteRegistrations.length}
-            <span className="text-2xs font-normal text-slate-400 font-mono">pending</span>
+            <span className="text-2xs font-normal text-slate-400 tabular-nums">pending</span>
           </div>
           <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1.5">
             <span className="text-amber-300 font-semibold">{incompleteMetrics.pending_verification_count} awaiting OTP</span>
@@ -680,7 +680,7 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-2xl font-black text-red-400 mt-2 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'suspended').length}
-            <span className="text-2xs font-normal text-slate-500 font-mono">restricted</span>
+            <span className="text-2xs font-normal text-slate-500 tabular-nums">restricted</span>
           </div>
           <div className="text-2xs text-slate-400 mt-1">Access restricted by policy</div>
         </Card>
@@ -728,7 +728,7 @@ export default function PlatformTenantsPage() {
                 {tab.isSpecial && <Hourglass className="h-3.5 w-3.5 text-amber-300 shrink-0" />}
                 <span>{tab.label}</span>
                 <span
-                  className={`px-1.5 py-0.2 rounded-full text-2xs font-mono ${
+                  className={`px-1.5 py-0.2 rounded-full text-2xs tabular-nums ${
                     isSelected
                       ? 'bg-white/20 text-white'
                       : tab.isSpecial
@@ -835,7 +835,7 @@ export default function PlatformTenantsPage() {
                     }`}
                   >
                     <span>{sub.label}</span>
-                    <span className={`px-1.5 py-0.2 rounded-full text-2xs font-mono ${isSubActive ? 'bg-amber-500/30 text-amber-200' : 'bg-slate-800 text-slate-500'}`}>
+                    <span className={`px-1.5 py-0.2 rounded-full text-2xs tabular-nums ${isSubActive ? 'bg-amber-500/30 text-amber-200' : 'bg-slate-800 text-slate-500'}`}>
                       {sub.count}
                     </span>
                   </button>
@@ -892,7 +892,7 @@ export default function PlatformTenantsPage() {
                               </div>
                               <div className="min-w-0">
                                 <div className="font-bold text-white truncate">{reg.full_name || 'Anonymous Registrant'}</div>
-                                <div className="text-2xs text-slate-500 font-mono flex items-center gap-1">
+                                <div className="text-2xs text-slate-500 tabular-nums flex items-center gap-1">
                                   <span>ID:</span>
                                   <span className="truncate max-w-[120px]">{reg.id.slice(0, 12)}...</span>
                                 </div>
@@ -906,7 +906,7 @@ export default function PlatformTenantsPage() {
                               <Mail className="h-3.5 w-3.5 text-slate-500 shrink-0" />
                               <a
                                 href={`mailto:${reg.email}?subject=${encodeURIComponent('Complete your InkFlow ERP Workspace Setup')}`}
-                                className="font-mono text-slate-200 hover:text-indigo-400 transition-colors truncate max-w-[180px]"
+                                className="tabular-nums text-slate-200 hover:text-indigo-400 transition-colors truncate max-w-[180px]"
                                 title="Click to send email"
                               >
                                 {reg.email}
@@ -921,7 +921,7 @@ export default function PlatformTenantsPage() {
                               </button>
                             </div>
                             {reg.phone ? (
-                              <div className="flex items-center gap-1.5 mt-0.5 text-slate-400 font-mono text-2xs">
+                              <div className="flex items-center gap-1.5 mt-0.5 text-slate-400 tabular-nums text-2xs">
                                 <Phone className="h-3 w-3 text-slate-500 shrink-0" />
                                 <a href={`tel:${reg.phone}`} className="hover:text-indigo-400 transition-colors">
                                   {reg.phone}
@@ -981,7 +981,7 @@ export default function PlatformTenantsPage() {
                               )}
                             </div>
                             {reg.expires_at && !reg.is_email_confirmed && (
-                              <div className="text-2xs text-slate-500 font-mono">
+                              <div className="text-2xs text-slate-500 tabular-nums">
                                 Expires: {formatDate(reg.expires_at)}
                               </div>
                             )}
@@ -1091,7 +1091,7 @@ export default function PlatformTenantsPage() {
                             >
                               {c.name}
                             </Link>
-                            <span className="text-2xs text-slate-500 font-mono">/{c.slug}</span>
+                            <span className="text-2xs text-slate-500 tabular-nums">/{c.slug}</span>
                           </div>
                         </div>
                       </td>
@@ -1136,7 +1136,7 @@ export default function PlatformTenantsPage() {
                       {/* Owner / Contact */}
                       <td className="py-3.5 px-3">
                         <div className="font-medium text-slate-200 truncate">{c.owner_name || 'Not set'}</div>
-                        <div className="text-2xs text-slate-400 font-mono truncate">{c.owner_email || c.owner_phone || 'No contact'}</div>
+                        <div className="text-2xs text-slate-400 tabular-nums truncate">{c.owner_email || c.owner_phone || 'No contact'}</div>
                       </td>
 
                       {/* Usage */}
@@ -1144,7 +1144,7 @@ export default function PlatformTenantsPage() {
                         <div className="text-2xs text-slate-300">
                           {c.users_count || 0}/{c.users_limit || 5} Users
                         </div>
-                        <div className="text-2xs text-slate-500 font-mono">
+                        <div className="text-2xs text-slate-500 tabular-nums">
                           {c.branches_count || 1} Branch
                         </div>
                       </td>
@@ -1290,7 +1290,7 @@ export default function PlatformTenantsPage() {
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4 text-indigo-400 shrink-0" />
                     <span className="text-slate-400 text-xs">Direct Workspace URL:</span>
-                    <span className="font-mono text-white font-bold text-xs">
+                    <span className="tabular-nums text-white font-bold text-xs">
                       /{provisionSlug || generateSlug(provisionName) || 'tenant-slug'}
                     </span>
                   </div>
@@ -1346,7 +1346,7 @@ export default function PlatformTenantsPage() {
                           setSlugManuallyEdited(true)
                           setProvisionSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
                         }}
-                        className="bg-slate-950 border-slate-800 text-white text-xs h-9 font-mono"
+                        className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums"
                       />
                     </div>
                   </div>
@@ -1418,7 +1418,7 @@ export default function PlatformTenantsPage() {
                         placeholder="01711-000000"
                         value={provisionOwnerPhone}
                         onChange={(e) => setProvisionOwnerPhone(e.target.value)}
-                        className="bg-slate-950 border-slate-800 text-white text-xs h-9 font-mono"
+                        className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums"
                       />
                     </div>
 
@@ -1440,7 +1440,7 @@ export default function PlatformTenantsPage() {
                           value={provisionPassword}
                           onChange={(e) => setProvisionPassword(e.target.value)}
                           placeholder="Password"
-                          className="bg-slate-950 border-slate-800 text-white text-xs h-9 pr-8 font-mono"
+                          className="bg-slate-950 border-slate-800 text-white text-xs h-9 pr-8 tabular-nums"
                         />
                         <button
                           type="button"
@@ -1650,7 +1650,7 @@ export default function PlatformTenantsPage() {
                   <div>
                     <div className="text-2xs text-slate-400 mb-0.5">Direct Workspace URL</div>
                     <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
-                      <span className="font-mono text-white text-xs truncate">
+                      <span className="tabular-nums text-white text-xs truncate">
                         {provisionedResult.credentials.loginUrl}
                       </span>
                       <button
@@ -1676,7 +1676,7 @@ export default function PlatformTenantsPage() {
                   <div>
                     <div className="text-2xs text-slate-400 mb-0.5">Owner Email</div>
                     <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
-                      <span className="font-mono text-white text-xs truncate">
+                      <span className="tabular-nums text-white text-xs truncate">
                         {provisionedResult.credentials.email}
                       </span>
                       <button
@@ -1697,7 +1697,7 @@ export default function PlatformTenantsPage() {
                   <div>
                     <div className="text-2xs text-slate-400 mb-0.5">Temporary Access Password</div>
                     <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
-                      <span className="font-mono text-emerald-400 font-bold text-xs">
+                      <span className="tabular-nums text-emerald-400 font-bold text-xs">
                         {provisionedResult.credentials.password}
                       </span>
                       <button
@@ -2176,7 +2176,7 @@ export default function PlatformTenantsPage() {
                         setDeleteConfirmName('DELETE')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-2 py-0.5 rounded text-2xs bg-red-950/80 hover:bg-red-900 text-red-300 font-mono font-bold border border-red-700 transition-colors"
+                      className="px-2 py-0.5 rounded text-2xs bg-red-950/80 hover:bg-red-900 text-red-300 tabular-nums font-bold border border-red-700 transition-colors"
                     >
                       DELETE
                     </button>
@@ -2198,7 +2198,7 @@ export default function PlatformTenantsPage() {
                           setDeleteConfirmName(deleteModalCompany.slug)
                           if (deleteError) setDeleteError(null)
                         }}
-                        className="px-2 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-mono transition-colors truncate max-w-[120px]"
+                        className="px-2 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 tabular-nums transition-colors truncate max-w-[120px]"
                         title={deleteModalCompany.slug}
                       >
                         {deleteModalCompany.slug}
@@ -2307,14 +2307,14 @@ export default function PlatformTenantsPage() {
 
               <div className="space-y-1">
                 <label className="font-semibold text-slate-300">
-                  Type <span className="font-mono text-red-400 font-bold">PURGE</span> to confirm:
+                  Type <span className="tabular-nums text-red-400 font-bold">PURGE</span> to confirm:
                 </label>
                 <Input
                   required
                   placeholder="PURGE"
                   value={purgeConfirmText}
                   onChange={(e) => setPurgeConfirmText(e.target.value)}
-                  className="bg-slate-950 border-red-800 text-red-400 font-mono font-bold text-xs h-9 placeholder:text-slate-600"
+                  className="bg-slate-950 border-red-800 text-red-400 tabular-nums font-bold text-xs h-9 placeholder:text-slate-600"
                 />
               </div>
             </CardContent>
@@ -2368,7 +2368,7 @@ export default function PlatformTenantsPage() {
                 </div>
                 <p className="text-2xs text-amber-300/90 leading-relaxed">
                   This will purge the pending verification OTP tokens and un-onboarded user profile for{' '}
-                  <span className="font-mono font-semibold">{deleteIncompleteTarget.email}</span>.
+                  <span className="tabular-nums font-semibold">{deleteIncompleteTarget.email}</span>.
                   The prospective user will need to register anew at /register if they wish to create a tenant later.
                 </p>
               </div>

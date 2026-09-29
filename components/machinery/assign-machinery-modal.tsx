@@ -390,7 +390,7 @@ export function AssignMachineryModal({
                   <span className="font-bold text-xs text-slate-800 dark:text-slate-200">
                     {selectedMachine.name}
                   </span>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                  <span className="text-xs tabular-nums px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
                     {selectedMachine.code}
                   </span>
                 </div>

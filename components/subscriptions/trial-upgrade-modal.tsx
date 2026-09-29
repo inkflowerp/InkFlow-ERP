@@ -466,7 +466,7 @@ export function TrialUpgradeModal() {
                     value={txReference}
                     onChange={(e) => setTxReference(e.target.value)}
                     placeholder={`e.g. ${selectedGateway.toUpperCase()}-987261`}
-                    className="flex-1 text-xs font-mono px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 text-xs tabular-nums px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                   />
                   <Button
                     type="button"

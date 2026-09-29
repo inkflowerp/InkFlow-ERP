@@ -1188,7 +1188,7 @@ function AttendanceContent() {
                 </select>
               </div>
 
-              <div className="text-xs text-slate-500 font-mono">
+              <div className="text-xs text-slate-500 tabular-nums">
                 Date: <strong>{formatDate(selectedDate)}</strong>
               </div>
             </div>
@@ -1201,7 +1201,7 @@ function AttendanceContent() {
                 <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                   {tBilingual('Daily Floor Attendance Roster', 'দৈনিক ফ্লোর হাজিরা তালিকা')}
                 </CardTitle>
-                <Badge variant="outline" className="text-xs font-mono">
+                <Badge variant="outline" className="text-xs tabular-nums">
                   {combinedRoster.length} employees
                 </Badge>
               </div>
@@ -1235,7 +1235,7 @@ function AttendanceContent() {
                         {att?.shift_name || 'Regular Shift (09:00 - 18:00)'}
                       </td>
 
-                      <td className="p-3.5 font-mono">
+                      <td className="p-3.5 tabular-nums">
                         {att?.check_in_time ? (
                           <span className="font-semibold text-slate-900 dark:text-white">{att.check_in_time}</span>
                         ) : (
@@ -1243,7 +1243,7 @@ function AttendanceContent() {
                         )}
                       </td>
 
-                      <td className="p-3.5 font-mono">
+                      <td className="p-3.5 tabular-nums">
                         {att?.check_out_time ? (
                           <span className="font-semibold text-slate-900 dark:text-white">{att.check_out_time}</span>
                         ) : att?.check_in_time ? (
@@ -1255,7 +1255,7 @@ function AttendanceContent() {
                         )}
                       </td>
 
-                      <td className="p-3.5 font-mono text-slate-700 dark:text-slate-300">
+                      <td className="p-3.5 tabular-nums text-slate-700 dark:text-slate-300">
                         {att?.worked_minutes ? (
                           <span>{Math.round((att.worked_minutes / 60) * 10) / 10} hrs</span>
                         ) : (
@@ -1282,7 +1282,7 @@ function AttendanceContent() {
                       </td>
 
                       <td className="p-3.5">
-                        <Badge variant="secondary" className="text-2xs uppercase font-mono px-1.5 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        <Badge variant="secondary" className="text-2xs uppercase tabular-nums px-1.5 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                           {att?.attendance_source || 'manual'}
                         </Badge>
                       </td>
@@ -1496,7 +1496,7 @@ function AttendanceContent() {
                 <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                   {tBilingual('Continuous Duty & Attendance Log', 'ধারাবাহিক ডিউটি ও পাঞ্চ লগ হিস্ট্রি')}
                 </CardTitle>
-                <Badge variant="outline" className="text-xs font-mono">
+                <Badge variant="outline" className="text-xs tabular-nums">
                   {filteredDutyLogs.length} logs
                 </Badge>
               </div>
@@ -1534,7 +1534,7 @@ function AttendanceContent() {
                       return (
                         <tr key={log.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
                           <td className="p-3.5 pl-4 font-medium">
-                            <div className="text-slate-900 dark:text-white font-mono">{log.attendance_date}</div>
+                            <div className="text-slate-900 dark:text-white tabular-nums">{log.attendance_date}</div>
                             <div className={`text-2xs font-semibold ${isFri ? 'text-rose-500 font-bold' : 'text-slate-400'}`}>
                               {dayName} {isFri && '(Off-Day)'}
                             </div>
@@ -1553,7 +1553,7 @@ function AttendanceContent() {
                             {log.shift_name || 'Regular (09:00-18:00)'}
                           </td>
 
-                          <td className="p-3.5 font-mono">
+                          <td className="p-3.5 tabular-nums">
                             {log.check_in_time ? (
                               <span className="font-semibold text-slate-900 dark:text-white">{log.check_in_time}</span>
                             ) : (
@@ -1561,7 +1561,7 @@ function AttendanceContent() {
                             )}
                           </td>
 
-                          <td className="p-3.5 font-mono">
+                          <td className="p-3.5 tabular-nums">
                             {log.check_out_time ? (
                               <span className="font-semibold text-slate-900 dark:text-white">{log.check_out_time}</span>
                             ) : log.check_in_time ? (
@@ -1573,7 +1573,7 @@ function AttendanceContent() {
                             )}
                           </td>
 
-                          <td className="p-3.5 font-mono text-slate-700 dark:text-slate-300">
+                          <td className="p-3.5 tabular-nums text-slate-700 dark:text-slate-300">
                             {log.worked_minutes ? (
                               <span className="font-semibold">{Math.round((log.worked_minutes / 60) * 10) / 10} hrs</span>
                             ) : (
@@ -1601,11 +1601,11 @@ function AttendanceContent() {
 
                           <td className="p-3.5">
                             <div className="flex items-center gap-1.5">
-                              <Badge variant="secondary" className="text-2xs uppercase font-mono px-1.5 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                              <Badge variant="secondary" className="text-2xs uppercase tabular-nums px-1.5 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                 {log.attendance_source || 'manual'}
                               </Badge>
                               {log.job_order_id && (
-                                <Badge variant="outline" className="text-2xs font-mono border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300">
+                                <Badge variant="outline" className="text-2xs tabular-nums border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300">
                                   Job #{log.job_order_id.slice(0, 6)}
                                 </Badge>
                               )}
@@ -1898,7 +1898,7 @@ function AttendanceContent() {
                   <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                     {tBilingual('Employee Attendance & Overtime Summary', 'কর্মীভিত্তিক হাজিরা ও ওভারটাইম রিপোর্ট')}
                   </CardTitle>
-                  <Badge variant="outline" className="text-xs font-mono">
+                  <Badge variant="outline" className="text-xs tabular-nums">
                     {reportFilteredEmps.length} employees
                   </Badge>
                 </div>
@@ -1985,7 +1985,7 @@ function AttendanceContent() {
                                     )}
                                   </div>
                                   <div className="text-2xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-                                    <span className="font-mono font-medium text-slate-700 dark:text-slate-300">
+                                    <span className="tabular-nums font-medium text-slate-700 dark:text-slate-300">
                                       {emp.employee_id_number}
                                     </span>
                                     <span>•</span>
@@ -1997,7 +1997,7 @@ function AttendanceContent() {
                               </div>
                             </td>
 
-                            <td className="p-3.5 font-mono">
+                            <td className="p-3.5 tabular-nums">
                               {avgInMinutes !== null ? (
                                 <span className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                                   <Clock className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
@@ -2008,7 +2008,7 @@ function AttendanceContent() {
                               )}
                             </td>
 
-                            <td className="p-3.5 font-mono">
+                            <td className="p-3.5 tabular-nums">
                               {avgOutMinutes !== null ? (
                                 <span className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                                   <Clock className="w-3.5 h-3.5 text-blue-500 shrink-0" />
@@ -2037,7 +2037,7 @@ function AttendanceContent() {
                                   {dayAbsent} Days
                                 </Badge>
                               ) : (
-                                <span className="text-slate-400 font-mono text-xs">0 Days</span>
+                                <span className="text-slate-400 tabular-nums text-xs">0 Days</span>
                               )}
                             </td>
 
@@ -2045,12 +2045,12 @@ function AttendanceContent() {
                               {otHrs > 0 ? (
                                 <Badge
                                   variant="outline"
-                                  className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800 font-bold font-mono text-xs px-2.5 py-0.5"
+                                  className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800 font-bold tabular-nums text-xs px-2.5 py-0.5"
                                 >
                                   +{otHrs} hrs
                                 </Badge>
                               ) : (
-                                <span className="text-slate-400 font-mono text-xs">0 hrs</span>
+                                <span className="text-slate-400 tabular-nums text-xs">0 hrs</span>
                               )}
                             </td>
 
@@ -2124,7 +2124,7 @@ function AttendanceContent() {
                       <th className="p-2 pr-4 text-center bg-slate-200/80 dark:bg-slate-800/80 text-slate-900 dark:text-white min-w-[50px] font-bold border-l border-slate-200 dark:border-slate-800">Score</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-2xs">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 tabular-nums text-2xs">
                     {reportFilteredEmps.map((emp) => {
                       const empAtts = reportRecords.filter((r) => r.employee_id === emp.id)
                       const pCount = empAtts.filter((r) => r.status === 'present' || r.status === 'half_day' || r.status === 'late').length
@@ -2231,7 +2231,7 @@ function AttendanceContent() {
                         {item.headcount} active workforce
                       </p>
                     </div>
-                    <Badge variant="outline" className="text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
+                    <Badge variant="outline" className="text-xs tabular-nums font-bold bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
                       {item.presentRate}% Present
                     </Badge>
                   </div>
@@ -2239,15 +2239,15 @@ function AttendanceContent() {
                   <div className="p-3 rounded-lg bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
                     <div className="flex justify-between">
                       <span className="text-slate-500 dark:text-slate-400">{tBilingual('Total Worked Hours:', 'মোট কাজের ঘণ্টা:')}</span>
-                      <strong className="text-slate-900 dark:text-white font-mono">{item.workedHrs} hrs</strong>
+                      <strong className="text-slate-900 dark:text-white tabular-nums">{item.workedHrs} hrs</strong>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500 dark:text-slate-400">{tBilingual('Total Overtime Hours:', 'মোট ওভারটাইম ঘণ্টা:')}</span>
-                      <strong className="text-purple-600 dark:text-purple-400 font-mono">+{item.otHrs} hrs</strong>
+                      <strong className="text-purple-600 dark:text-purple-400 tabular-nums">+{item.otHrs} hrs</strong>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500 dark:text-slate-400">{tBilingual('Total Late Delay:', 'দেরিতে আগমন:')}</span>
-                      <strong className="text-amber-600 dark:text-amber-400 font-mono">{item.lateMins} mins</strong>
+                      <strong className="text-amber-600 dark:text-amber-400 tabular-nums">{item.lateMins} mins</strong>
                     </div>
                   </div>
                 </Card>
@@ -2314,7 +2314,7 @@ function AttendanceContent() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500 dark:text-slate-400">{tBilingual('Multiplier:', 'গুণক:')}</span>
-                      <span className="font-mono font-medium text-slate-800 dark:text-slate-200">{ot.multiplier}x</span>
+                      <span className="tabular-nums font-medium text-slate-800 dark:text-slate-200">{ot.multiplier}x</span>
                     </div>
                     <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-1.5">
                       <span className="text-slate-600 dark:text-slate-400 font-medium">{tBilingual('Calculated Payout:', 'প্রদেয় অর্থ:')}</span>
@@ -2385,7 +2385,7 @@ function AttendanceContent() {
                 <div className="flex items-start justify-between">
                   <div>
                     <h4 className="font-bold text-sm text-slate-900 dark:text-white">{shift.shift_name}</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                       {shift.start_time} → {shift.end_time}
                     </p>
                   </div>
@@ -2425,7 +2425,7 @@ function AttendanceContent() {
           <div className="space-y-3 pt-2">
             <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 rounded-lg border border-blue-200/60 dark:border-blue-800/60 text-xs">
               <div className="font-semibold text-blue-900 dark:text-blue-200">{timeAdjustForm.employeeName}</div>
-              <div className="text-blue-700 dark:text-blue-400 font-mono text-2xs mt-0.5">Date: {timeAdjustForm.attendanceDate}</div>
+              <div className="text-blue-700 dark:text-blue-400 tabular-nums text-2xs mt-0.5">Date: {timeAdjustForm.attendanceDate}</div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -2435,7 +2435,7 @@ function AttendanceContent() {
                   type="time"
                   value={timeAdjustForm.checkInTime}
                   onChange={(e) => setTimeAdjustForm({ ...timeAdjustForm, checkInTime: e.target.value })}
-                  className="text-xs h-9 border-slate-200 dark:border-slate-800 font-mono"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800 tabular-nums"
                 />
               </div>
 
@@ -2445,7 +2445,7 @@ function AttendanceContent() {
                   type="time"
                   value={timeAdjustForm.checkOutTime}
                   onChange={(e) => setTimeAdjustForm({ ...timeAdjustForm, checkOutTime: e.target.value })}
-                  className="text-xs h-9 border-slate-200 dark:border-slate-800 font-mono"
+                  className="text-xs h-9 border-slate-200 dark:border-slate-800 tabular-nums"
                 />
               </div>
 
@@ -2559,25 +2559,25 @@ function AttendanceContent() {
           }
         >
           {/* Employee Info & Period Selector Header Box (Fixed at top of body) */}
-          <div className="shrink-0 p-3.5 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-900/60 dark:to-slate-900/30 border border-slate-200 dark:border-slate-800 space-y-2.5">
+          <div className="shrink-0 p-3.5 rounded-xl bg-card border border-border space-y-2.5 shadow-xs">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-blue-600 text-white font-bold text-base flex items-center justify-center shadow-xs shrink-0">
+                <div className="w-11 h-11 rounded-lg bg-primary text-primary-foreground font-bold text-base flex items-center justify-center shadow-xs shrink-0">
                   {viewLogEmployee.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
+                    <h3 className="font-bold text-sm sm:text-base text-foreground">
                       {viewLogEmployee.name}
                     </h3>
                     {viewLogEmployee.name_bn && (
-                      <span className="text-xs text-slate-500 bangla-text font-medium">
+                      <span className="text-xs text-muted-foreground bangla-text font-medium">
                         ({viewLogEmployee.name_bn})
                       </span>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-0.5">
-                    <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
+                    <span className="tabular-nums font-semibold text-slate-700 dark:text-slate-300">
                       {viewLogEmployee.employee_id_number}
                     </span>
                     <span>•</span>
@@ -2729,15 +2729,15 @@ function AttendanceContent() {
                   </div>
                   <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
                     <span className="text-2xs text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check In', 'গড় প্রবেশ')}</span>
-                    <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckIn}</strong>
+                    <strong className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">{avgCheckIn}</strong>
                   </div>
                   <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs">
                     <span className="text-2xs text-slate-500 uppercase font-semibold block">{tBilingual('Avg Check Out', 'গড় প্রস্থান')}</span>
-                    <strong className="text-sm font-bold text-slate-900 dark:text-white font-mono">{avgCheckOut}</strong>
+                    <strong className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">{avgCheckOut}</strong>
                   </div>
                   <div className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800/60 shadow-2xs col-span-2 sm:col-span-1">
                     <span className="text-2xs text-slate-500 uppercase font-semibold block">{tBilingual('Total OT', 'মোট ওটি')}</span>
-                    <strong className="text-sm font-bold text-purple-600 dark:text-purple-400 font-mono">+{totalOtHrs} hrs</strong>
+                    <strong className="text-sm font-bold text-purple-600 dark:text-purple-400 tabular-nums">+{totalOtHrs} hrs</strong>
                   </div>
                 </div>
               )
@@ -2765,7 +2765,7 @@ function AttendanceContent() {
                   <th className="p-3 pr-4">{tBilingual('Status', 'স্ট্যাটাস')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 tabular-nums">
                 {reportDays.map((d) => {
                   const rec = reportRecords.find(
                     (r) => r.employee_id === viewLogEmployee.id && r.attendance_date === d.dateStr
@@ -2940,7 +2940,7 @@ function AttendanceContent() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="font-mono text-xs text-slate-500">Date: {new Date().toLocaleDateString('en-GB')}</div>
+                  <div className="tabular-nums text-xs text-slate-500">Date: {new Date().toLocaleDateString('en-GB')}</div>
                   <Badge variant="outline" className="text-2xs mt-0.5">Authoritative Record</Badge>
                 </div>
               </div>
@@ -2953,7 +2953,7 @@ function AttendanceContent() {
                 </div>
                 <div>
                   <span className="text-2xs text-slate-500 uppercase font-semibold block">Employee ID</span>
-                  <strong className="text-slate-900 dark:text-white font-mono">{printTimesheetEmployee.employee_id_number}</strong>
+                  <strong className="text-slate-900 dark:text-white tabular-nums">{printTimesheetEmployee.employee_id_number}</strong>
                 </div>
                 <div>
                   <span className="text-2xs text-slate-500 uppercase font-semibold block">Department & Role</span>
@@ -2979,7 +2979,7 @@ function AttendanceContent() {
                       <th className="p-2">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 tabular-nums">
                     {reportDays.map((d) => {
                       const rec = reportRecords.find((r) => r.employee_id === printTimesheetEmployee.id && r.attendance_date === d.dateStr)
                       return (

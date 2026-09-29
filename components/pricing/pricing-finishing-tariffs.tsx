@@ -257,19 +257,19 @@ export function PricingFinishingTariffs({
                           </div>
                         )}
                       </td>
-                      <td className="py-3 px-4 uppercase font-mono font-semibold text-slate-600 dark:text-slate-300">
+                      <td className="py-3 px-4 uppercase tabular-nums font-semibold text-slate-600 dark:text-slate-300">
                         {fin.pricing_method || 'sqft'}
                       </td>
-                      <td className="py-3 px-4 font-mono font-black text-teal-700 dark:text-teal-400 text-sm">
+                      <td className="py-3 px-4 tabular-nums font-black text-teal-700 dark:text-teal-400 text-sm">
                         {formatBDT(sell)}
                       </td>
-                      <td className="py-3 px-4 font-mono text-slate-500">
+                      <td className="py-3 px-4 tabular-nums text-slate-500">
                         {formatBDT(cost)}
                       </td>
                       <td className="py-3 px-4">
                         <Badge
                           variant="outline"
-                          className={`text-2xs font-mono font-bold ${
+                          className={`text-2xs tabular-nums font-bold ${
                             marginPct >= 40
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                               : 'bg-amber-50 text-amber-800 border-amber-200'
@@ -355,9 +355,9 @@ export function PricingFinishingTariffs({
                 {printingMethods.map((m) => (
                   <tr key={m.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors">
                     <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{m.name}</td>
-                    <td className="py-3 px-4 font-mono text-slate-400">{m.code || '—'}</td>
-                    <td className="py-3 px-4 uppercase font-mono font-semibold">sft</td>
-                    <td className="py-3 px-4 font-mono font-black text-blue-700 dark:text-blue-400 text-sm">
+                    <td className="py-3 px-4 tabular-nums text-slate-400">{m.code || '—'}</td>
+                    <td className="py-3 px-4 uppercase tabular-nums font-semibold">sft</td>
+                    <td className="py-3 px-4 tabular-nums font-black text-blue-700 dark:text-blue-400 text-sm">
                       +{formatBDT(m.cost_per_sqft || 0)}
                     </td>
                     <td className="py-3 px-4 text-right">
@@ -439,7 +439,7 @@ export function PricingFinishingTariffs({
               <select
                 value={finForm.pricing_method}
                 onChange={(e) => setFinForm({ ...finForm, pricing_method: e.target.value })}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-mono"
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs tabular-nums"
               >
                 <option value="sqft">sqft (per sqft)</option>
                 <option value="per_piece">per_piece (per piece / eyelet)</option>
@@ -458,7 +458,7 @@ export function PricingFinishingTariffs({
                 step="0.01"
                 value={finForm.selling_price}
                 onChange={(e) => setFinForm({ ...finForm, selling_price: Number(e.target.value) })}
-                className="text-xs h-9 font-mono font-bold"
+                className="text-xs h-9 tabular-nums font-bold"
                 required
               />
             </div>
@@ -472,7 +472,7 @@ export function PricingFinishingTariffs({
                 step="0.01"
                 value={finForm.cost}
                 onChange={(e) => setFinForm({ ...finForm, cost: Number(e.target.value) })}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
           </div>
@@ -521,7 +521,7 @@ export function PricingFinishingTariffs({
                 placeholder="e.g. uv_8pass"
                 value={methodForm.code || ''}
                 onChange={(e) => setMethodForm({ ...methodForm, code: e.target.value })}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
           </div>
@@ -536,7 +536,7 @@ export function PricingFinishingTariffs({
                 step="0.01"
                 value={methodForm.cost_per_sqft}
                 onChange={(e) => setMethodForm({ ...methodForm, cost_per_sqft: Number(e.target.value) })}
-                className="text-xs h-9 font-mono font-bold"
+                className="text-xs h-9 tabular-nums font-bold"
                 required
               />
             </div>

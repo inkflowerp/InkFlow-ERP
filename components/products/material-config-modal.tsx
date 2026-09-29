@@ -1445,14 +1445,14 @@ export function MaterialConfigModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {initialData ? `Edit Raw Material: ${initialData.name}` : 'New Raw Material Master'}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
                 Inventory Stock
               </Badge>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
                 {materialType.toUpperCase()}
               </Badge>
               {calculatedEconomics.unitCost > 0 && (
-                <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                   ৳{calculatedEconomics.unitCost.toFixed(2)} / {usageUnit}
                 </Badge>
               )}
@@ -1565,7 +1565,7 @@ export function MaterialConfigModal({
                 <span>{tab.label}</span>
                 {tab.count !== null && (
                   <span className={cn(
-                    'text-2xs px-1.5 py-0.2 rounded-full font-mono font-bold leading-tight',
+                    'text-2xs px-1.5 py-0.2 rounded-full tabular-nums font-bold leading-tight',
                     isSelected ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                   )}>
                     {tab.count}
@@ -1642,7 +1642,7 @@ export function MaterialConfigModal({
                     placeholder="e.g. MAT-FLEX-STAR-280"
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
-                    className="h-9 text-xs font-mono uppercase"
+                    className="h-9 text-xs tabular-nums uppercase"
                   />
                 </div>
               </div>
@@ -1788,7 +1788,7 @@ export function MaterialConfigModal({
                       placeholder="e.g. 280, 340, 440 GSM"
                       value={weightGsm}
                       onChange={(e) => setWeightGsm(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="h-9 text-xs font-mono pr-12"
+                      className="h-9 text-xs tabular-nums pr-12"
                     />
                     <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">GSM</span>
                   </div>
@@ -1926,7 +1926,7 @@ export function MaterialConfigModal({
                               placeholder="e.g. 10"
                               value={newWidthInput}
                               onChange={(e) => handleWidthInputChange(e.target.value)}
-                              className="h-9 text-xs font-mono font-bold pr-7"
+                              className="h-9 text-xs tabular-nums font-bold pr-7"
                             />
                             <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
                           </div>
@@ -1939,7 +1939,7 @@ export function MaterialConfigModal({
                               placeholder="0"
                               value={extraWidthAllowance}
                               onChange={(e) => handleAllowanceChange(e.target.value)}
-                              className="h-9 text-xs font-mono font-bold pr-7"
+                              className="h-9 text-xs tabular-nums font-bold pr-7"
                             />
                             <span className="absolute right-2 top-2 text-2xs font-bold text-slate-400">ft</span>
                           </div>
@@ -1958,7 +1958,7 @@ export function MaterialConfigModal({
                             placeholder="e.g. 164"
                             value={standardRollLength}
                             onChange={(e) => handleRollLengthChange(e.target.value)}
-                            className="h-9 text-xs font-mono font-bold pr-7"
+                            className="h-9 text-xs tabular-nums font-bold pr-7"
                           />
                           <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
                         </div>
@@ -2004,7 +2004,7 @@ export function MaterialConfigModal({
                               key={`${roll.width}x${rollLen}`}
                               onClick={() => handleSelectRoll(roll)}
                               className={cn(
-                                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer shadow-2xs',
+                                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs tabular-nums font-bold transition-all cursor-pointer shadow-2xs',
                                 isCurrentActive
                                   ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-700 dark:text-blue-300 ring-1 ring-blue-400'
                                   : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:border-blue-400'
@@ -2053,7 +2053,7 @@ export function MaterialConfigModal({
                           key={p.label}
                           type="button"
                           onClick={() => handleQuickAddSheetSize(p.width, p.length, p.label)}
-                          className="px-2 py-1 rounded-md text-2xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 cursor-pointer"
+                          className="px-2 py-1 rounded-md text-2xs tabular-nums font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 cursor-pointer"
                         >
                           +{p.label}
                         </button>
@@ -2074,7 +2074,7 @@ export function MaterialConfigModal({
                           placeholder="e.g. 4"
                           value={newSheetWidthInput}
                           onChange={(e) => setNewSheetWidthInput(e.target.value)}
-                          className="h-9 text-xs font-mono font-bold pr-7"
+                          className="h-9 text-xs tabular-nums font-bold pr-7"
                         />
                         <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
                       </div>
@@ -2092,7 +2092,7 @@ export function MaterialConfigModal({
                           placeholder="e.g. 8"
                           value={newSheetLengthInput}
                           onChange={(e) => setNewSheetLengthInput(e.target.value)}
-                          className="h-9 text-xs font-mono font-bold pr-7"
+                          className="h-9 text-xs tabular-nums font-bold pr-7"
                         />
                         <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
                       </div>
@@ -2109,7 +2109,7 @@ export function MaterialConfigModal({
                         placeholder="e.g. 3mm or 5mm Board"
                         value={thicknessMm}
                         onChange={(e) => setThicknessMm(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                        className="h-9 text-xs font-mono"
+                        className="h-9 text-xs tabular-nums"
                       />
                     </div>
 
@@ -2137,7 +2137,7 @@ export function MaterialConfigModal({
                             setNewSheetWidthInput(s.width.toString())
                             setNewSheetLengthInput(s.length.toString())
                           }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white shadow-2xs hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs tabular-nums font-bold text-slate-900 dark:text-white shadow-2xs hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors"
                         >
                           <span>{s.width}ft × {s.length}ft ({s.width * s.length} sft)</span>
                           <button
@@ -2172,7 +2172,7 @@ export function MaterialConfigModal({
                         placeholder="e.g. 1000"
                         value={liquidVolumeMl}
                         onChange={(e) => setLiquidVolumeMl(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                        className="h-9 text-xs font-mono pr-8"
+                        className="h-9 text-xs tabular-nums pr-8"
                       />
                       <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">ml</span>
                     </div>
@@ -2208,7 +2208,7 @@ export function MaterialConfigModal({
                         placeholder="e.g. 1000"
                         value={coverageYieldSqft}
                         onChange={(e) => setCoverageYieldSqft(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                        className="h-9 text-xs font-mono pr-12"
+                        className="h-9 text-xs tabular-nums pr-12"
                       />
                       <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">sft/L</span>
                     </div>
@@ -2231,7 +2231,7 @@ export function MaterialConfigModal({
                         placeholder="e.g. 20"
                         value={profileLengthFt}
                         onChange={(e) => setProfileLengthFt(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                        className="h-9 text-xs font-mono pr-7"
+                        className="h-9 text-xs tabular-nums pr-7"
                       />
                       <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">ft</span>
                     </div>
@@ -2268,7 +2268,7 @@ export function MaterialConfigModal({
                         const val = parseInt(e.target.value, 10) || 1000
                         setPackQuantity(val)
                       }}
-                      className="h-9 text-xs font-mono font-bold"
+                      className="h-9 text-xs tabular-nums font-bold"
                     />
                     <span className="text-2xs text-slate-500">Auto-converts purchase pack price to unit cost per piece</span>
                   </div>
@@ -2317,7 +2317,7 @@ export function MaterialConfigModal({
                       placeholder="e.g. 5.20"
                       value={purchasePricePerSft}
                       onChange={(e) => handlePricePerSftChange(e.target.value)}
-                      className="pl-7 h-9 text-xs font-mono font-bold bg-blue-50/20 border-blue-200 dark:border-blue-800 focus:border-blue-500"
+                      className="pl-7 h-9 text-xs tabular-nums font-bold bg-blue-50/20 border-blue-200 dark:border-blue-800 focus:border-blue-500"
                     />
                   </div>
                   <span className="text-2xs text-slate-500 mt-1 block truncate">Direct material cost per {usageUnit}</span>
@@ -2344,7 +2344,7 @@ export function MaterialConfigModal({
                       placeholder="e.g. 8500"
                       value={purchasePrice}
                       onChange={(e) => handleTotalPurchasePriceChange(e.target.value)}
-                      className="pl-7 h-9 text-xs font-mono font-bold"
+                      className="pl-7 h-9 text-xs tabular-nums font-bold"
                     />
                   </div>
                   <span className="text-2xs text-slate-500 mt-1 block truncate">
@@ -2369,7 +2369,7 @@ export function MaterialConfigModal({
                       max="100"
                       value={wastePercent}
                       onChange={(e) => setWastePercent(parseFloat(e.target.value) || 0)}
-                      className="pr-7 h-9 text-xs font-mono"
+                      className="pr-7 h-9 text-xs tabular-nums"
                     />
                     <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
                   </div>
@@ -2391,7 +2391,7 @@ export function MaterialConfigModal({
                       max="100"
                       value={landedCostMarkupPercent}
                       onChange={(e) => setLandedCostMarkupPercent(parseFloat(e.target.value) || 0)}
-                      className="pr-7 h-9 text-xs font-mono"
+                      className="pr-7 h-9 text-xs tabular-nums"
                     />
                     <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
                   </div>
@@ -2408,7 +2408,7 @@ export function MaterialConfigModal({
                       Calculated Production Direct Cost & Yield
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-2xs font-mono bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900 dark:text-emerald-200">
+                  <Badge variant="outline" className="text-2xs tabular-nums bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900 dark:text-emerald-200">
                     Total Yield: {calculatedEconomics.yieldLabel}
                   </Badge>
                 </div>
@@ -2416,27 +2416,27 @@ export function MaterialConfigModal({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/60">
                     <span className="text-2xs font-medium text-slate-500 block">Direct Base Cost (৳ / {usageUnit})</span>
-                    <span className="text-sm font-bold font-mono text-emerald-700 dark:text-emerald-300">
+                    <span className="text-sm font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
                       ৳{calculatedEconomics.unitCost.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
 
                   <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/60">
                     <span className="text-2xs font-medium text-slate-500 block">Effective Cost ({wastePercent}% Waste)</span>
-                    <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">
+                    <span className="text-sm font-bold tabular-nums text-slate-900 dark:text-white">
                       ৳{calculatedEconomics.effectiveCost.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
 
                   <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/60">
                     <span className="text-2xs font-medium text-slate-500 block">Suggested Selling Rate ({targetMargin}% Margin)</span>
-                    <span className="text-sm font-bold font-mono text-blue-700 dark:text-blue-300">
+                    <span className="text-sm font-bold tabular-nums text-blue-700 dark:text-blue-300">
                       ৳{suggestedSellingPrice.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-2xs font-mono text-emerald-800 dark:text-emerald-300 bg-emerald-100/60 dark:bg-emerald-900/40 px-2.5 py-1 rounded-md">
+                <div className="text-2xs tabular-nums text-emerald-800 dark:text-emerald-300 bg-emerald-100/60 dark:bg-emerald-900/40 px-2.5 py-1 rounded-md">
                   {calculatedEconomics.formulaText}
                 </div>
               </div>
@@ -2467,7 +2467,7 @@ export function MaterialConfigModal({
                         placeholder="e.g. 8.50"
                         value={sellingPrice}
                         onChange={(e) => setSellingPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                        className="pl-7 h-9 text-xs font-mono font-bold"
+                        className="pl-7 h-9 text-xs tabular-nums font-bold"
                       />
                     </div>
                   </div>
@@ -2484,7 +2484,7 @@ export function MaterialConfigModal({
                         max="100"
                         value={targetMargin}
                         onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
-                        className="pr-7 h-9 text-xs font-mono"
+                        className="pr-7 h-9 text-xs tabular-nums"
                       />
                       <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
                     </div>
@@ -2502,7 +2502,7 @@ export function MaterialConfigModal({
                         max="100"
                         value={minAllowedMargin}
                         onChange={(e) => setMinAllowedMargin(parseFloat(e.target.value) || 15)}
-                        className="pr-7 h-9 text-xs font-mono"
+                        className="pr-7 h-9 text-xs tabular-nums"
                       />
                       <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
                     </div>
@@ -2525,7 +2525,7 @@ export function MaterialConfigModal({
                         placeholder="Retail ৳"
                         value={priceTiers.retail}
                         onChange={(e) => setPriceTiers({ ...priceTiers, retail: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                        className="h-8 text-xs font-mono"
+                        className="h-8 text-xs tabular-nums"
                       />
                     </div>
 
@@ -2539,7 +2539,7 @@ export function MaterialConfigModal({
                         placeholder="Corporate ৳"
                         value={priceTiers.corporate}
                         onChange={(e) => setPriceTiers({ ...priceTiers, corporate: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                        className="h-8 text-xs font-mono"
+                        className="h-8 text-xs tabular-nums"
                       />
                     </div>
 
@@ -2553,7 +2553,7 @@ export function MaterialConfigModal({
                         placeholder="Dealer ৳"
                         value={priceTiers.dealer}
                         onChange={(e) => setPriceTiers({ ...priceTiers, dealer: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                        className="h-8 text-xs font-mono"
+                        className="h-8 text-xs tabular-nums"
                       />
                     </div>
 
@@ -2567,7 +2567,7 @@ export function MaterialConfigModal({
                         placeholder="Wholesale ৳"
                         value={priceTiers.wholesale}
                         onChange={(e) => setPriceTiers({ ...priceTiers, wholesale: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                        className="h-8 text-xs font-mono"
+                        className="h-8 text-xs tabular-nums"
                       />
                     </div>
                   </div>
@@ -2593,7 +2593,7 @@ export function MaterialConfigModal({
                         step="any"
                         value={taxRate}
                         onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
-                        className="w-16 h-7 text-xs font-mono"
+                        className="w-16 h-7 text-xs tabular-nums"
                       />
                     </div>
                   )}
@@ -2655,7 +2655,7 @@ export function MaterialConfigModal({
                     min="0"
                     value={reorderLevel}
                     onChange={(e) => setReorderLevel(parseInt(e.target.value, 10) || 0)}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                   <span className="text-2xs text-slate-500 mt-1 block">Low stock warning threshold</span>
                 </div>
@@ -2670,7 +2670,7 @@ export function MaterialConfigModal({
                     min="1"
                     value={reorderQuantity}
                     onChange={(e) => setReorderQuantity(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                   <span className="text-2xs text-slate-500 mt-1 block">Suggested purchase batch</span>
                 </div>
@@ -2686,7 +2686,7 @@ export function MaterialConfigModal({
                     placeholder="Scan or enter barcode..."
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                 </div>
 
@@ -2701,7 +2701,7 @@ export function MaterialConfigModal({
                     placeholder="e.g. 2 days"
                     value={leadTimeDays}
                     onChange={(e) => setLeadTimeDays(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                 </div>
 
@@ -2716,7 +2716,7 @@ export function MaterialConfigModal({
                     placeholder="e.g. 12 (for inks/adhesives)"
                     value={shelfLifeMonths}
                     onChange={(e) => setShelfLifeMonths(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                 </div>
               </div>
@@ -2771,7 +2771,7 @@ export function MaterialConfigModal({
                       placeholder="e.g. STAR-FL-280-50M"
                       value={supplierSku}
                       onChange={(e) => setSupplierSku(e.target.value)}
-                      className="h-9 text-xs font-mono"
+                      className="h-9 text-xs tabular-nums"
                     />
                   </div>
 
@@ -2786,7 +2786,7 @@ export function MaterialConfigModal({
                       placeholder="e.g. 1 roll / 5 sheets"
                       value={supplierMoq}
                       onChange={(e) => setSupplierMoq(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-                      className="h-9 text-xs font-mono"
+                      className="h-9 text-xs tabular-nums"
                     />
                   </div>
                 </div>

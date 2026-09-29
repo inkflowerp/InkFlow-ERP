@@ -755,9 +755,9 @@ export default function CustomersPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleExportCSV}
-                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3.5 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+                className="gap-1.5"
               >
-                <Download className="mr-1.5 h-3.5 w-3.5" />
+                <Download className="h-3.5 w-3.5" />
                 <span>{tBilingual('Export', 'এক্সপোর্ট')}</span>
               </Button>
             )}
@@ -766,9 +766,9 @@ export default function CustomersPage() {
               <Button
                 size="sm"
                 onClick={handleOpenAddCustomer}
-                className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
+                className="gap-1.5"
               >
-                <Plus className="mr-1.5 h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 <span>{tBilingual('New Customer', 'নতুন গ্রাহক')}</span>
               </Button>
             )}
@@ -992,7 +992,7 @@ export default function CustomersPage() {
                       >
                         {/* Customer ID */}
                         <td className="py-3.5 px-3">
-                          <span className="font-mono text-2xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          <span className="tabular-nums text-2xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             {custIdNo}
                           </span>
                         </td>
@@ -1030,7 +1030,7 @@ export default function CustomersPage() {
                           <div className="flex items-center gap-2">
                             <a
                               href={`tel:${c.mobile}`}
-                              className="font-mono text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
+                              className="tabular-nums text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
                               title="Call"
                             >
                               <Phone className="h-3 w-3 text-slate-400" />
@@ -1253,7 +1253,7 @@ export default function CustomersPage() {
                         >
                           {c.name}
                         </Link>
-                        <span className="font-mono text-2xs font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        <span className="tabular-nums text-2xs font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                           {custIdNo}
                         </span>
                       </div>

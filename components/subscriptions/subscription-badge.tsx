@@ -103,37 +103,37 @@ export function SubscriptionSummary({ snapshot: propSnapshot }: { snapshot?: Sub
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
       <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
         <div className="text-slate-400 text-2xs">{isBn ? 'ইউজার সিট' : 'User Seats'}</div>
-        <div className="font-bold text-white font-mono mt-0.5">
+        <div className="font-bold text-white tabular-nums mt-0.5">
           {isBn ? toBengaliDigits(limits.maxUsers) : limits.maxUsers}
         </div>
       </div>
       <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
         <div className="text-slate-400 text-2xs">{isBn ? 'শাখা' : 'Branches'}</div>
-        <div className="font-bold text-white font-mono mt-0.5">
+        <div className="font-bold text-white tabular-nums mt-0.5">
           {isBn ? toBengaliDigits(limits.maxBranches) : limits.maxBranches}
         </div>
       </div>
       <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
         <div className="text-slate-400 text-2xs">{isBn ? 'স্টোরেজ' : 'Storage'}</div>
-        <div className="font-bold text-white font-mono mt-0.5">
+        <div className="font-bold text-white tabular-nums mt-0.5">
           {isBn ? `${toBengaliDigits(limits.storageGb)} জিবি` : `${limits.storageGb} GB`}
         </div>
       </div>
       <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
         <div className="text-slate-400 text-2xs">{isBn ? 'মাসিক অর্ডার' : 'Monthly Orders'}</div>
-        <div className="font-bold text-white font-mono mt-0.5">
+        <div className="font-bold text-white tabular-nums mt-0.5">
           {isBn ? toBengaliDigits(limits.monthlyOrders) : limits.monthlyOrders.toLocaleString()}
         </div>
       </div>
       <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
         <div className="text-slate-400 text-2xs">{isBn ? 'কাস্টমার লিমিট' : 'Customer Limit'}</div>
-        <div className="font-bold text-white font-mono mt-0.5">
+        <div className="font-bold text-white tabular-nums mt-0.5">
           {isBn ? toBengaliDigits(limits.maxCustomers) : limits.maxCustomers.toLocaleString()}
         </div>
       </div>
       <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
         <div className="text-slate-400 text-2xs">{isBn ? 'সক্রিয় মডিউল' : 'Active Modules'}</div>
-        <div className="font-bold text-emerald-400 font-mono mt-0.5">
+        <div className="font-bold text-emerald-400 tabular-nums mt-0.5">
           {isBn ? `${toBengaliDigits(featuresCount)} টি` : `${featuresCount} modules`}
         </div>
       </div>

@@ -18,7 +18,7 @@ function TenantSuspendedContent() {
         </div>
 
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 font-mono">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 tabular-nums">
             423 • WORKSPACE SUSPENDED
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
@@ -30,7 +30,7 @@ function TenantSuspendedContent() {
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto pt-1 leading-relaxed">
             {slug ? (
               <>
-                The tenant workspace for <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-xs text-rose-600 dark:text-rose-400 font-bold">{slug}</code> is currently suspended due to billing, administrative review, or policy hold.
+                The tenant workspace for <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 tabular-nums text-xs text-rose-600 dark:text-rose-400 font-bold">{slug}</code> is currently suspended due to billing, administrative review, or policy hold.
               </>
             ) : (
               'This workspace has been suspended. Please contact your organization administrator or PrintERP platform support to reactivate your account.'

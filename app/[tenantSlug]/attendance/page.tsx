@@ -256,7 +256,7 @@ export default function EmployeeAttendancePage() {
         iconColor="text-indigo-600 dark:text-indigo-400"
         actions={
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-700 dark:text-slate-200">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs tabular-nums font-bold text-slate-700 dark:text-slate-200">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{currentTime || '00:00:00'}</span>
             </div>
@@ -297,11 +297,11 @@ export default function EmployeeAttendancePage() {
       )}
 
       {/* Main Today Punch Status Card */}
-      <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-2xl overflow-hidden relative">
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-emerald-500 to-sky-500" />
+      <Card className="border-border bg-card shadow-xs rounded-xl overflow-hidden relative">
+        <div className="absolute top-0 inset-x-0 h-0.5 bg-primary" />
         <CardContent className="p-6 sm:p-8 space-y-6">
           {/* Status State Banner */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-muted/40 border border-border">
             <div className="flex items-center gap-3.5">
               <div
                 className={`p-3.5 rounded-2xl flex items-center justify-center shrink-0 ${
@@ -333,7 +333,7 @@ export default function EmployeeAttendancePage() {
                     : tBilingual('Not Checked In Yet', 'এখনো হাজিরা দেওয়া হয়নি')}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  {currentDate} • <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{currentTime}</span>
+                  {currentDate} • <span className="tabular-nums text-indigo-600 dark:text-indigo-400 font-bold">{currentTime}</span>
                 </p>
               </div>
             </div>
@@ -359,14 +359,14 @@ export default function EmployeeAttendancePage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{tBilingual('Check-In Time', 'প্রবেশ সময়')}</span>
-              <p className="text-base sm:text-lg font-mono font-bold text-slate-900 dark:text-white">
+              <p className="text-base sm:text-lg tabular-nums font-bold text-slate-900 dark:text-white">
                 {todayStatus.checkInTime || '— — : — —'}
               </p>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{tBilingual('Check-Out Time', 'প্রস্থান সময়')}</span>
-              <p className="text-base sm:text-lg font-mono font-bold text-slate-900 dark:text-white">
+              <p className="text-base sm:text-lg tabular-nums font-bold text-slate-900 dark:text-white">
                 {todayStatus.checkOutTime || '— — : — —'}
               </p>
             </div>
@@ -509,7 +509,7 @@ export default function EmployeeAttendancePage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Badge
-                      className={`text-2xs font-mono font-bold ${
+                      className={`text-2xs tabular-nums font-bold ${
                         rec.attendance_type === 'CHECK_IN'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                           : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
@@ -518,7 +518,7 @@ export default function EmployeeAttendancePage() {
                       {rec.attendance_type.replace('_', ' ')}
                     </Badge>
                     <span className="text-xs font-bold text-slate-900 dark:text-white">{rec.attendance_date}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                       {new Date(rec.checked_at).toLocaleTimeString('en-US', {
                         timeZone: 'Asia/Dhaka',
                         hour: '2-digit',

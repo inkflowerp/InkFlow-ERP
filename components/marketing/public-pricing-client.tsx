@@ -61,7 +61,7 @@ function PricingPageContent() {
 
             <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60">
               <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-950 text-slate-400 uppercase font-mono border-b border-slate-800">
+                <thead className="bg-slate-950 text-slate-400 uppercase tabular-nums border-b border-slate-800">
                   <tr>
                     <th className="p-4">Feature / Capability</th>
                     {paidPlans.map((p) => {
@@ -93,7 +93,7 @@ function PricingPageContent() {
                         ? 'text-amber-300'
                         : 'text-white'
                       return (
-                        <td key={p.id || p.code} className={`p-4 text-center font-mono font-bold ${colorClass}`}>
+                        <td key={p.id || p.code} className={`p-4 text-center tabular-nums font-bold ${colorClass}`}>
                           ৳ {p.price_monthly.toLocaleString()}
                         </td>
                       )
@@ -106,7 +106,7 @@ function PricingPageContent() {
                       const isEnterprise = p.code === 'enterprise'
                       const colorClass = isBusiness ? 'text-cyan-300' : isEnterprise ? 'text-amber-300' : ''
                       return (
-                        <td key={p.id || p.code} className={`p-4 text-center font-mono ${colorClass}`}>
+                        <td key={p.id || p.code} className={`p-4 text-center tabular-nums ${colorClass}`}>
                           {p.max_users >= 999 ? 'Unlimited' : `${p.max_users} Users`}
                         </td>
                       )
@@ -119,7 +119,7 @@ function PricingPageContent() {
                       const isEnterprise = p.code === 'enterprise'
                       const colorClass = isBusiness ? 'text-cyan-300' : isEnterprise ? 'text-amber-300' : ''
                       return (
-                        <td key={p.id || p.code} className={`p-4 text-center font-mono ${colorClass}`}>
+                        <td key={p.id || p.code} className={`p-4 text-center tabular-nums ${colorClass}`}>
                           {p.max_branches >= 999 ? 'Unlimited' : `${p.max_branches} ${p.max_branches === 1 ? 'Branch' : 'Branches'}`}
                         </td>
                       )
@@ -132,7 +132,7 @@ function PricingPageContent() {
                       const isEnterprise = p.code === 'enterprise'
                       const colorClass = isBusiness ? 'text-cyan-300' : isEnterprise ? 'text-amber-300' : ''
                       return (
-                        <td key={p.id || p.code} className={`p-4 text-center font-mono ${colorClass}`}>
+                        <td key={p.id || p.code} className={`p-4 text-center tabular-nums ${colorClass}`}>
                           {p.monthly_orders >= 9999 ? 'Unlimited' : `${p.monthly_orders.toLocaleString()} Orders`}
                         </td>
                       )
@@ -145,7 +145,7 @@ function PricingPageContent() {
                       const isEnterprise = p.code === 'enterprise'
                       const colorClass = isBusiness ? 'text-cyan-300' : isEnterprise ? 'text-amber-300' : ''
                       return (
-                        <td key={p.id || p.code} className={`p-4 text-center font-mono ${colorClass}`}>
+                        <td key={p.id || p.code} className={`p-4 text-center tabular-nums ${colorClass}`}>
                           {p.storage_gb >= 999 ? 'Unlimited' : `${p.storage_gb} GB`}
                         </td>
                       )

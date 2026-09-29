@@ -567,7 +567,7 @@ export default function PricingManagementPage() {
             </span>
             <Package className="h-4 w-4 text-teal-600 dark:text-teal-400" />
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
+          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 tabular-nums">
             {products.length}
           </div>
           <div className="text-2xs text-teal-600 dark:text-teal-400 font-semibold mt-0.5">
@@ -582,7 +582,7 @@ export default function PricingManagementPage() {
             </span>
             <Tag className="h-4 w-4 text-blue-600" />
           </div>
-          <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mt-1 font-mono">
+          <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mt-1 tabular-nums">
             {rules.length}
           </div>
           <div className="text-2xs text-slate-400 mt-0.5">Customer-type rules</div>
@@ -595,7 +595,7 @@ export default function PricingManagementPage() {
             </span>
             <Wrench className="h-4 w-4 text-purple-600" />
           </div>
-          <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1 font-mono">
+          <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1 tabular-nums">
             {finishingOptions.length}
           </div>
           <div className="text-2xs text-slate-400 mt-0.5">Lamination, Eyelets, etc.</div>
@@ -608,7 +608,7 @@ export default function PricingManagementPage() {
             </span>
             <Printer className="h-4 w-4 text-amber-600" />
           </div>
-          <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 font-mono">
+          <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 tabular-nums">
             {printingMethods.length}
           </div>
           <div className="text-2xs text-slate-400 mt-0.5">Solvent, Eco, UV modes</div>
@@ -621,7 +621,7 @@ export default function PricingManagementPage() {
             </span>
             <TrendingUp className="h-4 w-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">
+          <div className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">
             {(() => {
               const withMargin = products.filter((p) => Number(p.selling_price) > 0 && Number(p.base_cost) > 0)
               if (withMargin.length === 0) return '42%'
@@ -825,7 +825,7 @@ export default function PricingManagementPage() {
                   step="0.1"
                   value={formAdjustmentValue}
                   onChange={(e) => setFormAdjustmentValue(Number(e.target.value))}
-                  className="text-xs h-9 font-mono"
+                  className="text-xs h-9 tabular-nums"
                 />
               </div>
             ) : (
@@ -838,7 +838,7 @@ export default function PricingManagementPage() {
                   step="0.01"
                   value={formFixedPrice}
                   onChange={(e) => setFormFixedPrice(Number(e.target.value))}
-                  className="text-xs h-9 font-mono font-bold"
+                  className="text-xs h-9 tabular-nums font-bold"
                 />
               </div>
             )}
@@ -863,7 +863,7 @@ export default function PricingManagementPage() {
           {/* Live Preview Card */}
           <div className="p-3 bg-teal-50 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800 flex items-center justify-between text-xs">
             <span className="text-slate-600 dark:text-slate-300">Effective Calculated Price:</span>
-            <span className="text-base font-black text-teal-700 dark:text-teal-300 font-mono">
+            <span className="text-base font-black text-teal-700 dark:text-teal-300 tabular-nums">
               {formatBDT(livePreview.calculatedPrice)}
             </span>
           </div>
@@ -922,7 +922,7 @@ export default function PricingManagementPage() {
                 placeholder="e.g. -15 for 15% off"
                 value={bulkAdjustmentValue}
                 onChange={(e) => setBulkAdjustmentValue(Number(e.target.value))}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
           </div>
@@ -1032,7 +1032,7 @@ export default function PricingManagementPage() {
               placeholder="e.g. -5 for 5% additional discount"
               value={copyModifierPercent}
               onChange={(e) => setCopyModifierPercent(Number(e.target.value))}
-              className="text-xs h-9 font-mono"
+              className="text-xs h-9 tabular-nums"
             />
           </div>
 

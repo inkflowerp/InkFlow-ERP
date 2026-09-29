@@ -538,22 +538,22 @@ function OnboardingWizard() {
                         ) : null}
                       </div>
                       <div className="flex rounded-md shadow-xs items-stretch">
-                        <span className="inline-flex items-center px-2.5 sm:px-3 rounded-l-md border border-r-0 border-slate-300 bg-slate-100 text-slate-500 text-xs dark:border-slate-700 dark:bg-slate-800 font-mono shrink-0 whitespace-nowrap select-none">
+                        <span className="inline-flex items-center px-2.5 sm:px-3 rounded-l-md border border-r-0 border-slate-300 bg-slate-100 text-slate-500 text-xs dark:border-slate-700 dark:bg-slate-800 tabular-nums shrink-0 whitespace-nowrap select-none">
                           https://
                         </span>
                         <Input
                           id="slug"
-                          className="rounded-none font-mono text-xs sm:text-sm flex-1 min-w-[80px]"
+                          className="rounded-none tabular-nums text-xs sm:text-sm flex-1 min-w-[80px]"
                           placeholder="vision-sign"
                           {...register('slug')}
                           error={errors.slug?.message}
                         />
-                        <span className="inline-flex items-center px-2.5 sm:px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-100 text-slate-600 text-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 font-mono shrink-0 whitespace-nowrap select-none">
+                        <span className="inline-flex items-center px-2.5 sm:px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-100 text-slate-600 text-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 tabular-nums shrink-0 whitespace-nowrap select-none">
                           .{rootDomain}
                         </span>
                       </div>
                       <p className="text-2xs text-slate-500 dark:text-slate-400 break-all">
-                        Your team will access this workspace at: <strong className="text-blue-600 dark:text-blue-400 font-mono">https://{watchedSlug || 'your-company'}.{rootDomain}</strong>
+                        Your team will access this workspace at: <strong className="text-blue-600 dark:text-blue-400 tabular-nums">https://{watchedSlug || 'your-company'}.{rootDomain}</strong>
                       </p>
                     </div>
                   </div>
@@ -830,7 +830,7 @@ function OnboardingWizard() {
                     <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950/60 dark:border-slate-800 text-xs space-y-2">
                       <div className="font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                         <span>Organization Summary</span>
-                        <span className="text-2xs font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-semibold">
+                        <span className="text-2xs tabular-nums px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-semibold">
                           {isPaidPlan ? `${selectedPlan.toUpperCase()} Plan (Step 8: Payment)` : `${trialDays}-Day Free Trial`}
                         </span>
                       </div>
@@ -843,7 +843,7 @@ function OnboardingWizard() {
                         </div>
                         <div>
                           <span className="text-slate-400 dark:text-slate-500 block">Workspace Subdomain:</span>
-                          <span className="font-mono text-blue-600 dark:text-blue-400 truncate block font-bold">
+                          <span className="tabular-nums text-blue-600 dark:text-blue-400 truncate block font-bold">
                             https://{watch('slug') || 'workspace'}.{rootDomain}
                           </span>
                         </div>
@@ -1053,7 +1053,7 @@ function OnboardingWizard() {
                       </div>
                       <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                         <span>Workspace:</span>
-                        <span className="font-mono text-blue-600 dark:text-blue-400 font-semibold">
+                        <span className="tabular-nums text-blue-600 dark:text-blue-400 font-semibold">
                           /{watch('slug') || 'workspace'}
                         </span>
                       </div>

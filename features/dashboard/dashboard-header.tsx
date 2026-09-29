@@ -85,7 +85,7 @@ export function DashboardHeader({
           <LiveDhakaClock
             showSeconds={true}
             showIcon={true}
-            className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-cyan-200"
+            className="inline-flex items-center gap-1 tabular-nums text-xs font-semibold text-cyan-200"
           />
         </div>
       </div>

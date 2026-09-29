@@ -67,7 +67,7 @@ export function DesignTimerBadge({
     return (
       <div
         className={cn(
-          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 animate-pulse shadow-2xs',
+          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs tabular-nums font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 animate-pulse shadow-2xs',
           className
         )}
         title="Design timer is actively running"
@@ -84,7 +84,7 @@ export function DesignTimerBadge({
     return (
       <div
         className={cn(
-          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs',
+          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs tabular-nums font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs',
           className
         )}
         title={`Design completed in ${formatDurationSummary(sec)}`}

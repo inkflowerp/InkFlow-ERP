@@ -479,9 +479,9 @@ export default function FinishingAndFabricationPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-emerald-200/80 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-xl cursor-pointer shadow-2xs"
+                  className="gap-1.5"
                 >
-                  <Truck className="h-4 w-4 text-emerald-600" />
+                  <Truck className="h-4 w-4 text-primary" />
                   <span>{tBilingual('Delivery & Challan ➔', 'ডেলিভারি ও চালান ➔')}</span>
                 </Button>
               </Link>
@@ -491,18 +491,19 @@ export default function FinishingAndFabricationPage() {
                 size="sm"
                 onClick={() => loadData(false)}
                 disabled={loading}
-                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 w-9 p-0 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl flex items-center justify-center shrink-0"
+                className="h-9 w-9 p-0"
                 title="Refresh Tasks"
                 aria-label="Refresh Tasks"
               >
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-primary' : ''}`} />
               </Button>
 
               <Link href={getTenantNavHref('/operator', pathname, slug)}>
                 <Button
-                  className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
+                  size="sm"
+                  className="gap-1.5"
                 >
-                  <Printer className="w-4 h-4 stroke-[2.5]" />
+                  <Printer className="w-4 h-4" />
                   <span>{tBilingual('Operator Terminal', 'অপারেটর টার্মিনাল')}</span>
                 </Button>
               </Link>
@@ -638,7 +639,7 @@ export default function FinishingAndFabricationPage() {
                 <span>{tBilingual(cat.labelEn, cat.labelBn)}</span>
                 <span
                   className={cn(
-                    'text-2xs px-2 py-0.5 rounded-full font-bold font-mono',
+                    'text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums',
                     isSelected
                       ? 'bg-white text-indigo-600 dark:bg-white dark:text-indigo-600'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -711,7 +712,7 @@ export default function FinishingAndFabricationPage() {
                         <Link
                           href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
                         >
-                          <Badge variant="outline" className="font-mono text-2xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
+                          <Badge variant="outline" className="tabular-nums text-2xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
                             #{task.job_number || task.task_number}
                           </Badge>
                         </Link>
@@ -745,7 +746,7 @@ export default function FinishingAndFabricationPage() {
                         {task.width && task.height && (
                           <>
                             <span>•</span>
-                            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                            <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
                               {task.width} × {task.height} in ({((task.width * task.height) / 144).toFixed(1)} sqft)
                             </span>
                           </>

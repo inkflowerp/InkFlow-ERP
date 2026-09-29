@@ -42,7 +42,7 @@ export const DesignLightboxModal = React.memo(function DesignLightboxModal({
               <Eye className="h-4 w-4" />
               <span>{job.title} — High-Res Artwork Inspection (আর্টওয়ার্ক ভিউয়ার)</span>
             </DialogTitle>
-            <div className="text-xs text-slate-400 font-mono">
+            <div className="text-xs text-slate-400 tabular-nums">
               Job: #{job.design_number} | v{activeVersion?.version_number || job.current_version || 1}
             </div>
           </div>

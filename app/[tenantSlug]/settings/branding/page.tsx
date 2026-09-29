@@ -152,7 +152,7 @@ export default function BrandingSettingsPage() {
                   id="customColor"
                   value={branding.primary_color}
                   onChange={(e) => setBranding({ ...branding, primary_color: e.target.value })}
-                  className="w-28 h-8 text-xs font-mono"
+                  className="w-28 h-8 text-xs tabular-nums"
                 />
               </div>
             </div>

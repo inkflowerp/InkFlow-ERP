@@ -45,7 +45,7 @@ export function TopNav() {
   const slug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2.5 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-2 sm:gap-4 relative">
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-card/95 px-2.5 sm:px-6 backdrop-blur-md gap-2 sm:gap-4 relative">
       {/* Signature Printing Industry CMYK Micro Accent */}
       <div className="absolute top-0 inset-x-0 h-0.5 cmyk-rainbow-bar opacity-85" />
 
@@ -55,7 +55,7 @@ export function TopNav() {
           <MobileNav />
         </React.Suspense>
         <CompanySelector />
-        <div className="hidden 2xl:block pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
+        <div className="hidden 2xl:block pl-3 border-l border-border shrink-0">
           <Breadcrumbs />
         </div>
       </div>
@@ -87,14 +87,14 @@ export function TopNav() {
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
-          className="hidden sm:flex items-center justify-between gap-2 sm:gap-3 w-36 md:w-52 lg:w-64 xl:w-80 rounded-xl border border-slate-200/90 bg-slate-100/70 hover:bg-slate-100 px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200 cursor-pointer shrink transition-all min-h-[38px] shadow-2xs"
+          className="hidden sm:flex items-center justify-between gap-2 sm:gap-3 w-36 md:w-52 lg:w-64 xl:w-80 rounded-lg border border-border bg-muted/40 hover:bg-muted/70 px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground cursor-pointer shrink transition-colors min-h-[38px] shadow-2xs"
           title="Global Search (⌘K or /)"
         >
           <div className="flex items-center gap-2 min-w-0">
-            <Search className="h-4 w-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
-            <span className="truncate bangla-text font-medium text-slate-500 dark:text-slate-400">{t('common.search')}</span>
+            <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="truncate bangla-text font-medium text-muted-foreground">{t('common.search')}</span>
           </div>
-          <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-2xs font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-900 font-mono shrink-0 shadow-2xs">
+          <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-border bg-background px-1.5 py-0.5 text-2xs font-bold text-muted-foreground tabular-nums shrink-0 shadow-2xs">
             ⌘K
           </kbd>
         </button>
@@ -103,18 +103,18 @@ export function TopNav() {
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event('printerp_open_search'))}
-          className="sm:hidden flex items-center justify-center h-9 w-9 rounded-xl border border-slate-200 bg-slate-100/60 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer shrink-0 min-h-[36px] min-w-[36px] transition-colors"
+          className="sm:hidden flex items-center justify-center h-9 w-9 rounded-lg border border-border bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer shrink-0 min-h-[36px] min-w-[36px] transition-colors"
           title="Global Search (/)"
           aria-label="Search"
         >
-          <Search className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
         </button>
 
         {/* Dedicated Employee Attendance & Shift Punch Action */}
         <button
           type="button"
           onClick={() => setIsAttendanceOpen(true)}
-          className="relative rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-400 cursor-pointer shadow-2xs transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95 shrink-0"
+          className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground hover:bg-muted hover:text-primary cursor-pointer shadow-2xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 shrink-0"
           title={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
           aria-label={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
         >

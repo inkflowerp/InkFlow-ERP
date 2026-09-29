@@ -146,7 +146,7 @@ export function PrintableQrPoster({
           </div>
 
           <div className="mt-4 text-center space-y-1">
-            <div className="inline-block px-3 py-1 bg-slate-100 rounded-lg text-xs font-mono font-bold text-slate-700">
+            <div className="inline-block px-3 py-1 bg-slate-100 rounded-lg text-xs tabular-nums font-bold text-slate-700">
               Terminal Code: {activeToken?.token_prefix || `LOC-${location.id.slice(0, 8)}`}
             </div>
             <p className="text-xs text-slate-500 font-medium">
@@ -169,7 +169,7 @@ export function PrintableQrPoster({
         </div>
 
         {/* Footer Meta */}
-        <div className="mt-8 pt-4 border-t border-slate-200 flex items-center justify-between text-2xs text-slate-400 font-mono">
+        <div className="mt-8 pt-4 border-t border-slate-200 flex items-center justify-between text-2xs text-slate-400 tabular-nums">
           <div>
             <span>Generated: {generatedDate}</span>
           </div>

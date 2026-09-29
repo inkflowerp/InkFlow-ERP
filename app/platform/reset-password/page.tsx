@@ -64,7 +64,7 @@ function ResetPasswordForm() {
             <Server className="h-6 w-6" />
           </div>
           <div className="flex items-center justify-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-widest text-indigo-400 font-bold">
+            <span className="tabular-nums text-xs uppercase tracking-widest text-indigo-400 font-bold">
               PrintERP Platform
             </span>
           </div>

@@ -97,7 +97,7 @@ export const OrderCard = React.memo(function OrderCard({
               </span>
             )}
           </div>
-          <span className="text-slate-500 text-2xs font-mono">
+          <span className="text-slate-500 text-2xs tabular-nums">
             {order.deliveryDate ? `${tBilingual('Delivery Target: ', 'ডেলিভারি টার্গেট: ')}${order.deliveryDate}` : ''}
           </span>
         </div>
@@ -112,7 +112,7 @@ export const OrderCard = React.memo(function OrderCard({
             <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
               <Link
                 href={getTenantNavHref(`/orders/${order.id}`, pathname, tenantSlug)}
-                className="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 hover:underline flex items-center gap-1"
+                className="tabular-nums text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 hover:underline flex items-center gap-1"
               >
                 <span>#{order.orderNumber}</span>
                 <ExternalLink className="h-3 w-3" />
@@ -120,13 +120,13 @@ export const OrderCard = React.memo(function OrderCard({
               {order.invoiceNumber && (
                 <Link
                   href={getTenantNavHref('/invoices', pathname, tenantSlug)}
-                  className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded hover:underline"
+                  className="tabular-nums text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded hover:underline"
                 >
                   Inv: #{order.invoiceNumber}
                 </Link>
               )}
               {order.jobNumber && (
-                <span className="font-mono text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
+                <span className="tabular-nums text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
                   Job: #{order.jobNumber}
                 </span>
               )}
@@ -208,7 +208,7 @@ export const OrderCard = React.memo(function OrderCard({
               return (
                 <div className="text-2xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
                   <span>{tBilingual(`Work Specs (${order.items.length || 1} Works):`, `কাজের বিবরণ ও স্পেক (${order.items.length || 1}টি):`)}</span>
-                  <span className="font-mono text-slate-500">
+                  <span className="tabular-nums text-slate-500">
                     {hasSft && totalSft > 0
                       ? `${sftFormatted} ${tBilingual('sft total', 'বর্গফুট মোট')} (${totalPcs || order.itemsCount || 1} ${tBilingual('pcs', 'টি')})`
                       : tBilingual(`Total Items: ${order.itemsCount || totalPcs || 1}`, `মোট আইটেম: ${order.itemsCount || totalPcs || 1}`)}
@@ -244,13 +244,13 @@ export const OrderCard = React.memo(function OrderCard({
                       <strong className="text-slate-900 dark:text-slate-100 line-clamp-1 font-semibold text-xs">
                         {synthItem.serviceName || synthItem.itemName}
                       </strong>
-                      <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-2xs">
+                      <span className="tabular-nums font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-2xs">
                         {specs.quantity}
                       </span>
                     </div>
 
                     {/* Structured 6-Field Technical Specs */}
-                    <div className="rounded-md bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 p-2 text-2xs space-y-1 font-mono">
+                    <div className="rounded-md bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 p-2 text-2xs space-y-1 tabular-nums">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                         <div className="flex items-baseline gap-1 min-w-0">
                           <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
@@ -313,7 +313,7 @@ export const OrderCard = React.memo(function OrderCard({
                         {tBilingual('Production Queue', 'প্রিন্ট কিউ')}
                       </span>
                       {order.invoiceNumber && (
-                        <span className="text-2xs text-slate-500 font-mono">
+                        <span className="text-2xs text-slate-500 tabular-nums">
                           🧾 Inv: #{order.invoiceNumber}
                         </span>
                       )}
@@ -332,13 +332,13 @@ export const OrderCard = React.memo(function OrderCard({
                         <strong className="text-slate-900 dark:text-slate-100 line-clamp-1 font-semibold text-xs">
                           {specs.serviceName}
                         </strong>
-                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-2xs">
+                        <span className="tabular-nums font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-2xs">
                           {specs.quantity}
                         </span>
                       </div>
 
                       {/* Structured 6-Field Technical Specs */}
-                      <div className="rounded-md bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 p-2 text-2xs space-y-1 font-mono">
+                      <div className="rounded-md bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 p-2 text-2xs space-y-1 tabular-nums">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                           <div className="flex items-baseline gap-1 min-w-0">
                             <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
@@ -453,13 +453,13 @@ export const OrderCard = React.memo(function OrderCard({
           <div className="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 space-y-1 text-xs">
             <div className="flex items-center justify-between text-slate-500 text-2xs">
               <span>{tBilingual('Total Amount:', 'মোট মূল্য:')}</span>
-              <strong className="font-mono text-slate-900 dark:text-white font-bold">
+              <strong className="tabular-nums text-slate-900 dark:text-white font-bold">
                 ৳{order.totalAmount.toLocaleString()}
               </strong>
             </div>
             <div className="flex items-center justify-between text-slate-500 text-2xs">
               <span>{tBilingual('Paid / Advance:', 'জমা / অগ্রিম:')}</span>
-              <span className="font-mono text-emerald-600 font-semibold">
+              <span className="tabular-nums text-emerald-600 font-semibold">
                 ৳{order.advanceAmount.toLocaleString()}
               </span>
             </div>
@@ -467,7 +467,7 @@ export const OrderCard = React.memo(function OrderCard({
               <span className={order.dueAmount > 0 ? 'text-rose-600' : 'text-slate-600'}>
                 {tBilingual('Balance Due:', 'বকেয়া বাকি:')}
               </span>
-              <span className={`font-mono ${order.dueAmount > 0 ? 'text-rose-600 font-black' : 'text-slate-600'}`}>
+              <span className={`tabular-nums ${order.dueAmount > 0 ? 'text-rose-600 font-black' : 'text-slate-600'}`}>
                 ৳{order.dueAmount.toLocaleString()}
               </span>
             </div>

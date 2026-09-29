@@ -58,7 +58,7 @@ export function IndustrySolutionsSection() {
               <Zap className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <div className="text-2xs sm:text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
+              <div className="text-2xs sm:text-xs tabular-nums font-bold text-cyan-400 uppercase tracking-wider">
                 Selected Vertical Workflow
               </div>
               <h4 className="text-base sm:text-lg font-bold text-white truncate bangla-text">
@@ -93,7 +93,7 @@ export function IndustrySolutionsSection() {
                 <div className="space-y-2.5 sm:space-y-3">
                   <div className="flex items-center justify-between">
                     <span className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'bg-cyan-400 animate-ping' : 'bg-slate-700'}`} />
-                    <span className="text-2xs font-mono text-slate-500 uppercase">
+                    <span className="text-2xs tabular-nums text-slate-500 uppercase">
                       Vertical
                     </span>
                   </div>

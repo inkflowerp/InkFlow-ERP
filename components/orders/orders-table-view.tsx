@@ -88,18 +88,18 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                   <td className="py-3 px-4 align-middle">
                     <Link
                       href={getTenantNavHref(`/orders/${order.id}`, pathname, tenantSlug)}
-                      className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                      className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
                     >
                       <span>#{order.orderNumber}</span>
                       <ExternalLink className="h-3 w-3" />
                     </Link>
                     {order.invoiceNumber && (
-                      <div className="font-mono text-2xs text-slate-500">
+                      <div className="tabular-nums text-2xs text-slate-500">
                         Inv: #{order.invoiceNumber}
                       </div>
                     )}
                     {order.jobNumber && (
-                      <div className="font-mono text-2xs text-purple-600 dark:text-purple-400">
+                      <div className="tabular-nums text-2xs text-purple-600 dark:text-purple-400">
                         Job: #{order.jobNumber}
                       </div>
                     )}
@@ -114,7 +114,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                       <button
                         type="button"
                         onClick={() => onOpenWhatsApp(order)}
-                        className="text-2xs text-emerald-700 dark:text-emerald-400 font-mono hover:underline flex items-center gap-1 mt-0.5"
+                        className="text-2xs text-emerald-700 dark:text-emerald-400 tabular-nums hover:underline flex items-center gap-1 mt-0.5"
                       >
                         <Phone className="h-3 w-3" />
                         <span>{order.customerPhone}</span>
@@ -154,7 +154,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                       }
                       const specs = resolveOrderItemSpecs(firstItem, order.rawJob, order.rawInvoice, tBilingual)
                       return (
-                        <div className="text-2xs text-slate-500 font-mono space-y-0.5 mt-0.5">
+                        <div className="text-2xs text-slate-500 tabular-nums space-y-0.5 mt-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-slate-700 dark:text-slate-300 font-semibold" title={specs.material}>
                               📄 {specs.material}
@@ -209,10 +209,10 @@ export const OrdersTableView = React.memo(function OrdersTableView({
 
                   {/* Financials */}
                   <td className="py-3 px-4 align-middle">
-                    <div className="font-mono font-bold text-slate-900 dark:text-white">
+                    <div className="tabular-nums font-bold text-slate-900 dark:text-white">
                       ৳{order.totalAmount.toLocaleString()}
                     </div>
-                    <div className="text-2xs font-mono">
+                    <div className="text-2xs tabular-nums">
                       {order.dueAmount > 0 ? (
                         <span className="text-rose-600 font-bold">
                           {tBilingual('Due: ', 'বাকি: ')}৳{order.dueAmount.toLocaleString()}

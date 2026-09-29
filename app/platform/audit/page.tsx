@@ -395,7 +395,7 @@ export default function PlatformAuditPage() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
                 <span>Platform Audit Logs</span>
-                <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/50">
+                <span className="text-2xs tabular-nums font-medium px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/50">
                   Zero-Trust Immutable
                 </span>
               </h1>
@@ -792,11 +792,11 @@ export default function PlatformAuditPage() {
             <div>
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <span>Compliance Log Stream</span>
-                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                <span className="text-xs tabular-nums px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
                   {totalCount.toLocaleString()} {totalCount === 1 ? 'Record' : 'Records'} Total
                 </span>
                 {isFiltered && (
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800">
+                  <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800">
                     Filtered
                   </span>
                 )}
@@ -881,17 +881,17 @@ export default function PlatformAuditPage() {
                       <td className="py-3.5 px-4 align-top min-w-[210px]">
                         <div className="font-semibold text-white flex items-center gap-1.5 whitespace-nowrap">
                           <span>{formatDate(log.created_at)}</span>
-                          <span className="text-slate-400 font-mono text-2xs">
+                          <span className="text-slate-400 tabular-nums text-2xs">
                             {formatTime(log.created_at)}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-1.5 flex-nowrap">
-                          <span className="text-2xs font-mono text-slate-300 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs">
+                          <span className="text-2xs tabular-nums text-slate-300 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs">
                             <Clock className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
                             <span>{formatRelativeTime(log.created_at)}</span>
                           </span>
                           <span
-                            className="text-2xs font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs"
+                            className="text-2xs tabular-nums text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs"
                             title={`Origin IP: ${log.ip_address || '127.0.0.1'}`}
                           >
                             <Globe className="h-2.5 w-2.5 text-indigo-400 shrink-0" />
@@ -914,19 +914,19 @@ export default function PlatformAuditPage() {
                               {log.actor_name || 'Platform Administrator'}
                             </div>
                             <div
-                              className="text-2xs font-mono text-slate-400 truncate max-w-[170px] mt-0.5 leading-tight"
+                              className="text-2xs tabular-nums text-slate-400 truncate max-w-[170px] mt-0.5 leading-tight"
                               title={log.actor_email}
                             >
                               {log.actor_email}
                             </div>
                             <div className="mt-1 flex items-center gap-1">
                               {log.actor_role === 'platform_owner' ? (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-2xs font-bold tracking-wide uppercase font-mono">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-2xs font-bold tracking-wide uppercase tabular-nums">
                                   <ShieldCheck className="h-2.5 w-2.5 text-amber-400 shrink-0" />
                                   Platform Owner
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-2xs font-bold tracking-wide uppercase font-mono">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-2xs font-bold tracking-wide uppercase tabular-nums">
                                   <ShieldCheck className="h-2.5 w-2.5 text-indigo-400 shrink-0" />
                                   Superadmin
                                 </span>
@@ -940,7 +940,7 @@ export default function PlatformAuditPage() {
                       <td className="py-3.5 px-4 align-top min-w-[170px]">
                         <div className="inline-flex items-center gap-1.5">
                           <span
-                            className={`font-mono text-2xs font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 ${style.bg}`}
+                            className={`tabular-nums text-2xs font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 ${style.bg}`}
                           >
                             <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
                             {log.action}
@@ -968,7 +968,7 @@ export default function PlatformAuditPage() {
                             </span>
                           )}
                         </div>
-                        <div className="text-2xs text-slate-400 font-mono mt-0.5 truncate max-w-[170px]">
+                        <div className="text-2xs text-slate-400 tabular-nums mt-0.5 truncate max-w-[170px]">
                           {log.entity_type} {log.entity_id ? `• ${log.entity_id.slice(0, 8)}...` : ''}
                         </div>
                       </td>
@@ -990,7 +990,7 @@ export default function PlatformAuditPage() {
                             &quot;{log.details.reason}&quot;
                           </div>
                         ) : (
-                          <span className="text-slate-600 font-mono text-2xs">System Stamped</span>
+                          <span className="text-slate-600 tabular-nums text-2xs">System Stamped</span>
                         )}
                       </td>
 
@@ -1045,7 +1045,7 @@ export default function PlatformAuditPage() {
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
 
-              <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg font-mono text-xs text-slate-200">
+              <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg tabular-nums text-xs text-slate-200">
                 Page {page} of {totalPages}
               </span>
 
@@ -1095,7 +1095,7 @@ export default function PlatformAuditPage() {
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-bold text-white">Audit Event Inspection</h3>
                   <span
-                    className={`font-mono text-2xs font-bold px-2 py-0.5 rounded-md border ${
+                    className={`tabular-nums text-2xs font-bold px-2 py-0.5 rounded-md border ${
                       getActionBadgeStyle(selectedLog.action).bg
                     }`}
                   >
@@ -1103,7 +1103,7 @@ export default function PlatformAuditPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs font-mono text-slate-400 truncate max-w-[280px]">
+                  <span className="text-xs tabular-nums text-slate-400 truncate max-w-[280px]">
                     UUID: {selectedLog.id}
                   </span>
                   <button
@@ -1130,16 +1130,16 @@ export default function PlatformAuditPage() {
                   <div className="font-bold text-white mt-0.5 truncate" title={selectedLog.actor_name || selectedLog.actor_email}>
                     {selectedLog.actor_name || 'Platform Administrator'}
                   </div>
-                  <div className="text-2xs font-mono text-slate-400 truncate mt-0.5">
+                  <div className="text-2xs tabular-nums text-slate-400 truncate mt-0.5">
                     {selectedLog.actor_email}
                   </div>
                   <div className="mt-1">
                     {selectedLog.actor_role === 'platform_owner' ? (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-2xs font-bold tracking-wide uppercase font-mono">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-2xs font-bold tracking-wide uppercase tabular-nums">
                         Platform Owner
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-2xs font-bold tracking-wide uppercase font-mono">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-2xs font-bold tracking-wide uppercase tabular-nums">
                         Superadmin
                       </span>
                     )}
@@ -1155,14 +1155,14 @@ export default function PlatformAuditPage() {
 
                 <div>
                   <span className="text-slate-500 font-medium">Entity Type / ID:</span>
-                  <div className="font-mono text-cyan-400 mt-0.5 truncate">
+                  <div className="tabular-nums text-cyan-400 mt-0.5 truncate">
                     {selectedLog.entity_type} {selectedLog.entity_id ? `(${selectedLog.entity_id})` : ''}
                   </div>
                 </div>
 
                 <div>
                   <span className="text-slate-500 font-medium">Network IP:</span>
-                  <div className="font-mono text-slate-300 mt-0.5 flex items-center gap-1">
+                  <div className="tabular-nums text-slate-300 mt-0.5 flex items-center gap-1">
                     <Globe className="h-3 w-3 text-slate-500" />
                     {selectedLog.ip_address || '127.0.0.1'}
                   </div>
@@ -1170,14 +1170,14 @@ export default function PlatformAuditPage() {
 
                 <div>
                   <span className="text-slate-500 font-medium">Timestamp (BDT):</span>
-                  <div className="font-mono text-slate-300 mt-0.5 text-2xs">
+                  <div className="tabular-nums text-slate-300 mt-0.5 text-2xs">
                     {formatDateTime(selectedLog.created_at)}
                   </div>
                 </div>
 
                 <div>
                   <span className="text-slate-500 font-medium">User Agent / Client:</span>
-                  <div className="font-mono text-slate-400 mt-0.5 text-2xs truncate" title={selectedLog.user_agent || 'System'}>
+                  <div className="tabular-nums text-slate-400 mt-0.5 text-2xs truncate" title={selectedLog.user_agent || 'System'}>
                     {selectedLog.user_agent || 'System Daemon'}
                   </div>
                 </div>
@@ -1207,7 +1207,7 @@ export default function PlatformAuditPage() {
                     {/* Previous State */}
                     <div className="bg-rose-950/20 border border-rose-900/40 rounded-xl p-3 space-y-1">
                       <div className="text-2xs font-bold text-rose-400">Previous State:</div>
-                      <pre className="text-2xs font-mono text-rose-300 max-h-36 overflow-y-auto whitespace-pre-wrap">
+                      <pre className="text-2xs tabular-nums text-rose-300 max-h-36 overflow-y-auto whitespace-pre-wrap">
                         {JSON.stringify(selectedLog.previous_state || {}, null, 2)}
                       </pre>
                     </div>
@@ -1215,7 +1215,7 @@ export default function PlatformAuditPage() {
                     {/* New State */}
                     <div className="bg-emerald-950/20 border border-emerald-900/40 rounded-xl p-3 space-y-1">
                       <div className="text-2xs font-bold text-emerald-400">New State:</div>
-                      <pre className="text-2xs font-mono text-emerald-300 max-h-36 overflow-y-auto whitespace-pre-wrap">
+                      <pre className="text-2xs tabular-nums text-emerald-300 max-h-36 overflow-y-auto whitespace-pre-wrap">
                         {JSON.stringify(selectedLog.new_state || {}, null, 2)}
                       </pre>
                     </div>
@@ -1229,7 +1229,7 @@ export default function PlatformAuditPage() {
                   <span className="font-semibold">Complete Event JSON Payload:</span>
                   <button
                     onClick={() => handleCopyJson(selectedLog)}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-mono"
+                    className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 tabular-nums"
                   >
                     {copiedJson ? (
                       <>
@@ -1244,7 +1244,7 @@ export default function PlatformAuditPage() {
                     )}
                   </button>
                 </div>
-                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-cyan-300 max-h-52 overflow-y-auto shadow-inner">
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 tabular-nums text-xs text-cyan-300 max-h-52 overflow-y-auto shadow-inner">
                   <pre>{JSON.stringify(selectedLog.details, null, 2)}</pre>
                 </div>
               </div>
@@ -1261,7 +1261,7 @@ export default function PlatformAuditPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               ) : (
-                <span className="text-2xs text-slate-500 font-mono">Immutable cryptographic seal</span>
+                <span className="text-2xs text-slate-500 tabular-nums">Immutable cryptographic seal</span>
               )}
 
               <Button

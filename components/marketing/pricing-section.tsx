@@ -136,7 +136,7 @@ export function PricingSection() {
                   {/* Price in BDT */}
                   <div className="pt-2 pb-3 sm:pb-4 border-b border-slate-800">
                     <div className="flex items-baseline gap-1 flex-wrap">
-                      <span className="text-2xl sm:text-4xl font-black text-white tabular-nums tracking-tight font-mono">
+                      <span className="text-2xl sm:text-4xl font-black text-white tabular-nums tracking-tight tabular-nums">
                         ৳ {price.toLocaleString()}
                       </span>
                       <span className="text-xs sm:text-sm text-slate-400 font-medium">
@@ -154,19 +154,19 @@ export function PricingSection() {
                   <div className="space-y-2 sm:space-y-2.5 text-xs text-slate-300">
                     <div className="flex justify-between py-1 border-b border-slate-800/60">
                       <span className="text-slate-400">Team Users:</span>
-                      <span className="font-bold text-white font-mono">{p.max_users >= 999 ? 'Unlimited' : `${p.max_users} Staff`}</span>
+                      <span className="font-bold text-white tabular-nums">{p.max_users >= 999 ? 'Unlimited' : `${p.max_users} Staff`}</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-800/60">
                       <span className="text-slate-400">Branches / Units:</span>
-                      <span className="font-bold text-white font-mono">{p.max_branches >= 999 ? 'Unlimited' : `${p.max_branches} Locations`}</span>
+                      <span className="font-bold text-white tabular-nums">{p.max_branches >= 999 ? 'Unlimited' : `${p.max_branches} Locations`}</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-800/60">
                       <span className="text-slate-400">Monthly Job Orders:</span>
-                      <span className="font-bold text-white font-mono">{p.monthly_orders >= 9999 ? 'Unlimited' : `${p.monthly_orders.toLocaleString()} Orders`}</span>
+                      <span className="font-bold text-white tabular-nums">{p.monthly_orders >= 9999 ? 'Unlimited' : `${p.monthly_orders.toLocaleString()} Orders`}</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-800/60">
                       <span className="text-slate-400">Cloud Storage:</span>
-                      <span className="font-bold text-white font-mono">{p.storage_gb >= 999 ? 'Unlimited' : `${p.storage_gb} GB Artwork`}</span>
+                      <span className="font-bold text-white tabular-nums">{p.storage_gb >= 999 ? 'Unlimited' : `${p.storage_gb} GB Artwork`}</span>
                     </div>
                   </div>
 

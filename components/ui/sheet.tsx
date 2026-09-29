@@ -37,14 +37,14 @@ export function Sheet({ open, onOpenChange, children, side = 'left', className }
     <div className="fixed inset-0 z-[100] flex">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity animate-in fade-in-0 duration-200"
+        className="fixed inset-0 bg-slate-900/45 dark:bg-slate-950/65 transition-opacity animate-in fade-in-0 duration-150"
         onClick={() => onOpenChange(false)}
         aria-hidden="true"
       />
       {/* Sheet panel */}
       <div
         className={cn(
-          'fixed inset-y-0 z-[100] flex h-full h-[100dvh] max-h-screen w-[88vw] sm:w-80 max-w-sm flex-col min-h-0 border-border bg-card text-card-foreground shadow-2xl transition-transform animate-in duration-300 overflow-hidden',
+          'fixed inset-y-0 z-[100] flex h-full h-[100dvh] max-h-screen w-[88vw] sm:w-80 max-w-sm flex-col min-h-0 border-border bg-card text-card-foreground shadow-xl transition-transform animate-in duration-300 overflow-hidden',
           side === 'left' ? 'left-0 border-r slide-in-from-left' : 'right-0 border-l slide-in-from-right',
           className
         )}
@@ -65,7 +65,7 @@ export function SheetHeader({
 }: React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }) {
   return (
     <div
-      className={cn('flex items-center justify-between border-b border-border p-3.5 sm:p-4 bg-card text-card-foreground shrink-0 min-h-[56px]', className)}
+      className={cn('flex items-center justify-between border-b border-border p-4 sm:p-5 bg-card text-card-foreground shrink-0 min-h-[56px]', className)}
       {...props}
     >
       <div className="flex-1 min-w-0">{children}</div>
@@ -73,7 +73,7 @@ export function SheetHeader({
         <button
           type="button"
           onClick={onClose}
-          className="ml-2 rounded-xl p-2 text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center shrink-0 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="ml-2 rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center shrink-0 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label="Close menu"
         >
           <X className="h-5 w-5" />

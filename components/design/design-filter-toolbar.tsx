@@ -74,7 +74,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
               <span>{tab.label}</span>
               <span
                 className={cn(
-                  'text-2xs px-2 py-0.5 rounded-full font-bold font-mono',
+                  'text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums',
                   isActive
                     ? 'bg-white text-blue-600 dark:bg-white dark:text-blue-600'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'

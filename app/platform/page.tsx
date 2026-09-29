@@ -169,7 +169,7 @@ export default function PlatformDashboardPage() {
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-2xs font-mono font-bold uppercase px-2 py-0.5 rounded-md border ${
+                        className={`text-2xs tabular-nums font-bold uppercase px-2 py-0.5 rounded-md border ${
                           isCrit
                             ? 'bg-red-500/20 text-red-300 border-red-500/40'
                             : isWarn
@@ -179,7 +179,7 @@ export default function PlatformDashboardPage() {
                       >
                         {item.severity}
                       </span>
-                      <span className="text-2xs text-slate-400 font-mono">{item.timestamp}</span>
+                      <span className="text-2xs text-slate-400 tabular-nums">{item.timestamp}</span>
                     </div>
 
                     <div className="font-bold text-sm text-white">{item.title}</div>
@@ -398,14 +398,14 @@ export default function PlatformDashboardPage() {
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="font-bold text-white">{tier.plan_name}</span>
-                    <span className="text-2xs font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase">
+                    <span className="text-2xs tabular-nums px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase">
                       {tier.plan_code}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-4">
                     <span className="text-slate-400">{tier.active_subscribers} tenants</span>
-                    <div className="font-mono font-bold text-emerald-400 text-right">
+                    <div className="tabular-nums font-bold text-emerald-400 text-right">
                       <CurrencyDisplay amount={tier.mrr_bdt} /> / mo
                     </div>
                   </div>
@@ -415,7 +415,7 @@ export default function PlatformDashboardPage() {
 
             <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs font-semibold">
               <span className="text-slate-400">Total Monthly Recurring (MRR)</span>
-              <span className="text-sm font-mono font-black text-white">
+              <span className="text-sm tabular-nums font-black text-white">
                 <CurrencyDisplay amount={data.revenue_mrr} />
               </span>
             </div>
@@ -521,7 +521,7 @@ export default function PlatformDashboardPage() {
               <div key={act.id} className="p-3.5 flex items-center justify-between text-xs hover:bg-slate-800/40 transition-colors">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-indigo-400 font-bold">{act.action}</span>
+                    <span className="tabular-nums text-indigo-400 font-bold">{act.action}</span>
                     <span className="text-slate-500">•</span>
                     <span className="font-semibold text-white">{act.target_company_name || act.entity_type || 'Platform'}</span>
                   </div>
@@ -531,7 +531,7 @@ export default function PlatformDashboardPage() {
                 </div>
 
                 <div className="text-right shrink-0">
-                  <div className="font-mono text-2xs text-slate-400">
+                  <div className="tabular-nums text-2xs text-slate-400">
                     {formatTime(act.created_at)}
                   </div>
                   <div className="text-2xs text-slate-500">{act.actor_email}</div>

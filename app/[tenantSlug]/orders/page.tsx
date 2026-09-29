@@ -1226,7 +1226,7 @@ export default function OrdersPage() {
           <button
             type="button"
             onClick={() => setNotification(null)}
-            className="text-white/80 hover:text-white ml-2 text-xs font-mono"
+            className="text-white/80 hover:text-white ml-2 text-xs tabular-nums"
           >
             ✕
           </button>
@@ -1249,18 +1249,19 @@ export default function OrdersPage() {
               size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 w-9 p-0 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl flex items-center justify-center shrink-0"
+              className="h-9 w-9 p-0"
               title="Refresh Orders"
               aria-label="Refresh Orders"
             >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
             </Button>
 
             <Button
+              size="sm"
               onClick={() => setIsWorkOrderModalOpen(true)}
-              className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
+              className="gap-1.5"
             >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <Plus className="w-4 h-4" />
               <span>{tBilingual('New Order Booking', 'নতুন অর্ডার বুকিং')}</span>
             </Button>
           </>
@@ -1305,7 +1306,7 @@ export default function OrdersPage() {
             >
               <span>{s.label}</span>
               <span
-                className={`text-2xs px-2 py-0.5 rounded-full font-bold font-mono ${
+                className={`text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums ${
                   isActive
                     ? 'bg-white text-blue-600 dark:bg-white dark:text-blue-600'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'

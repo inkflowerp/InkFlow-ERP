@@ -150,7 +150,7 @@ export function MobileSection() {
                 {mobileScreen === 'sales' && (
                   <div className="space-y-2.5 sm:space-y-3 animate-in fade-in-0 duration-200">
                     <div className="p-2.5 sm:p-3 rounded-xl bg-slate-950 border border-slate-800">
-                      <span className="text-2xs sm:text-2xs text-slate-400 uppercase font-mono">Today&apos;s Revenue</span>
+                      <span className="text-2xs sm:text-2xs text-slate-400 uppercase tabular-nums">Today&apos;s Revenue</span>
                       <div className="text-lg sm:text-xl font-black text-white tabular-nums mt-0.5">৳ 48,500</div>
                       <span className="text-2xs sm:text-2xs text-emerald-400 font-semibold">+18% vs Yesterday</span>
                     </div>
@@ -212,7 +212,7 @@ export function MobileSection() {
                 {mobileScreen === 'due' && (
                   <div className="space-y-2.5 sm:space-y-3 animate-in fade-in-0 duration-200">
                     <div className="p-2.5 sm:p-3 rounded-xl bg-amber-950/30 border border-amber-500/40">
-                      <span className="text-2xs sm:text-2xs text-amber-400 uppercase font-mono">Total Pending Due</span>
+                      <span className="text-2xs sm:text-2xs text-amber-400 uppercase tabular-nums">Total Pending Due</span>
                       <div className="text-lg sm:text-xl font-black text-amber-300 tabular-nums mt-0.5">৳ 1,24,000</div>
                       <span className="text-2xs sm:text-2xs text-slate-400">8 client accounts overdue</span>
                     </div>

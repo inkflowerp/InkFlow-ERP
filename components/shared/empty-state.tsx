@@ -42,42 +42,33 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/80 bg-white/70 p-8 text-center dark:border-slate-800/80 dark:bg-slate-900/40 backdrop-blur-sm',
+        'flex min-h-[260px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/60 p-6 sm:p-8 text-center',
         className
       )}
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-500 dark:bg-indigo-500/15 border border-indigo-500/20 mb-4 shadow-xs">
-        <Icon className="h-8 w-8" />
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground mb-3">
+        <Icon className="h-6 w-6" />
       </div>
 
-      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 bangla-text">
+      <h3 className="text-base font-bold text-foreground mb-1 bangla-text">
         {displayTitle}
       </h3>
 
       {displayDesc && (
-        <p className="max-w-md text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed bangla-text">
+        <p className="max-w-sm text-xs sm:text-sm text-muted-foreground mb-4 leading-relaxed bangla-text">
           {displayDesc}
         </p>
       )}
 
       <div className="flex flex-wrap items-center justify-center gap-2.5">
         {displayAction && onAction && (
-          <Button
-            onClick={onAction}
-            size="default"
-            className="h-10 text-xs sm:text-sm font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20"
-          >
+          <Button onClick={onAction}>
             {displayAction}
           </Button>
         )}
 
         {secondaryActionLabel && onSecondaryAction && (
-          <Button
-            onClick={onSecondaryAction}
-            variant="outline"
-            size="default"
-            className="h-10 text-xs sm:text-sm font-semibold rounded-xl border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
-          >
+          <Button onClick={onSecondaryAction} variant="secondary">
             {secondaryActionLabel}
           </Button>
         )}

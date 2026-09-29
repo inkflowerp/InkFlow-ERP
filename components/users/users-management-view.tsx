@@ -522,12 +522,13 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                 {tBilingual('Invite Member', 'সদস্য আমন্ত্রণ')}
               </Button>
               <Button
+                size="sm"
                 onClick={handleOpenAddUser}
                 title={!userCheck.allowed ? userCheck.reason : undefined}
-                className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98] bangla-text"
+                className="gap-1.5 bangla-text"
               >
-                <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Add User', 'নতুন ব্যবহারকারী')}
+                <UserPlus className="h-4 w-4" />
+                <span>{tBilingual('Add User', 'নতুন ব্যবহারকারী')}</span>
               </Button>
             </div>
           }
@@ -838,8 +839,8 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                                   className={cn(
                                     'h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
                                     isUserDisabled
-                                      ? 'bg-slate-200 dark:bg-slate-800 text-slate-500'
-                                      : 'bg-gradient-to-br from-sky-600 to-indigo-700 text-white'
+                                      ? 'bg-muted text-muted-foreground'
+                                      : 'bg-primary text-primary-foreground'
                                   )}
                                 >
                                   {(profile?.full_name || user.invited_email || 'U')[0].toUpperCase()}
@@ -1043,8 +1044,8 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                               className={cn(
                                 'h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0',
                                 isUserDisabled
-                                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-500'
-                                  : 'bg-gradient-to-br from-sky-600 to-indigo-700 text-white'
+                                  ? 'bg-muted text-muted-foreground'
+                                  : 'bg-primary text-primary-foreground'
                               )}
                             >
                               {(profile?.full_name || user.invited_email || 'U')[0].toUpperCase()}
@@ -1363,7 +1364,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                 type="text"
                 value={addPassword}
                 onChange={(e) => setAddPassword(e.target.value)}
-                className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 tabular-nums text-xs"
               />
               <Button
                 type="button"

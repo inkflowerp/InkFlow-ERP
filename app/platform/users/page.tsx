@@ -431,7 +431,7 @@ export default function PlatformTenantUsersPage() {
                         <span>{u.company_name}</span>
                         <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </Link>
-                      <p className="text-2xs text-slate-500 mt-0.5 font-mono">/{u.company_slug}</p>
+                      <p className="text-2xs text-slate-500 mt-0.5 tabular-nums">/{u.company_slug}</p>
                     </td>
 
                     {/* Role */}

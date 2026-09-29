@@ -747,11 +747,11 @@ export function ReadyProductModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {initialData ? `Edit Ready Product: ${initialData.name}` : 'New Ready Product Master'}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
                 Ready to Sell
               </Badge>
               {sellingPrice !== '' && Number(sellingPrice) > 0 && (
-                <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                   ৳{Number(sellingPrice).toFixed(2)} / {unit}
                 </Badge>
               )}
@@ -915,7 +915,7 @@ export function ReadyProductModal({
                       placeholder="e.g. XSTAND-2X5"
                       value={sku}
                       onChange={(e) => setSku(e.target.value)}
-                      className="h-9 text-xs font-mono uppercase"
+                      className="h-9 text-xs tabular-nums uppercase"
                     />
                   </div>
 
@@ -929,7 +929,7 @@ export function ReadyProductModal({
                         placeholder="Scan or enter barcode"
                         value={barcode}
                         onChange={(e) => setBarcode(e.target.value)}
-                        className="pl-8 h-9 text-xs font-mono"
+                        className="pl-8 h-9 text-xs tabular-nums"
                       />
                     </div>
                   </div>
@@ -1084,7 +1084,7 @@ export function ReadyProductModal({
                       placeholder="e.g. 1.25"
                       value={unitWeightKg}
                       onChange={(e) => setUnitWeightKg(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="pl-8 h-9 text-xs font-mono"
+                      className="pl-8 h-9 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1173,7 +1173,7 @@ export function ReadyProductModal({
                     placeholder="e.g. 50"
                     value={pcsPerCarton}
                     onChange={(e) => setPcsPerCarton(e.target.value === '' ? '' : parseInt(e.target.value))}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1186,7 +1186,7 @@ export function ReadyProductModal({
                     min="1"
                     value={minOrderQty}
                     onChange={(e) => setMinOrderQty(parseInt(e.target.value) || 1)}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1199,7 +1199,7 @@ export function ReadyProductModal({
                     min="1"
                     value={minBillableQty}
                     onChange={(e) => setMinBillableQty(parseInt(e.target.value) || 1)}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                 </div>
               </div>
@@ -1227,7 +1227,7 @@ export function ReadyProductModal({
                     placeholder="e.g. 24.5"
                     value={cartonWeightKg}
                     onChange={(e) => setCartonWeightKg(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                 </div>
               </div>
@@ -1270,7 +1270,7 @@ export function ReadyProductModal({
                       }}
                       required
                       className={cn(
-                        'pl-7 h-9 text-xs font-mono font-bold text-blue-600 dark:text-blue-400 transition-colors',
+                        'pl-7 h-9 text-xs tabular-nums font-bold text-blue-600 dark:text-blue-400 transition-colors',
                         fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
                       )}
                       autoFocus
@@ -1301,7 +1301,7 @@ export function ReadyProductModal({
                         setBaseCost(val)
                         setPurchasePrice(val)
                       }}
-                      className="pl-7 h-9 text-xs font-mono font-semibold"
+                      className="pl-7 h-9 text-xs tabular-nums font-semibold"
                     />
                   </div>
                 </div>
@@ -1319,7 +1319,7 @@ export function ReadyProductModal({
                       placeholder="e.g. 30"
                       value={freightCost}
                       onChange={(e) => setFreightCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="pl-7 h-9 text-xs font-mono"
+                      className="pl-7 h-9 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1337,7 +1337,7 @@ export function ReadyProductModal({
                       placeholder="Floor rate"
                       value={minPrice}
                       onChange={(e) => setMinPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="pl-7 h-9 text-xs font-mono"
+                      className="pl-7 h-9 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1376,7 +1376,7 @@ export function ReadyProductModal({
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 shadow-2xs">
                     <span className="text-2xs text-slate-500 uppercase tracking-wider block">Profit / Unit</span>
-                    <span className="text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">
+                    <span className="text-sm font-black tabular-nums text-emerald-600 dark:text-emerald-400">
                       {formatBDT(marginMetrics.grossProfit)}
                     </span>
                   </div>
@@ -1385,7 +1385,7 @@ export function ReadyProductModal({
                     <span className="text-2xs text-slate-500 uppercase tracking-wider block">Gross Margin</span>
                     <span
                       className={cn(
-                        'text-sm font-black font-mono',
+                        'text-sm font-black tabular-nums',
                         marginMetrics.grossMarginPercent >= minAllowedMargin
                           ? 'text-emerald-600 dark:text-emerald-400'
                           : 'text-rose-600 dark:text-rose-400'
@@ -1397,7 +1397,7 @@ export function ReadyProductModal({
 
                   <div className="p-2 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 shadow-2xs">
                     <span className="text-2xs text-slate-500 uppercase tracking-wider block">Markup</span>
-                    <span className="text-sm font-black font-mono text-blue-600 dark:text-blue-400">
+                    <span className="text-sm font-black tabular-nums text-blue-600 dark:text-blue-400">
                       {marginMetrics.markupPercent}%
                     </span>
                   </div>
@@ -1412,7 +1412,7 @@ export function ReadyProductModal({
                       type="number"
                       value={targetMargin}
                       onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
-                      className="h-8 text-xs font-mono font-bold text-emerald-600"
+                      className="h-8 text-xs tabular-nums font-bold text-emerald-600"
                     />
                   </div>
                   <div>
@@ -1423,7 +1423,7 @@ export function ReadyProductModal({
                       type="number"
                       value={minAllowedMargin}
                       onChange={(e) => setMinAllowedMargin(parseFloat(e.target.value) || 15)}
-                      className="h-8 text-xs font-mono"
+                      className="h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1478,7 +1478,7 @@ export function ReadyProductModal({
                           retail: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
-                      className="pl-5 h-7 text-xs font-mono font-semibold"
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
                     />
                   </div>
                 </div>
@@ -1502,7 +1502,7 @@ export function ReadyProductModal({
                           corporate: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
-                      className="pl-5 h-7 text-xs font-mono font-semibold"
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
                     />
                   </div>
                 </div>
@@ -1526,7 +1526,7 @@ export function ReadyProductModal({
                           dealer: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
-                      className="pl-5 h-7 text-xs font-mono font-semibold"
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
                     />
                   </div>
                 </div>
@@ -1550,7 +1550,7 @@ export function ReadyProductModal({
                           wholesale: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
-                      className="pl-5 h-7 text-xs font-mono font-semibold"
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
                     />
                   </div>
                 </div>
@@ -1574,7 +1574,7 @@ export function ReadyProductModal({
                           custom: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
-                      className="pl-5 h-7 text-xs font-mono font-semibold"
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
                     />
                   </div>
                 </div>
@@ -1610,7 +1610,7 @@ export function ReadyProductModal({
                     placeholder="e.g. 50"
                     value={openingStock}
                     onChange={(e) => setOpeningStock(e.target.value === '' ? '' : parseInt(e.target.value))}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1624,7 +1624,7 @@ export function ReadyProductModal({
                     placeholder="e.g. 10"
                     value={reorderLevel}
                     onChange={(e) => setReorderLevel(e.target.value === '' ? '' : parseInt(e.target.value))}
-                    className="h-9 text-xs font-mono font-bold text-amber-600 dark:text-amber-400"
+                    className="h-9 text-xs tabular-nums font-bold text-amber-600 dark:text-amber-400"
                   />
                 </div>
 
@@ -1638,7 +1638,7 @@ export function ReadyProductModal({
                     placeholder="e.g. 200"
                     value={maxStock}
                     onChange={(e) => setMaxStock(e.target.value === '' ? '' : parseInt(e.target.value))}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs tabular-nums"
                   />
                 </div>
               </div>
@@ -1670,7 +1670,7 @@ export function ReadyProductModal({
                       placeholder="e.g. 3"
                       value={leadTimeDays}
                       onChange={(e) => setLeadTimeDays(e.target.value === '' ? '' : parseInt(e.target.value))}
-                      className="pl-8 h-9 text-xs font-mono"
+                      className="pl-8 h-9 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1704,7 +1704,7 @@ export function ReadyProductModal({
                       placeholder="e.g. SUP-XS-001"
                       value={supplierItemCode}
                       onChange={(e) => setSupplierItemCode(e.target.value)}
-                      className="h-9 text-xs font-mono uppercase"
+                      className="h-9 text-xs tabular-nums uppercase"
                     />
                   </div>
                 </div>
@@ -1745,7 +1745,7 @@ export function ReadyProductModal({
                         min="0"
                         value={taxRate}
                         onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
-                        className="h-8 text-xs font-mono max-w-[140px]"
+                        className="h-8 text-xs tabular-nums max-w-[140px]"
                       />
                     </div>
                   )}

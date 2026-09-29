@@ -497,7 +497,7 @@ export function SpendMoneyModal({
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800 text-xs font-mono font-bold px-2.5 py-1 flex items-center gap-1.5"
+              className="bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800 text-xs tabular-nums font-bold px-2.5 py-1 flex items-center gap-1.5"
             >
               <FileCheck2 className="h-3.5 w-3.5" />
               <span>{voucherNumber}</span>
@@ -612,7 +612,7 @@ export function SpendMoneyModal({
                         {tBilingual('Payroll', 'বেতন')}
                       </Badge>
                     ) : (
-                      <span className="text-2xs text-slate-400 font-mono font-medium">
+                      <span className="text-2xs text-slate-400 tabular-nums font-medium">
                         {p.glAccount.split(' ')[0]}
                       </span>
                     )}
@@ -638,7 +638,7 @@ export function SpendMoneyModal({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-2xs text-slate-500">{activeCategoryDef.descBn}</span>
-              <Badge variant="outline" className="text-2xs font-mono font-bold bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+              <Badge variant="outline" className="text-2xs tabular-nums font-bold bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                 GL: {activeCategoryDef.glAccount}
               </Badge>
             </div>
@@ -739,7 +739,7 @@ export function SpendMoneyModal({
                     <span className="text-2xs uppercase font-bold text-slate-400 block">
                       {tBilingual('Base Salary Rate', 'নির্ধারিত মূল বেতন')}
                     </span>
-                    <span className="font-mono font-bold text-slate-900 dark:text-slate-100 text-sm mt-0.5 block">
+                    <span className="tabular-nums font-bold text-slate-900 dark:text-slate-100 text-sm mt-0.5 block">
                       ৳{(selectedEmployee.base_salary || selectedEmployee.daily_rate || 0).toLocaleString()}
                     </span>
                     <span className="text-2xs text-slate-500 block">
@@ -752,7 +752,7 @@ export function SpendMoneyModal({
                       {tBilingual('Outstanding Advance', 'পূর্ববর্তী বকেয়া অগ্রিম')}
                     </span>
                     <span className={cn(
-                      "font-mono font-bold text-sm mt-0.5 block",
+                      "tabular-nums font-bold text-sm mt-0.5 block",
                       Number(selectedEmployee.current_advance_balance || 0) > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600"
                     )}>
                       ৳{Number(selectedEmployee.current_advance_balance || 0).toLocaleString()}
@@ -766,7 +766,7 @@ export function SpendMoneyModal({
                     <span className="text-2xs uppercase font-bold text-slate-400 block">
                       {tBilingual('Phone / Contact', 'যোগাযোগ নম্বর')}
                     </span>
-                    <span className="font-mono font-semibold text-slate-800 dark:text-slate-200 text-xs mt-0.5 block">
+                    <span className="tabular-nums font-semibold text-slate-800 dark:text-slate-200 text-xs mt-0.5 block">
                       {selectedEmployee.phone || 'N/A'}
                     </span>
                     <span className="text-2xs text-slate-500 block">
@@ -867,7 +867,7 @@ export function SpendMoneyModal({
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="pl-8 text-base font-mono font-black h-9 rounded-md bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:border-rose-500 text-slate-900 dark:text-slate-100"
+                  className="pl-8 text-base tabular-nums font-black h-9 rounded-md bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:border-rose-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
             </div>
@@ -881,7 +881,7 @@ export function SpendMoneyModal({
                 {selectedAccount && (
                   <span
                     className={cn(
-                      'text-2xs font-mono font-bold',
+                      'text-2xs tabular-nums font-bold',
                       isOverdrawn
                         ? 'text-rose-600 dark:text-rose-400'
                         : 'text-emerald-600 dark:text-emerald-400'
@@ -988,7 +988,7 @@ export function SpendMoneyModal({
               <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('General Ledger Debit Account', 'খতিয়ান হিসাব')}
               </Label>
-              <div className="h-9 px-3 flex items-center bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-md font-mono text-xs text-slate-700 dark:text-slate-300 font-semibold truncate">
+              <div className="h-9 px-3 flex items-center bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-md tabular-nums text-xs text-slate-700 dark:text-slate-300 font-semibold truncate">
                 {activeCategoryDef.glAccount}
               </div>
             </div>

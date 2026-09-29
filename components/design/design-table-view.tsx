@@ -105,13 +105,13 @@ export const DesignTableView = React.memo(function DesignTableView({
                   <td className="py-3 px-4 align-middle">
                     <Link
                       href={workbenchHref}
-                      className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
+                      className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
                     >
                       <span>#{job.design_number}</span>
                       <ExternalLink className="h-2.5 w-2.5 opacity-60" />
                     </Link>
                     {job.invoice_number && (
-                      <div className="font-mono text-2xs text-slate-500">
+                      <div className="tabular-nums text-2xs text-slate-500">
                         {invoiceHref ? (
                           <Link href={invoiceHref} className="hover:underline hover:text-slate-800 dark:hover:text-slate-200">
                             Inv: #{job.invoice_number}
@@ -132,7 +132,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                       <button
                         type="button"
                         onClick={() => onOpenWhatsApp(job, 'proof')}
-                        className="text-2xs text-emerald-700 dark:text-emerald-400 font-mono hover:underline flex items-center gap-1 mt-0.5"
+                        className="text-2xs text-emerald-700 dark:text-emerald-400 tabular-nums hover:underline flex items-center gap-1 mt-0.5"
                       >
                         <Phone className="h-3 w-3" />
                         <span>{job.customer_phone || (job as any).mobile}</span>
@@ -148,11 +148,11 @@ export const DesignTableView = React.memo(function DesignTableView({
                     >
                       {specs.serviceName}
                     </Link>
-                    <div className="text-2xs text-slate-500 font-mono mt-0.5">
+                    <div className="text-2xs text-slate-500 tabular-nums mt-0.5">
                       {specs.size} | {specs.quantity} | {specs.material}
                     </div>
                     {(specs.finishing !== 'None' || specs.addOn !== 'None') && (
-                      <div className="text-2xs text-amber-700 dark:text-amber-400 font-mono mt-0.5">
+                      <div className="text-2xs text-amber-700 dark:text-amber-400 tabular-nums mt-0.5">
                         {specs.finishing !== 'None' && `✨ ${specs.finishing}`}
                         {specs.finishing !== 'None' && specs.addOn !== 'None' && ' · '}
                         {specs.addOn !== 'None' && `➕ ${specs.addOn}`}

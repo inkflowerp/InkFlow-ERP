@@ -344,7 +344,7 @@ export function AddAccountModal({
               value={openingBalance}
               onChange={(e) => setOpeningBalance(e.target.value)}
               placeholder="0.00"
-              className="h-9 pl-7 text-xs rounded-xl font-mono font-bold"
+              className="h-9 pl-7 text-xs rounded-xl tabular-nums font-bold"
             />
           </div>
           <p className="text-3xs text-slate-400 mt-1">

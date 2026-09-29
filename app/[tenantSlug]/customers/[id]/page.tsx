@@ -1004,7 +1004,7 @@ export default function CustomerProfilePage() {
                     ({customer.name_bn})
                   </span>
                 )}
-                <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <span className="tabular-nums text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   {formatCustomerIdNo(customer)}
                 </span>
                 <Badge
@@ -1798,7 +1798,7 @@ export default function CustomerProfilePage() {
                     value={editCustomerIdNo}
                     onChange={(e) => setEditCustomerIdNo(e.target.value)}
                     placeholder="e.g. CUST-0001"
-                    className="text-xs h-9 font-mono font-bold"
+                    className="text-xs h-9 tabular-nums font-bold"
                   />
                 </div>
                 <div className="space-y-1">
@@ -1807,7 +1807,7 @@ export default function CustomerProfilePage() {
                     value={editCustomerCode}
                     onChange={(e) => setEditCustomerCode(e.target.value)}
                     placeholder="e.g. AC-01"
-                    className="text-xs h-9 font-mono"
+                    className="text-xs h-9 tabular-nums"
                   />
                 </div>
               </div>

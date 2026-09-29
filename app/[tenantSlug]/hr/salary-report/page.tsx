@@ -342,7 +342,7 @@ export default function SalaryReportPage() {
             </div>
           </div>
 
-          <div className="text-xs text-slate-500 font-mono">
+          <div className="text-xs text-slate-500 tabular-nums">
             Total Staff: <strong className="text-slate-900 dark:text-white">{selectedPeriod?.items?.length || 0}</strong> • Status: <strong className="uppercase text-slate-900 dark:text-white">{selectedPeriod?.status || 'N/A'}</strong>
           </div>
         </div>
@@ -458,7 +458,7 @@ export default function SalaryReportPage() {
                 <th className="p-3 pr-4 text-right">{tBilingual('Due', 'বকেয়া')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 print:divide-slate-300 font-mono">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 print:divide-slate-300 tabular-nums">
               {filteredItems.map((item, idx) => {
                 const emp = employees.find((e) => e.id === item.employee_id)
                 const hasBank = Boolean(emp?.bank_payment_info?.account_number)
@@ -485,7 +485,7 @@ export default function SalaryReportPage() {
                             <Building className="w-3 h-3 text-blue-500" />
                             {emp?.bank_payment_info?.bank_name}
                           </div>
-                          <div className="font-mono text-slate-500 dark:text-slate-400">{emp?.bank_payment_info?.account_number}</div>
+                          <div className="tabular-nums text-slate-500 dark:text-slate-400">{emp?.bank_payment_info?.account_number}</div>
                         </div>
                       ) : hasMfs ? (
                         <div>
@@ -493,7 +493,7 @@ export default function SalaryReportPage() {
                             <CreditCard className="w-3 h-3" />
                             {emp?.mfs_payment_info?.provider?.toUpperCase() || 'bKash'}
                           </div>
-                          <div className="font-mono text-slate-500 dark:text-slate-400">{emp?.mfs_payment_info?.wallet_number}</div>
+                          <div className="tabular-nums text-slate-500 dark:text-slate-400">{emp?.mfs_payment_info?.wallet_number}</div>
                         </div>
                       ) : (
                         <span className="text-slate-400 font-medium">Cash On Hand</span>
@@ -535,7 +535,7 @@ export default function SalaryReportPage() {
               )}
             </tbody>
             <tfoot>
-              <tr className="border-t-2 border-slate-200 dark:border-slate-800 print:border-black bg-slate-50/80 dark:bg-slate-900/50 font-bold font-mono">
+              <tr className="border-t-2 border-slate-200 dark:border-slate-800 print:border-black bg-slate-50/80 dark:bg-slate-900/50 font-bold tabular-nums">
                 <td colSpan={4} className="p-3 pl-4 font-sans text-right uppercase text-slate-700 dark:text-slate-300">
                   {tBilingual('Total Summary', 'মোট সর্বমোট')}:
                 </td>

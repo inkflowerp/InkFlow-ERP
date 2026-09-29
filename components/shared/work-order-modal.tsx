@@ -866,7 +866,7 @@ export function WorkOrderModal({
               </span>
               <Badge
                 variant="outline"
-                className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
               >
                 Pre-Press Flow
               </Badge>
@@ -1096,11 +1096,11 @@ export function WorkOrderModal({
                     >
                       <div>
                         <div className="font-bold text-slate-900 dark:text-slate-100">{c.name}</div>
-                        <div className="text-2xs text-slate-500 font-mono">
+                        <div className="text-2xs text-slate-500 tabular-nums">
                           {c.mobile} {c.company_name ? `• ${c.company_name}` : ''}
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-2xs uppercase font-mono">
+                      <Badge variant="outline" className="text-2xs uppercase tabular-nums">
                         {c.customer_type || 'Retail'}
                       </Badge>
                     </div>
@@ -1119,7 +1119,7 @@ export function WorkOrderModal({
                 value={customerPhone}
                 onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
                 onKeyDown={handleCustomerKeyDown}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
                 required
               />
             </div>
@@ -1131,7 +1131,7 @@ export function WorkOrderModal({
                 placeholder="01XXXXXXXXX"
                 value={whatsappNumber}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
-                className="text-xs h-9 font-mono"
+                className="text-xs h-9 tabular-nums"
               />
             </div>
 
@@ -1191,7 +1191,7 @@ export function WorkOrderModal({
               {totalSft > 0 && (
                 <Badge
                   variant="outline"
-                  className="text-xs font-mono bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 ml-1"
+                  className="text-xs tabular-nums bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 ml-1"
                 >
                   Total Area: {totalSft.toFixed(1)} SFT
                 </Badge>
@@ -1252,7 +1252,7 @@ export function WorkOrderModal({
                   {/* Item Header & Badges */}
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800 pb-2.5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
+                      <span className="tabular-nums text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
                         Item #{index + 1}
                       </span>
 
@@ -1434,7 +1434,7 @@ export function WorkOrderModal({
                           placeholder="0"
                           value={item.width}
                           onChange={(e) => handleItemChange(index, 'width', e.target.value)}
-                          className="text-xs h-9 font-mono"
+                          className="text-xs h-9 tabular-nums"
                         />
                       </div>
 
@@ -1446,7 +1446,7 @@ export function WorkOrderModal({
                           placeholder="0"
                           value={item.height}
                           onChange={(e) => handleItemChange(index, 'height', e.target.value)}
-                          className="text-xs h-9 font-mono"
+                          className="text-xs h-9 tabular-nums"
                         />
                       </div>
 
@@ -1471,7 +1471,7 @@ export function WorkOrderModal({
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 font-mono font-bold"
+                          className="text-xs h-9 tabular-nums font-bold"
                           required
                         />
                       </div>
@@ -1527,7 +1527,7 @@ export function WorkOrderModal({
                         </span>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
                           {item.dimensions_spec ? (
-                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-2xs">
+                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums text-2xs">
                               📐 {item.dimensions_spec}
                             </span>
                           ) : (
@@ -1543,7 +1543,7 @@ export function WorkOrderModal({
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 font-mono font-bold"
+                          className="text-xs h-9 tabular-nums font-bold"
                           required
                         />
                       </div>
@@ -1577,7 +1577,7 @@ export function WorkOrderModal({
                           step="0.1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 font-mono font-bold"
+                          className="text-xs h-9 tabular-nums font-bold"
                           required
                         />
                       </div>
@@ -1723,7 +1723,7 @@ export function WorkOrderModal({
                     {tBilingual('Click to browse or Drag & Drop .JPG / .PNG', 'ফাইল নির্বাচন করুন অথবা ড্র্যাগ করুন')}
                   </p>
                   <p className="text-2xs text-blue-600 dark:text-blue-400 font-semibold">
-                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-2xs">Ctrl+V</kbd> anywhere to paste screenshot
+                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 tabular-nums text-2xs">Ctrl+V</kbd> anywhere to paste screenshot
                   </p>
                 </div>
                 <p className="text-2xs text-slate-400">

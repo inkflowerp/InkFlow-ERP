@@ -225,7 +225,7 @@ export function CashBankView({
             </Badge>
           </div>
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl sm:text-4xl font-black font-mono tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight">
               ৳{stats.totalLiquid.toLocaleString()}
             </span>
             <span className="text-xs text-slate-400">
@@ -419,7 +419,7 @@ export function CashBankView({
                     <span className="text-3xs font-semibold text-slate-400 uppercase tracking-wider">
                       {tBilingual('Current Balance', 'বর্তমান স্থিতি')}
                     </span>
-                    <span className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white">
+                    <span className="text-xl sm:text-2xl font-black tabular-nums text-slate-900 dark:text-white">
                       ৳{Number(account.current_balance || 0).toLocaleString()}
                     </span>
                   </div>
@@ -428,21 +428,21 @@ export function CashBankView({
                   <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-100 dark:border-slate-800 text-center">
                     <div>
                       <span className="text-3xs text-slate-400 block">{tBilingual('Opening', 'প্রারম্ভিক')}</span>
-                      <span className="text-2xs font-mono font-semibold text-slate-700 dark:text-slate-300">
+                      <span className="text-2xs tabular-nums font-semibold text-slate-700 dark:text-slate-300">
                         ৳{Number(account.opening_balance || 0).toLocaleString()}
                       </span>
                     </div>
 
                     <div className="border-x border-slate-200 dark:border-slate-700">
                       <span className="text-3xs text-emerald-600 block">{tBilingual('Received', 'মোট জমা')}</span>
-                      <span className="text-2xs font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                      <span className="text-2xs tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">
                         +৳{metrics.received.toLocaleString()}
                       </span>
                     </div>
 
                     <div>
                       <span className="text-3xs text-rose-600 block">{tBilingual('Paid', 'মোট খরচ')}</span>
-                      <span className="text-2xs font-mono font-semibold text-rose-600 dark:text-rose-400">
+                      <span className="text-2xs tabular-nums font-semibold text-rose-600 dark:text-rose-400">
                         -৳{metrics.paid.toLocaleString()}
                       </span>
                     </div>

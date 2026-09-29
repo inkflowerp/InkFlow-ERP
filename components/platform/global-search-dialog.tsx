@@ -126,7 +126,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
           <button
             type="button"
             onClick={onClose}
-            className="hidden sm:inline-flex items-center px-2 py-0.5 text-2xs font-mono text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md cursor-pointer transition-colors"
+            className="hidden sm:inline-flex items-center px-2 py-0.5 text-2xs tabular-nums text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md cursor-pointer transition-colors"
             title="Press ESC or click to close"
             aria-label="Close search (ESC)"
           >
@@ -156,7 +156,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
             <div className="py-8 text-center text-slate-500 space-y-2">
               <Sparkles className="h-6 w-6 text-indigo-400 mx-auto opacity-60" />
               <p className="text-xs">Type a company name, owner phone, email, plan, or audit action.</p>
-              <p className="text-2xs text-slate-600">Quick shortcut: press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 font-mono">/</kbd> anywhere to open search.</p>
+              <p className="text-2xs text-slate-600">Quick shortcut: press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-400 tabular-nums">/</kbd> anywhere to open search.</p>
             </div>
           )}
 
@@ -252,7 +252,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                     className="w-full text-left p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-cyan-500/50 transition-all flex items-center justify-between group cursor-pointer"
                   >
                     <div>
-                      <div className="font-semibold text-slate-200 group-hover:text-cyan-300 transition-colors font-mono">
+                      <div className="font-semibold text-slate-200 group-hover:text-cyan-300 transition-colors tabular-nums">
                         {a.action}
                       </div>
                       <div className="text-2xs text-slate-400">
@@ -284,7 +284,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                       <div className="font-semibold text-white group-hover:text-purple-300 transition-colors">
                         {f.name}
                       </div>
-                      <div className="text-2xs text-slate-400 font-mono">{f.key}</div>
+                      <div className="text-2xs text-slate-400 tabular-nums">{f.key}</div>
                     </div>
                     <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-purple-500/20 text-purple-300' : 'bg-slate-800 text-slate-400'}`}>
                       {f.is_enabled ? 'ENABLED' : 'DISABLED'}

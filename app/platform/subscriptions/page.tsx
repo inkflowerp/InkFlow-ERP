@@ -579,7 +579,7 @@ export default function PlatformSubscriptionsPage() {
           </div>
           <div className="text-2xs text-slate-400 mt-1 flex items-center justify-between">
             <span>ARR: <CurrencyDisplay amount={metrics.total_arr} /></span>
-            <span className="text-emerald-400 font-mono font-bold">100% Live</span>
+            <span className="text-emerald-400 tabular-nums font-bold">100% Live</span>
           </div>
         </Card>
 
@@ -662,7 +662,7 @@ export default function PlatformSubscriptionsPage() {
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`text-2xs px-1.5 py-0.2 rounded-full font-mono ${
+                  className={`text-2xs px-1.5 py-0.2 rounded-full tabular-nums ${
                     statusFilter === tab.id
                       ? 'bg-white/20 text-white'
                       : 'bg-slate-800 text-slate-300'
@@ -801,7 +801,7 @@ export default function PlatformSubscriptionsPage() {
                           <span>{s.company_name}</span>
                           <ExternalLink className="h-3 w-3 text-slate-500 opacity-60 hover:opacity-100" />
                         </Link>
-                        <div className="text-2xs font-mono text-indigo-400">
+                        <div className="text-2xs tabular-nums text-indigo-400">
                           {s.company_slug}.printerp.com.bd
                         </div>
                         <div className="text-2xs text-slate-400 mt-0.5">
@@ -825,7 +825,7 @@ export default function PlatformSubscriptionsPage() {
                           >
                             {s.plan_name}
                           </span>
-                          <span className="text-2xs text-slate-400 capitalize font-mono">
+                          <span className="text-2xs text-slate-400 capitalize tabular-nums">
                             ({s.billing_interval})
                           </span>
                         </div>
@@ -840,7 +840,7 @@ export default function PlatformSubscriptionsPage() {
                       </td>
 
                       {/* Rate (BDT) */}
-                      <td className="py-3 px-4 font-mono">
+                      <td className="py-3 px-4 tabular-nums">
                         <div className="font-bold text-white text-sm">
                           <CurrencyDisplay amount={s.monthly_rate} />
                           <span className="text-2xs text-slate-400 font-normal"> /mo</span>
@@ -874,7 +874,7 @@ export default function PlatformSubscriptionsPage() {
                           {/* Expiry / Countdown indicator */}
                           {s.status === 'trial' ? (
                             <span
-                              className={`text-2xs font-mono px-1.5 py-0.2 rounded ${
+                              className={`text-2xs tabular-nums px-1.5 py-0.2 rounded ${
                                 s.days_remaining <= 3
                                   ? 'bg-red-950 text-red-300 font-bold border border-red-800'
                                   : 'bg-slate-800 text-slate-300 border border-slate-700'
@@ -886,7 +886,7 @@ export default function PlatformSubscriptionsPage() {
                             </span>
                           ) : s.status === 'active' ? (
                             <span
-                              className={`text-2xs font-mono px-1.5 py-0.2 rounded ${
+                              className={`text-2xs tabular-nums px-1.5 py-0.2 rounded ${
                                 s.days_remaining <= 7
                                   ? 'bg-amber-950 text-amber-300 font-bold border border-amber-800'
                                   : 'bg-slate-800 text-slate-400 border border-slate-700'
@@ -939,14 +939,14 @@ export default function PlatformSubscriptionsPage() {
                       {/* Payment & Gateway */}
                       <td className="py-3 px-4">
                         {s.is_trial ? (
-                          <span className="text-2xs text-cyan-400 font-mono font-bold">Free Trial</span>
+                          <span className="text-2xs text-cyan-400 tabular-nums font-bold">Free Trial</span>
                         ) : (
                           <div>
                             <span className="capitalize px-1.5 py-0.2 rounded text-2xs font-bold bg-slate-800 text-emerald-300 border border-slate-700">
                               {s.payment_method_type || 'bKash'}
                             </span>
                             {s.last_payment_reference && (
-                              <div className="text-2xs font-mono text-slate-400 mt-1 truncate max-w-[130px]" title={s.last_payment_reference}>
+                              <div className="text-2xs tabular-nums text-slate-400 mt-1 truncate max-w-[130px]" title={s.last_payment_reference}>
                                 Ref: {s.last_payment_reference}
                               </div>
                             )}
@@ -1136,7 +1136,7 @@ export default function PlatformSubscriptionsPage() {
                     placeholder="e.g. TXN-8921829"
                     value={configPaymentRef}
                     onChange={(e) => setConfigPaymentRef(e.target.value)}
-                    className="bg-slate-950 border-slate-700 text-white text-xs h-9 font-mono"
+                    className="bg-slate-950 border-slate-700 text-white text-xs h-9 tabular-nums"
                   />
                 </div>
               </div>
@@ -1455,7 +1455,7 @@ export default function PlatformSubscriptionsPage() {
                   placeholder="e.g. TXN-9281928"
                   value={paymentRef}
                   onChange={(e) => setPaymentRef(e.target.value)}
-                  className="bg-slate-950 border-slate-700 text-white text-xs h-9 font-mono"
+                  className="bg-slate-950 border-slate-700 text-white text-xs h-9 tabular-nums"
                 />
               </div>
 

@@ -312,7 +312,7 @@ export default function PlatformUsagePage() {
             </div>
             <div className="text-2xs text-indigo-300 mt-1.5 flex items-center justify-between">
               <span>{summary.users_utilization_pct}% capacity assigned</span>
-              <span className="text-slate-400 font-mono text-2xs">{summary.total_branches} Branches</span>
+              <span className="text-slate-400 tabular-nums text-2xs">{summary.total_branches} Branches</span>
             </div>
           </Card>
 
@@ -341,7 +341,7 @@ export default function PlatformUsagePage() {
             </div>
             <div className="text-2xs text-pink-300 mt-1.5 flex items-center justify-between">
               <span>{summary.storage_utilization_pct}% disk used</span>
-              <span className="text-slate-400 font-mono text-2xs">PDF Proofs &amp; Artwork</span>
+              <span className="text-slate-400 tabular-nums text-2xs">PDF Proofs &amp; Artwork</span>
             </div>
           </Card>
 
@@ -370,7 +370,7 @@ export default function PlatformUsagePage() {
             </div>
             <div className="text-2xs text-purple-300 mt-1.5 flex items-center justify-between">
               <span>{summary.orders_utilization_pct}% monthly volume</span>
-              <span className="text-slate-400 font-mono text-2xs">{summary.total_customers} Customers</span>
+              <span className="text-slate-400 tabular-nums text-2xs">{summary.total_customers} Customers</span>
             </div>
           </Card>
 
@@ -471,7 +471,7 @@ export default function PlatformUsagePage() {
                 <span>{chip.label}</span>
                 {chip.count !== undefined && (
                   <span
-                    className={`text-2xs px-1.5 py-0.2 rounded-full font-mono ${
+                    className={`text-2xs px-1.5 py-0.2 rounded-full tabular-nums ${
                       healthFilter === chip.id ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300'
                     }`}
                   >
@@ -555,7 +555,7 @@ export default function PlatformUsagePage() {
                             <span>{r.company_name}</span>
                             <ExternalLink className="h-3 w-3 text-slate-500 opacity-60 hover:opacity-100" />
                           </Link>
-                          <div className="text-2xs font-mono text-cyan-400">
+                          <div className="text-2xs tabular-nums text-cyan-400">
                             {r.company_slug}.printerp.com.bd
                           </div>
                           <div className="text-2xs text-slate-400 mt-0.5">
@@ -595,7 +595,7 @@ export default function PlatformUsagePage() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-2xs">
                               <span><strong className="text-white">{r.users_count}</strong>/{r.users_limit}</span>
-                              <span className={`text-2xs font-mono ${r.user_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
+                              <span className={`text-2xs tabular-nums ${r.user_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
                                 {r.user_utilization_pct}%
                               </span>
                             </div>
@@ -619,7 +619,7 @@ export default function PlatformUsagePage() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-2xs">
                               <span><strong className="text-white">{r.storage_used_gb}</strong>/{r.storage_limit_gb} GB</span>
-                              <span className={`text-2xs font-mono ${r.storage_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
+                              <span className={`text-2xs tabular-nums ${r.storage_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
                                 {r.storage_utilization_pct}%
                               </span>
                             </div>
@@ -643,7 +643,7 @@ export default function PlatformUsagePage() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-2xs">
                               <span><strong className="text-white">{r.orders_this_month}</strong>/{r.orders_limit}</span>
-                              <span className={`text-2xs font-mono ${r.order_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
+                              <span className={`text-2xs tabular-nums ${r.order_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
                                 {r.order_utilization_pct}%
                               </span>
                             </div>
@@ -722,7 +722,7 @@ export default function PlatformUsagePage() {
                 Audited daily/weekly snapshot logs from PostgreSQL cluster database.
               </CardDescription>
             </div>
-            <span className="text-2xs font-mono uppercase px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-bold">
+            <span className="text-2xs tabular-nums uppercase px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-bold">
               AUDITED SNAPSHOTS
             </span>
           </CardHeader>
@@ -747,23 +747,23 @@ export default function PlatformUsagePage() {
                       <span>{pt.date}</span>
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono font-bold text-indigo-300">
+                    <td className="py-3.5 px-4 tabular-nums font-bold text-indigo-300">
                       {pt.users_count} users
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-pink-300">
+                    <td className="py-3.5 px-4 tabular-nums text-pink-300">
                       {pt.storage_used_gb} GB
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-purple-300">
+                    <td className="py-3.5 px-4 tabular-nums text-purple-300">
                       {pt.orders_count.toLocaleString()} orders
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-slate-300">
+                    <td className="py-3.5 px-4 tabular-nums text-slate-300">
                       {pt.customers_count.toLocaleString()} customers
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-slate-400">
+                    <td className="py-3.5 px-4 tabular-nums text-slate-400">
                       {pt.branches_count} branches
                     </td>
                   </tr>

@@ -484,7 +484,7 @@ export default function DocumentDesignerPage() {
                         key={tag}
                         type="button"
                         onClick={() => handleInsertTag('email_subject', tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs font-mono text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs tabular-nums text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
                         title={`Insert ${tag}`}
                       >
                         + {tag}
@@ -517,7 +517,7 @@ export default function DocumentDesignerPage() {
                       }
                     }}
                     placeholder="<p>Dear {{customer_name}},</p><p>Please find attached...</p>"
-                    className="w-full p-2.5 rounded-xl border text-xs font-mono bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                   {/* Quick-insert tags for Email Body */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
@@ -534,7 +534,7 @@ export default function DocumentDesignerPage() {
                         key={tag}
                         type="button"
                         onClick={() => handleInsertTag('email_body', tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs font-mono text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs tabular-nums text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
                         title={`Insert ${tag}`}
                       >
                         + {tag}
@@ -567,7 +567,7 @@ export default function DocumentDesignerPage() {
                       }
                     }}
                     placeholder="*QUOTATION - {{company_name}}*&#10;Dear {{customer_name}},&#10;Total: ৳ {{quotation_total}}..."
-                    className="w-full p-2.5 rounded-xl border text-xs font-mono bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                   {/* Quick-insert tags for WhatsApp */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
@@ -583,7 +583,7 @@ export default function DocumentDesignerPage() {
                         key={tag}
                         type="button"
                         onClick={() => handleInsertTag('whatsapp', tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs font-mono text-slate-700 dark:text-slate-300 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs tabular-nums text-slate-700 dark:text-slate-300 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
                         title={`Insert ${tag}`}
                       >
                         + {tag}
@@ -655,7 +655,7 @@ export default function DocumentDesignerPage() {
                       >
                         <div className="min-w-0 space-y-0.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-mono font-bold text-blue-700 dark:text-blue-400 text-2xs">
+                            <span className="tabular-nums font-bold text-blue-700 dark:text-blue-400 text-2xs">
                               {v.tag}
                             </span>
                             <span className="text-2xs font-semibold text-slate-700 dark:text-slate-300">
@@ -756,7 +756,7 @@ export default function DocumentDesignerPage() {
                 </p>
 
                 {/* NBR Tax Credentials */}
-                <div className="pt-1 text-2xs font-mono text-slate-500 print:text-slate-600 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                <div className="pt-1 text-2xs tabular-nums text-slate-500 print:text-slate-600 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                   <span>BIN: <strong className="print:text-slate-900">{taxSettings.bin_number || '18291004821'}</strong></span>
                   <span>•</span>
                   <span>TIN: <strong className="print:text-slate-900">{taxSettings.tin_number || 'N/A'}</strong></span>
@@ -783,10 +783,10 @@ export default function DocumentDesignerPage() {
                   </span>
                   <div className="font-bold text-sm text-slate-900 dark:text-white print:text-slate-900">Metro Advertising Ltd.</div>
                   <div className="text-slate-600 dark:text-slate-300 print:text-slate-700">12 Motijheel C/A, Dhaka-1000</div>
-                  <div className="text-slate-400 print:text-slate-600 font-mono text-2xs">BIN: 0029104821 • Contact: +880 1711-223344</div>
+                  <div className="text-slate-400 print:text-slate-600 tabular-nums text-2xs">BIN: 0029104821 • Contact: +880 1711-223344</div>
                 </div>
 
-                <div className="space-y-1 sm:text-right font-mono print:text-slate-900">
+                <div className="space-y-1 sm:text-right tabular-nums print:text-slate-900">
                   <div>Document No: <strong className="text-blue-600 print:text-slate-900 font-black">{selectedDoc === 'quotation' ? 'Q-2026-0842' : 'INV-2026-1055'}</strong></div>
                   <div>Date: <strong className="print:text-slate-900">{formatDate(new Date(), locale)}</strong></div>
                   <div>Payment Terms: <strong className="print:text-slate-900">Agreed Terms</strong></div>
@@ -796,7 +796,7 @@ export default function DocumentDesignerPage() {
 
               {/* Line Items Table */}
               <div className="overflow-x-auto -mx-1 px-1 print:overflow-visible">
-                <table className="w-full text-left border-collapse border border-slate-300 dark:border-slate-700 print:border-slate-400 text-xs font-mono print:text-slate-900">
+                <table className="w-full text-left border-collapse border border-slate-300 dark:border-slate-700 print:border-slate-400 text-xs tabular-nums print:text-slate-900">
                   <thead className="bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-bold border-b border-slate-300 dark:border-slate-700 print:border-slate-400 print:text-slate-900">
                     <tr>
                       <th className="p-2 border text-center">SL</th>
@@ -810,16 +810,16 @@ export default function DocumentDesignerPage() {
                     <tr>
                       <td className="p-2 border text-center">1</td>
                       <td className="p-2 border font-sans font-bold">PVC Flex Vinyl Banner (10x12 ft, Star Frontlit)</td>
-                      <td className="p-2 border text-center font-mono">120 sqft</td>
-                      <td className="p-2 border text-right font-mono">৳ 150</td>
-                      <td className="p-2 border text-right font-bold font-mono">৳ 18,000</td>
+                      <td className="p-2 border text-center tabular-nums">120 sqft</td>
+                      <td className="p-2 border text-right tabular-nums">৳ 150</td>
+                      <td className="p-2 border text-right font-bold tabular-nums">৳ 18,000</td>
                     </tr>
                     <tr>
                       <td className="p-2 border text-center">2</td>
                       <td className="p-2 border font-sans font-bold">Acrylic 3D LED Backlit Channel Letter Signboard</td>
-                      <td className="p-2 border text-center font-mono">1 Set</td>
-                      <td className="p-2 border text-right font-mono">৳ 27,500</td>
-                      <td className="p-2 border text-right font-bold font-mono">৳ 27,500</td>
+                      <td className="p-2 border text-center tabular-nums">1 Set</td>
+                      <td className="p-2 border text-right tabular-nums">৳ 27,500</td>
+                      <td className="p-2 border text-right font-bold tabular-nums">৳ 27,500</td>
                     </tr>
                   </tbody>
                   <tfoot>
@@ -858,7 +858,7 @@ export default function DocumentDesignerPage() {
                 </div>
 
                 <div className="text-center space-y-2 w-full sm:w-auto">
-                  <div className="font-mono text-slate-400 print:text-slate-600 text-2xs">{activeTpl.authorized_signatory_title}</div>
+                  <div className="tabular-nums text-slate-400 print:text-slate-600 text-2xs">{activeTpl.authorized_signatory_title}</div>
                   <div className="border-t border-slate-400 w-full sm:w-60 pt-1 font-bold print:text-slate-900">
                     {langMode === 'bengali' ? 'অনুমোদিত স্বাক্ষর ও সিল' : 'Authorized Signature & Seal'}
                   </div>
@@ -873,11 +873,11 @@ export default function DocumentDesignerPage() {
               <div className="p-3 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-slate-400 w-16">Subject:</span>
-                  <span className="font-bold text-slate-900 dark:text-white font-mono">{liveSubject}</span>
+                  <span className="font-bold text-slate-900 dark:text-white tabular-nums">{liveSubject}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-slate-400 w-16">Attachment:</span>
-                  <Badge variant="outline" className="text-2xs bg-red-50 text-red-700 border-red-200 font-mono">
+                  <Badge variant="outline" className="text-2xs bg-red-50 text-red-700 border-red-200 tabular-nums">
                     <FileText className="h-3 w-3 mr-1" />
                     {selectedDoc === 'quotation' ? 'Quotation-Q-2026-0842.pdf' : 'Invoice-INV-2026-1055.pdf'} (A4 PDF)
                   </Badge>
@@ -923,7 +923,7 @@ export default function DocumentDesignerPage() {
                     Click any tag to copy it. All variables are reliably provided and populated by the backend.
                   </p>
                 </div>
-                <Badge variant="outline" className="text-xs font-mono">
+                <Badge variant="outline" className="text-xs tabular-nums">
                   {activeDocVariables.length} Variables Available
                 </Badge>
               </div>
@@ -932,18 +932,18 @@ export default function DocumentDesignerPage() {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-2xs">
-                      <th className="pb-2 font-mono">Variable Tag</th>
+                      <th className="pb-2 tabular-nums">Variable Tag</th>
                       <th className="pb-2">Name</th>
                       <th className="pb-2">Category</th>
                       <th className="pb-2">Description</th>
-                      <th className="pb-2 font-mono">Example / Live Value</th>
+                      <th className="pb-2 tabular-nums">Example / Live Value</th>
                       <th className="pb-2 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                     {activeDocVariables.map((v) => (
                       <tr key={v.tag} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                        <td className="py-2.5 font-mono font-bold text-blue-600 dark:text-blue-400">
+                        <td className="py-2.5 tabular-nums font-bold text-blue-600 dark:text-blue-400">
                           {v.tag}
                         </td>
                         <td className="py-2.5 font-semibold text-slate-900 dark:text-slate-100">
@@ -957,7 +957,7 @@ export default function DocumentDesignerPage() {
                         <td className="py-2.5 text-slate-600 dark:text-slate-400">
                           {v.description}
                         </td>
-                        <td className="py-2.5 font-mono text-slate-700 dark:text-slate-300">
+                        <td className="py-2.5 tabular-nums text-slate-700 dark:text-slate-300">
                           {sampleVariables[v.tag.replace(/[{}]/g, '')] || v.example}
                         </td>
                         <td className="py-2.5 text-right">

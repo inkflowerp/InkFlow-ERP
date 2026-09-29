@@ -362,7 +362,7 @@ export default function PlatformHealthPage() {
                 {summary?.overall_system_status || 'HEALTHY'}
               </span>
               {lastPingTime && (
-                <span className="text-2xs font-mono text-slate-400">
+                <span className="text-2xs tabular-nums text-slate-400">
                   Last verified: {lastPingTime}
                 </span>
               )}
@@ -466,7 +466,7 @@ export default function PlatformHealthPage() {
               Live health, latency, and heartbeat status of critical cloud components.
             </p>
           </div>
-          <span className="text-2xs font-mono text-slate-400">
+          <span className="text-2xs tabular-nums text-slate-400">
             6 of 6 Core Nodes Online
           </span>
         </div>
@@ -494,7 +494,7 @@ export default function PlatformHealthPage() {
                     <h4 className="font-bold text-white text-xs">{sub.name}</h4>
                     <p className="text-2xs text-slate-400 mt-0.5">{sub.desc}</p>
                     <div className="flex items-center gap-2 mt-2 text-2xs text-slate-400">
-                      <span>Latency: <strong className="text-slate-200 font-mono">{sub.latency}</strong></span>
+                      <span>Latency: <strong className="text-slate-200 tabular-nums">{sub.latency}</strong></span>
                     </div>
                   </div>
                 </div>
@@ -521,7 +521,7 @@ export default function PlatformHealthPage() {
             <HardDrive className="h-4 w-4 text-cyan-400" />
             <span>Multi-Tenant Cloud Media &amp; Proof Storage (BD-Central Bucket)</span>
           </div>
-          <span className="font-mono text-xs text-slate-300">
+          <span className="tabular-nums text-xs text-slate-300">
             {storageUsedGb > 0 ? `${storageUsedGb.toFixed(2)} GB` : '0 GB'} / {storageTotalGb} GB Tier Quota ({storagePct}%)
           </span>
         </div>
@@ -562,7 +562,7 @@ export default function PlatformHealthPage() {
             <div>
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <span>Active Telemetry Incidents &amp; Alerts</span>
-                <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
                   {filteredEvents.length} Events
                 </span>
               </CardTitle>
@@ -671,10 +671,10 @@ export default function PlatformHealthPage() {
                             >
                               {event.severity}
                             </span>
-                            <span className="font-mono text-xs font-bold text-white">
+                            <span className="tabular-nums text-xs font-bold text-white">
                               {event.service_name}
                             </span>
-                            <span className="font-mono text-2xs text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            <span className="tabular-nums text-2xs text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
                               Category: {event.category}
                             </span>
                             {event.company_name && (
@@ -750,7 +750,7 @@ export default function PlatformHealthPage() {
 
                     {/* Expandable JSON Error Payload */}
                     {isExpanded && event.error_details && (
-                      <div className="mt-3 p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-2xs text-cyan-300 overflow-x-auto relative">
+                      <div className="mt-3 p-3 rounded-xl bg-slate-950 border border-slate-800 tabular-nums text-2xs text-cyan-300 overflow-x-auto relative">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-2xs text-slate-400 uppercase font-semibold">
                             Diagnostic Error Payload

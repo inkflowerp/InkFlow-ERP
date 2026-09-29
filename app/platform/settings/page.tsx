@@ -598,7 +598,7 @@ export default function PlatformSettingsPage() {
                     value={settings.app_logo_url || ''}
                     onChange={(e) => setSettings({ ...settings, app_logo_url: e.target.value })}
                     placeholder="https://example.com/logo.png (or leave empty for SVG mark)"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl flex-1 font-mono"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl flex-1 tabular-nums"
                   />
                   {settings.app_logo_url ? (
                     <div className="relative h-9 w-9 rounded-xl bg-slate-950 border border-slate-800 p-1 flex items-center justify-center shrink-0 overflow-hidden">
@@ -631,7 +631,7 @@ export default function PlatformSettingsPage() {
                     value={settings.favicon_url || ''}
                     onChange={(e) => setSettings({ ...settings, favicon_url: e.target.value })}
                     placeholder="/favicon.ico or https://example.com/favicon.png"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl flex-1 font-mono"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl flex-1 tabular-nums"
                   />
                   <div className="h-9 w-9 rounded-xl bg-slate-950 border border-slate-800 p-1.5 flex items-center justify-center shrink-0">
                     <img
@@ -675,7 +675,7 @@ export default function PlatformSettingsPage() {
                   value={settings.app_domain || ''}
                   onChange={(e) => setSettings({ ...settings, app_domain: e.target.value })}
                   placeholder="e.g. inkflow.com.bd or localhost:3000"
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-slate-500 mt-1 block">
                   Root domain for tenant subdomains (e.g. customer.domain.com), OAuth redirects, and link generation.
@@ -740,7 +740,7 @@ export default function PlatformSettingsPage() {
                     value={settings.support_helpline || ''}
                     onChange={(e) => setSettings({ ...settings, support_helpline: e.target.value })}
                     placeholder="e.g. +880 1819-876543 / +880 1711-234567"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                   />
                   <span className="text-2xs text-slate-500 mt-1 block">
                     Shown in customer support &amp; inquiries.
@@ -754,7 +754,7 @@ export default function PlatformSettingsPage() {
                     value={settings.contact_email || ''}
                     onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })}
                     placeholder="support@printerp.com.bd"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                   />
                   <span className="text-2xs text-slate-500 mt-1 block">
                     Official email address for correspondence.
@@ -767,7 +767,7 @@ export default function PlatformSettingsPage() {
                     value={settings.contact_phone || ''}
                     onChange={(e) => setSettings({ ...settings, contact_phone: e.target.value })}
                     placeholder="+880 1819-876543"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                   />
                   <span className="text-2xs text-slate-500 mt-1 block">
                     Telephone for direct caller desk.
@@ -820,7 +820,7 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, session_timeout_minutes: parseInt(e.target.value) || 60 })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-slate-500 mt-1 block">Valid range: 5 to 1,440 minutes (24 hours).</span>
               </div>
@@ -840,7 +840,7 @@ export default function PlatformSettingsPage() {
                       rate_limit_requests_per_minute: parseInt(e.target.value) || 120,
                     })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-slate-500 mt-1 block">Valid range: 10 to 10,000 req/min.</span>
               </div>
@@ -857,7 +857,7 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, max_export_records: parseInt(e.target.value) || 10000 })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-slate-500 mt-1 block">Cap per single tenant export JSON archive.</span>
               </div>
@@ -916,7 +916,7 @@ export default function PlatformSettingsPage() {
                   <Input
                     value={settings.default_currency}
                     onChange={(e) => setSettings({ ...settings, default_currency: e.target.value })}
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl uppercase font-mono"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl uppercase tabular-nums"
                   />
                 </div>
                 <div>
@@ -930,7 +930,7 @@ export default function PlatformSettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, default_vat_rate_pct: parseFloat(e.target.value) || 15 })
                     }
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                   />
                 </div>
               </div>
@@ -948,7 +948,7 @@ export default function PlatformSettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, default_trial_days: parseInt(e.target.value) || 14 })
                     }
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                   />
                 </div>
                 <div>
@@ -963,7 +963,7 @@ export default function PlatformSettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, backup_retention_days: parseInt(e.target.value) || 90 })
                     }
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                   />
                 </div>
               </div>
@@ -992,7 +992,7 @@ export default function PlatformSettingsPage() {
                     setSettings({ ...settings, incident_alert_webhook: e.target.value })
                   }
                   placeholder="https://hooks.slack.com/services/..."
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-slate-500 mt-1 block">
                   Dispatches automated JSON notifications upon critical service outage or failover event.

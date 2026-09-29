@@ -148,7 +148,7 @@ export function CashClosingView({
             <Lock className="w-5 h-5 text-emerald-400" />
             <div className="text-xs">
               <span className="font-bold block">{tBilingual('Register Locked', 'ক্লোজিং লক করা আছে')}</span>
-              <span className="text-3xs text-slate-400 font-mono">Closed by: {todayClosing.closed_by_name}</span>
+              <span className="text-3xs text-slate-400 tabular-nums">Closed by: {todayClosing.closed_by_name}</span>
             </div>
           </div>
         ) : (
@@ -219,7 +219,7 @@ export function CashClosingView({
             <CardHeader className="p-0 pb-4 border-b border-slate-100 dark:border-slate-800">
               <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between">
                 <span>{tBilingual('Cash Register Breakdown (আজকের ক্যাশ হিসাব)', 'ক্যাশ রেজিস্টার হিসাব')}</span>
-                <span className="font-mono text-xs text-slate-500">{todayStr}</span>
+                <span className="tabular-nums text-xs text-slate-500">{todayStr}</span>
               </CardTitle>
             </CardHeader>
 
@@ -234,7 +234,7 @@ export function CashClosingView({
                     {tBilingual('Carried forward from yesterday', 'পূর্ববর্তী দিনের অবশিষ্ট নগদ')}
                   </span>
                 </div>
-                <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
+                <span className="tabular-nums font-bold text-slate-900 dark:text-white text-sm">
                   ৳{openingCash.toLocaleString()}
                 </span>
               </div>
@@ -249,7 +249,7 @@ export function CashClosingView({
                     {tBilingual('Invoice payments, advances, and spot receipts', 'ইনভয়েস পরিশোধ ও অগ্রিম নগদ')}
                   </span>
                 </div>
-                <span className="font-mono font-bold text-sm">
+                <span className="tabular-nums font-bold text-sm">
                   +৳{cashReceived.toLocaleString()}
                 </span>
               </div>
@@ -264,7 +264,7 @@ export function CashClosingView({
                     {tBilingual('Tea, electricity, transport, emergency items', 'চা-নাস্তা, যাতায়াত ও খুচরা খরচ')}
                   </span>
                 </div>
-                <span className="font-mono font-bold text-sm">
+                <span className="tabular-nums font-bold text-sm">
                   -৳{cashExpenses.toLocaleString()}
                 </span>
               </div>
@@ -279,7 +279,7 @@ export function CashClosingView({
                     {tBilingual('Deposited into bank account or bKash wallet', 'ড্রয়ার থেকে ব্যাংকে জমা')}
                   </span>
                 </div>
-                <span className="font-mono font-bold text-sm">
+                <span className="tabular-nums font-bold text-sm">
                   -৳{cashTransfers.toLocaleString()}
                 </span>
               </div>
@@ -294,7 +294,7 @@ export function CashClosingView({
                     {tBilingual('Opening + Received - Expenses - Transfers', 'ওপেনিং + জমা - খরচ - স্থানান্তর')}
                   </span>
                 </div>
-                <span className="font-mono font-black text-xl text-purple-600 dark:text-purple-400">
+                <span className="tabular-nums font-black text-xl text-purple-600 dark:text-purple-400">
                   ৳{expectedCash.toLocaleString()}
                 </span>
               </div>
@@ -322,7 +322,7 @@ export function CashClosingView({
                 <div className="space-y-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-850 mb-3 border border-slate-200 dark:border-slate-800">
                   {[1000, 500, 200, 100, 50, 20].map((denom) => (
                     <div key={denom} className="flex items-center justify-between text-2xs">
-                      <span className="font-mono font-bold text-slate-600 dark:text-slate-400 w-16">
+                      <span className="tabular-nums font-bold text-slate-600 dark:text-slate-400 w-16">
                         ৳{denom} ×
                       </span>
                       <Input
@@ -330,9 +330,9 @@ export function CashClosingView({
                         min="0"
                         value={notes[denom] || 0}
                         onChange={(e) => handleDenominationChange(denom, parseInt(e.target.value, 10) || 0)}
-                        className="h-7 w-20 text-xs text-center font-mono rounded-lg"
+                        className="h-7 w-20 text-xs text-center tabular-nums rounded-lg"
                       />
-                      <span className="font-mono text-slate-800 dark:text-slate-200 w-20 text-right font-semibold">
+                      <span className="tabular-nums text-slate-800 dark:text-slate-200 w-20 text-right font-semibold">
                         ৳{((notes[denom] || 0) * denom).toLocaleString()}
                       </span>
                     </div>
@@ -347,7 +347,7 @@ export function CashClosingView({
                     onChange={(e) => setCountedCash(e.target.value)}
                     disabled={Boolean(todayClosing)}
                     placeholder="0.00"
-                    className="h-11 pl-8 text-lg font-mono font-black rounded-xl text-slate-900 dark:text-white"
+                    className="h-11 pl-8 text-lg tabular-nums font-black rounded-xl text-slate-900 dark:text-white"
                   />
                 </div>
               )}
@@ -375,7 +375,7 @@ export function CashClosingView({
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xl font-mono font-black block">
+                  <span className="text-xl tabular-nums font-black block">
                     {variance > 0 ? `+৳${variance.toLocaleString()}` : `৳${variance.toLocaleString()}`}
                   </span>
                 </div>
@@ -439,28 +439,28 @@ export function CashClosingView({
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                   {cashClosings.map((c) => (
                     <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                      <td className="p-3 tabular-nums text-slate-600 dark:text-slate-400 whitespace-nowrap">
                         {c.closing_date}
                       </td>
-                      <td className="p-3 font-mono font-medium text-purple-600 dark:text-purple-400">
+                      <td className="p-3 tabular-nums font-medium text-purple-600 dark:text-purple-400">
                         {c.closing_number}
                       </td>
-                      <td className="p-3 text-right font-mono text-slate-600 dark:text-slate-400">
+                      <td className="p-3 text-right tabular-nums text-slate-600 dark:text-slate-400">
                         ৳{Number(c.opening_cash || 0).toLocaleString()}
                       </td>
-                      <td className="p-3 text-right font-mono text-emerald-600">
+                      <td className="p-3 text-right tabular-nums text-emerald-600">
                         +৳{Number(c.cash_inflows || 0).toLocaleString()}
                       </td>
-                      <td className="p-3 text-right font-mono text-rose-600">
+                      <td className="p-3 text-right tabular-nums text-rose-600">
                         -৳{Number(c.cash_outflows || 0).toLocaleString()}
                       </td>
-                      <td className="p-3 text-right font-mono font-bold text-slate-800 dark:text-slate-200">
+                      <td className="p-3 text-right tabular-nums font-bold text-slate-800 dark:text-slate-200">
                         ৳{Number(c.expected_cash || 0).toLocaleString()}
                       </td>
-                      <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                      <td className="p-3 text-right tabular-nums font-bold text-slate-900 dark:text-white">
                         ৳{Number(c.counted_cash || 0).toLocaleString()}
                       </td>
-                      <td className={`p-3 text-right font-mono font-bold ${Math.abs(c.variance) <= 0.01 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      <td className={`p-3 text-right tabular-nums font-bold ${Math.abs(c.variance) <= 0.01 ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {c.variance > 0 ? `+৳${c.variance}` : `৳${c.variance}`}
                       </td>
                       <td className="p-3 text-slate-600 dark:text-slate-400">
@@ -495,7 +495,7 @@ export function CashClosingView({
             <span className="text-3xs uppercase font-semibold text-slate-400 block">
               {tBilingual('Total Days Audited', 'মোট অডিটকৃত দিন')}
             </span>
-            <span className="text-3xl font-black font-mono text-slate-900 dark:text-white mt-1 block">
+            <span className="text-3xl font-black tabular-nums text-slate-900 dark:text-white mt-1 block">
               {cashClosings.length} {tBilingual('Days', 'দিন')}
             </span>
             <p className="text-3xs text-slate-400 mt-1">{tBilingual('100% daily register compliance', 'শতভাগ দৈনিক রেজিস্টার সম্পন্নের রেকর্ড')}</p>
@@ -505,7 +505,7 @@ export function CashClosingView({
             <span className="text-3xs uppercase font-semibold text-slate-400 block">
               {tBilingual('Perfect Closings', 'নিখুঁত মিল')}
             </span>
-            <span className="text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
+            <span className="text-3xl font-black tabular-nums text-emerald-600 dark:text-emerald-400 mt-1 block">
               {cashClosings.filter((c) => Math.abs(c.variance) <= 0.01).length} / {cashClosings.length || 1}
             </span>
             <p className="text-3xs text-emerald-600 mt-1">{tBilingual('Zero variance audit days', 'কোনো অমিল ছাড়া দিন')}</p>
@@ -515,7 +515,7 @@ export function CashClosingView({
             <span className="text-3xs uppercase font-semibold text-slate-400 block">
               {tBilingual('Net Monthly Variance', 'নিট মাসিক অমিল')}
             </span>
-            <span className="text-3xl font-black font-mono text-rose-600 dark:text-rose-400 mt-1 block">
+            <span className="text-3xl font-black tabular-nums text-rose-600 dark:text-rose-400 mt-1 block">
               ৳{cashClosings.reduce((s, c) => s + Number(c.variance || 0), 0).toLocaleString()}
             </span>
             <p className="text-3xs text-slate-400 mt-1">{tBilingual('Cumulative drawer discrepancy', 'মাসিক পুঞ্জীভূত ক্যাশ অমিল')}</p>

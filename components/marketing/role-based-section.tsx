@@ -87,7 +87,7 @@ export function RoleBasedSection() {
               </p>
             </div>
 
-            <span className="text-2xs sm:text-xs font-mono font-bold text-slate-400 bg-slate-900 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-800 shrink-0 self-start sm:self-auto">
+            <span className="text-2xs sm:text-xs tabular-nums font-bold text-slate-400 bg-slate-900 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-800 shrink-0 self-start sm:self-auto">
               Role ID: {current.id.toUpperCase()}
             </span>
           </div>

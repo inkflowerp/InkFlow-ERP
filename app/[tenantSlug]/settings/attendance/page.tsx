@@ -849,7 +849,7 @@ export default function AttendanceSettingsPage() {
                             <button
                               type="button"
                               onClick={() => handleCopy(`${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}`, 'GPS')}
-                              className="font-mono text-slate-800 dark:text-slate-200 font-semibold hover:text-indigo-600 flex items-center gap-1 cursor-pointer"
+                              className="tabular-nums text-slate-800 dark:text-slate-200 font-semibold hover:text-indigo-600 flex items-center gap-1 cursor-pointer"
                               title="Copy Coordinates"
                             >
                               <span>{loc.latitude.toFixed(4)}°, {loc.longitude.toFixed(4)}°</span>
@@ -859,17 +859,17 @@ export default function AttendanceSettingsPage() {
 
                           <div className="flex justify-between text-slate-500 dark:text-slate-400">
                             <span>{tBilingual('Radius Geofence', 'অনুমোদিত ব্যাসার্ধ')}:</span>
-                            <span className="font-semibold text-indigo-600 dark:text-indigo-400 font-mono">{loc.radius_meters}m</span>
+                            <span className="font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums">{loc.radius_meters}m</span>
                           </div>
 
                           <div className="flex justify-between text-slate-500 dark:text-slate-400">
                             <span>{tBilingual('Max Tolerance', 'সর্বোচ্চ নির্ভুলতা')}:</span>
-                            <span className="font-mono text-slate-700 dark:text-slate-300">±{loc.max_accuracy_meters}m</span>
+                            <span className="tabular-nums text-slate-700 dark:text-slate-300">±{loc.max_accuracy_meters}m</span>
                           </div>
 
                           <div className="flex justify-between text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-800">
                             <span>{tBilingual('Token Prefix', 'কিউআর টোকেন')}:</span>
-                            <span className="font-mono text-2xs text-emerald-600 dark:text-emerald-400 font-bold">
+                            <span className="tabular-nums text-2xs text-emerald-600 dark:text-emerald-400 font-bold">
                               {activeToken?.token_prefix || 'ACTIVE'}
                             </span>
                           </div>
@@ -977,11 +977,11 @@ export default function AttendanceSettingsPage() {
                             {activeToken?.is_active ? 'ACTIVE TOKEN' : 'INACTIVE'}
                           </Badge>
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                           Prefix: <strong className="text-indigo-600 dark:text-indigo-300">{activeToken?.token_prefix || 'ACTIVE'}</strong> • Radius: {loc.radius_meters}m • Max Accuracy: ±{loc.max_accuracy_meters}m
                         </p>
                         {activeToken?.created_at && (
-                          <p className="text-2xs text-slate-400 dark:text-slate-500 font-mono">
+                          <p className="text-2xs text-slate-400 dark:text-slate-500 tabular-nums">
                             Last Rotated: {new Date(activeToken.created_at).toLocaleString()}
                           </p>
                         )}
@@ -1199,7 +1199,7 @@ export default function AttendanceSettingsPage() {
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className="text-2xs font-mono bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border-slate-200 dark:border-slate-700"
+                        className="text-2xs tabular-nums bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border-slate-200 dark:border-slate-700"
                       >
                         {log.action_type}
                       </Badge>
@@ -1208,11 +1208,11 @@ export default function AttendanceSettingsPage() {
                         <span className="text-slate-500 dark:text-slate-400">• Location: {log.location_name}</span>
                       )}
                     </div>
-                    <span className="text-slate-500 dark:text-slate-400 text-2xs block font-mono truncate max-w-xl">
+                    <span className="text-slate-500 dark:text-slate-400 text-2xs block tabular-nums truncate max-w-xl">
                       {typeof log.details === 'object' ? JSON.stringify(log.details) : log.details}
                     </span>
                   </div>
-                  <span className="text-2xs text-slate-400 dark:text-slate-500 font-mono shrink-0">
+                  <span className="text-2xs text-slate-400 dark:text-slate-500 tabular-nums shrink-0">
                     {new Date(log.created_at).toLocaleString()}
                   </span>
                 </div>
@@ -1322,7 +1322,7 @@ export default function AttendanceSettingsPage() {
                   value={locLat}
                   onChange={(e) => setLocLat(parseFloat(e.target.value))}
                   placeholder="23.853600"
-                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs h-9 rounded-xl"
+                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white tabular-nums text-xs h-9 rounded-xl"
                   required
                 />
               </div>
@@ -1338,7 +1338,7 @@ export default function AttendanceSettingsPage() {
                   value={locLng}
                   onChange={(e) => setLocLng(parseFloat(e.target.value))}
                   placeholder="90.417400"
-                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs h-9 rounded-xl"
+                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white tabular-nums text-xs h-9 rounded-xl"
                   required
                 />
               </div>
@@ -1350,7 +1350,7 @@ export default function AttendanceSettingsPage() {
             <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
               <div className="flex justify-between items-center">
                 <Label htmlFor="locRadius" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Radius: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">{locRadius}m</strong>
+                  Radius: <strong className="text-indigo-600 dark:text-indigo-400 tabular-nums">{locRadius}m</strong>
                 </Label>
               </div>
               <input
@@ -1371,7 +1371,7 @@ export default function AttendanceSettingsPage() {
             <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
               <div className="flex justify-between items-center">
                 <Label htmlFor="locAcc" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Max Accuracy: <strong className="text-slate-900 dark:text-white font-mono">±{locMaxAccuracy}m</strong>
+                  Max Accuracy: <strong className="text-slate-900 dark:text-white tabular-nums">±{locMaxAccuracy}m</strong>
                 </Label>
               </div>
               <input
@@ -1474,7 +1474,7 @@ export default function AttendanceSettingsPage() {
                 step="0.000001"
                 value={locLat}
                 onChange={(e) => setLocLat(parseFloat(e.target.value))}
-                className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs h-9 rounded-xl"
+                className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white tabular-nums text-xs h-9 rounded-xl"
                 required
               />
             </div>
@@ -1486,7 +1486,7 @@ export default function AttendanceSettingsPage() {
                 step="0.000001"
                 value={locLng}
                 onChange={(e) => setLocLng(parseFloat(e.target.value))}
-                className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs h-9 rounded-xl"
+                className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white tabular-nums text-xs h-9 rounded-xl"
                 required
               />
             </div>
@@ -1495,7 +1495,7 @@ export default function AttendanceSettingsPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
               <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Radius: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">{locRadius}m</strong>
+                Radius: <strong className="text-indigo-600 dark:text-indigo-400 tabular-nums">{locRadius}m</strong>
               </Label>
               <input
                 type="range"
@@ -1510,7 +1510,7 @@ export default function AttendanceSettingsPage() {
 
             <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
               <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Max Accuracy: <strong className="text-slate-900 dark:text-white font-mono">±{locMaxAccuracy}m</strong>
+                Max Accuracy: <strong className="text-slate-900 dark:text-white tabular-nums">±{locMaxAccuracy}m</strong>
               </Label>
               <input
                 type="range"
@@ -1593,19 +1593,19 @@ export default function AttendanceSettingsPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Token Prefix:</span>
-                  <span className="font-mono text-indigo-600 dark:text-indigo-300 font-bold">
+                  <span className="tabular-nums text-indigo-600 dark:text-indigo-300 font-bold">
                     {selectedLocation.active_qr_token?.token_prefix || 'ACTIVE'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Geofence Center:</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">
+                  <span className="tabular-nums text-slate-800 dark:text-slate-200">
                     {selectedLocation.latitude.toFixed(6)}°N, {selectedLocation.longitude.toFixed(6)}°E
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Radius & Tolerance:</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">
+                  <span className="tabular-nums text-slate-800 dark:text-slate-200">
                     {selectedLocation.radius_meters}m (Max: ±{selectedLocation.max_accuracy_meters}m)
                   </span>
                 </div>
@@ -1796,7 +1796,7 @@ export default function AttendanceSettingsPage() {
             </div>
           </div>
 
-          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs text-slate-600 dark:text-slate-400 font-mono border border-slate-200 dark:border-slate-800">
+          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs text-slate-600 dark:text-slate-400 tabular-nums border border-slate-200 dark:border-slate-800">
             Target Location: <strong className="text-slate-900 dark:text-white">{locationToDelete?.name}</strong> • Prefix:{' '}
             <strong className="text-indigo-600 dark:text-indigo-300">
               {locationToDelete?.active_qr_token?.token_prefix || 'ACTIVE'}

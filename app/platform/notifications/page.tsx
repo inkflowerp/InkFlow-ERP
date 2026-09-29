@@ -666,7 +666,7 @@ export default function PlatformNotificationsPage() {
 
                           {/* Target Audience Tag */}
                           {item.target_audience && (
-                            <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded-full bg-indigo-950/40 text-indigo-300 border border-indigo-800/40 flex items-center gap-1">
+                            <span className="text-2xs tabular-nums font-medium px-2 py-0.5 rounded-full bg-indigo-950/40 text-indigo-300 border border-indigo-800/40 flex items-center gap-1">
                               <Users className="h-2.5 w-2.5" />
                               {item.target_audience === 'all_tenants'
                                 ? 'All Tenants'
@@ -853,7 +853,7 @@ export default function PlatformNotificationsPage() {
                     placeholder="Enter UUID of target company"
                     value={broadcastForm.company_id}
                     onChange={(e) => setBroadcastForm({ ...broadcastForm, company_id: e.target.value })}
-                    className="bg-slate-950 border-slate-800 text-xs text-white font-mono"
+                    className="bg-slate-950 border-slate-800 text-xs text-white tabular-nums"
                   />
                 </div>
               )}

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import type { ProductCategoryRecord, CreateCategoryInput, UpdateCategoryInput } from '@/types/category.types'
 import { createCategoryAction, updateCategoryAction } from '@/actions/category.actions'
+import { Button } from '@/components/ui/button'
 
 interface CategoryModalProps {
   isOpen: boolean
@@ -271,7 +272,7 @@ export function CategoryModal({
 
           {/* Visual Hierarchy Preview if parent selected */}
           {selectedParent && name && (
-            <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/20 px-3.5 py-2 text-xs text-cyan-300 font-mono flex items-center gap-2">
+            <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/20 px-3.5 py-2 text-xs text-cyan-300 tabular-nums flex items-center gap-2">
               <span className="text-slate-400">{selectedParent.name}</span>
               <span className="text-cyan-500 font-bold">└──</span>
               <span className="text-white font-bold">{name}</span>
@@ -401,19 +402,21 @@ export function CategoryModal({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
-            <button
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={onClose}
               disabled={loading}
-              className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              size="sm"
               disabled={loading}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-cyan-500/20 hover:from-cyan-500 hover:to-blue-500 transition-all disabled:opacity-50"
+              className="gap-2"
             >
               {loading ? (
                 <>
@@ -426,7 +429,7 @@ export function CategoryModal({
                   <span>{editingCategory ? 'Update Category' : 'Create Category'}</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

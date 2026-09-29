@@ -240,7 +240,7 @@ export default function DocumentNumberingSettingsPage() {
                           value={seq.prefix}
                           onChange={(e) => handlePrefixChange(seq.doc_type, e.target.value)}
                           maxLength={6}
-                          className="font-mono text-xs font-bold uppercase h-8"
+                          className="tabular-nums text-xs font-bold uppercase h-8"
                         />
                       </td>
 
@@ -248,7 +248,7 @@ export default function DocumentNumberingSettingsPage() {
                         <select
                           value={seq.padding}
                           onChange={(e) => handlePaddingChange(seq.doc_type, Number(e.target.value))}
-                          className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono px-2"
+                          className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs tabular-nums px-2"
                         >
                           <option value={4}>4 digits (0001)</option>
                           <option value={5}>5 digits (00001)</option>
@@ -259,7 +259,7 @@ export default function DocumentNumberingSettingsPage() {
 
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-xs px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
+                          <span className="tabular-nums font-bold text-xs px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
                             {formatPreview(seq)}
                           </span>
                           <Badge variant="outline" className="text-2xs">
@@ -285,7 +285,7 @@ export default function DocumentNumberingSettingsPage() {
                       <div className="text-xs text-slate-500">{seq.nameBn}</div>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      <span className="tabular-nums font-bold text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                         {formatPreview(seq)}
                       </span>
                     </div>
@@ -298,7 +298,7 @@ export default function DocumentNumberingSettingsPage() {
                         value={seq.prefix}
                         onChange={(e) => handlePrefixChange(seq.doc_type, e.target.value)}
                         maxLength={6}
-                        className="font-mono text-xs font-bold uppercase h-9"
+                        className="tabular-nums text-xs font-bold uppercase h-9"
                       />
                     </div>
 
@@ -307,7 +307,7 @@ export default function DocumentNumberingSettingsPage() {
                       <select
                         value={seq.padding}
                         onChange={(e) => handlePaddingChange(seq.doc_type, Number(e.target.value))}
-                        className="h-9 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono px-2"
+                        className="h-9 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs tabular-nums px-2"
                       >
                         <option value={4}>4 digits (0001)</option>
                         <option value={5}>5 digits (00001)</option>

@@ -458,7 +458,7 @@ export function OwnerDashboard({
                 </div>
                 <Badge
                   variant="outline"
-                  className={`text-xs font-mono font-bold ${
+                  className={`text-xs tabular-nums font-bold ${
                     safeData.attentionItems.length > 0
                       ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
                       : 'bg-emerald-50 text-emerald-800 border-emerald-300'
@@ -507,7 +507,7 @@ export function OwnerDashboard({
                           </p>
 
                           {item.recordCode && (
-                            <div className="pl-4 flex items-center gap-2 text-2xs text-slate-500 font-mono">
+                            <div className="pl-4 flex items-center gap-2 text-2xs text-slate-500 tabular-nums">
                               <span className="font-bold text-blue-600">{item.recordCode}</span>
                               {item.status && <span>• {item.status}</span>}
                               {item.ageOrDeadline && <span>• {item.ageOrDeadline}</span>}
@@ -563,7 +563,7 @@ export function OwnerDashboard({
 
             <div className="flex items-center gap-2 bg-white/10 px-3.5 py-1.5 rounded-full border border-white/15">
               <span className="text-xs text-blue-200 font-semibold">{tBilingual('Total Liquid Cash:', 'মোট ক্যাশ ব্যালেন্স:')}</span>
-              <span className="text-base font-black font-mono text-emerald-300">
+              <span className="text-base font-black tabular-nums text-emerald-300">
                 {formatBDT(safeData.liquiditySummary.totalLiquidAssets)}
               </span>
             </div>
@@ -577,9 +577,9 @@ export function OwnerDashboard({
                   <Wallet className="h-3.5 w-3.5" />
                   {tBilingual('Cash in Drawer', 'ক্যাশ ড্রয়ার')}
                 </span>
-                <span className="text-2xs font-mono opacity-80">1001</span>
+                <span className="text-2xs tabular-nums opacity-80">1001</span>
               </div>
-              <div className="text-lg font-black font-mono text-white">
+              <div className="text-lg font-black tabular-nums text-white">
                 {formatBDT(safeData.liquiditySummary.cashInHand)}
               </div>
               <div className="text-2xs text-emerald-400 font-semibold">
@@ -594,9 +594,9 @@ export function OwnerDashboard({
                   <Smartphone className="h-3.5 w-3.5" />
                   {tBilingual('bKash / Nagad MFS', 'বিকাশ / নগদ')}
                 </span>
-                <span className="text-2xs font-mono opacity-80">1003</span>
+                <span className="text-2xs tabular-nums opacity-80">1003</span>
               </div>
-              <div className="text-lg font-black font-mono text-white">
+              <div className="text-lg font-black tabular-nums text-white">
                 {formatBDT(safeData.liquiditySummary.mfsBalance)}
               </div>
               <div className="text-2xs text-pink-300 font-semibold">
@@ -611,9 +611,9 @@ export function OwnerDashboard({
                   <Landmark className="h-3.5 w-3.5" />
                   {tBilingual('Bank Accounts', 'ব্যাংক একাউন্ট')}
                 </span>
-                <span className="text-2xs font-mono opacity-80">1002</span>
+                <span className="text-2xs tabular-nums opacity-80">1002</span>
               </div>
-              <div className="text-lg font-black font-mono text-white">
+              <div className="text-lg font-black tabular-nums text-white">
                 {formatBDT(safeData.liquiditySummary.bankBalance)}
               </div>
               <div className="text-2xs text-cyan-300 font-semibold">
@@ -628,11 +628,11 @@ export function OwnerDashboard({
                   <TrendingUp className="h-3.5 w-3.5" />
                   {tBilingual('Today Net Flow', 'আজকের নিট জমা')}
                 </span>
-                <span className="text-2xs font-mono font-bold text-emerald-300">
+                <span className="text-2xs tabular-nums font-bold text-emerald-300">
                   +{formatBDT(safeData.liquiditySummary.todayCollection)}
                 </span>
               </div>
-              <div className="text-lg font-black font-mono text-white">
+              <div className="text-lg font-black tabular-nums text-white">
                 {formatBDT(safeData.liquiditySummary.todayNetCashFlow)}
               </div>
               <div className="flex items-center justify-between text-2xs font-medium pt-0.5">
@@ -659,7 +659,7 @@ export function OwnerDashboard({
               {tBilingual('Business Today (Core Financials)', 'আজকের ব্যবসায়িক সারসংক্ষেপ')}
             </h2>
           </div>
-          <span className="text-2xs text-slate-400 font-mono">
+          <span className="text-2xs text-slate-400 tabular-nums">
             {tBilingual('Timezone: Asia/Dhaka (UTC+6)', 'বাংলাদেশ সময়')}
           </span>
         </div>
@@ -891,7 +891,7 @@ export function OwnerDashboard({
               </Badge>
             </div>
 
-            <div className="pt-2 border-t border-blue-100 dark:border-blue-900/80 flex items-center justify-between text-xs font-mono">
+            <div className="pt-2 border-t border-blue-100 dark:border-blue-900/80 flex items-center justify-between text-xs tabular-nums">
               <span className="text-slate-600 dark:text-slate-400">
                 {tBilingual('Done Today:', 'আজকে সম্পন্ন:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.digital.completedTodayCount}</strong>
               </span>
@@ -933,7 +933,7 @@ export function OwnerDashboard({
               </Badge>
             </div>
 
-            <div className="pt-2 border-t border-purple-100 dark:border-purple-900/80 flex items-center justify-between text-xs font-mono">
+            <div className="pt-2 border-t border-purple-100 dark:border-purple-900/80 flex items-center justify-between text-xs tabular-nums">
               <span className="text-slate-600 dark:text-slate-400">
                 {tBilingual('Plates / CTP:', 'প্লেট / সিটিপি:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.offset.platesPending}</strong>
               </span>
@@ -975,7 +975,7 @@ export function OwnerDashboard({
               </Badge>
             </div>
 
-            <div className="pt-2 border-t border-amber-100 dark:border-amber-900/80 flex items-center justify-between text-xs font-mono">
+            <div className="pt-2 border-t border-amber-100 dark:border-amber-900/80 flex items-center justify-between text-xs tabular-nums">
               <span className="text-slate-600 dark:text-slate-400">
                 {tBilingual('Volume:', 'সাইজ:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.signage.totalSqFt} sft</strong>
               </span>
@@ -1025,12 +1025,12 @@ export function OwnerDashboard({
               >
                 <div className="min-w-0 flex-1">
                   <div className="font-bold text-slate-900 dark:text-slate-100 truncate">{mat.name}</div>
-                  <div className="text-2xs text-slate-500 font-mono">
+                  <div className="text-2xs text-slate-500 tabular-nums">
                     SKU: {mat.sku} • Min: {mat.minStockLevel} {mat.unit}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200 font-mono text-2xs py-0.5">
+                  <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200 tabular-nums text-2xs py-0.5">
                     {mat.currentStock} {mat.unit} left
                   </Badge>
                 </div>
@@ -1052,7 +1052,7 @@ export function OwnerDashboard({
                 <CardTitle className="text-base font-bold bangla-text">
                   {tBilingual('Production Floor & Machine Runs', 'আজকের প্রোডাকশন ও মেশিন ফ্লোর')}
                 </CardTitle>
-                <Badge variant="outline" className="text-xs font-mono font-bold bg-purple-50 text-purple-700 border-purple-200">
+                <Badge variant="outline" className="text-xs tabular-nums font-bold bg-purple-50 text-purple-700 border-purple-200">
                   {safeData.productionSummary.activeCount} {tBilingual('Active', 'চলতি')}
                 </Badge>
               </div>
@@ -1120,7 +1120,7 @@ export function OwnerDashboard({
                   >
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
+                        <span className="tabular-nums text-xs font-bold text-blue-600 dark:text-blue-400">
                           {job.jobNumber}
                         </span>
                         <div className="flex items-center gap-1">
@@ -1210,7 +1210,7 @@ export function OwnerDashboard({
                     className="p-3 bg-slate-50/70 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
                   >
                     <div className="space-y-0.5 min-w-0">
-                      <div className="flex items-center gap-1.5 font-mono font-bold text-blue-600">
+                      <div className="flex items-center gap-1.5 tabular-nums font-bold text-blue-600">
                         <span>{del.challanNumber}</span>
                         {del.isDelayed && (
                           <Badge className="bg-rose-600 text-white text-2xs py-0 px-1 font-sans">
@@ -1276,9 +1276,9 @@ export function OwnerDashboard({
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-900 dark:text-slate-100 truncate">{item.customerName}</span>
-                        <span className="font-mono text-2xs text-blue-600">#{item.invoiceNumber}</span>
+                        <span className="tabular-nums text-2xs text-blue-600">#{item.invoiceNumber}</span>
                       </div>
-                      <div className="flex items-center gap-2 font-mono text-2xs">
+                      <div className="flex items-center gap-2 tabular-nums text-2xs">
                         <span className="font-bold text-rose-600 text-sm">{formatBDT(item.dueAmount)}</span>
                         {item.daysOverdue > 0 && (
                           <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200 text-2xs py-0">
@@ -1365,7 +1365,7 @@ export function OwnerDashboard({
                 <div className="text-2xs text-slate-500 font-semibold bangla-text">
                   {tBilingual(stage.labelEn, stage.labelBn)}
                 </div>
-                <div className="text-lg font-black text-slate-900 dark:text-slate-100 font-mono">
+                <div className="text-lg font-black text-slate-900 dark:text-slate-100 tabular-nums">
                   {num(stage.count)}
                 </div>
               </div>
@@ -1441,7 +1441,7 @@ export function OwnerDashboard({
           description={`${reminderItem.customerName} • Invoice #${reminderItem.invoiceNumber} (${formatBDT(reminderItem.dueAmount)})`}
         >
           <div className="space-y-4 pt-2">
-            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs font-mono border space-y-1">
+            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs tabular-nums border space-y-1">
               <div className="text-slate-500 font-sans">{tBilingual('Message Preview:', 'বার্তা প্রিভিউ:')}</div>
               <div className="text-slate-800 dark:text-slate-200 whitespace-pre-line">
                 {`আসসালামু আলাইকুম / আদাব ${reminderItem.customerName},\n${company?.name || 'প্রিন্টিং প্রেস'} থেকে আপনার ইনভয়েস #${reminderItem.invoiceNumber}-এর বকেয়া বিল ${formatBDT(reminderItem.dueAmount)} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\nবিল পরিশোধের তারিখ ছিল: ${reminderItem.dueDate} (${reminderItem.daysOverdue} দিন অতিবাহিত)।\nবিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে ট্রানজেকশন আইডি আমাদের অবহিত করুন। ধন্যবাদ!`}

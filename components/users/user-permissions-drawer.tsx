@@ -372,7 +372,7 @@ export function UserPermissionsDrawer({
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/90 shrink-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-sky-600 to-indigo-700 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                <div className="h-11 w-11 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-base shadow-xs">
                   {(user.profile?.full_name || user.invited_email || 'U')[0].toUpperCase()}
                 </div>
                 <div>
@@ -790,7 +790,7 @@ export function UserPermissionsDrawer({
                               <span className="font-semibold text-xs text-slate-900 dark:text-white">
                                 {b.name}
                               </span>
-                              <Badge variant="outline" className="text-2xs font-mono py-0 px-1.5">
+                              <Badge variant="outline" className="text-2xs tabular-nums py-0 px-1.5">
                                 {b.code}
                               </Badge>
                               {isPrimary && (
@@ -1150,14 +1150,14 @@ export function UserPermissionsDrawer({
                   <span>Actor: <strong className="text-slate-700 dark:text-slate-300">{log.user_email || 'System'}</strong></span>
                   <span>{formatDateTime(log.timestamp || log.created_at)}</span>
                 </div>
-                <div className="font-semibold text-slate-900 dark:text-white font-mono">
+                <div className="font-semibold text-slate-900 dark:text-white tabular-nums">
                   {log.action}
                 </div>
                 {log.description && (
                   <p className="text-slate-600 dark:text-slate-300 text-2xs">{log.description}</p>
                 )}
                 {(log.previous_value || log.new_value) && (
-                  <pre className="text-2xs bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto text-slate-300 font-mono">
+                  <pre className="text-2xs bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto text-slate-300 tabular-nums">
                     {JSON.stringify({ previous: log.previous_value, next: log.new_value }, null, 2)}
                   </pre>
                 )}

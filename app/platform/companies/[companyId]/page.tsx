@@ -166,7 +166,7 @@ export default function Company360Page() {
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1 className="text-2xl font-black text-white">{company.name}</h1>
               <span className="text-xs text-slate-400 font-medium">({company.name_bn})</span>
-              <span className="text-2xs font-mono uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="text-2xs tabular-nums uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 {company.plan}
               </span>
               <span
@@ -193,7 +193,7 @@ export default function Company360Page() {
                 {company.owner_phone}
               </span>
               <span>•</span>
-              <span className="font-mono text-indigo-400">{company.slug}.printerp.com.bd</span>
+              <span className="tabular-nums text-indigo-400">{company.slug}.printerp.com.bd</span>
             </div>
           </div>
 
@@ -359,7 +359,7 @@ export default function Company360Page() {
               <Icon className="h-3.5 w-3.5" />
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="text-2xs px-1.5 py-0.2 rounded-full bg-black/30 font-mono">
+                <span className="text-2xs px-1.5 py-0.2 rounded-full bg-black/30 tabular-nums">
                   {tab.count}
                 </span>
               )}
@@ -386,7 +386,7 @@ export default function Company360Page() {
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span className="text-slate-500">Tenant Slug:</span>
-                <span className="font-mono text-indigo-400">{company.slug}</span>
+                <span className="tabular-nums text-indigo-400">{company.slug}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span className="text-slate-500">Primary Printing Hub:</span>
@@ -398,7 +398,7 @@ export default function Company360Page() {
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Account Created:</span>
-                <span className="font-mono text-slate-300">{formatDate(company.created_at)}</span>
+                <span className="tabular-nums text-slate-300">{formatDate(company.created_at)}</span>
               </div>
             </CardContent>
           </Card>
@@ -414,11 +414,11 @@ export default function Company360Page() {
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span className="text-slate-500">Email Address:</span>
-                <span className="font-mono text-indigo-300">{company.owner_email}</span>
+                <span className="tabular-nums text-indigo-300">{company.owner_email}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span className="text-slate-500">Mobile Number:</span>
-                <span className="font-mono text-emerald-400">{company.owner_phone}</span>
+                <span className="tabular-nums text-emerald-400">{company.owner_phone}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span className="text-slate-500">Last Meaningful Activity:</span>
@@ -426,7 +426,7 @@ export default function Company360Page() {
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Activity Timestamp:</span>
-                <span className="font-mono text-slate-400">{company.last_activity}</span>
+                <span className="tabular-nums text-slate-400">{company.last_activity}</span>
               </div>
             </CardContent>
           </Card>
@@ -456,7 +456,7 @@ export default function Company360Page() {
                 {data.users.map((u) => (
                   <tr key={u.id}>
                     <td className="py-3 px-4 font-bold text-white">{u.full_name}</td>
-                    <td className="py-3 px-4 font-mono text-slate-400">{u.email}</td>
+                    <td className="py-3 px-4 tabular-nums text-slate-400">{u.email}</td>
                     <td className="py-3 px-4">
                       <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 font-semibold border border-indigo-500/20">
                         {u.role}
@@ -469,7 +469,7 @@ export default function Company360Page() {
                         <span className="text-slate-500">Disabled</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 font-mono text-slate-400">{u.last_login_at || 'Never'}</td>
+                    <td className="py-3 px-4 tabular-nums text-slate-400">{u.last_login_at || 'Never'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -497,7 +497,7 @@ export default function Company360Page() {
               </div>
               <div className="text-slate-400 flex items-center gap-1.5">
                 <Phone className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                <span className="font-mono text-slate-300">{br.phone}</span>
+                <span className="tabular-nums text-slate-300">{br.phone}</span>
               </div>
             </Card>
           ))}
@@ -562,7 +562,7 @@ export default function Company360Page() {
               </div>
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                 <div className="text-slate-500">Renewal Date:</div>
-                <div className="font-mono text-white font-bold">{formatDate(subscription.current_period_end)}</div>
+                <div className="tabular-nums text-white font-bold">{formatDate(subscription.current_period_end)}</div>
               </div>
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                 <div className="text-slate-500">Payment Method:</div>
@@ -584,7 +584,7 @@ export default function Company360Page() {
               <div key={f.flag_id} className="p-3.5 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-white">{f.name}</div>
-                  <div className="text-2xs text-slate-400 font-mono">{f.key}</div>
+                  <div className="text-2xs text-slate-400 tabular-nums">{f.key}</div>
                   {f.notes && <div className="text-2xs text-indigo-400 mt-0.5">Note: {f.notes}</div>}
                 </div>
                 <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>
@@ -609,7 +609,7 @@ export default function Company360Page() {
                   <div className="font-bold text-white">{a.description}</div>
                   <div className="text-2xs text-slate-400">By {a.actor_email}</div>
                 </div>
-                <span className="font-mono text-slate-400">{a.created_at}</span>
+                <span className="tabular-nums text-slate-400">{a.created_at}</span>
               </div>
             ))}
           </CardContent>
@@ -664,7 +664,7 @@ export default function Company360Page() {
                   <div className="text-2xs text-slate-400">Officer: {s.platform_user_email}</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-mono text-slate-300">{formatDate(s.started_at)}</div>
+                  <div className="tabular-nums text-slate-300">{formatDate(s.started_at)}</div>
                   <div className="text-2xs text-slate-500">{s.duration_minutes} mins duration</div>
                 </div>
               </div>
@@ -690,7 +690,7 @@ export default function Company360Page() {
             <div className="space-y-2 text-xs">
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
                 <span className="text-slate-400">Overall Health Score:</span>
-                <span className="font-bold font-mono text-lg text-white">{health.score} / 100</span>
+                <span className="font-bold tabular-nums text-lg text-white">{health.score} / 100</span>
               </div>
 
               <div className="space-y-1.5 pt-2">

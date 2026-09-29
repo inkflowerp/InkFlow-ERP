@@ -189,7 +189,7 @@ export function MyWorkforceHub() {
 
             <div className="flex items-center justify-center md:justify-end gap-2">
               {todayAttendance?.check_in_time ? (
-                <Badge className="bg-emerald-500 text-white font-mono text-xs px-2.5 py-1">
+                <Badge className="bg-emerald-500 text-white tabular-nums text-xs px-2.5 py-1">
                   IN: {todayAttendance.check_in_time}
                 </Badge>
               ) : (
@@ -199,7 +199,7 @@ export function MyWorkforceHub() {
               )}
 
               {todayAttendance?.check_out_time && (
-                <Badge className="bg-blue-600 text-white font-mono text-xs px-2.5 py-1">
+                <Badge className="bg-blue-600 text-white tabular-nums text-xs px-2.5 py-1">
                   OUT: {todayAttendance.check_out_time}
                 </Badge>
               )}
@@ -251,7 +251,7 @@ export function MyWorkforceHub() {
               <span className="font-semibold">{tBilingual('This Month Attendance', 'চলতি মাসের হাজিরা')}</span>
               <Calendar className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900 dark:text-slate-100">
+            <div className="text-2xl font-black tabular-nums text-slate-900 dark:text-slate-100">
               {presentDaysCount} <span className="text-xs font-normal text-slate-500">/ {myMonthAttendances.length || 26} {tBilingual('Days', 'দিন')}</span>
             </div>
             <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
@@ -259,7 +259,7 @@ export function MyWorkforceHub() {
                 {lateDaysCount} {tBilingual('Late Arrivals', 'দিন লেট')}
               </span>
               {totalLateMinutes > 0 && (
-                <span className="text-rose-600 dark:text-rose-400 font-mono text-xs font-semibold">
+                <span className="text-rose-600 dark:text-rose-400 tabular-nums text-xs font-semibold">
                   {totalLateMinutes}m {tBilingual('total', 'মোট')}
                 </span>
               )}
@@ -274,12 +274,12 @@ export function MyWorkforceHub() {
               <span className="font-semibold">{tBilingual('Approved Overtime (OT)', 'অনুমোদিত ওভারটাইম')}</span>
               <Clock3 className="h-4 w-4 text-emerald-600" />
             </div>
-            <div className="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-400">
+            <div className="text-2xl font-black tabular-nums text-emerald-700 dark:text-emerald-400">
               {approvedMonthOtHours} <span className="text-xs font-normal text-slate-500">Hours</span>
             </div>
             <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
               <span className="text-slate-500">Rate: ৳{otHourlyRate}/hr</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                 +{formatBDT(totalOtEarnings)}
               </span>
             </div>
@@ -293,7 +293,7 @@ export function MyWorkforceHub() {
               <span className="font-semibold">{tBilingual('Leave Balance', 'ছুটির ব্যালেন্স')}</span>
               <CalendarRange className="h-4 w-4 text-purple-600" />
             </div>
-            <div className="text-2xl font-black font-mono text-purple-700 dark:text-purple-400">
+            <div className="text-2xl font-black tabular-nums text-purple-700 dark:text-purple-400">
               {remainingLeaves} <span className="text-xs font-normal text-slate-500">/ {allowedLeaves} {tBilingual('Left', 'বাকি')}</span>
             </div>
             <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
@@ -316,7 +316,7 @@ export function MyWorkforceHub() {
               <span className="font-semibold">{tBilingual('Estimated Net Salary', 'আনুমানিক নিট বেতন')}</span>
               <Wallet className="h-4 w-4 text-indigo-600" />
             </div>
-            <div className="text-2xl font-black font-mono text-indigo-700 dark:text-indigo-400">
+            <div className="text-2xl font-black tabular-nums text-indigo-700 dark:text-indigo-400">
               {formatBDT(salaryStructure.netPayable)}
             </div>
             <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
@@ -412,7 +412,7 @@ export function MyWorkforceHub() {
                 {tBilingual('Showing records for the current calendar month', 'চলতি মাসের প্রতিদিনের উপস্থিতি ও লেট বিবরণ')}
               </p>
             </div>
-            <Badge variant="outline" className="text-xs font-mono">
+            <Badge variant="outline" className="text-xs tabular-nums">
               {myAttendances.length} {tBilingual('Logs', 'টি লগ')}
             </Badge>
           </CardHeader>
@@ -440,7 +440,7 @@ export function MyWorkforceHub() {
                       const isLate = att.status === 'late' || (att.late_minutes && att.late_minutes > 0)
                       return (
                         <tr key={att.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                          <td className="px-4 py-3 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                          <td className="px-4 py-3 tabular-nums font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                             {formatDate(att.attendance_date)}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
@@ -458,23 +458,23 @@ export function MyWorkforceHub() {
                               {att.status}
                             </Badge>
                           </td>
-                          <td className="px-4 py-3 font-mono text-slate-700 dark:text-slate-300">
+                          <td className="px-4 py-3 tabular-nums text-slate-700 dark:text-slate-300">
                             {att.check_in_time || '—'}
                           </td>
-                          <td className="px-4 py-3 font-mono text-slate-700 dark:text-slate-300">
+                          <td className="px-4 py-3 tabular-nums text-slate-700 dark:text-slate-300">
                             {att.check_out_time || '—'}
                           </td>
-                          <td className="px-4 py-3 text-right font-mono text-slate-900 dark:text-slate-100">
+                          <td className="px-4 py-3 text-right tabular-nums text-slate-900 dark:text-slate-100">
                             {att.worked_duration_formatted || (att.worked_minutes ? `${Math.floor(att.worked_minutes / 60)}h ${att.worked_minutes % 60}m` : '—')}
                           </td>
-                          <td className="px-4 py-3 text-right font-mono">
+                          <td className="px-4 py-3 text-right tabular-nums">
                             {isLate ? (
                               <span className="font-bold text-rose-600 dark:text-rose-400">+{att.late_minutes}m</span>
                             ) : (
                               <span className="text-slate-400">0m</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-right font-mono">
+                          <td className="px-4 py-3 text-right tabular-nums">
                             {(att.approved_ot_minutes || att.potential_ot_minutes || 0) > 0 ? (
                               <span className="font-bold text-emerald-600 dark:text-emerald-400">
                                 {Math.round(((att.approved_ot_minutes || att.potential_ot_minutes || 0) / 60) * 10) / 10}h
@@ -506,7 +506,7 @@ export function MyWorkforceHub() {
                 {tBilingual(`Calculated at base hourly rate ৳${otHourlyRate}/hour`, `ঘণ্টাপ্রতি ওভারটাইম রেট ৳${otHourlyRate} অনুযায়ী গণনাকৃত`)}
               </p>
             </div>
-            <div className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <div className="tabular-nums text-xs font-bold text-emerald-600 dark:text-emerald-400">
               {tBilingual('Total OT Earned:', 'মোট ওটি অর্জন:')} {formatBDT(totalOtEarnings)}
             </div>
           </CardHeader>
@@ -531,19 +531,19 @@ export function MyWorkforceHub() {
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                     {myOvertimes.map((ot) => (
                       <tr key={ot.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="px-4 py-3 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                        <td className="px-4 py-3 tabular-nums font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                           {formatDate(ot.ot_date)}
                         </td>
-                        <td className="px-4 py-3 font-mono">
+                        <td className="px-4 py-3 tabular-nums">
                           {ot.duration_hours || Math.round((ot.duration_minutes / 60) * 10) / 10} Hours
                         </td>
                         <td className="px-4 py-3 max-w-xs truncate text-slate-600 dark:text-slate-400">
                           {ot.reason || 'Late Production Run'}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono">
+                        <td className="px-4 py-3 text-right tabular-nums">
                           ৳{ot.effective_ot_rate || otHourlyRate}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        <td className="px-4 py-3 text-right tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
                           {formatBDT(ot.calculated_amount || ((ot.duration_hours || 1) * otHourlyRate))}
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
@@ -613,10 +613,10 @@ export function MyWorkforceHub() {
                         <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100 capitalize">
                           {lv.leave_type.replace(/_/g, ' ')}
                         </td>
-                        <td className="px-4 py-3 font-mono text-slate-700 dark:text-slate-300">
+                        <td className="px-4 py-3 tabular-nums text-slate-700 dark:text-slate-300">
                           {formatDate(lv.start_date)} {lv.start_date !== lv.end_date ? `to ${formatDate(lv.end_date)}` : ''}
                         </td>
-                        <td className="px-4 py-3 text-center font-mono font-bold">
+                        <td className="px-4 py-3 text-center tabular-nums font-bold">
                           {lv.days_count} {tBilingual('Days', 'দিন')}
                         </td>
                         <td className="px-4 py-3 max-w-xs truncate text-slate-600 dark:text-slate-400">
@@ -673,29 +673,29 @@ export function MyWorkforceHub() {
               <div className="space-y-2 text-xs">
                 <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 font-semibold">
                   <span>{tBilingual('Basic Salary', 'মূল বেতন (Basic)')}</span>
-                  <span className="font-mono text-slate-900 dark:text-slate-100">{formatBDT(salaryStructure.basic)}</span>
+                  <span className="tabular-nums text-slate-900 dark:text-slate-100">{formatBDT(salaryStructure.basic)}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                   <span>{tBilingual('House Rent Allowance (20%)', 'বাড়ি ভাড়া ভাতা (২০%)')}</span>
-                  <span className="font-mono">{formatBDT(salaryStructure.house)}</span>
+                  <span className="tabular-nums">{formatBDT(salaryStructure.house)}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                   <span>{tBilingual('Medical Allowance (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
-                  <span className="font-mono">{formatBDT(salaryStructure.medical)}</span>
+                  <span className="tabular-nums">{formatBDT(salaryStructure.medical)}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                   <span>{tBilingual('Transport Allowance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
-                  <span className="font-mono">{formatBDT(salaryStructure.transport)}</span>
+                  <span className="tabular-nums">{formatBDT(salaryStructure.transport)}</span>
                 </div>
                 {salaryStructure.totalOtEarnings > 0 && (
                   <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-emerald-600 dark:text-emerald-400 font-semibold">
                     <span>{tBilingual('Overtime (OT) Bonus', 'ওভারটাইম অর্জন')}</span>
-                    <span className="font-mono">+{formatBDT(salaryStructure.totalOtEarnings)}</span>
+                    <span className="tabular-nums">+{formatBDT(salaryStructure.totalOtEarnings)}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between py-2 border-b-2 border-slate-300 dark:border-slate-700 font-bold text-slate-900 dark:text-slate-100">
                   <span>{tBilingual('Gross Earnings', 'মোট অর্জন (Gross)')}</span>
-                  <span className="font-mono text-emerald-600 dark:text-emerald-400">{formatBDT(salaryStructure.grossEarnings)}</span>
+                  <span className="tabular-nums text-emerald-600 dark:text-emerald-400">{formatBDT(salaryStructure.grossEarnings)}</span>
                 </div>
               </div>
 
@@ -704,12 +704,12 @@ export function MyWorkforceHub() {
                 <span className="font-bold text-slate-700 dark:text-slate-300">{tBilingual('Deductions', 'কর্তনসমূহ')}:</span>
                 <div className="flex items-center justify-between py-1 text-rose-600 dark:text-rose-400 font-medium">
                   <span>{tBilingual('Advance Salary Deduction', 'অগ্রিম বেতন কর্তন')}</span>
-                  <span className="font-mono">-{formatBDT(salaryStructure.advanceDeduction)}</span>
+                  <span className="tabular-nums">-{formatBDT(salaryStructure.advanceDeduction)}</span>
                 </div>
                 {salaryStructure.lateFine > 0 && (
                   <div className="flex items-center justify-between py-1 text-rose-600 dark:text-rose-400 font-medium">
                     <span>{tBilingual('Late Arrival Fine', 'লেট হাজিরার জরিমানা')}</span>
-                    <span className="font-mono">-{formatBDT(salaryStructure.lateFine)}</span>
+                    <span className="tabular-nums">-{formatBDT(salaryStructure.lateFine)}</span>
                   </div>
                 )}
               </div>
@@ -724,7 +724,7 @@ export function MyWorkforceHub() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-              <div className="text-3xl font-black font-mono text-indigo-900 dark:text-indigo-200">
+              <div className="text-3xl font-black tabular-nums text-indigo-900 dark:text-indigo-200">
                 {formatBDT(salaryStructure.netPayable)}
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -785,16 +785,16 @@ export function MyWorkforceHub() {
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                     {myAdvances.map((adv) => (
                       <tr key={adv.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="px-4 py-3 font-mono font-bold text-amber-700 dark:text-amber-400">
+                        <td className="px-4 py-3 tabular-nums font-bold text-amber-700 dark:text-amber-400">
                           {adv.advance_voucher_number}
                         </td>
-                        <td className="px-4 py-3 font-mono">
+                        <td className="px-4 py-3 tabular-nums">
                           {formatDate(adv.disbursed_date)}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono font-bold">
+                        <td className="px-4 py-3 text-right tabular-nums font-bold">
                           {formatBDT(adv.amount)}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-rose-600 dark:text-rose-400 font-bold">
+                        <td className="px-4 py-3 text-right tabular-nums text-rose-600 dark:text-rose-400 font-bold">
                           {formatBDT(adv.remaining_amount !== undefined ? adv.remaining_amount : adv.amount)}
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
@@ -915,7 +915,7 @@ export function MyWorkforceHub() {
                 step={500}
                 value={advanceForm.amount}
                 onChange={(e) => setAdvanceForm({ ...advanceForm, amount: Number(e.target.value) })}
-                className="h-9 text-xs font-mono font-bold"
+                className="h-9 text-xs tabular-nums font-bold"
                 required
               />
             </div>
@@ -950,7 +950,7 @@ export function MyWorkforceHub() {
           <DialogHeader>
             <DialogTitle className="text-base font-bold bangla-text flex items-center justify-between">
               <span>{tBilingual('Employee Payslip Voucher', 'কর্মচারী বেতন ভাউচার')}</span>
-              <Badge variant="outline" className="font-mono text-xs">
+              <Badge variant="outline" className="tabular-nums text-xs">
                 {new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}
               </Badge>
             </DialogTitle>
@@ -962,7 +962,7 @@ export function MyWorkforceHub() {
                 <div className="font-black text-sm text-slate-900 dark:text-slate-100">{employee?.name}</div>
                 <div className="text-slate-500">{employee?.role} • {employee?.employee_id_number}</div>
               </div>
-              <div className="text-right text-slate-500 font-mono">
+              <div className="text-right text-slate-500 tabular-nums">
                 <div>{employee?.branch_name || 'Main Press Hub'}</div>
                 <div>Status: Active</div>
               </div>
@@ -971,48 +971,48 @@ export function MyWorkforceHub() {
             <div className="space-y-1.5">
               <div className="flex justify-between">
                 <span>Basic Salary:</span>
-                <span className="font-mono font-bold">{formatBDT(salaryStructure.basic)}</span>
+                <span className="tabular-nums font-bold">{formatBDT(salaryStructure.basic)}</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>House Rent Allowance:</span>
-                <span className="font-mono">{formatBDT(salaryStructure.house)}</span>
+                <span className="tabular-nums">{formatBDT(salaryStructure.house)}</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Medical Allowance:</span>
-                <span className="font-mono">{formatBDT(salaryStructure.medical)}</span>
+                <span className="tabular-nums">{formatBDT(salaryStructure.medical)}</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Transport Allowance:</span>
-                <span className="font-mono">{formatBDT(salaryStructure.transport)}</span>
+                <span className="tabular-nums">{formatBDT(salaryStructure.transport)}</span>
               </div>
               {salaryStructure.totalOtEarnings > 0 && (
                 <div className="flex justify-between text-emerald-600 font-bold">
                   <span>Overtime Earnings ({approvedMonthOtHours}h):</span>
-                  <span className="font-mono">+{formatBDT(salaryStructure.totalOtEarnings)}</span>
+                  <span className="tabular-nums">+{formatBDT(salaryStructure.totalOtEarnings)}</span>
                 </div>
               )}
               <div className="flex justify-between border-t pt-1 font-bold">
                 <span>Gross Total:</span>
-                <span className="font-mono text-emerald-600">{formatBDT(salaryStructure.grossEarnings)}</span>
+                <span className="tabular-nums text-emerald-600">{formatBDT(salaryStructure.grossEarnings)}</span>
               </div>
             </div>
 
             <div className="border-t pt-2 space-y-1.5 text-rose-600">
               <div className="flex justify-between">
                 <span>Advance Deductions:</span>
-                <span className="font-mono">-{formatBDT(salaryStructure.advanceDeduction)}</span>
+                <span className="tabular-nums">-{formatBDT(salaryStructure.advanceDeduction)}</span>
               </div>
               {salaryStructure.lateFine > 0 && (
                 <div className="flex justify-between">
                   <span>Late Deductions:</span>
-                  <span className="font-mono">-{formatBDT(salaryStructure.lateFine)}</span>
+                  <span className="tabular-nums">-{formatBDT(salaryStructure.lateFine)}</span>
                 </div>
               )}
             </div>
 
             <div className="border-t-2 border-slate-900 dark:border-slate-100 pt-2 flex justify-between font-black text-sm text-slate-900 dark:text-slate-100">
               <span>NET PAYABLE:</span>
-              <span className="font-mono text-base text-indigo-600 dark:text-indigo-400">
+              <span className="tabular-nums text-base text-indigo-600 dark:text-indigo-400">
                 {formatBDT(salaryStructure.netPayable)}
               </span>
             </div>

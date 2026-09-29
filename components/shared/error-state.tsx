@@ -33,12 +33,12 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        'flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-50/40 p-8 text-center dark:border-rose-900/50 dark:bg-rose-950/20 backdrop-blur-sm',
+        'flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-rose-200/80 bg-rose-50/50 p-6 sm:p-8 text-center dark:border-rose-900/40 dark:bg-rose-950/20',
         className
       )}
     >
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 dark:bg-rose-500/20 border border-rose-500/30 mb-3 shadow-xs">
-        <AlertOctagon className="h-7 w-7" />
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 mb-3">
+        <AlertOctagon className="h-6 w-6" />
       </div>
 
       <h3 className="text-base font-bold text-rose-900 dark:text-rose-200 mb-1 bangla-text">
@@ -50,19 +50,18 @@ export function ErrorState({
       </p>
 
       {errorCode && (
-        <span className="font-mono text-2xs px-2 py-0.5 rounded bg-rose-200/60 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300 mb-5">
+        <span className="tabular-nums text-2xs px-2 py-0.5 rounded bg-rose-200/60 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300 mb-4">
           ERROR CODE: {errorCode}
         </span>
       )}
 
       {onRetry && (
         <Button
-          variant="outline"
-          size="sm"
+          variant="secondary"
           onClick={onRetry}
-          className="h-9 gap-2 border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-800 dark:text-rose-200 rounded-xl font-semibold"
+          className="border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/30"
         >
-          <RefreshCw className="h-3.5 w-3.5" />
+          <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
           <span>{tBilingual('Retry Operation', 'পুনরায় চেষ্টা করুন')}</span>
         </Button>
       )}

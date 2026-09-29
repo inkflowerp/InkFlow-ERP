@@ -93,17 +93,17 @@ export function DataTable<T extends Record<string, unknown>>({
   return (
     <div className="space-y-4">
       {/* 1. DESKTOP VIEW: Clean Structured Table (hidden on small screens) */}
-      <div className="hidden md:block rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+      <div className="hidden md:block rounded-xl border border-border bg-card shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm text-slate-700 dark:text-slate-200">
-            <thead className="border-b border-slate-200/80 bg-slate-50/75 text-xs font-bold uppercase tracking-wider text-slate-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
+          <table className="w-full text-left text-xs sm:text-sm text-foreground">
+            <thead className="border-b border-border bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <tr>
                 {safeColumns.map((col, idx) => (
                   <th
                     key={String(col.key) || idx}
                     className={cn(
-                      'px-4 py-3.5 whitespace-nowrap',
-                      col.sortable && 'cursor-pointer select-none hover:text-slate-900 dark:hover:text-slate-100',
+                      'px-4 py-3 whitespace-nowrap',
+                      col.sortable && 'cursor-pointer select-none hover:text-foreground',
                       col.className
                     )}
                     onClick={() => col.sortable && handleSort(String(col.key))}
@@ -111,12 +111,12 @@ export function DataTable<T extends Record<string, unknown>>({
                     <div className="flex items-center gap-1.5">
                       <span className="bangla-text">{renderColumnHeader(col)}</span>
                       {col.sortable && (
-                        <span className="text-slate-400">
+                        <span className="text-muted-foreground">
                           {sortKey === col.key ? (
                             sortDirection === 'asc' ? (
-                              <ArrowUp className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                              <ArrowUp className="h-3.5 w-3.5 text-primary" />
                             ) : (
-                              <ArrowDown className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                              <ArrowDown className="h-3.5 w-3.5 text-primary" />
                             )
                           ) : (
                             <ArrowUpDown className="h-3.5 w-3.5" />
@@ -128,20 +128,20 @@ export function DataTable<T extends Record<string, unknown>>({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+            <tbody className="divide-y divide-border/60">
               {sortedData.map((row) => (
                 <tr
                   key={keyExtractor(row)}
                   onClick={() => onRowClick && onRowClick(row)}
                   className={cn(
-                    'transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40',
+                    'transition-colors hover:bg-muted/30 h-[48px]',
                     onRowClick && 'cursor-pointer'
                   )}
                 >
                   {safeColumns.map((col, cIdx) => (
                     <td
                       key={String(col.key) || cIdx}
-                      className={cn('px-4 py-3.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 bangla-text', col.className)}
+                      className={cn('px-4 py-3 text-xs sm:text-sm text-foreground bangla-text', col.className)}
                     >
                       {col.render ? col.render(row) : String(row[col.key as string] ?? '')}
                     </td>
@@ -160,18 +160,18 @@ export function DataTable<T extends Record<string, unknown>>({
             key={keyExtractor(row)}
             onClick={() => onRowClick && onRowClick(row)}
             className={cn(
-              'p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-2.5 transition-all active:scale-[0.99]',
-              onRowClick && 'cursor-pointer hover:border-indigo-500/40'
+              'p-4 rounded-xl bg-card border border-border shadow-xs space-y-2.5 transition-colors active:scale-[0.99] min-h-[44px]',
+              onRowClick && 'cursor-pointer hover:border-primary/40'
             )}
           >
             {/* First Column as Primary Header */}
             {safeColumns.length > 0 && (
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/80">
-                <div className="font-bold text-sm text-slate-900 dark:text-white bangla-text">
+              <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                <div className="font-bold text-sm text-foreground bangla-text">
                   {safeColumns[0].render ? safeColumns[0].render(row) : String(row[safeColumns[0].key as string] ?? '')}
                 </div>
                 {onRowClick && (
-                  <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                 )}
               </div>
             )}
@@ -180,8 +180,8 @@ export function DataTable<T extends Record<string, unknown>>({
             <div className="space-y-1.5 text-xs sm:text-sm">
               {safeColumns.slice(1).map((col, cIdx) => (
                 <div key={cIdx} className="flex items-center justify-between gap-2">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium bangla-text">{renderColumnHeader(col)}:</span>
-                  <span className="text-slate-800 dark:text-slate-200 font-semibold text-right bangla-text">
+                  <span className="text-muted-foreground font-medium bangla-text">{renderColumnHeader(col)}:</span>
+                  <span className="text-foreground font-semibold text-right bangla-text">
                     {col.render ? col.render(row) : String(row[col.key as string] ?? '')}
                   </span>
                 </div>
@@ -193,7 +193,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
       {/* Pagination Controls */}
       {pagination && (
-        <div className="p-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+        <div className="p-2 bg-card rounded-xl border border-border">
           <PaginationControls {...pagination} />
         </div>
       )}

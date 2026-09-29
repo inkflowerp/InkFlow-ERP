@@ -276,7 +276,7 @@ export function QuickReportModal({
               className="h-8.5 pl-9 text-xs rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
             />
           </div>
-          <span className="text-xs text-slate-400 font-mono">
+          <span className="text-xs text-slate-400 tabular-nums">
             {type === 'sales'
               ? `${invoices.length} invoices`
               : type === 'inventory'
@@ -291,7 +291,7 @@ export function QuickReportModal({
         <div className="flex-1 overflow-y-auto p-5">
           {type === 'sales' && (
             <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
-              <table className="w-full text-left text-xs font-mono">
+              <table className="w-full text-left text-xs tabular-nums">
                 <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800 font-sans">
                   <tr>
                     <th className="py-2.5 px-3">Invoice #</th>
@@ -353,7 +353,7 @@ export function QuickReportModal({
 
           {type === 'inventory' && (
             <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
-              <table className="w-full text-left text-xs font-mono">
+              <table className="w-full text-left text-xs tabular-nums">
                 <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800 font-sans">
                   <tr>
                     <th className="py-2.5 px-3">Substrate / Material</th>
@@ -410,7 +410,7 @@ export function QuickReportModal({
 
           {(type === 'customer' || type === 'all_customers') && (
             <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
-              <table className="w-full text-left text-xs font-mono">
+              <table className="w-full text-left text-xs tabular-nums">
                 <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800 font-sans">
                   <tr>
                     <th className="py-2.5 px-3">Customer Account</th>
@@ -455,7 +455,7 @@ export function QuickReportModal({
 
           {type !== 'sales' && type !== 'inventory' && type !== 'customer' && type !== 'all_customers' && (
             <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
-              <table className="w-full text-left text-xs font-mono">
+              <table className="w-full text-left text-xs tabular-nums">
                 <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800 font-sans">
                   <tr>
                     <th className="py-2.5 px-3">Order #</th>

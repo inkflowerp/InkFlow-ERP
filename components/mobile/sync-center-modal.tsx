@@ -122,7 +122,7 @@ export function SyncCenterModal({ open, onClose }: SyncCenterModalProps) {
         <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-slate-400">Outbox Queue:</span>
-            <span className="text-xs font-mono font-bold text-indigo-400">
+            <span className="text-xs tabular-nums font-bold text-indigo-400">
               {pendingItems.length} operations pending
             </span>
           </div>
@@ -163,7 +163,7 @@ export function SyncCenterModal({ open, onClose }: SyncCenterModalProps) {
               >
                 <div>
                   <div className="font-bold text-slate-200">{item.action_type}</div>
-                  <div className="text-3xs font-mono text-slate-400">
+                  <div className="text-3xs tabular-nums text-slate-400">
                     ID: {item.idempotency_key.substring(0, 18)}...
                   </div>
                 </div>

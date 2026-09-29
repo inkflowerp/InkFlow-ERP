@@ -97,9 +97,9 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
   const modalNode = (
     <DialogContext.Provider value={{ titleId, contentRef }}>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 xs:p-3 sm:p-4 overflow-y-auto">
-        {/* Backdrop */}
+        {/* Backdrop: rgba(15,23,42,.45) with no blur */}
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity animate-in fade-in-0"
+          className="fixed inset-0 bg-slate-900/45 dark:bg-slate-950/65 transition-opacity animate-in fade-in-0"
           onClick={() => onOpenChange(false)}
           aria-hidden="true"
         />
@@ -107,7 +107,7 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
         <div
           style={style}
           className={cn(
-            'relative z-[100] w-full my-auto max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] flex flex-col animate-in fade-in-0 zoom-in-95',
+            'relative z-[100] w-[95vw] sm:w-full my-auto max-h-[90vh] flex flex-col animate-in fade-in-0 zoom-in-95',
             maxWidth || 'max-w-lg',
             className
           )}
@@ -143,7 +143,7 @@ export function DialogContent({
       aria-labelledby={context?.titleId}
       style={style}
       className={cn(
-        'relative w-full max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2.5rem)] flex flex-col rounded-xl border border-border bg-card text-card-foreground shadow-2xl transition-all overflow-hidden outline-none',
+        'relative w-full max-h-[90vh] flex flex-col rounded-xl border border-border bg-card text-card-foreground shadow-xl transition-all overflow-hidden outline-none',
         className
       )}
     >
@@ -151,7 +151,7 @@ export function DialogContent({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-3.5 top-3.5 sm:right-4 sm:top-4 z-30 rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="absolute right-3.5 top-3.5 sm:right-4 sm:top-4 z-30 rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label="Close dialog"
         >
           <X className="h-4 w-4" />
@@ -166,7 +166,7 @@ export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLD
   return (
     <div
       className={cn(
-        'flex flex-col space-y-1.5 text-left shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-border bg-card/95 backdrop-blur-sm z-20 pr-12',
+        'flex flex-col space-y-1.5 text-left shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-border bg-card z-20 pr-12',
         className
       )}
       {...props}
@@ -204,7 +204,7 @@ export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLD
   return (
     <div
       className={cn(
-        'flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-muted/50 backdrop-blur-sm z-20 mt-0',
+        'flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-border bg-muted/40 z-20 mt-0',
         className
       )}
       {...props}

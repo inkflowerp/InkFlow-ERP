@@ -264,7 +264,7 @@ export default function PurchaseOrderDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono print:text-slate-900">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums print:text-slate-900">
                 {po.po_number}
               </h1>
               <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 print:border-slate-400 print:text-slate-800 print:bg-slate-100">
@@ -342,7 +342,7 @@ export default function PurchaseOrderDetailPage() {
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
             <CurrencyDisplay amount={po.grand_total} />
           </div>
-          <span className="text-2xs text-slate-400 font-mono">Agreed Contract Rate</span>
+          <span className="text-2xs text-slate-400 tabular-nums">Agreed Contract Rate</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-emerald-500">
@@ -399,27 +399,27 @@ export default function PurchaseOrderDetailPage() {
                     </td>
 
                     {/* Ordered */}
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-900 dark:text-white print:text-slate-900">
+                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-slate-900 dark:text-white print:text-slate-900">
                       {item.quantity_ordered} {item.unit}
                     </td>
 
                     {/* Received */}
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 print:bg-transparent print:text-emerald-800">
+                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 print:bg-transparent print:text-emerald-800">
                       {item.quantity_received} {item.unit}
                     </td>
 
                     {/* Remaining */}
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-red-600 bg-red-50/40 dark:bg-red-950/20 print:bg-transparent print:text-red-800">
+                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-red-600 bg-red-50/40 dark:bg-red-950/20 print:bg-transparent print:text-red-800">
                       {item.quantity_remaining} {item.unit}
                     </td>
 
                     {/* Unit Cost */}
-                    <td className="py-3.5 px-4 text-right font-mono text-xs print:text-slate-900">
+                    <td className="py-3.5 px-4 text-right tabular-nums text-xs print:text-slate-900">
                       {formatBDT(item.unit_cost)}
                     </td>
 
                     {/* Total */}
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white print:text-slate-900">
+                    <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white print:text-slate-900">
                       {formatBDT(item.total_cost)}
                     </td>
                   </tr>
@@ -434,25 +434,25 @@ export default function PurchaseOrderDetailPage() {
               <div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <strong className="text-slate-900 dark:text-white font-bold text-sm">{item.material_name}</strong>
-                  <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                  <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
                     {formatBDT(item.total_cost)}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-slate-200/60 dark:border-slate-800">
                   <div className="p-1.5 rounded bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
                     <div className="text-2xs text-slate-400">Ordered</div>
-                    <div className="font-mono font-bold text-slate-900 dark:text-white">{item.quantity_ordered} {item.unit}</div>
+                    <div className="tabular-nums font-bold text-slate-900 dark:text-white">{item.quantity_ordered} {item.unit}</div>
                   </div>
                   <div className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
                     <div className="text-2xs text-emerald-600">Received</div>
-                    <div className="font-mono font-bold text-emerald-700 dark:text-emerald-300">{item.quantity_received} {item.unit}</div>
+                    <div className="tabular-nums font-bold text-emerald-700 dark:text-emerald-300">{item.quantity_received} {item.unit}</div>
                   </div>
                   <div className="p-1.5 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800">
                     <div className="text-2xs text-red-600">Remaining</div>
-                    <div className="font-mono font-bold text-red-700 dark:text-red-300">{item.quantity_remaining} {item.unit}</div>
+                    <div className="tabular-nums font-bold text-red-700 dark:text-red-300">{item.quantity_remaining} {item.unit}</div>
                   </div>
                 </div>
-                <div className="text-2xs text-slate-400 text-right font-mono">
+                <div className="text-2xs text-slate-400 text-right tabular-nums">
                   Unit Cost: {formatBDT(item.unit_cost)} / {item.unit}
                 </div>
               </div>
@@ -533,7 +533,7 @@ export default function PurchaseOrderDetailPage() {
               po.grns.map((grn) => (
                 <div key={grn.id} className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-1">
                   <div className="flex justify-between font-bold">
-                    <span className="font-mono text-emerald-600">{grn.grn_number}</span>
+                    <span className="tabular-nums text-emerald-600">{grn.grn_number}</span>
                     <span className="text-slate-400">{grn.received_date}</span>
                   </div>
                   <div className="text-slate-700 dark:text-slate-300 font-medium">
@@ -561,7 +561,7 @@ export default function PurchaseOrderDetailPage() {
               po.payments.map((p) => (
                 <div key={p.id} className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-1">
                   <div className="flex justify-between font-bold">
-                    <span className="text-emerald-600 font-mono">{formatBDT(p.amount)}</span>
+                    <span className="text-emerald-600 tabular-nums">{formatBDT(p.amount)}</span>
                     <span className="uppercase text-2xs px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800">
                       {p.payment_method}
                     </span>

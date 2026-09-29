@@ -207,7 +207,7 @@ export default function LocalizationSettingsPage() {
                 <Label htmlFor="dateFormat" className="bangla-text">{tBilingual('Selected Date Format', 'নির্বাচিত তারিখের ধরন')}</Label>
                 <select
                   id="dateFormat"
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-mono bangla-text"
+                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm tabular-nums bangla-text"
                   value={dateFormat}
                   onChange={(e) => setDateFormat(e.target.value)}
                 >

@@ -192,7 +192,7 @@ export function PrintingMethodModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {method ? 'Edit Printing Technology' : 'Add Printing Technology'}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
                 Technology Master
               </Badge>
             </div>
@@ -283,7 +283,7 @@ export function PrintingMethodModal({
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s+/g, '_'))}
                 placeholder="e.g. UV_FLATBED, LATEX"
-                className="h-9 text-xs font-mono uppercase"
+                className="h-9 text-xs tabular-nums uppercase"
               />
             </div>
 
@@ -298,7 +298,7 @@ export function PrintingMethodModal({
                 value={costPerSqft}
                 onChange={(e) => setCostPerSqft(e.target.value)}
                 placeholder="e.g. 14.00"
-                className="h-9 text-xs font-mono font-bold text-rose-600 dark:text-rose-400"
+                className="h-9 text-xs tabular-nums font-bold text-rose-600 dark:text-rose-400"
               />
             </div>
           </div>
@@ -349,7 +349,7 @@ export function PrintingMethodModal({
                       value={machineHourlyRate}
                       onChange={(e) => setMachineHourlyRate(e.target.value)}
                       placeholder="e.g. 500"
-                      className="h-8 text-xs font-mono"
+                      className="h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -360,7 +360,7 @@ export function PrintingMethodModal({
                       value={estimatedSpeed}
                       onChange={(e) => setEstimatedSpeed(e.target.value)}
                       placeholder="e.g. 120"
-                      className="h-8 text-xs font-mono font-bold text-blue-600"
+                      className="h-8 text-xs tabular-nums font-bold text-blue-600"
                     />
                   </div>
                 </div>

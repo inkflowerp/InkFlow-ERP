@@ -583,11 +583,11 @@ export function OutsourceProductModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {initialData ? `Edit Outsource Product: ${initialData.name}` : 'New Outsource Product'}
               </span>
-              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
+              <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
                 Non-Inventory Item
               </Badge>
               {sellingPrice !== '' && Number(sellingPrice) > 0 && (
-                <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                   ৳{Number(sellingPrice).toFixed(2)} / {unit}
                 </Badge>
               )}
@@ -740,7 +740,7 @@ export function OutsourceProductModal({
                     value={sku}
                     onChange={(e) => setSku(e.target.value.toUpperCase())}
                     placeholder="OUT-1002"
-                    className="mt-1 h-9 text-xs font-mono font-bold"
+                    className="mt-1 h-9 text-xs tabular-nums font-bold"
                   />
                 </div>
 
@@ -768,7 +768,7 @@ export function OutsourceProductModal({
                       setUnit(val)
                       setPurchaseUnit(val)
                     }}
-                    className="mt-1 w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-1 focus:ring-purple-500 font-mono"
+                    className="mt-1 w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-1 focus:ring-purple-500 tabular-nums"
                   >
                     {OUTSOURCE_PRODUCT_UNITS.map((u) => (
                       <option key={u.value} value={u.value}>
@@ -823,7 +823,7 @@ export function OutsourceProductModal({
                       value={vendorPhone}
                       onChange={(e) => setVendorPhone(e.target.value)}
                       placeholder="017XXXXXXXX"
-                      className="mt-1 h-9 text-xs font-mono"
+                      className="mt-1 h-9 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -835,7 +835,7 @@ export function OutsourceProductModal({
                       value={vendorItemCode}
                       onChange={(e) => setVendorItemCode(e.target.value)}
                       placeholder="e.g. VEND-REF-409"
-                      className="mt-1 h-9 text-xs font-mono"
+                      className="mt-1 h-9 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -873,7 +873,7 @@ export function OutsourceProductModal({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/80">
                 <div>
                   <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Vendor Cost (Buy)</span>
-                  <div className="text-lg font-bold font-mono text-slate-900 dark:text-white mt-0.5">
+                  <div className="text-lg font-bold tabular-nums text-slate-900 dark:text-white mt-0.5">
                     ৳{Number(vendorCost) || 0}
                   </div>
                   <span className="text-2xs text-slate-500">per {unit}</span>
@@ -881,7 +881,7 @@ export function OutsourceProductModal({
 
                 <div>
                   <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Selling Price</span>
-                  <div className="text-lg font-bold font-mono text-blue-600 mt-0.5">
+                  <div className="text-lg font-bold tabular-nums text-blue-600 mt-0.5">
                     ৳{Number(sellingPrice) || 0}
                   </div>
                   <span className="text-2xs text-slate-500">per {unit}</span>
@@ -889,7 +889,7 @@ export function OutsourceProductModal({
 
                 <div>
                   <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Gross Profit</span>
-                  <div className="text-lg font-bold font-mono text-emerald-600 mt-0.5">
+                  <div className="text-lg font-bold tabular-nums text-emerald-600 mt-0.5">
                     ৳{marginMetrics.grossProfit}
                   </div>
                   <span className="text-2xs text-slate-500">Markup: {marginMetrics.markupPercent}%</span>
@@ -897,7 +897,7 @@ export function OutsourceProductModal({
 
                 <div>
                   <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Gross Margin %</span>
-                  <div className="text-lg font-bold font-mono text-emerald-600 mt-0.5">
+                  <div className="text-lg font-bold tabular-nums text-emerald-600 mt-0.5">
                     {marginMetrics.grossMarginPercent}%
                   </div>
                   <span className="text-2xs text-slate-500">Target: {targetMargin}%</span>
@@ -917,7 +917,7 @@ export function OutsourceProductModal({
                     value={vendorCost}
                     onChange={(e) => setVendorCost(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="e.g. 1800"
-                    className="mt-1 h-9 text-xs font-mono font-bold"
+                    className="mt-1 h-9 text-xs tabular-nums font-bold"
                   />
                   <span className="text-2xs text-slate-400 mt-0.5 block">Price paid to third-party subcontractor</span>
                 </div>
@@ -931,7 +931,7 @@ export function OutsourceProductModal({
                     value={targetMargin}
                     onChange={(e) => setTargetMargin(Number(e.target.value))}
                     placeholder="35"
-                    className="mt-1 h-9 text-xs font-mono font-bold text-purple-600"
+                    className="mt-1 h-9 text-xs tabular-nums font-bold text-purple-600"
                   />
                   {suggestedSellingPrice > 0 && (
                     <span className="text-2xs text-purple-600 mt-0.5 block font-semibold">
@@ -955,7 +955,7 @@ export function OutsourceProductModal({
                     }}
                     placeholder="e.g. 2800"
                     className={cn(
-                      'mt-1 h-9 text-xs font-mono font-bold text-blue-600 transition-colors',
+                      'mt-1 h-9 text-xs tabular-nums font-bold text-blue-600 transition-colors',
                       fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
                     )}
                     required
@@ -999,7 +999,7 @@ export function OutsourceProductModal({
                       value={priceTiers.retail}
                       onChange={(e) => setPriceTiers({ ...priceTiers, retail: e.target.value === '' ? '' : Number(e.target.value) })}
                       placeholder="Retail"
-                      className="mt-1 h-8 text-xs font-mono"
+                      className="mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
 
@@ -1010,7 +1010,7 @@ export function OutsourceProductModal({
                       value={priceTiers.corporate}
                       onChange={(e) => setPriceTiers({ ...priceTiers, corporate: e.target.value === '' ? '' : Number(e.target.value) })}
                       placeholder="Corporate"
-                      className="mt-1 h-8 text-xs font-mono text-indigo-600 font-semibold"
+                      className="mt-1 h-8 text-xs tabular-nums text-indigo-600 font-semibold"
                     />
                   </div>
 
@@ -1021,7 +1021,7 @@ export function OutsourceProductModal({
                       value={priceTiers.dealer}
                       onChange={(e) => setPriceTiers({ ...priceTiers, dealer: e.target.value === '' ? '' : Number(e.target.value) })}
                       placeholder="Dealer"
-                      className="mt-1 h-8 text-xs font-mono text-amber-600 font-semibold"
+                      className="mt-1 h-8 text-xs tabular-nums text-amber-600 font-semibold"
                     />
                   </div>
 
@@ -1032,7 +1032,7 @@ export function OutsourceProductModal({
                       value={priceTiers.wholesale}
                       onChange={(e) => setPriceTiers({ ...priceTiers, wholesale: e.target.value === '' ? '' : Number(e.target.value) })}
                       placeholder="Wholesale"
-                      className="mt-1 h-8 text-xs font-mono text-emerald-600 font-semibold"
+                      className="mt-1 h-8 text-xs tabular-nums text-emerald-600 font-semibold"
                     />
                   </div>
 
@@ -1043,7 +1043,7 @@ export function OutsourceProductModal({
                       value={priceTiers.custom}
                       onChange={(e) => setPriceTiers({ ...priceTiers, custom: e.target.value === '' ? '' : Number(e.target.value) })}
                       placeholder="Custom"
-                      className="mt-1 h-8 text-xs font-mono text-purple-600 font-semibold"
+                      className="mt-1 h-8 text-xs tabular-nums text-purple-600 font-semibold"
                     />
                   </div>
                 </div>
@@ -1058,7 +1058,7 @@ export function OutsourceProductModal({
                     min="1"
                     value={minOrderQty}
                     onChange={(e) => setMinOrderQty(Math.max(1, Number(e.target.value)))}
-                    className="mt-1 h-8 text-xs font-mono"
+                    className="mt-1 h-8 text-xs tabular-nums"
                   />
                 </div>
 
@@ -1070,7 +1070,7 @@ export function OutsourceProductModal({
                     max="90"
                     value={minAllowedMargin}
                     onChange={(e) => setMinAllowedMargin(Number(e.target.value))}
-                    className="mt-1 h-8 text-xs font-mono text-rose-600 font-semibold"
+                    className="mt-1 h-8 text-xs tabular-nums text-rose-600 font-semibold"
                   />
                 </div>
 
@@ -1082,7 +1082,7 @@ export function OutsourceProductModal({
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="Floor Price"
-                    className="mt-1 h-8 text-xs font-mono text-slate-700 dark:text-slate-300"
+                    className="mt-1 h-8 text-xs tabular-nums text-slate-700 dark:text-slate-300"
                   />
                 </div>
               </div>
@@ -1123,7 +1123,7 @@ export function OutsourceProductModal({
                       value={turnaroundDays}
                       onChange={(e) => setTurnaroundDays(e.target.value === '' ? '' : Number(e.target.value))}
                       placeholder="2"
-                      className="h-9 text-xs font-mono font-bold w-28"
+                      className="h-9 text-xs tabular-nums font-bold w-28"
                     />
                     <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Working Days</span>
                   </div>
@@ -1205,7 +1205,7 @@ export function OutsourceProductModal({
                           value={taxRate}
                           onChange={(e) => setTaxRate(Number(e.target.value))}
                           placeholder="7.5"
-                          className="mt-1 h-8 text-xs font-mono w-32"
+                          className="mt-1 h-8 text-xs tabular-nums w-32"
                         />
                       </div>
 

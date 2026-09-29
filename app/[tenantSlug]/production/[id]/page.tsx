@@ -134,7 +134,7 @@ export default function ProductionJobDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono print:text-slate-900">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums print:text-slate-900">
                 {job.production_job_number}
               </h1>
               <span className="capitalize px-2.5 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 print:border-slate-400 print:text-slate-800 print:bg-slate-100">
@@ -180,7 +180,7 @@ export default function ProductionJobDetailPage() {
             <p className="text-xs text-red-800 dark:text-red-300">
               Reason: <strong>{job.reworks?.[0]?.reason}</strong>
             </p>
-            <div className="text-2xs text-red-700 dark:text-red-400 font-mono">
+            <div className="text-2xs text-red-700 dark:text-red-400 tabular-nums">
               Wastage: {job.reworks?.[0]?.material_wastage} • Extra Labor: {job.reworks?.[0]?.extra_labor_hours} hrs • Delay: +{job.reworks?.[0]?.additional_time_hours} hrs
             </div>
           </div>
@@ -337,12 +337,12 @@ export default function ProductionJobDetailPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {job.reworks.map((r) => (
                   <tr key={r.id}>
-                    <td className="py-3 px-3 font-mono font-bold text-red-600">{r.rework_number}</td>
+                    <td className="py-3 px-3 tabular-nums font-bold text-red-600">{r.rework_number}</td>
                     <td className="py-3 px-3 font-medium text-slate-800 dark:text-slate-200">{r.reason}</td>
                     <td className="py-3 px-3 capitalize">{r.responsible_department}</td>
-                    <td className="py-3 px-3 font-mono">{r.material_wastage}</td>
-                    <td className="py-3 px-3 font-mono">+{r.extra_labor_hours} hrs</td>
-                    <td className="py-3 px-3 font-mono text-red-600">+{r.additional_time_hours} hrs</td>
+                    <td className="py-3 px-3 tabular-nums">{r.material_wastage}</td>
+                    <td className="py-3 px-3 tabular-nums">+{r.extra_labor_hours} hrs</td>
+                    <td className="py-3 px-3 tabular-nums text-red-600">+{r.additional_time_hours} hrs</td>
                   </tr>
                 ))}
               </tbody>

@@ -115,7 +115,7 @@ export function PlatformHeader() {
             <div className="hidden xs:block sm:block">
               <div className="text-xs font-black tracking-tight text-white flex items-center gap-1.5">
                 {appName} SaaS
-                <span className="text-2xs px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-mono font-bold border border-indigo-500/30">
+                <span className="text-2xs px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 tabular-nums font-bold border border-indigo-500/30">
                   ROOT
                 </span>
               </div>
@@ -137,7 +137,7 @@ export function PlatformHeader() {
               <span className="truncate sm:hidden text-2xs">Search platform...</span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-2xs font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded shadow-xs">
+              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-2xs tabular-nums text-slate-400 bg-slate-800 border border-slate-700 rounded shadow-xs">
                 /
               </kbd>
             </div>
@@ -178,7 +178,7 @@ export function PlatformHeader() {
                 <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 p-2 text-xs divide-y divide-slate-800 animate-in fade-in-0 zoom-in-95 duration-150">
                   <div className="px-3 py-2">
                     <div className="font-bold text-white truncate">{userFullName}</div>
-                    <div className="text-2xs text-indigo-400 font-mono truncate">{userEmail}</div>
+                    <div className="text-2xs text-indigo-400 tabular-nums truncate">{userEmail}</div>
                     <span className="inline-block mt-1 text-2xs font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                       {formattedRole}
                     </span>

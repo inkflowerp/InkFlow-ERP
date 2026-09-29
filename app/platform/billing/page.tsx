@@ -261,7 +261,7 @@ export default function PlatformBillingPage() {
                           </Badge>
                         </td>
                         <td className="p-3 uppercase">{it.payment_gateway || 'bKash'}</td>
-                        <td className="p-3 font-mono text-xs">{it.transaction_ref || 'TRX-AUTO'}</td>
+                        <td className="p-3 tabular-nums text-xs">{it.transaction_ref || 'TRX-AUTO'}</td>
                         <td className="p-3">
                           <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-2xs uppercase">
                             VERIFIED
@@ -316,7 +316,7 @@ export default function PlatformBillingPage() {
                 ) : (
                   billingHistory.map((tx) => (
                     <tr key={tx.id} className="hover:bg-slate-800/50 transition-colors">
-                      <td className="p-3 font-mono font-bold text-white">
+                      <td className="p-3 tabular-nums font-bold text-white">
                         {tx.invoice_id || tx.internal_trx_id}
                       </td>
                       <td className="p-3">
@@ -410,8 +410,8 @@ export default function PlatformBillingPage() {
                 ) : (
                   platformRecon.map((r) => (
                     <tr key={r.internal_trx_id} className="hover:bg-slate-800/50">
-                      <td className="p-3 font-mono font-bold text-white">{r.internal_trx_id}</td>
-                      <td className="p-3 font-mono text-slate-300">{r.provider_trx_id || '—'}</td>
+                      <td className="p-3 tabular-nums font-bold text-white">{r.internal_trx_id}</td>
+                      <td className="p-3 tabular-nums text-slate-300">{r.provider_trx_id || '—'}</td>
                       <td className="p-3 font-bold uppercase">{r.provider}</td>
                       <td className="p-3 font-bold">
                         <CurrencyDisplay amount={r.expected_amount} /> /{' '}

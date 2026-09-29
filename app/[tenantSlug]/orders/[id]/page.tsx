@@ -375,7 +375,7 @@ function OrderDetailContent() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums">
                 {order.order_number}
               </h1>
               {getPriorityBadge(order.priority)}
@@ -641,7 +641,7 @@ function OrderDetailContent() {
             <Card key={job.id} className="border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow">
               <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 text-xs">
+                  <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400 text-xs">
                     {job.job_number}
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -897,7 +897,7 @@ function OrderDetailContent() {
           <div className="space-y-4 p-4 rounded-xl border-2 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs print:bg-white print:text-slate-900 print:border-slate-900">
             <div className="flex justify-between items-start border-b-2 border-slate-900 dark:border-slate-700 print:border-slate-900 pb-3">
               <div>
-                <span className="font-mono font-black text-xl text-blue-800 dark:text-blue-400 print:text-blue-800">
+                <span className="tabular-nums font-black text-xl text-blue-800 dark:text-blue-400 print:text-blue-800">
                   {selectedJobForPrint.job_number}
                 </span>
                 <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">Sales Order: {order.order_number}</div>
@@ -922,7 +922,7 @@ function OrderDetailContent() {
             <div className="space-y-1 py-1">
               <span className="text-slate-500 dark:text-slate-400 print:text-slate-500">Item Specification:</span>
               <div className="font-bold text-sm text-slate-900 dark:text-white print:text-slate-900">{selectedJobForPrint.product_name}</div>
-              <div className="font-mono text-slate-700 dark:text-slate-300 print:text-slate-700">Dimensions: {selectedJobForPrint.size_spec} • Qty: {selectedJobForPrint.quantity}</div>
+              <div className="tabular-nums text-slate-700 dark:text-slate-300 print:text-slate-700">Dimensions: {selectedJobForPrint.size_spec} • Qty: {selectedJobForPrint.quantity}</div>
               <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">Material: {selectedJobForPrint.material_spec}</div>
             </div>
 

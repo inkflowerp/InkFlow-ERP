@@ -291,13 +291,13 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
                       <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                         {p.printable_material_name && <span className="text-indigo-600">• {p.printable_material_name}</span>}
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                      <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
                         ৳{p.selling_price}
                       </span>
                     </div>
@@ -329,12 +329,12 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
                       <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                      <span className="tabular-nums font-bold text-amber-600 dark:text-amber-400">
                         ৳{p.selling_price}
                       </span>
                     </div>
@@ -366,12 +366,12 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
                       <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
                         ৳{p.selling_price}
                       </span>
                     </div>
@@ -403,12 +403,12 @@ function CatalogItemCombobox({
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
                       <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
+                      <span className="tabular-nums font-bold text-purple-600 dark:text-purple-400">
                         ৳{p.selling_price}
                       </span>
                     </div>
@@ -484,7 +484,7 @@ function CustomerSuggestionsDropdown({
                   </span>
                 )}
               </div>
-              <div className="text-2xs text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-2 mt-0.5">
+              <div className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
                 <span>📞 {cust.mobile}</span>
                 {cust.email && <span className="truncate">✉️ {cust.email}</span>}
               </div>
@@ -2191,7 +2191,7 @@ export function NewQuotationModal({
                     {/* Item Header & Badges */}
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800 pb-2.5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
+                        <span className="tabular-nums text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
                           Item #{index + 1}
                         </span>
 
@@ -2356,7 +2356,7 @@ export function NewQuotationModal({
                             placeholder="0"
                             value={item.width ?? ''}
                             onChange={(e) => handleItemChange(index, 'width', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
-                            className="text-xs h-9 font-mono w-full"
+                            className="text-xs h-9 tabular-nums w-full"
                           />
                         </div>
 
@@ -2368,7 +2368,7 @@ export function NewQuotationModal({
                             placeholder="0"
                             value={item.height ?? ''}
                             onChange={(e) => handleItemChange(index, 'height', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
-                            className="text-xs h-9 font-mono w-full"
+                            className="text-xs h-9 tabular-nums w-full"
                           />
                         </div>
 
@@ -2392,7 +2392,7 @@ export function NewQuotationModal({
                             min="1"
                             value={item.quantity}
                             onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                            className="text-xs h-9 font-mono font-bold w-full"
+                            className="text-xs h-9 tabular-nums font-bold w-full"
                           />
                         </div>
 
@@ -2400,7 +2400,7 @@ export function NewQuotationModal({
                           <div className="flex items-center justify-between mb-1">
                             <Label className="text-2xs font-semibold">Finishing</Label>
                             {(item.finishing_rate ?? 0) > 0 && (
-                              <span className="text-2xs text-indigo-600 font-mono font-bold">
+                              <span className="text-2xs text-indigo-600 tabular-nums font-bold">
                                 +৳{item.finishing_rate}
                               </span>
                             )}
@@ -2435,7 +2435,7 @@ export function NewQuotationModal({
                           <div className="flex items-center justify-between mb-1">
                             <Label className="text-2xs font-semibold">Add on</Label>
                             {(item.add_on_rate ?? 0) > 0 && (
-                              <span className="text-2xs text-purple-600 font-mono font-bold">
+                              <span className="text-2xs text-purple-600 tabular-nums font-bold">
                                 +৳{item.add_on_rate}
                               </span>
                             )}
@@ -2462,7 +2462,7 @@ export function NewQuotationModal({
                             step="0.5"
                             value={item.unit_rate ?? ''}
                             onChange={(e) => handleItemChange(index, 'unit_rate', e.target.value)}
-                            className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400 w-full"
+                            className="text-xs h-9 tabular-nums font-bold text-blue-600 dark:text-blue-400 w-full"
                           />
                         </div>
                       </div>
@@ -2475,7 +2475,7 @@ export function NewQuotationModal({
                           <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">Physical Specs & Packaging</span>
                           <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
                             {item.dimensions_spec ? (
-                              <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-2xs">
+                              <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums text-2xs">
                                 📐 {item.dimensions_spec}
                               </span>
                             ) : (
@@ -2496,7 +2496,7 @@ export function NewQuotationModal({
                             min="1"
                             value={item.quantity}
                             onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                            className="text-xs h-9 font-mono font-bold"
+                            className="text-xs h-9 tabular-nums font-bold"
                           />
                         </div>
 
@@ -2523,7 +2523,7 @@ export function NewQuotationModal({
                             step="1"
                             value={item.unit_rate || ''}
                             onChange={(e) => handleItemChange(index, 'unit_rate', parseFloat(e.target.value) || 0)}
-                            className="text-xs h-9 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+                            className="text-xs h-9 tabular-nums font-bold text-emerald-600 dark:text-emerald-400"
                           />
                         </div>
                       </div>
@@ -2607,7 +2607,7 @@ export function NewQuotationModal({
                         )}
 
                         {estimatedDirectCost > 0 && (
-                          <span className="text-2xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono">
+                          <span className="text-2xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums">
                             Est. Direct Cost: ৳{estimatedDirectCost} • Margin: {estMarginPercent}%
                           </span>
                         )}
@@ -2615,7 +2615,7 @@ export function NewQuotationModal({
 
                       <div className="text-right">
                         <span className="text-2xs text-slate-400 mr-2">Line Total:</span>
-                        <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
+                        <span className="tabular-nums font-bold text-slate-900 dark:text-white text-sm">
                           {formatBDT(Number(item.item_total))}
                         </span>
                       </div>
@@ -2769,7 +2769,7 @@ export function NewQuotationModal({
                           }
                         }}
                         placeholder="0"
-                        className="w-14 h-7 text-xs text-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-14 h-7 text-xs text-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 tabular-nums focus:outline-none focus:ring-1 focus:ring-blue-500 no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <span className="w-16 text-right font-bold font-numeric text-slate-900 dark:text-slate-100">
                         {formatBDT(effectiveDiscountAmount)}
@@ -2903,7 +2903,7 @@ export function NewQuotationModal({
               <select
                 value={quickAddUnit}
                 onChange={(e) => setQuickAddUnit(e.target.value)}
-                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium uppercase font-mono"
+                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium uppercase tabular-nums"
               >
                 <option value="sft">{tBilingual('sft', 'বর্গফুট')}</option>
                 <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
@@ -2924,7 +2924,7 @@ export function NewQuotationModal({
                 placeholder="0"
                 value={quickAddPrice || ''}
                 onChange={(e) => setQuickAddPrice(parseFloat(e.target.value) || 0)}
-                className="text-xs h-9 font-mono font-bold no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="text-xs h-9 tabular-nums font-bold no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
 
@@ -2937,7 +2937,7 @@ export function NewQuotationModal({
                 placeholder="0"
                 value={quickAddMinPrice || ''}
                 onChange={(e) => setQuickAddMinPrice(parseFloat(e.target.value) || 0)}
-                className="text-xs h-9 font-mono text-amber-700 dark:text-amber-400 no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="text-xs h-9 tabular-nums text-amber-700 dark:text-amber-400 no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>

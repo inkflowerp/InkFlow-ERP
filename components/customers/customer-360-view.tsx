@@ -79,7 +79,7 @@ export function Customer360View({
               </div>
 
               <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
-                <span className="flex items-center gap-1 font-mono">
+                <span className="flex items-center gap-1 tabular-nums">
                   <Phone className="h-3.5 w-3.5 text-slate-400" />
                   {phone}
                 </span>
@@ -98,7 +98,7 @@ export function Customer360View({
             <div className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
               {tBilingual('Receivable Due', 'বাকি টাকা')}
             </div>
-            <div className={`text-xl font-black font-mono ${dueAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+            <div className={`text-xl font-black tabular-nums ${dueAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
               ৳{dueAmount.toLocaleString()}
             </div>
           </div>
@@ -202,7 +202,7 @@ export function Customer360View({
                   <CardContent className="p-4 flex items-center justify-between gap-3">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <Badge className="bg-slate-800 text-white text-xs font-mono font-bold">
+                        <Badge className="bg-slate-800 text-white text-xs tabular-nums font-bold">
                           #{j.production_job_number}
                         </Badge>
                         <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{j.product_name}</span>
@@ -238,7 +238,7 @@ export function Customer360View({
                   <CardContent className="p-4 flex items-center justify-between gap-3">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">
+                        <span className="text-xs font-bold tabular-nums text-blue-600 dark:text-blue-400">
                           {inv.invoice_number}
                         </span>
                         <Badge
@@ -253,11 +253,11 @@ export function Customer360View({
                     </div>
 
                     <div className="text-right">
-                      <div className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
+                      <div className="text-sm font-bold tabular-nums text-slate-900 dark:text-slate-100">
                         ৳{inv.grand_total.toLocaleString()}
                       </div>
                       {inv.due_amount && inv.due_amount > 0 ? (
-                        <div className="text-xs font-bold text-rose-600 font-mono">
+                        <div className="text-xs font-bold text-rose-600 tabular-nums">
                           Due: ৳{inv.due_amount.toLocaleString()}
                         </div>
                       ) : null}
@@ -282,7 +282,7 @@ export function Customer360View({
                   <CardContent className="p-4 flex items-center justify-between gap-3">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold font-mono">{p.receipt_number}</span>
+                        <span className="text-xs font-bold tabular-nums">{p.receipt_number}</span>
                         <Badge variant="outline" className="text-2xs uppercase font-bold">
                           {p.payment_method}
                         </Badge>
@@ -291,10 +291,10 @@ export function Customer360View({
                     </div>
 
                     <div className="text-right">
-                      <div className="text-base font-bold font-mono text-emerald-600">
+                      <div className="text-base font-bold tabular-nums text-emerald-600">
                         +৳{p.amount.toLocaleString()}
                       </div>
-                      <div className="text-2xs text-slate-400 font-mono">{p.created_at.split('T')[0]}</div>
+                      <div className="text-2xs text-slate-400 tabular-nums">{p.created_at.split('T')[0]}</div>
                     </div>
                   </CardContent>
                 </Card>

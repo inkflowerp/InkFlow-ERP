@@ -175,7 +175,7 @@ export function CollectPaymentModal({
                 {selectedCustomerName}
               </span>
               {initialDueAmount > 0 && (
-                <Badge variant="outline" className="text-rose-600 border-rose-200 font-mono">
+                <Badge variant="outline" className="text-rose-600 border-rose-200 tabular-nums">
                   Due: ৳{initialDueAmount.toLocaleString()}
                 </Badge>
               )}
@@ -203,7 +203,7 @@ export function CollectPaymentModal({
             <Label className="text-2xs font-semibold text-slate-500 mb-1 block">
               {tBilingual('Invoice Reference', 'ইনভয়েস নম্বর')}
             </Label>
-            <div className="p-2 rounded-lg bg-blue-50/50 dark:bg-blue-950/30 text-xs font-mono font-medium text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/60">
+            <div className="p-2 rounded-lg bg-blue-50/50 dark:bg-blue-950/30 text-xs tabular-nums font-medium text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/60">
               #{invoiceId}
             </div>
           </div>
@@ -247,7 +247,7 @@ export function CollectPaymentModal({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              className="h-9 pl-7 text-xs rounded-xl font-mono font-bold text-slate-900 dark:text-white"
+              className="h-9 pl-7 text-xs rounded-xl tabular-nums font-bold text-slate-900 dark:text-white"
               required
             />
           </div>

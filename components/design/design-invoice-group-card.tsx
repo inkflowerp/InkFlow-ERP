@@ -249,7 +249,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
               <div className="min-w-0">
                 <Link
                   href={invoiceHref}
-                  className="font-mono text-sm font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                  className="tabular-nums text-sm font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap"
                 >
                   <span>{invoiceNumber}</span>
                 </Link>
@@ -258,7 +258,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 </div>
                 <div className="flex items-center gap-2.5 text-2xs text-slate-500 dark:text-slate-400 mt-0.5 whitespace-nowrap">
                   {customerPhone && (
-                    <span className="flex items-center gap-1 font-mono">
+                    <span className="flex items-center gap-1 tabular-nums">
                       <Phone className="w-3 h-3 text-slate-400" />
                       {customerPhone}
                     </span>
@@ -283,7 +283,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
               <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
                 {singleJobSpecs?.serviceName || singleJob.title || singleJob.product_name || 'Design Product'}
               </div>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600 dark:text-slate-400 mt-1 font-mono">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600 dark:text-slate-400 mt-1 tabular-nums">
                 <span className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap" title={singleJobSpecs?.material}>
                   <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                   <span className="truncate max-w-[220px]">{singleJobSpecs?.material}</span>
@@ -319,7 +319,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
             <div className="flex items-center gap-4 shrink-0">
               <div className="text-right whitespace-nowrap">
                 <div className="flex justify-end">{renderStatusBadge(singleJob.status)}</div>
-                <div className="flex items-center justify-end gap-1 text-xs text-slate-700 dark:text-slate-300 mt-1 font-mono whitespace-nowrap">
+                <div className="flex items-center justify-end gap-1 text-xs text-slate-700 dark:text-slate-300 mt-1 tabular-nums whitespace-nowrap">
                   <Calendar className="w-3 h-3 text-slate-400" />
                   <span>{displayDueDate}</span>
                 </div>
@@ -471,7 +471,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
           {/* Technical Specifications (6-Field Specs) Panel - Rendered full width BELOW the row */}
           {isExpanded && singleJobSpecs && (
             <div className="px-5 pb-5 pt-0 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
-              <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 text-xs font-mono space-y-3 mt-3 shadow-2xs">
+              <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 text-xs tabular-nums space-y-3 mt-3 shadow-2xs">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                   <div className="text-2xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                     <Sliders className="w-3.5 h-3.5 text-blue-500" />
@@ -544,7 +544,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
               <div className="min-w-0">
                 <Link
                   href={invoiceHref}
-                  className="font-mono text-sm font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                  className="tabular-nums text-sm font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap"
                 >
                   <span>{invoiceNumber}</span>
                 </Link>
@@ -553,7 +553,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 </div>
                 <div className="flex items-center gap-2.5 text-2xs text-slate-500 dark:text-slate-400 mt-0.5 whitespace-nowrap">
                   {customerPhone && (
-                    <span className="flex items-center gap-1 font-mono">
+                    <span className="flex items-center gap-1 tabular-nums">
                       <Phone className="w-3 h-3 text-slate-400" />
                       {customerPhone}
                     </span>
@@ -577,7 +577,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
             <div className="flex items-center justify-between lg:justify-end gap-6 flex-1">
               <div className="text-right min-w-[130px]">
                 <div className="flex justify-end">{renderStatusBadge(overallStatus)}</div>
-                <div className="flex items-center justify-end gap-1 text-xs text-slate-700 dark:text-slate-300 mt-1 font-mono">
+                <div className="flex items-center justify-end gap-1 text-xs text-slate-700 dark:text-slate-300 mt-1 tabular-nums">
                   <Calendar className="w-3 h-3 text-slate-400" />
                   <span>{displayDueDate}</span>
                 </div>
@@ -651,12 +651,12 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                         className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
                       >
                         {/* 1. # */}
-                        <td className="py-3 px-4 text-center font-mono text-slate-400 text-xs">
+                        <td className="py-3 px-4 text-center tabular-nums text-slate-400 text-xs">
                           {idx + 1}
                         </td>
 
                         {/* 2. Job Code */}
-                        <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white text-xs">
+                        <td className="py-3 px-3 tabular-nums font-bold text-slate-900 dark:text-white text-xs">
                           <Link
                             href={getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)}
                             className="hover:underline hover:text-blue-600"
@@ -676,7 +676,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                         </td>
 
                         {/* 4. Size & Qty */}
-                        <td className="py-3 px-3 text-xs font-mono">
+                        <td className="py-3 px-3 text-xs tabular-nums">
                           <div className="text-slate-800 dark:text-slate-200 font-semibold">
                             {jobSpecs.size} · {jobSpecs.quantity}
                           </div>
@@ -702,7 +702,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                         </td>
 
                         {/* 6. Due Date */}
-                        <td className="py-3 px-3 text-slate-600 dark:text-slate-400 text-xs font-mono">
+                        <td className="py-3 px-3 text-slate-600 dark:text-slate-400 text-xs tabular-nums">
                           {jobDueDate}
                         </td>
 

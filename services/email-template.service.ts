@@ -556,7 +556,7 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
       <p>Hello <strong>{{user_name}}</strong>,</p>
       <p>Thank you for registering with <strong>InkFlow</strong>. Please use the 6-digit verification code below to activate your account:</p>
       <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
-        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: monospace;">{{otp_code}}</span>
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{{otp_code}}</span>
       </div>
       <p style="text-align: center; margin: 20px 0;">
         <a href="{{verification_link}}" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 28px; font-weight: bold; border-radius: 6px; text-decoration: none;">Verify Email Address</a>
@@ -567,7 +567,7 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
       <p>প্রিয় <strong>{{user_name}}</strong>,</p>
       <p>InkFlow-এ নিবন্ধন করার জন্য ধন্যবাদ। আপনার একাউন্ট সক্রিয় করতে নিচের ৬-সংখ্যার যাচাইকরণ কোডটি ব্যবহার করুন:</p>
       <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
-        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: monospace;">{{otp_code}}</span>
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{{otp_code}}</span>
       </div>
       <p style="text-align: center; margin: 20px 0;">
         <a href="{{verification_link}}" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 28px; font-weight: bold; border-radius: 6px; text-decoration: none;">ইমেইল যাচাই করুন</a>
@@ -593,7 +593,7 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
       <p>Hello <strong>{{user_name}}</strong>,</p>
       <p>We received a request to reset the password for your InkFlow account (<strong>{{email}}</strong>).</p>
       <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
-        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: monospace;">{{otp_code}}</span>
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{{otp_code}}</span>
       </div>
       <p style="text-align: center; margin: 20px 0;">
         <a href="{{reset_link}}" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 28px; font-weight: bold; border-radius: 6px; text-decoration: none;">Reset My Password</a>
@@ -604,7 +604,7 @@ export const DEFAULT_EMAIL_TEMPLATES: EmailTemplateRecord[] = [
       <p>প্রিয় <strong>{{user_name}}</strong>,</p>
       <p>আপনার InkFlow একাউন্টের (<strong>{{email}}</strong>) পাসওয়ার্ড রিসেট করার জন্য একটি অনুরোধ পাওয়া গেছে।</p>
       <div style="background: #f1f5f9; border: 2px dashed #4f46e5; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0;">
-        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: monospace;">{{otp_code}}</span>
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4f46e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{{otp_code}}</span>
       </div>
       <p style="text-align: center; margin: 20px 0;">
         <a href="{{reset_link}}" style="display: inline-block; background: #4f46e5; color: #ffffff; padding: 12px 28px; font-weight: bold; border-radius: 6px; text-decoration: none;">পাসওয়ার্ড পরিবর্তন করুন</a>

@@ -293,7 +293,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 {tBilingual('Pre-Press Command Center', 'প্রি-প্রেস কমান্ড সেন্টার')}
               </Badge>
-              <Badge className="bg-white/10 text-white border-white/15 text-xs font-mono font-medium">
+              <Badge className="bg-white/10 text-white border-white/15 text-xs tabular-nums font-medium">
                 {userDisplayName}
               </Badge>
             </div>
@@ -586,12 +586,12 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                     {/* Left: Job Info */}
                     <div className="space-y-2 min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline" className="text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                        <Badge variant="outline" className="text-xs tabular-nums font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
                           #{job.design_number || job.id}
                         </Badge>
 
                         {job.order_number && (
-                          <Badge variant="outline" className="text-xs font-mono font-medium text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900">
+                          <Badge variant="outline" className="text-xs tabular-nums font-medium text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900">
                             Order: #{job.order_number}
                           </Badge>
                         )}
@@ -624,7 +624,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                         )}
 
                         {/* Version tag */}
-                        <Badge variant="outline" className="text-2xs font-mono font-medium text-slate-600 dark:text-slate-400">
+                        <Badge variant="outline" className="text-2xs tabular-nums font-medium text-slate-600 dark:text-slate-400">
                           v{latestVer?.version_number || job.current_version || 1}
                         </Badge>
                       </div>
@@ -726,14 +726,14 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
           <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Layers className="h-4 w-4 text-indigo-600" />
             <span>{tBilingual('Production Floor Design Operations', 'ফ্লোর ডিজাইন ও কাটিং টাস্ক')}</span>
-            <Badge variant="secondary" className="text-xs font-mono">{productionDesignTasks.length}</Badge>
+            <Badge variant="secondary" className="text-xs tabular-nums">{productionDesignTasks.length}</Badge>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {productionDesignTasks.map((t) => (
               <Card key={t.id} className="border border-slate-200 dark:border-slate-800 p-3.5">
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="outline" className="text-2xs font-mono font-bold">
+                  <Badge variant="outline" className="text-2xs tabular-nums font-bold">
                     #{t.job_number || t.task_number}
                   </Badge>
                   <Badge className="text-2xs uppercase font-bold" variant={t.status === 'completed' ? 'default' : 'secondary'}>
@@ -830,7 +830,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {tBilingual('Message Preview', 'মেসেজের বিবরণ')}
                 </label>
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap max-h-48 overflow-y-auto">
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs tabular-nums text-slate-800 dark:text-slate-200 whitespace-pre-wrap max-h-48 overflow-y-auto">
                   {currentWhatsAppMessage}
                 </div>
               </div>

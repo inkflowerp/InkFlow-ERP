@@ -107,7 +107,7 @@ export function ProblemSection() {
                   <p className="text-2xs sm:text-xs text-red-300/80">Disconnected, error-prone and stressful</p>
                 </div>
               </div>
-              <span className="text-2xs sm:text-xs font-mono font-bold text-red-400 bg-red-950/60 px-2 sm:px-2.5 py-1 rounded border border-red-800/40 shrink-0">
+              <span className="text-2xs sm:text-xs tabular-nums font-bold text-red-400 bg-red-950/60 px-2 sm:px-2.5 py-1 rounded border border-red-800/40 shrink-0">
                 OLD WAY
               </span>
             </div>
@@ -148,7 +148,7 @@ export function ProblemSection() {
                   <p className="text-2xs sm:text-xs text-cyan-300/80">Synchronized, automated and profitable</p>
                 </div>
               </div>
-              <span className="text-2xs sm:text-xs font-mono font-bold text-cyan-400 bg-cyan-950/60 px-2 sm:px-2.5 py-1 rounded border border-cyan-800/40 shrink-0">
+              <span className="text-2xs sm:text-xs tabular-nums font-bold text-cyan-400 bg-cyan-950/60 px-2 sm:px-2.5 py-1 rounded border border-cyan-800/40 shrink-0">
                 PRINTERP OS
               </span>
             </div>

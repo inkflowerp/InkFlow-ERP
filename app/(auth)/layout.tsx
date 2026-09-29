@@ -142,7 +142,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <span>Need setup assistance or customized onboarding? Hotline: </span>
           <a
             href={`tel:${(supportHelpline || contactPhone || '+8801700000000').replace(/[^\d+]/g, '')}`}
-            className="font-semibold text-cyan-600 dark:text-cyan-400 hover:underline font-mono"
+            className="font-semibold text-cyan-600 dark:text-cyan-400 hover:underline tabular-nums"
           >
             {supportHelpline || contactPhone || '+880 1700-000000'}
           </a>

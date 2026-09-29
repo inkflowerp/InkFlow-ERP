@@ -91,7 +91,7 @@ export function TestimonialSection() {
         </div>
 
         {/* Development Placeholder Notice */}
-        <div className="mt-6 sm:mt-8 text-center text-2xs sm:text-xs text-slate-500 font-mono">
+        <div className="mt-6 sm:mt-8 text-center text-2xs sm:text-xs text-slate-500 tabular-nums">
           * Representative customer testimonials based on real Bangladesh commercial printing workflows.
         </div>
       </div>

@@ -575,7 +575,7 @@ export default function PlatformAdminsPage() {
                           <span>{adm.full_name}</span>
                           {isOwner && <Crown className="h-3.5 w-3.5 text-amber-400 shrink-0" />}
                         </div>
-                        <div className="text-xs text-slate-400 font-mono truncate flex items-center gap-1">
+                        <div className="text-xs text-slate-400 tabular-nums truncate flex items-center gap-1">
                           <Mail className="h-3 w-3 shrink-0 text-slate-500" />
                           <span>{adm.email}</span>
                         </div>
@@ -594,7 +594,7 @@ export default function PlatformAdminsPage() {
 
                   {/* Phone if available */}
                   {adm.phone && (
-                    <div className="text-2xs text-slate-400 flex items-center gap-1.5 font-mono">
+                    <div className="text-2xs text-slate-400 flex items-center gap-1.5 tabular-nums">
                       <Phone className="h-3 w-3 text-slate-500" />
                       <span>{adm.phone}</span>
                     </div>
@@ -636,7 +636,7 @@ export default function PlatformAdminsPage() {
                   </div>
 
                   {/* Last login info */}
-                  <div className="text-2xs text-slate-500 flex items-center gap-1 font-mono pt-1">
+                  <div className="text-2xs text-slate-500 flex items-center gap-1 tabular-nums pt-1">
                     <Clock className="h-3 w-3" />
                     <span>
                       {adm.last_login_at
@@ -732,7 +732,7 @@ export default function PlatformAdminsPage() {
                           <span>{adm.full_name}</span>
                           {isOwner && <Crown className="h-3 w-3 text-amber-400" />}
                         </div>
-                        <div className="text-2xs text-slate-400 font-mono mt-0.5">{adm.email}</div>
+                        <div className="text-2xs text-slate-400 tabular-nums mt-0.5">{adm.email}</div>
                       </td>
 
                       <td className="py-3.5 px-4">
@@ -774,7 +774,7 @@ export default function PlatformAdminsPage() {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono text-slate-400 text-2xs">
+                      <td className="py-3.5 px-4 tabular-nums text-slate-400 text-2xs">
                         {adm.last_login_at
                           ? formatDate(adm.last_login_at)
                           : 'Never'}
@@ -881,7 +881,7 @@ export default function PlatformAdminsPage() {
                     type="email"
                     required
                     placeholder="tariqul@inkflow.com.bd"
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 font-mono focus-visible:ring-indigo-500"
+                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums focus-visible:ring-indigo-500"
                   />
                 </div>
 
@@ -891,7 +891,7 @@ export default function PlatformAdminsPage() {
                     name="phone"
                     type="tel"
                     placeholder="+880 1711-000000"
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 font-mono focus-visible:ring-indigo-500"
+                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums focus-visible:ring-indigo-500"
                   />
                 </div>
 
@@ -997,7 +997,7 @@ export default function PlatformAdminsPage() {
                 </button>
               </div>
               <CardDescription className="text-xs text-slate-400">
-                Identity: <strong className="text-white font-mono">{editingAdmin.email}</strong>
+                Identity: <strong className="text-white tabular-nums">{editingAdmin.email}</strong>
               </CardDescription>
             </CardHeader>
 
@@ -1026,7 +1026,7 @@ export default function PlatformAdminsPage() {
                     value={targetPhone}
                     onChange={(e) => setTargetPhone(e.target.value)}
                     placeholder="+880 1711-000000"
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 font-mono focus-visible:ring-indigo-500"
+                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums focus-visible:ring-indigo-500"
                   />
                 </div>
 
@@ -1126,7 +1126,7 @@ export default function PlatformAdminsPage() {
                 </button>
               </div>
               <CardDescription className="text-xs text-slate-400">
-                Identity: <strong className="text-white font-mono">{deletingAdmin.email}</strong>
+                Identity: <strong className="text-white tabular-nums">{deletingAdmin.email}</strong>
               </CardDescription>
             </CardHeader>
 

@@ -152,7 +152,7 @@ export function NeedsAttentionPanel({
                     <div className="flex items-center gap-1.5">
                       <Link
                         href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
-                        className="font-mono font-bold text-xs text-blue-600 hover:underline flex items-center gap-1"
+                        className="tabular-nums font-bold text-xs text-blue-600 hover:underline flex items-center gap-1"
                       >
                         <span>{q.quotation_number}</span>
                       </Link>
@@ -167,7 +167,7 @@ export function NeedsAttentionPanel({
                         {sector === 'offset_print' ? 'Offset' : sector === 'signage_fabrication' ? 'Signage' : 'Digital'}
                       </span>
                     </div>
-                    <span className="font-mono font-bold text-xs text-slate-900 dark:text-white">
+                    <span className="tabular-nums font-bold text-xs text-slate-900 dark:text-white">
                       {formatBDT(q.grand_total)}
                     </span>
                   </div>

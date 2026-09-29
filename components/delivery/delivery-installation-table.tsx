@@ -78,12 +78,12 @@ export function DeliveryInstallationTable({
             {installations.map((ins) => (
               <tr key={ins.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                 {/* Installation # */}
-                <td className="py-3.5 px-4 font-mono font-bold text-purple-600 dark:text-purple-400">
+                <td className="py-3.5 px-4 tabular-nums font-bold text-purple-600 dark:text-purple-400">
                   <div className="flex items-center gap-1">
                     <span>{ins.installation_number}</span>
                   </div>
                   {ins.order_number && (
-                    <span className="text-2xs text-slate-400 font-normal block font-mono">
+                    <span className="text-2xs text-slate-400 font-normal block tabular-nums">
                       ({ins.order_number})
                     </span>
                   )}
@@ -114,7 +114,7 @@ export function DeliveryInstallationTable({
                 </td>
 
                 {/* Scheduled Window */}
-                <td className="py-3.5 px-4 text-xs font-mono">
+                <td className="py-3.5 px-4 text-xs tabular-nums">
                   <div className="font-semibold text-slate-800 dark:text-slate-200">
                     {ins.installation_date}
                   </div>
@@ -161,7 +161,7 @@ export function DeliveryInstallationTable({
         {installations.map((ins) => (
           <div key={ins.id} className="p-4 space-y-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
             <div className="flex items-center justify-between">
-              <div className="font-mono font-bold text-sm text-purple-600 dark:text-purple-400">
+              <div className="tabular-nums font-bold text-sm text-purple-600 dark:text-purple-400">
                 {ins.installation_number}
               </div>
               {getInstallationStatusBadge(ins.status)}
@@ -182,7 +182,7 @@ export function DeliveryInstallationTable({
               </div>
               <div>
                 <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'তারিখ' : 'Date'}</span>
-                <span className="font-mono text-slate-700 dark:text-slate-300">{ins.installation_date}</span>
+                <span className="tabular-nums text-slate-700 dark:text-slate-300">{ins.installation_date}</span>
               </div>
             </div>
 

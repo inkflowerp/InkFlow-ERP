@@ -243,7 +243,7 @@ export function CustomerRatesTable({
                             {r.productNameBn}
                           </div>
                         )}
-                        <div className="text-2xs text-slate-400 font-mono mt-0.5">
+                        <div className="text-2xs text-slate-400 tabular-nums mt-0.5">
                           {r.sku}
                         </div>
                       </td>
@@ -451,7 +451,7 @@ export function CustomerRatesTable({
                     {r.productNameBn && (
                       <div className="text-xs text-slate-500">{r.productNameBn}</div>
                     )}
-                    <div className="text-2xs text-slate-400 font-mono mt-0.5">
+                    <div className="text-2xs text-slate-400 tabular-nums mt-0.5">
                       {r.sku} • {r.unit.toUpperCase()}
                     </div>
                   </div>

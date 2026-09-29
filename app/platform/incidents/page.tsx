@@ -110,7 +110,7 @@ export default function PlatformIncidentsPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <span
-                      className={`text-2xs font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${
+                      className={`text-2xs tabular-nums font-bold uppercase px-2 py-0.5 rounded-full border ${
                         isMajor
                           ? 'bg-red-500/20 text-red-300 border-red-500/40'
                           : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
@@ -119,7 +119,7 @@ export default function PlatformIncidentsPage() {
                       {inc.severity} Severity
                     </span>
                     <span
-                      className={`text-2xs font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${
+                      className={`text-2xs tabular-nums font-bold uppercase px-2 py-0.5 rounded-full border ${
                         isResolved
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                           : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
@@ -127,7 +127,7 @@ export default function PlatformIncidentsPage() {
                     >
                       {inc.status}
                     </span>
-                    <span className="font-mono text-xs text-indigo-400 font-bold">{inc.service_name}</span>
+                    <span className="tabular-nums text-xs text-indigo-400 font-bold">{inc.service_name}</span>
                   </div>
                   <h2 className="text-base font-bold text-white mt-1">{inc.title}</h2>
                 </div>
@@ -169,8 +169,8 @@ export default function PlatformIncidentsPage() {
 
               <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-2xs text-slate-500 flex-wrap gap-2">
                 <span>Affected Tenants: <strong className="text-slate-300">{inc.affected_tenants_count} organizations</strong></span>
-                <span className="font-mono">Started: {new Date(inc.started_at).toLocaleString()}</span>
-                {inc.resolved_at && <span className="font-mono text-emerald-400">Resolved: {new Date(inc.resolved_at).toLocaleString()}</span>}
+                <span className="tabular-nums">Started: {new Date(inc.started_at).toLocaleString()}</span>
+                {inc.resolved_at && <span className="tabular-nums text-emerald-400">Resolved: {new Date(inc.resolved_at).toLocaleString()}</span>}
               </div>
             </Card>
           )

@@ -147,7 +147,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
 
             <div className="flex items-center justify-center md:justify-end gap-1.5">
               {todayAttendance?.check_in_time ? (
-                <Badge className="bg-emerald-500 text-white font-mono text-xs">
+                <Badge className="bg-emerald-500 text-white tabular-nums text-xs">
                   IN: {todayAttendance.check_in_time}
                 </Badge>
               ) : (
@@ -156,7 +156,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
                 </Badge>
               )}
               {todayAttendance?.check_out_time && (
-                <Badge className="bg-blue-600 text-white font-mono text-xs">
+                <Badge className="bg-blue-600 text-white tabular-nums text-xs">
                   OUT: {todayAttendance.check_out_time}
                 </Badge>
               )}
@@ -324,13 +324,13 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
             </div>
 
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs font-mono font-bold bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200">
+              <Badge variant="outline" className="text-xs tabular-nums font-bold bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200">
                 {activeCount} {tBilingual('In Progress', 'চলমান')}
               </Badge>
-              <Badge variant="outline" className="text-xs font-mono font-bold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200">
+              <Badge variant="outline" className="text-xs tabular-nums font-bold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200">
                 {queuedCount} {tBilingual('Queued', 'অপেক্ষারত')}
               </Badge>
-              <Badge variant="outline" className="text-xs font-mono font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200">
+              <Badge variant="outline" className="text-xs tabular-nums font-bold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200">
                 {completedTodayCount} {tBilingual('Done Today', 'আজ সম্পন্ন')}
               </Badge>
               <Button

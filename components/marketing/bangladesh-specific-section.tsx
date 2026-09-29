@@ -59,7 +59,7 @@ export function BangladeshSpecificSection() {
                   <span className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-500/20 group-hover:scale-105 transition-transform shrink-0">
                     {idx + 1}
                   </span>
-                  <span className="text-2xs font-mono text-slate-500 uppercase">
+                  <span className="text-2xs tabular-nums text-slate-500 uppercase">
                     Local Feature
                   </span>
                 </div>

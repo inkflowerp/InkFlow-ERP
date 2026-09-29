@@ -168,7 +168,7 @@ export function QuotationTable({
               return (
                 <tr key={q.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                   {/* Quote Number */}
-                  <td className="py-3.5 px-4 font-mono font-bold text-blue-600">
+                  <td className="py-3.5 px-4 tabular-nums font-bold text-blue-600">
                     <Link
                       href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
                       className="hover:underline flex items-center gap-1 group"
@@ -188,7 +188,7 @@ export function QuotationTable({
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 text-2xs font-mono text-slate-500">
+                    <div className="flex items-center gap-1.5 text-2xs tabular-nums text-slate-500">
                       {q.customer_phone && (
                         <a href={`tel:${q.customer_phone}`} className="hover:text-blue-600 hover:underline">
                           {q.customer_phone}
@@ -220,7 +220,7 @@ export function QuotationTable({
 
                   {/* Grand Total */}
                   <td className="py-3.5 px-4">
-                    <div className="font-mono font-bold text-slate-900 dark:text-white">
+                    <div className="tabular-nums font-bold text-slate-900 dark:text-white">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
                     <div className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
@@ -329,7 +329,7 @@ export function QuotationTable({
                               <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                               <div className="flex flex-col text-left">
                                 <span>{isBn ? 'কল করুন' : 'Call Customer'}</span>
-                                <span className="text-2xs text-slate-400 font-mono">{q.customer_phone}</span>
+                                <span className="text-2xs text-slate-400 tabular-nums">{q.customer_phone}</span>
                               </div>
                             </a>
                           ) : null}
@@ -390,7 +390,7 @@ export function QuotationTable({
                 <div className="flex items-center gap-1.5">
                   <Link
                     href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
-                    className="font-mono font-bold text-sm text-blue-600 hover:underline flex items-center gap-1"
+                    className="tabular-nums font-bold text-sm text-blue-600 hover:underline flex items-center gap-1"
                   >
                     <span>{q.quotation_number}</span>
                     <ExternalLink className="h-3.5 w-3.5 opacity-70" />
@@ -408,14 +408,14 @@ export function QuotationTable({
                     {q.customer_name} {q.customer_company && `(${q.customer_company})`}
                   </div>
                   {q.customer_phone && (
-                    <a href={`tel:${q.customer_phone}`} className="text-xs font-mono text-blue-600 hover:underline">
+                    <a href={`tel:${q.customer_phone}`} className="text-xs tabular-nums text-blue-600 hover:underline">
                       {q.customer_phone}
                     </a>
                   )}
                 </div>
                 <div className="text-right shrink-0">
                   <span className="text-2xs uppercase font-semibold text-slate-400 block">Grand Total</span>
-                  <span className="text-base font-black text-slate-900 dark:text-white font-mono">
+                  <span className="text-base font-black text-slate-900 dark:text-white tabular-nums">
                     {formatBDT(q.grand_total)}
                   </span>
                   <span className="text-2xs text-amber-600 block">

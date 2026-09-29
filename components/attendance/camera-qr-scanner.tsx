@@ -410,7 +410,7 @@ export function CameraQrScanner({
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
                 placeholder="e.g. INKFLOW:ATT:v1:... or Terminal Code"
-                className="bg-slate-900 border-slate-700 text-white font-mono text-xs h-11"
+                className="bg-slate-900 border-slate-700 text-white tabular-nums text-xs h-11"
                 autoFocus
               />
             </div>

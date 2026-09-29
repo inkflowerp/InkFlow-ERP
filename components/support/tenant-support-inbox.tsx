@@ -221,7 +221,7 @@ export function TenantSupportInbox({
                 {/* Line 1: Ticket number + Status badge + Time */}
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-slate-900 dark:text-slate-100 text-2xs">
+                    <span className="tabular-nums font-bold text-slate-900 dark:text-slate-100 text-2xs">
                       {conv.ticket_number}
                     </span>
                     <span

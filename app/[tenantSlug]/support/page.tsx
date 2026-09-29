@@ -139,21 +139,21 @@ export default function TenantSupportPage() {
       />
 
       {/* EMERGENCY & SYSTEM STATUS BAR */}
-      <div className="p-3 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50/80 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-slate-900/40 border border-blue-200/80 dark:border-blue-900/50 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+      <div className="p-3.5 bg-muted/40 border border-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2.5">
-          <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0 ring-4 ring-emerald-500/20" />
-          <div className="text-xs text-slate-700 dark:text-slate-300">
-            <span className="font-bold text-slate-900 dark:text-white">
+          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0 ring-4 ring-emerald-500/20" />
+          <div className="text-xs text-foreground">
+            <span className="font-bold">
               {tBilingual('System Status: Operational', 'সিস্টেম স্ট্যাটাস: সম্পূর্ণ সচল')}
             </span>
-            <span className="hidden sm:inline text-slate-500 dark:text-slate-400 ml-1.5">
+            <span className="hidden sm:inline text-muted-foreground ml-1.5">
               • {tBilingual('Dhaka High-Speed Cloud Node Active (Avg Response: < 15 mins)', 'ঢাকা ক্লাউড নোড সক্রিয় (গড় রেসপন্স সময়: < ১৫ মিনিট)')}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 shrink-0">
-          <Badge variant="outline" className="bg-white/80 dark:bg-slate-900/80 text-2xs font-mono border-blue-200 dark:border-blue-800">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+          <Badge variant="outline" className="text-2xs tabular-nums">
             {tBilingual('SLA: 24/7 Priority Support', 'এসএলএ: ২৪/৭ অগ্রাধিকার সহায়তা')}
           </Badge>
         </div>

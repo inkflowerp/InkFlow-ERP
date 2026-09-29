@@ -193,7 +193,7 @@ export function BranchManagerDashboard({
                 <Store className="h-3.5 w-3.5 text-emerald-400" />
                 <span>{tBilingual('Branch Command Center', 'ব্রাঞ্চ কমান্ড সেন্টার')}</span>
               </Badge>
-              <Badge className="bg-white/10 text-white border-white/15 text-xs font-mono font-medium">
+              <Badge className="bg-white/10 text-white border-white/15 text-xs tabular-nums font-medium">
                 {branch?.code || 'BR-01'}
               </Badge>
               <Badge className="bg-emerald-400/20 text-emerald-200 border-emerald-400/30 text-xs font-bold flex items-center gap-1">
@@ -520,20 +520,20 @@ export function BranchManagerDashboard({
 
                     return (
                       <tr key={ord.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="px-4 py-3 font-mono font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
+                        <td className="px-4 py-3 tabular-nums font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                           #{ord.order_number || ord.id.slice(0, 8)}
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-bold text-slate-900 dark:text-slate-100">{ord.customer_name || 'Walk-in Client'}</div>
-                          <div className="text-2xs text-slate-500 font-mono">{ord.customer_phone || '—'}</div>
+                          <div className="text-2xs text-slate-500 tabular-nums">{ord.customer_phone || '—'}</div>
                         </td>
                         <td className="px-4 py-3 max-w-xs truncate text-slate-700 dark:text-slate-300">
                           {itemSummary}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                        <td className="px-4 py-3 text-right tabular-nums font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                           {formatBDT(ord.final_price || 0)}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono whitespace-nowrap">
+                        <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
                           {isDue ? (
                             <span className="font-bold text-rose-600 dark:text-rose-400">{formatBDT(dueAmt)}</span>
                           ) : (

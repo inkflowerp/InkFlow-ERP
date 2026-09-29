@@ -120,14 +120,14 @@ export function ModalDialog({
 
       {/* FIXED FOOTER */}
       {footer ? (
-        <div className={cn('shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-border bg-muted/50 backdrop-blur-sm z-20', footerClassName)}>
+        <div className={cn('shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-border bg-muted/40 z-20', footerClassName)}>
           {footer}
         </div>
       ) : !hideFooter ? (
         <DialogFooter className={footerClassName}>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={() => onOpenChange(false)}
             disabled={isConfirmLoading}
             className="cursor-pointer"
@@ -154,7 +154,7 @@ export function ModalDialog({
     <Dialog open={open} onOpenChange={onOpenChange} maxWidth={resolvedMaxWidth} style={resolvedStyle}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className={cn('flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2.5rem)] overflow-hidden p-0', resolvedMaxWidth, className)}
+        className={cn('flex flex-col max-h-[90vh] overflow-hidden p-0', resolvedMaxWidth, className)}
         style={resolvedStyle}
       >
         {onSubmit ? (

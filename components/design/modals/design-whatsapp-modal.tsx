@@ -113,7 +113,7 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
             <span>Bangladeshi WhatsApp Communication Hub (গ্রাহক যোগাযোগ ও প্রুফ)</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            কাজের নাম: <span className="font-semibold text-slate-800 dark:text-slate-200">{job.title}</span> | জব নং: <span className="font-mono font-bold text-indigo-600">#{job.design_number}</span>
+            কাজের নাম: <span className="font-semibold text-slate-800 dark:text-slate-200">{job.title}</span> | জব নং: <span className="tabular-nums font-bold text-indigo-600">#{job.design_number}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -153,7 +153,7 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="01711-XXXXXX বা +8801..."
-                className="font-mono text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                className="tabular-nums text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
               />
             </div>
             <div className="text-2xs text-slate-500 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-md border border-slate-200 dark:border-slate-700">

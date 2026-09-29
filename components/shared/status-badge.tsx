@@ -44,8 +44,8 @@ const STATUS_DICTIONARY: Record<string, StatusConfig> = {
   draft: {
     labelEn: 'Draft',
     labelBn: 'খসড়া',
-    containerClasses: 'bg-muted text-muted-foreground border-border',
-    dotClasses: 'bg-muted-foreground',
+    containerClasses: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    dotClasses: 'bg-slate-400 dark:bg-slate-500',
   },
   quotation: {
     labelEn: 'Quotation',
@@ -56,38 +56,38 @@ const STATUS_DICTIONARY: Record<string, StatusConfig> = {
   approved: {
     labelEn: 'Approved',
     labelBn: 'অনুমোদিত',
-    containerClasses: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
-    dotClasses: 'bg-emerald-600 dark:bg-emerald-400',
+    containerClasses: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+    dotClasses: 'bg-blue-600 dark:bg-blue-400',
   },
   confirmed: {
     labelEn: 'Confirmed',
     labelBn: 'নিশ্চিত',
-    containerClasses: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
-    dotClasses: 'bg-emerald-600 dark:bg-emerald-400',
+    containerClasses: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+    dotClasses: 'bg-blue-600 dark:bg-blue-400',
   },
   designing: {
     labelEn: 'Designing',
     labelBn: 'ডিজাইনিং',
-    containerClasses: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
-    dotClasses: 'bg-purple-600 dark:bg-purple-400',
+    containerClasses: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+    dotClasses: 'bg-blue-600 dark:bg-blue-400',
   },
   in_prepress: {
     labelEn: 'In Prepress',
     labelBn: 'প্রি-প্রেসে',
-    containerClasses: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
-    dotClasses: 'bg-indigo-600 dark:bg-indigo-400',
+    containerClasses: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+    dotClasses: 'bg-blue-600 dark:bg-blue-400',
   },
   queued_for_print: {
     labelEn: 'Queued for Press',
     labelBn: 'প্রেসে অপেক্ষমাণ',
-    containerClasses: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
-    dotClasses: 'bg-indigo-600 dark:bg-indigo-400',
+    containerClasses: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+    dotClasses: 'bg-blue-600 dark:bg-blue-400',
   },
   in_production: {
     labelEn: 'In Production',
     labelBn: 'প্রোডাকশনে',
-    containerClasses: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
-    dotClasses: 'bg-amber-600 dark:bg-amber-400',
+    containerClasses: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+    dotClasses: 'bg-blue-600 dark:bg-blue-400',
   },
   quality_check: {
     labelEn: 'Quality Check',
@@ -98,8 +98,8 @@ const STATUS_DICTIONARY: Record<string, StatusConfig> = {
   ready_for_delivery: {
     labelEn: 'Ready for Delivery',
     labelBn: 'ডেলিভারির জন্য প্রস্তুত',
-    containerClasses: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
-    dotClasses: 'bg-indigo-600 dark:bg-indigo-400',
+    containerClasses: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+    dotClasses: 'bg-blue-600 dark:bg-blue-400',
   },
   delivered: {
     labelEn: 'Delivered',
@@ -146,7 +146,7 @@ const STATUS_DICTIONARY: Record<string, StatusConfig> = {
   overdue: {
     labelEn: 'Overdue',
     labelBn: 'বিলম্বিত',
-    containerClasses: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 animate-pulse',
+    containerClasses: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
     dotClasses: 'bg-rose-600 dark:bg-rose-400',
   },
   low_stock: {
@@ -164,8 +164,8 @@ const STATUS_DICTIONARY: Record<string, StatusConfig> = {
   inactive: {
     labelEn: 'Inactive',
     labelBn: 'নিষ্ক্রিয়',
-    containerClasses: 'bg-muted text-muted-foreground border-border',
-    dotClasses: 'bg-muted-foreground',
+    containerClasses: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    dotClasses: 'bg-slate-400 dark:bg-slate-500',
   },
 }
 

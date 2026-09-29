@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Hind_Siliguri, JetBrains_Mono } from 'next/font/google'
+import { Inter, Hind_Siliguri } from 'next/font/google'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { I18nProvider } from '@/i18n/context'
 import { PlatformSettingsProvider } from '@/components/providers/platform-settings-provider'
@@ -18,12 +18,6 @@ const hindSiliguri = Hind_Siliguri({
   variable: '--font-hind-siliguri',
   display: 'swap',
   preload: false,
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  display: 'swap',
 })
 
 export const viewport: Viewport = {
@@ -71,7 +65,7 @@ export default async function RootLayout({
   return (
     <html
       lang="bn"
-      className={`${inter.variable} ${hindSiliguri.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${hindSiliguri.variable}`}
       suppressHydrationWarning
     >
       <head>
@@ -96,7 +90,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans antialiased min-h-screen bg-slate-50/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white">
+      <body className="font-sans antialiased min-h-screen bg-background text-foreground selection:bg-blue-600 selection:text-white">
         <PlatformSettingsProvider initialSettings={initialSettings}>
           <ThemeProvider>
             <I18nProvider>{children}</I18nProvider>

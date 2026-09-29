@@ -45,53 +45,36 @@ export function PageHeader({
       ? tBilingual(descriptionEn, descriptionBn)
       : descriptionEn || descriptionBn
 
-  const isGradient = variant === 'gradient'
-
   return (
     <div
       className={cn(
-        isGradient
-          ? 'bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-800/40 p-5 sm:p-6 rounded-xl border border-border shadow-xs relative overflow-hidden'
-          : 'bg-card text-card-foreground p-5 sm:p-6 rounded-xl border border-border shadow-xs relative overflow-hidden',
+        'bg-card text-card-foreground p-5 sm:p-6 rounded-xl border border-border shadow-xs relative',
         className
       )}
     >
-      {/* Subtle decorative glow only when variant is gradient */}
-      {isGradient && (
-        <>
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-1/3 -mb-10 w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
-        </>
-      )}
-
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1.5 min-w-[280px] max-w-full lg:max-w-2xl xl:max-w-3xl shrink-0 lg:shrink flex-1">
           <div className="flex items-center gap-2.5">
             {icon && (
               <div
-                className={cn(
-                  'h-10 w-10 rounded-xl flex items-center justify-center shrink-0',
-                  isGradient
-                    ? 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-sm shadow-blue-500/20'
-                    : 'bg-primary/10 text-primary'
-                )}
+                className="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center justify-center shrink-0"
               >
                 {React.isValidElement(icon) ? (
                   icon
                 ) : (
                   React.createElement(icon as React.ComponentType<{ className?: string }>, {
-                    className: cn('h-5 w-5', iconColor || (isGradient ? 'text-white' : 'text-primary')),
+                    className: cn('h-5 w-5', iconColor || 'text-blue-600 dark:text-blue-400'),
                   })
                 )}
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight flex items-center gap-2 flex-wrap">
                 <span className="bangla-text">{title}</span>
                 {badge}
               </h1>
               {description && (
-                <p className="text-xs text-muted-foreground bangla-text mt-0.5">
+                <p className="text-xs sm:text-sm text-muted-foreground bangla-text mt-0.5">
                   {description}
                 </p>
               )}

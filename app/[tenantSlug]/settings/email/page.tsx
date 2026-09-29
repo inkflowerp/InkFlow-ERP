@@ -491,7 +491,7 @@ export default function TenantEmailSettingsPage() {
                   One-click sign in with Google. 100% secure, zero password sharing, and high inbox delivery.
                 </p>
               </div>
-              <div className="mt-3 text-2xs font-mono text-slate-400">
+              <div className="mt-3 text-2xs tabular-nums text-slate-400">
                 Protocol: Google Gmail API (OAuth2)
               </div>
             </div>
@@ -514,7 +514,7 @@ export default function TenantEmailSettingsPage() {
                   Connect any standard SMTP host (cPanel, Google Workspace, Office 365, Zoho Mail, Mailgun).
                 </p>
               </div>
-              <div className="mt-3 text-2xs font-mono text-slate-400">
+              <div className="mt-3 text-2xs tabular-nums text-slate-400">
                 Protocol: TLS / SSL / STARTTLS
               </div>
             </div>
@@ -612,7 +612,7 @@ export default function TenantEmailSettingsPage() {
                         <p className="text-2xs text-amber-700 dark:text-amber-400 leading-relaxed">
                           To enable 1-click Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
                         </p>
-                        <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60 font-mono text-2xs text-slate-700 dark:text-slate-300 space-y-1">
+                        <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60 tabular-nums text-2xs text-slate-700 dark:text-slate-300 space-y-1">
                           <div className="flex items-center justify-between">
                             <span>GOOGLE_CLIENT_ID</span>
                             <span className={googleOAuthStatus.hasClientId ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'}>
@@ -635,7 +635,7 @@ export default function TenantEmailSettingsPage() {
                         {googleOAuthStatus.redirectUri && (
                           <div className="text-2xs text-slate-600 dark:text-slate-400">
                             <strong>Google Cloud Authorized Redirect URI:</strong>
-                            <code className="block mt-1 p-2 bg-slate-100 dark:bg-slate-900 rounded font-mono text-2xs break-all select-all">
+                            <code className="block mt-1 p-2 bg-slate-100 dark:bg-slate-900 rounded tabular-nums text-2xs break-all select-all">
                               {googleOAuthStatus.redirectUri}
                             </code>
                           </div>
@@ -672,7 +672,7 @@ export default function TenantEmailSettingsPage() {
                         value={smtpHost}
                         onChange={(e) => setSmtpHost(e.target.value)}
                         placeholder="mail.yourcompany.com"
-                        className="h-9 text-xs font-mono min-h-[38px]"
+                        className="h-9 text-xs tabular-nums min-h-[38px]"
                       />
                     </div>
                     <div className="space-y-1">
@@ -681,7 +681,7 @@ export default function TenantEmailSettingsPage() {
                         type="number"
                         value={smtpPort}
                         onChange={(e) => setSmtpPort(Number(e.target.value))}
-                        className="h-9 text-xs font-mono min-h-[38px]"
+                        className="h-9 text-xs tabular-nums min-h-[38px]"
                       />
                     </div>
                   </div>
@@ -706,7 +706,7 @@ export default function TenantEmailSettingsPage() {
                         value={smtpUsername}
                         onChange={(e) => setSmtpUsername(e.target.value)}
                         placeholder="billing@yourcompany.com"
-                        className="h-9 text-xs font-mono min-h-[38px]"
+                        className="h-9 text-xs tabular-nums min-h-[38px]"
                       />
                     </div>
                   </div>
@@ -728,7 +728,7 @@ export default function TenantEmailSettingsPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={gateway?.provider === 'smtp' ? '•••••••••••• (Encrypted on file)' : 'Enter password'}
-                      className="h-9 text-xs font-mono min-h-[38px]"
+                      className="h-9 text-xs tabular-nums min-h-[38px]"
                     />
                   </div>
 
@@ -787,7 +787,7 @@ export default function TenantEmailSettingsPage() {
                         value={senderEmail}
                         onChange={(e) => setSenderEmail(e.target.value)}
                         placeholder="billing@example.com"
-                        className="h-9 text-xs font-mono min-h-[38px]"
+                        className="h-9 text-xs tabular-nums min-h-[38px]"
                       />
                     </div>
 
@@ -798,7 +798,7 @@ export default function TenantEmailSettingsPage() {
                         value={replyToEmail}
                         onChange={(e) => setReplyToEmail(e.target.value)}
                         placeholder="support@example.com"
-                        className="h-9 text-xs font-mono min-h-[38px]"
+                        className="h-9 text-xs tabular-nums min-h-[38px]"
                       />
                     </div>
                   </CardContent>
@@ -852,7 +852,7 @@ export default function TenantEmailSettingsPage() {
                   }`}
                 >
                   <span className="truncate">{tpl.name}</span>
-                  <span className={`text-2xs font-mono ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
+                  <span className={`text-2xs tabular-nums ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
                     {tpl.event_type}
                   </span>
                 </button>
@@ -865,7 +865,7 @@ export default function TenantEmailSettingsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
                 <div>
                   <h4 className="font-bold text-sm text-slate-900 dark:text-white">{selectedTemplate.name}</h4>
-                  <span className="text-2xs font-mono text-blue-600">{selectedTemplate.event_type}</span>
+                  <span className="text-2xs tabular-nums text-blue-600">{selectedTemplate.event_type}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -934,7 +934,7 @@ export default function TenantEmailSettingsPage() {
                       setSelectedTemplate({ ...selectedTemplate, body_template_bn: e.target.value })
                     }
                   }}
-                  className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs tabular-nums focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
@@ -1008,7 +1008,7 @@ export default function TenantEmailSettingsPage() {
                       )
                       .map((log) => (
                         <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
-                          <td className="py-2.5 px-3 font-mono text-2xs">
+                          <td className="py-2.5 px-3 tabular-nums text-2xs">
                             <div>{new Date(log.created_at).toLocaleDateString()}</div>
                             <span className="text-slate-400">{log.event_type}</span>
                           </td>
@@ -1058,7 +1058,7 @@ export default function TenantEmailSettingsPage() {
                 value={testRecipient}
                 onChange={(e) => setTestRecipient(e.target.value)}
                 placeholder="your.email@example.com"
-                className="h-10 text-xs font-mono text-slate-900 bg-white border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-white min-h-[40px]"
+                className="h-10 text-xs tabular-nums text-slate-900 bg-white border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-white min-h-[40px]"
               />
             </div>
 

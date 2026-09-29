@@ -333,7 +333,7 @@ export function SupplierModal({
               </span>
               <Badge
                 variant="outline"
-                className="text-2xs uppercase font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800"
+                className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800"
               >
                 {formData.supplier_code || 'VENDOR'}
               </Badge>
@@ -448,7 +448,7 @@ export function SupplierModal({
                       placeholder="e.g. SUP-2024-001"
                       value={formData.supplier_code}
                       onChange={(e) => setFormData({ ...formData, supplier_code: e.target.value })}
-                      className="text-xs h-9 font-mono uppercase bg-slate-50 dark:bg-slate-900"
+                      className="text-xs h-9 tabular-nums uppercase bg-slate-50 dark:bg-slate-900"
                     />
                   </div>
                 </div>
@@ -583,7 +583,7 @@ export function SupplierModal({
                           if (fieldErrors.mobile) setFieldErrors((prev) => ({ ...prev, mobile: '' }))
                         }}
                         className={cn(
-                          "text-xs h-9 pl-9 font-mono",
+                          "text-xs h-9 pl-9 tabular-nums",
                           fieldErrors.mobile && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
                         )}
                         required
@@ -618,7 +618,7 @@ export function SupplierModal({
                         placeholder="01819-XXXXXX"
                         value={formData.whatsapp}
                         onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                        className="text-xs h-9 pl-9 font-mono text-emerald-700 dark:text-emerald-400"
+                        className="text-xs h-9 pl-9 tabular-nums text-emerald-700 dark:text-emerald-400"
                       />
                     </div>
                   </div>
@@ -631,7 +631,7 @@ export function SupplierModal({
                       placeholder="02-956XXXX / 019XXXXXXXX"
                       value={formData.alt_phone}
                       onChange={(e) => setFormData({ ...formData, alt_phone: e.target.value })}
-                      className="text-xs h-9 font-mono"
+                      className="text-xs h-9 tabular-nums"
                     />
                   </div>
                 </div>
@@ -775,7 +775,7 @@ export function SupplierModal({
                             <span className="text-xs font-bold text-slate-900 dark:text-white">
                               {tBilingual(term.labelEn, term.labelBn)}
                             </span>
-                            <Badge variant="outline" className="text-2xs font-mono">
+                            <Badge variant="outline" className="text-2xs tabular-nums">
                               {term.days > 0 ? `${term.days} Days` : 'Spot'}
                             </Badge>
                           </div>
@@ -801,7 +801,7 @@ export function SupplierModal({
                         placeholder="500000"
                         value={formData.credit_limit || ''}
                         onChange={(e) => setFormData({ ...formData, credit_limit: Number(e.target.value) })}
-                        className="text-xs h-9 pl-7 font-mono font-bold"
+                        className="text-xs h-9 pl-7 tabular-nums font-bold"
                       />
                     </div>
                   </div>
@@ -818,7 +818,7 @@ export function SupplierModal({
                         placeholder="2"
                         value={formData.lead_time_days || ''}
                         onChange={(e) => setFormData({ ...formData, lead_time_days: Number(e.target.value) })}
-                        className="text-xs h-9 pl-9 font-mono"
+                        className="text-xs h-9 pl-9 tabular-nums"
                       />
                     </div>
                   </div>
@@ -850,7 +850,7 @@ export function SupplierModal({
                       placeholder="e.g. TRAD/DNCC/120934"
                       value={formData.trade_license}
                       onChange={(e) => setFormData({ ...formData, trade_license: e.target.value })}
-                      className="text-xs h-9 font-mono"
+                      className="text-xs h-9 tabular-nums"
                     />
                   </div>
 
@@ -862,7 +862,7 @@ export function SupplierModal({
                       placeholder="e.g. 001234567-0101"
                       value={formData.bin}
                       onChange={(e) => setFormData({ ...formData, bin: e.target.value })}
-                      className="text-xs h-9 font-mono"
+                      className="text-xs h-9 tabular-nums"
                     />
                   </div>
 
@@ -874,7 +874,7 @@ export function SupplierModal({
                       placeholder="e.g. 192837465012"
                       value={formData.tin}
                       onChange={(e) => setFormData({ ...formData, tin: e.target.value })}
-                      className="text-xs h-9 font-mono"
+                      className="text-xs h-9 tabular-nums"
                     />
                   </div>
                 </div>
@@ -929,7 +929,7 @@ export function SupplierModal({
                         placeholder="e.g. 102.120.9842"
                         value={formData.bank_account_number}
                         onChange={(e) => setFormData({ ...formData, bank_account_number: e.target.value })}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
 
@@ -953,7 +953,7 @@ export function SupplierModal({
                         placeholder="e.g. 090271923"
                         value={formData.bank_routing_number}
                         onChange={(e) => setFormData({ ...formData, bank_routing_number: e.target.value })}
-                        className="text-xs h-9 font-mono"
+                        className="text-xs h-9 tabular-nums"
                       />
                     </div>
                   </div>
