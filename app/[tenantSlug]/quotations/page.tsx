@@ -830,7 +830,7 @@ export default function QuotationsPage() {
 
     try {
       // 1. Move to Trash / Recycle Bin on server
-      const res = await moveToTrashAction('quotations', targetQuote, company?.id)
+      const res = await moveToTrashAction('quotations', targetQuote, company?.id, slug)
 
       // 2. Explicitly invoke deleteQuotationAction to ensure deletion from active DB
       await deleteQuotationAction(targetId, targetNum, company?.id, slug).catch(() => {})
@@ -842,11 +842,18 @@ export default function QuotationsPage() {
       setQuotations((prev) =>
         prev.filter((q) => q.id !== targetId && (!targetNum || q.quotation_number !== targetNum))
       )
+
+      // 5. Sync to client TRASH_ITEMS so Trash page sees it immediately
+      if (res.success && res.record) {
+        const localTrash = PrintERPDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [res.record, ...localTrash.filter((t: any) => t.id !== res.record.id)])
+      }
+
       setIsTrashConfirmOpen(false)
       setQuoteToTrash(null)
       showNotification(`Quotation #${targetNum} moved to Trash.`, 'success')
 
-      // 5. Silently reload to ensure sync
+      // 6. Silently reload to ensure sync
       loadQuotationsData(true)
     } catch (err: any) {
       showNotification(err.message || 'Error moving quotation to trash.', 'error')

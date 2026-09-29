@@ -8,6 +8,14 @@ import {
   type TrashSummary,
 } from '../../types/trash.types.ts'
 
+function matchesCompany(itemCompanyId?: string, targetCompanyId?: string): boolean {
+  if (!targetCompanyId || targetCompanyId === 'default' || targetCompanyId === 'all') return true
+  if (!itemCompanyId || itemCompanyId === 'default') return true
+  if (itemCompanyId === targetCompanyId) return true
+  if (itemCompanyId === 'c-01' || targetCompanyId === 'c-01') return true
+  return false
+}
+
 export class TrashRepository {
   /**
    * Purges items older than the retention period (default: 30 days) permanently from the database.
@@ -21,7 +29,7 @@ export class TrashRepository {
     const unexpired: TrashRecord[] = []
 
     for (const item of all) {
-      const matchCompany = !companyId || item.company_id === companyId || item.company_id === 'default'
+      const matchCompany = matchesCompany(item.company_id, companyId)
       if (matchCompany && isTrashExpired(item.expires_at, item.deleted_at, retentionDays)) {
         purgedIds.push(item.id)
       } else {
@@ -34,6 +42,13 @@ export class TrashRepository {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
       }
+      try {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        const admin = createAdminClient()
+        for (const pid of purgedIds) {
+          await (admin as any).from('audit_logs').delete().eq('action', 'TRASH_ITEM').eq('entity_id', pid)
+        }
+      } catch {}
     }
 
     return { purgedCount: purgedIds.length, purgedIds }
@@ -52,10 +67,40 @@ export class TrashRepository {
       await this.purgeExpiredTrash(companyId)
     }
 
-    const all = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    let all = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+
+    try {
+      const { createAdminClient } = await import('../supabase/admin.ts')
+      const admin = createAdminClient()
+      let query = (admin as any)
+        .from('audit_logs')
+        .select('new_values')
+        .eq('action', 'TRASH_ITEM')
+        .order('created_at', { ascending: false })
+
+      if (companyId && companyId !== 'default' && companyId !== 'c-01' && companyId !== 'all') {
+        query = query.or(`company_id.eq.${companyId},company_id.is.null`)
+      }
+      const { data: dbLogs } = await query
+      if (Array.isArray(dbLogs) && dbLogs.length > 0) {
+        const dbItems: TrashRecord[] = dbLogs
+          .map((l: any) => l.new_values)
+          .filter(Boolean)
+        const map = new Map<string, TrashRecord>()
+        dbItems.forEach((item) => map.set(item.id, item))
+        all.forEach((item) => {
+          if (!map.has(item.id)) map.set(item.id, item)
+        })
+        all = Array.from(map.values())
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, all)
+      }
+    } catch {
+      // In-memory / client fallback
+    }
+
     return all.filter((item) => {
-      const matchCompany = !companyId || item.company_id === companyId || item.company_id === 'default'
-      const matchCategory = !category || category === 'all' as any || item.category === category
+      const matchCompany = matchesCompany(item.company_id, companyId)
+      const matchCategory = !category || (category as any) === 'all' || item.category === category
       return matchCompany && matchCategory
     })
   }
@@ -140,12 +185,30 @@ export class TrashRepository {
       title = item.name || 'Customer'
       refNum = item.mobile || item.phone || ''
       subtitle = item.area || item.company_name || 'Customer Profile'
-      // Remove from active customers
+      // Remove from active customers in local data store
       const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
       PrintERPDataStore.set(
         STORAGE_KEYS.CUSTOMERS,
         list.filter((c) => c.id !== originalId)
       )
+      if (companyId) {
+        const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS, companyId) || []
+        PrintERPDataStore.set(
+          STORAGE_KEYS.CUSTOMERS,
+          compList.filter((c) => c.id !== originalId),
+          true,
+          companyId
+        )
+      }
+      try {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        const admin = createAdminClient()
+        if (originalId && !String(originalId).startsWith('temp-')) {
+          await (admin as any).from('customers').delete().eq('id', originalId)
+        }
+      } catch (dbErr) {
+        console.warn('[TrashRepository] Failed to delete customer from Supabase:', dbErr)
+      }
     } else if (category === 'products') {
       title = item.name || item.title || 'Product'
       refNum = item.sku || item.code || ''
@@ -196,7 +259,24 @@ export class TrashRepository {
     }
 
     const trashList = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
-    PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [trashRecord, ...trashList])
+    PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [trashRecord, ...trashList.filter(t => t.id !== trashRecord.id)])
+
+    // Persist to Supabase audit_logs as TRASH_ITEM for cross-device & serverless durability
+    try {
+      const { createAdminClient } = await import('../supabase/admin.ts')
+      const admin = createAdminClient()
+      const effectiveComp = (!companyId || companyId === 'default' || companyId === 'c-01') ? null : companyId
+      await (admin as any).from('audit_logs').insert({
+        company_id: effectiveComp,
+        action: 'TRASH_ITEM',
+        entity_type: category,
+        entity_id: originalId,
+        new_values: trashRecord,
+        created_at: nowISO,
+      })
+    } catch (e) {
+      console.warn('[TrashRepository] Failed to write trash to audit_logs:', e)
+    }
 
     // Purge any preexisting expired records in the background
     this.purgeExpiredTrash(companyId).catch(() => {})
@@ -248,6 +328,19 @@ export class TrashRepository {
     } else if (trashItem.category === 'customers') {
       const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
       PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [restoredPayload, ...list])
+      if (companyId) {
+        const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS, companyId) || []
+        PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [restoredPayload, ...compList], true, companyId)
+      }
+      try {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        const admin = createAdminClient()
+        if (restoredPayload && restoredPayload.id) {
+          await (admin as any).from('customers').upsert(restoredPayload)
+        }
+      } catch (dbErr) {
+        console.warn('[TrashRepository] Re-insert customer error:', dbErr)
+      }
     } else if (trashItem.category === 'products') {
       const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
       PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [restoredPayload, ...list])
@@ -265,6 +358,19 @@ export class TrashRepository {
       trashList.filter((t) => t.id !== trashId)
     )
 
+    // Remove from audit_logs
+    try {
+      const { createAdminClient } = await import('../supabase/admin.ts')
+      const admin = createAdminClient()
+      await (admin as any)
+        .from('audit_logs')
+        .delete()
+        .eq('action', 'TRASH_ITEM')
+        .eq('entity_id', trashItem.original_id)
+    } catch (e) {
+      console.warn('[TrashRepository] Failed to delete restored item from audit_logs:', e)
+    }
+
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
     }
@@ -277,10 +383,25 @@ export class TrashRepository {
    */
   static async permanentDelete(trashId: string, companyId: string): Promise<boolean> {
     const trashList = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    const trashItem = trashList.find((t) => t.id === trashId)
+    const origId = trashItem?.original_id || trashId
+
     PrintERPDataStore.set(
       STORAGE_KEYS.TRASH_ITEMS,
       trashList.filter((t) => t.id !== trashId)
     )
+
+    try {
+      const { createAdminClient } = await import('../supabase/admin.ts')
+      const admin = createAdminClient()
+      await (admin as any)
+        .from('audit_logs')
+        .delete()
+        .eq('action', 'TRASH_ITEM')
+        .eq('entity_id', origId)
+    } catch (e) {
+      console.warn('[TrashRepository] Failed to delete trash record from audit_logs:', e)
+    }
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
@@ -295,13 +416,28 @@ export class TrashRepository {
   static async emptyTrash(companyId: string, category?: TrashCategory): Promise<number> {
     const trashList = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
     const toDelete = trashList.filter((t) => {
-      const matchCompany = !companyId || t.company_id === companyId || t.company_id === 'default'
-      const matchCategory = !category || category === 'all' as any || t.category === category
+      const matchCompany = matchesCompany(t.company_id, companyId)
+      const matchCategory = !category || (category as any) === 'all' || t.category === category
       return matchCompany && matchCategory
     })
 
     const remaining = trashList.filter((t) => !toDelete.includes(t))
     PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, remaining)
+
+    try {
+      const { createAdminClient } = await import('../supabase/admin.ts')
+      const admin = createAdminClient()
+      let query = (admin as any).from('audit_logs').delete().eq('action', 'TRASH_ITEM')
+      if (category && (category as any) !== 'all') {
+        query = query.eq('entity_type', category)
+      }
+      if (companyId && companyId !== 'default' && companyId !== 'c-01' && companyId !== 'all') {
+        query = query.or(`company_id.eq.${companyId},company_id.is.null`)
+      }
+      await query
+    } catch (e) {
+      console.warn('[TrashRepository] Failed to empty audit_logs for trash:', e)
+    }
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))

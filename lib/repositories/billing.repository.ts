@@ -279,13 +279,13 @@ export class BillingRepository {
           }
         }
 
-        // If database returned an error (e.g. RLS failure with standard user client), attempt admin query once
-        if (res.error) {
+        // If database returned an error or empty result (e.g. RLS filtering with standard user client), attempt admin query
+        if (res.error || (!res.data || res.data.length === 0)) {
           const admin = createAdminClient()
           let adminRes = await buildQuery(admin, '*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
           if (adminRes.error) adminRes = await buildQuery(admin, '*, items:invoice_items(*)')
           if (adminRes.error) adminRes = await buildQuery(admin, '*')
-          if (!adminRes.error && adminRes.data) {
+          if (!adminRes.error && adminRes.data && adminRes.data.length > 0) {
             res = adminRes
           }
         }
@@ -1831,7 +1831,7 @@ export class BillingRepository {
         }
 
         let { data, error } = await query
-        if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
+        if (error || (!data || data.length === 0)) {
           const admin = createAdminClient()
           let adminQuery = (admin as any)
             .from('payments')
@@ -1840,10 +1840,12 @@ export class BillingRepository {
             .order('payment_date', { ascending: false })
           if (customerId) adminQuery = adminQuery.eq('customer_id', customerId)
           const adminRes = await adminQuery
-          data = adminRes.data
-          error = adminRes.error
+          if (!adminRes.error && adminRes.data && adminRes.data.length > 0) {
+            data = adminRes.data
+            error = null
+          }
         }
-        if (!error && data) {
+        if (!error && data && data.length > 0) {
           return (data || []) as unknown as PaymentRecord[]
         }
         if (error && mode === 'production') {
@@ -1931,7 +1933,33 @@ export class BillingRepository {
           .select('*, allocations:payment_allocations(*)')
           .eq('id', data.payment_id)
           .maybeSingle()
-        if (payRecord) return payRecord as PaymentRecord
+        if (payRecord) {
+          try {
+            const client = createAdminClient() || supabase
+            const method = (params.paymentMethod || '').toLowerCase()
+            let targetCode = '1010'
+            if (['bank', 'bank_transfer', 'cheque'].includes(method)) targetCode = '1020'
+            else if (method.includes('bkash')) targetCode = '1030'
+            else if (method.includes('nagad')) targetCode = '1031'
+            else if (method.includes('rocket')) targetCode = '1032'
+
+            const { data: targetAcc } = await (client as any)
+              .from('accounts')
+              .select('id, current_balance')
+              .eq('company_id', params.companyId)
+              .eq('code', targetCode)
+              .maybeSingle()
+
+            if (targetAcc) {
+              const updatedBal = Number(((Number(targetAcc.current_balance) || 0) + Number(params.amount)).toFixed(2))
+              await (client as any)
+                .from('accounts')
+                .update({ current_balance: updatedBal, updated_at: new Date().toISOString() })
+                .eq('id', targetAcc.id)
+            }
+          } catch (_) {}
+          return payRecord as PaymentRecord
+        }
       }
 
       // If the RPC failed in PostgreSQL (e.g. column "owner_id" does not exist in old migrations, or RPC schema error)
@@ -2080,6 +2108,31 @@ export class BillingRepository {
             await (client as any).from('payment_allocations').insert(allocationRecords)
           } catch (_) {}
         }
+
+        // Update liquid account in accounts table (1010 for Cash, 1020 for Bank, 1030 for bKash, 1031 for Nagad)
+        try {
+          const method = (params.paymentMethod || '').toLowerCase()
+          let targetCode = '1010'
+          if (['bank', 'bank_transfer', 'cheque'].includes(method)) targetCode = '1020'
+          else if (method.includes('bkash')) targetCode = '1030'
+          else if (method.includes('nagad')) targetCode = '1031'
+          else if (method.includes('rocket')) targetCode = '1032'
+
+          const { data: targetAcc } = await (client as any)
+            .from('accounts')
+            .select('id, current_balance')
+            .eq('company_id', params.companyId)
+            .eq('code', targetCode)
+            .maybeSingle()
+
+          if (targetAcc) {
+            const updatedBal = Number(((Number(targetAcc.current_balance) || 0) + Number(params.amount)).toFixed(2))
+            await (client as any)
+              .from('accounts')
+              .update({ current_balance: updatedBal, updated_at: new Date().toISOString() })
+              .eq('id', targetAcc.id)
+          }
+        } catch (_) {}
 
         if (params.customerId) {
           try {

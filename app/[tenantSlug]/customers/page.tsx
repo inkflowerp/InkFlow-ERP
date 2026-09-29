@@ -43,6 +43,7 @@ import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import {
   getPaginatedCustomersAction,
   getCustomersSummaryAction,
+  deleteCustomerAction,
 } from '@/actions/customer.actions'
 import { moveToTrashAction } from '@/actions/trash.actions'
 import {
@@ -50,6 +51,7 @@ import {
   CustomerSummaryStatistics,
   CustomerCategory,
 } from '@/types/crm.types'
+import { TrashRecord } from '@/types/trash.types'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
@@ -60,6 +62,50 @@ import { formatCustomerIdNo as canonicalFormatCustomerIdNo } from '@/lib/formatt
 
 export function formatCustomerIdNo(c: Partial<CustomerRecord>, index?: number): string {
   return canonicalFormatCustomerIdNo(c, index)
+}
+
+function removeLocalCustomer(id: string, slug?: string, companySlug?: string, companyId?: string) {
+  if (typeof window === 'undefined') return
+  try {
+    const candidateKeys = [
+      STORAGE_KEYS.CUSTOMERS,
+      slug ? `${STORAGE_KEYS.CUSTOMERS}__${slug}` : null,
+      companySlug ? `${STORAGE_KEYS.CUSTOMERS}__${companySlug}` : null,
+      companyId ? `${STORAGE_KEYS.CUSTOMERS}__${companyId}` : null,
+      `${STORAGE_KEYS.CUSTOMERS}__rangao`,
+      `${STORAGE_KEYS.CUSTOMERS}__default`,
+    ].filter(Boolean) as string[]
+
+    candidateKeys.forEach((key) => {
+      try {
+        const raw = localStorage.getItem(key)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed)) {
+            const filtered = parsed.filter((c: any) => c?.id !== id)
+            localStorage.setItem(key, JSON.stringify(filtered))
+          }
+        }
+      } catch {}
+    })
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && (k.startsWith('printerp_tenant_customers') || k.includes('customer'))) {
+        try {
+          const raw = localStorage.getItem(k)
+          if (raw && raw.includes(id)) {
+            const parsed = JSON.parse(raw)
+            if (Array.isArray(parsed)) {
+              const filtered = parsed.filter((c: any) => c?.id !== id)
+              localStorage.setItem(k, JSON.stringify(filtered))
+            }
+          }
+        } catch {}
+      }
+    }
+    PrintERPDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id)
+  } catch {}
 }
 
 function getLocalInvoices(slug?: string, companySlug?: string, companyId?: string): any[] {
@@ -573,16 +619,56 @@ export default function CustomersPage() {
   const confirmTrashCustomer = async () => {
     if (!customerToTrash) return
     setIsTrashing(true)
+    const targetCust = customerToTrash
+    const targetId = targetCust.id
+
     try {
-      const res = await moveToTrashAction('customers', customerToTrash, companyId)
-      if (res.success) {
-        showNotification(`Customer "${customerToTrash.name}" moved to Trash.`, 'success')
+      // 1. Authoritative DB deletion check: ensure customer has no existing transactions (invoices, payments, orders)
+      const delRes = await deleteCustomerAction(targetId, companyId)
+      if (!delRes.success) {
+        showNotification(
+          delRes.error ||
+            tBilingual(
+              'Cannot delete customer with existing invoice, payment, or order history. Please deactivate them instead.',
+              'ইনভয়েস, পেমেন্ট বা অর্ডার হিস্ট্রি থাকা কাস্টমার ডিলিট করা সম্ভব নয়। তাদের নিষ্ক্রিয় করুন।'
+            ),
+          'error'
+        )
         setIsTrashConfirmOpen(false)
-        setCustomerToTrash(null)
-        loadData()
-      } else {
-        showNotification(res.error || 'Failed to move customer to trash.', 'error')
+        return
       }
+
+      // 2. Move to Trash / Recycle Bin on server
+      const res = await moveToTrashAction('customers', targetCust, companyId, slug)
+
+      // 3. Purge from browser localStorage and client DataStore across all keys
+      removeLocalCustomer(targetId, slug, company?.slug, companyId)
+
+      // 4. Update local state immediately
+      setCustomers((prev) => prev.filter((c) => c.id !== targetId))
+      setSummary((prev) => ({
+        ...prev,
+        totalCustomers: Math.max(0, prev.totalCustomers - 1),
+        activeCustomers: targetCust.is_active ? Math.max(0, prev.activeCustomers - 1) : prev.activeCustomers,
+      }))
+
+      // 5. Sync to client TRASH_ITEMS so Trash page sees it immediately
+      if (res.success && res.record) {
+        const localTrash = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [res.record, ...localTrash.filter((t) => t.id !== res.record.id)])
+      }
+
+      setIsTrashConfirmOpen(false)
+      setCustomerToTrash(null)
+      showNotification(
+        tBilingual(
+          `Customer "${targetCust.name}" moved to Trash.`,
+          `গ্রাহক "${targetCust.name}" সফলভাবে ট্র্যাশে স্থানান্তর করা হয়েছে।`
+        ),
+        'success'
+      )
+
+      loadData()
     } catch (err: any) {
       showNotification(err.message || 'Error moving customer to trash.', 'error')
     } finally {

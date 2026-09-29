@@ -25,6 +25,22 @@ import type {
   BankStatementLineRecord,
 } from '../../types/finance.types.ts'
 
+export function isValidUUID(str?: string | null): boolean {
+  if (!str) return false
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str)
+}
+
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
 export class FinanceRepository {
   private static sequenceCounters: Map<string, number> = new Map()
 
@@ -70,6 +86,11 @@ export class FinanceRepository {
       if (!error && data && data.length > 0) {
         return data as AccountRecord[]
       }
+
+      // If database accounts table is empty for this company, seed default accounts to DB
+      if (!error && (!data || data.length === 0)) {
+        return await this.seedDefaultAccounts(companyId)
+      }
     } catch (e) {
       console.warn('[FinanceRepository.getAccounts] DB query fallback:', e)
     }
@@ -88,15 +109,21 @@ export class FinanceRepository {
     return filtered
   }
 
-  static async getAccountById(id: string, companyId: string): Promise<AccountRecord | null> {
+  static async getAccountById(idOrCode: string, companyId: string): Promise<AccountRecord | null> {
     try {
       const admin = createAdminClient()
-      const { data, error } = await (admin as any)
+      let query = (admin as any)
         .from('accounts')
         .select('*')
         .eq('company_id', companyId)
-        .eq('id', id)
-        .maybeSingle()
+
+      if (isValidUUID(idOrCode)) {
+        query = query.eq('id', idOrCode)
+      } else {
+        query = query.eq('code', idOrCode)
+      }
+
+      const { data, error } = await query.maybeSingle()
 
       if (!error && data) {
         return data as AccountRecord
@@ -106,15 +133,20 @@ export class FinanceRepository {
     }
 
     const accounts = await this.getAccounts(companyId)
-    return accounts.find((a) => a.id === id || a.code === id) || null
+    return accounts.find((a) => a.id === idOrCode || a.code === idOrCode) || null
   }
 
   static async createAccount(account: AccountRecord): Promise<AccountRecord> {
+    const payload = {
+      ...account,
+      id: isValidUUID(account.id) ? account.id : generateUUID(),
+    }
+
     try {
       const admin = createAdminClient()
       const { data, error } = await (admin as any)
         .from('accounts')
-        .insert(account)
+        .insert(payload)
         .select()
         .single()
 
@@ -122,23 +154,26 @@ export class FinanceRepository {
         PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNTS, data as AccountRecord)
         return data as AccountRecord
       }
+      if (error) {
+        console.warn('[FinanceRepository.createAccount] DB error:', error.message)
+      }
     } catch (e) {
       console.warn('[FinanceRepository.createAccount] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNTS, account)
-    return account
+    PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNTS, payload)
+    return payload
   }
 
   static async updateAccountBalance(
-    accountId: string,
+    accountIdOrCode: string,
     companyId: string,
     delta: number
   ): Promise<AccountRecord | null> {
-    const acc = await this.getAccountById(accountId, companyId)
+    const acc = await this.getAccountById(accountIdOrCode, companyId)
     if (!acc) return null
 
-    const newBalance = Number((acc.current_balance + delta).toFixed(2))
+    const newBalance = Number((Number(acc.current_balance || 0) + delta).toFixed(2))
 
     try {
       const admin = createAdminClient()
@@ -146,12 +181,12 @@ export class FinanceRepository {
         .from('accounts')
         .update({ current_balance: newBalance, updated_at: new Date().toISOString() })
         .eq('company_id', companyId)
-        .eq('id', accountId)
+        .eq('id', acc.id)
         .select()
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, accountId, {
+        PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
           current_balance: newBalance,
         })
         return data as AccountRecord
@@ -160,17 +195,78 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.updateAccountBalance] DB fallback:', e)
     }
 
-    return PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, accountId, {
+    return PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
+      current_balance: newBalance,
+    })
+  }
+
+  static async setAccountBalance(
+    accountIdOrCode: string,
+    companyId: string,
+    exactBalance: number
+  ): Promise<AccountRecord | null> {
+    const acc = await this.getAccountById(accountIdOrCode, companyId)
+    if (!acc) return null
+
+    const newBalance = Number(exactBalance.toFixed(2))
+
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await (admin as any)
+        .from('accounts')
+        .update({ current_balance: newBalance, updated_at: new Date().toISOString() })
+        .eq('company_id', companyId)
+        .eq('id', acc.id)
+        .select()
+        .single()
+
+      if (!error && data) {
+        PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
+          current_balance: newBalance,
+        })
+        return data as AccountRecord
+      }
+    } catch (e) {
+      console.warn('[FinanceRepository.setAccountBalance] DB fallback:', e)
+    }
+
+    return PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
       current_balance: newBalance,
     })
   }
 
   static async seedDefaultAccounts(companyId: string): Promise<AccountRecord[]> {
+    const admin = createAdminClient()
+    let initialCash = 0
+    let initialBank = 0
+    let initialBkash = 0
+    let initialNagad = 0
+
+    try {
+      const { data: existingPayments } = await (admin as any)
+        .from('payments')
+        .select('amount, payment_method')
+        .eq('company_id', companyId)
+
+      if (existingPayments && existingPayments.length > 0) {
+        for (const p of existingPayments) {
+          const amt = Number(p.amount || 0)
+          const method = (p.payment_method || '').toLowerCase()
+          if (method === 'cash') initialCash += amt
+          else if (['bank', 'bank_transfer', 'cheque'].includes(method)) initialBank += amt
+          else if (method.includes('bkash')) initialBkash += amt
+          else if (method.includes('nagad')) initialNagad += amt
+        }
+      }
+    } catch (e) {
+      console.warn('[FinanceRepository.seedDefaultAccounts] Initial balance calc fallback:', e)
+    }
+
     const defaultTemplates: Omit<AccountRecord, 'id' | 'company_id' | 'created_at' | 'updated_at'>[] = [
-      { code: '1010', name: 'Cash in Hand (Main Drawer)', name_bn: 'নগদ তহবিল', account_type: 'ASSET', account_subtype: 'CASH', currency: 'BDT', opening_balance: 0, current_balance: 0, is_system: true, is_active: true },
-      { code: '1020', name: 'Primary Bank Account (Islami Bank)', name_bn: 'ব্যাংক হিসাব', account_type: 'ASSET', account_subtype: 'BANK', currency: 'BDT', opening_balance: 0, current_balance: 0, is_system: true, is_active: true, metadata: { bank_name: 'Islami Bank Bangladesh', account_number_masked: '•••• •••• 4589', branch_name: 'Dhanmondi' } },
-      { code: '1030', name: 'bKash Merchant Wallet', name_bn: 'বিকাশ হিসাব', account_type: 'ASSET', account_subtype: 'MFS', currency: 'BDT', opening_balance: 0, current_balance: 0, is_system: true, is_active: true, metadata: { mfs_provider: 'bkash', mfs_wallet_number: '01711000000', mfs_account_type: 'merchant' } },
-      { code: '1031', name: 'Nagad Business Wallet', name_bn: 'নগদ হিসাব', account_type: 'ASSET', account_subtype: 'MFS', currency: 'BDT', opening_balance: 0, current_balance: 0, is_system: true, is_active: true, metadata: { mfs_provider: 'nagad', mfs_wallet_number: '01811000000', mfs_account_type: 'merchant' } },
+      { code: '1010', name: 'Cash in Hand (Main Drawer)', name_bn: 'নগদ তহবিল', account_type: 'ASSET', account_subtype: 'CASH', currency: 'BDT', opening_balance: 0, current_balance: Number(initialCash.toFixed(2)), is_system: true, is_active: true },
+      { code: '1020', name: 'Primary Bank Account (Islami Bank)', name_bn: 'ব্যাংক হিসাব', account_type: 'ASSET', account_subtype: 'BANK', currency: 'BDT', opening_balance: 0, current_balance: Number(initialBank.toFixed(2)), is_system: true, is_active: true, metadata: { bank_name: 'Islami Bank Bangladesh', account_number_masked: '•••• •••• 4589', branch_name: 'Dhanmondi' } },
+      { code: '1030', name: 'bKash Merchant Wallet', name_bn: 'বিকাশ হিসাব', account_type: 'ASSET', account_subtype: 'MFS', currency: 'BDT', opening_balance: 0, current_balance: Number(initialBkash.toFixed(2)), is_system: true, is_active: true, metadata: { mfs_provider: 'bkash', mfs_wallet_number: '01711000000', mfs_account_type: 'merchant' } },
+      { code: '1031', name: 'Nagad Business Wallet', name_bn: 'নগদ হিসাব', account_type: 'ASSET', account_subtype: 'MFS', currency: 'BDT', opening_balance: 0, current_balance: Number(initialNagad.toFixed(2)), is_system: true, is_active: true, metadata: { mfs_provider: 'nagad', mfs_wallet_number: '01811000000', mfs_account_type: 'merchant' } },
       { code: '1032', name: 'Rocket Business Wallet', name_bn: 'রকেট হিসাব', account_type: 'ASSET', account_subtype: 'MFS', currency: 'BDT', opening_balance: 0, current_balance: 0, is_system: true, is_active: true, metadata: { mfs_provider: 'rocket', mfs_wallet_number: '01911000000', mfs_account_type: 'merchant' } },
       { code: '1040', name: 'Accounts Receivable (Customers)', name_bn: 'গ্রাহক দেনাদার হিসাব', account_type: 'ASSET', account_subtype: 'RECEIVABLE', currency: 'BDT', opening_balance: 0, current_balance: 0, is_system: true, is_active: true },
       { code: '1050', name: 'Inventory Asset (Raw Materials)', name_bn: 'মজুদ কাঁচামাল হিসাব', account_type: 'ASSET', account_subtype: 'INVENTORY', currency: 'BDT', opening_balance: 0, current_balance: 0, is_system: true, is_active: true },
@@ -194,19 +290,35 @@ export class FinanceRepository {
       { code: '6070', name: 'Operating Expense - General & Miscellaneous', name_bn: 'বিবিধ খরচ', account_type: 'EXPENSE', account_subtype: 'OPEX_GENERAL', currency: 'BDT', opening_balance: 0, current_balance: 0, is_system: true, is_active: true },
     ]
 
-    const created: AccountRecord[] = []
     const now = new Date().toISOString()
+    const rowsToInsert = defaultTemplates.map((t) => ({
+      id: generateUUID(),
+      company_id: companyId,
+      ...t,
+      created_at: now,
+      updated_at: now,
+    }))
 
-    for (const t of defaultTemplates) {
-      const acc: AccountRecord = {
-        id: `acc-${companyId}-${t.code}`,
-        company_id: companyId,
-        ...t,
-        created_at: now,
-        updated_at: now,
+    try {
+      const { data, error } = await (admin as any)
+        .from('accounts')
+        .upsert(rowsToInsert, { onConflict: 'company_id,code' })
+        .select()
+
+      if (!error && data && data.length > 0) {
+        for (const item of data) {
+          PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNTS, item as AccountRecord)
+        }
+        return data as AccountRecord[]
       }
-      await this.createAccount(acc)
-      created.push(acc)
+    } catch (e) {
+      console.warn('[FinanceRepository.seedDefaultAccounts] Upsert fallback:', e)
+    }
+
+    const created: AccountRecord[] = []
+    for (const row of rowsToInsert) {
+      const saved = await this.createAccount(row)
+      created.push(saved)
     }
 
     return created
@@ -234,19 +346,53 @@ export class FinanceRepository {
       throw new Error('Double-entry rejected: Transaction must contain at least 2 journal entry lines.')
     }
 
+    const txnId = isValidUUID(txn.id) ? txn.id : generateUUID()
+    const now = new Date().toISOString()
+
+    const txnHeader = {
+      id: txnId,
+      company_id: txn.company_id,
+      branch_id: txn.branch_id || null,
+      transaction_number: txn.transaction_number,
+      transaction_date: txn.transaction_date || now.split('T')[0],
+      transaction_type: txn.transaction_type,
+      status: txn.status || 'POSTED',
+      total_amount: Number(txn.total_amount || totalDebit),
+      reference_type: txn.reference_type || null,
+      reference_id: txn.reference_id || null,
+      narration: txn.narration || '',
+      posted_by_id: txn.posted_by_id || null,
+      posted_by_name: txn.posted_by_name || 'System',
+      posted_at: txn.posted_at || now,
+      metadata: txn.metadata || {},
+      created_at: txn.created_at || now,
+      updated_at: now,
+    }
+
     // 2. Insert Header & Lines into DB
     try {
       const admin = createAdminClient()
       const { data: txnData, error: txnErr } = await (admin as any)
         .from('financial_transactions')
-        .insert(txn)
+        .insert(txnHeader)
         .select()
         .single()
 
       if (!txnErr && txnData) {
+        const sanitizedLines = lines.map((l) => ({
+          id: isValidUUID(l.id) ? l.id : generateUUID(),
+          transaction_id: txnId,
+          company_id: txn.company_id,
+          account_id: l.account_id,
+          debit: Number(l.debit || 0),
+          credit: Number(l.credit || 0),
+          memo: l.memo || null,
+          created_at: l.created_at || now,
+        }))
+
         const { error: linesErr } = await (admin as any)
           .from('journal_entry_lines')
-          .insert(lines)
+          .insert(sanitizedLines)
 
         if (!linesErr) {
           // Mutate account balances atomically
@@ -271,14 +417,18 @@ export class FinanceRepository {
           }
 
           return { ...txnData, lines } as FinancialTransactionRecord
+        } else {
+          console.warn('[FinanceRepository.recordTransaction] lines insert error:', linesErr.message)
         }
+      } else if (txnErr) {
+        console.warn('[FinanceRepository.recordTransaction] header insert error:', txnErr.message)
       }
     } catch (e) {
       console.warn('[FinanceRepository.recordTransaction] DB write fallback:', e)
     }
 
     // Fallback store handling
-    PrintERPDataStore.addItem(STORAGE_KEYS.FINANCIAL_TRANSACTIONS, txn)
+    PrintERPDataStore.addItem(STORAGE_KEYS.FINANCIAL_TRANSACTIONS, { ...txnHeader, lines })
     for (const line of lines) {
       PrintERPDataStore.addItem(STORAGE_KEYS.JOURNAL_ENTRY_LINES, line)
       const acc = await this.getAccountById(line.account_id, txn.company_id)
@@ -295,7 +445,7 @@ export class FinanceRepository {
       }
     }
 
-    return { ...txn, lines }
+    return { ...txn, id: txnId, lines }
   }
 
   static async getTransactions(
@@ -507,11 +657,15 @@ export class FinanceRepository {
   // ============================================================================
 
   static async recordTransfer(transfer: AccountTransferRecord): Promise<AccountTransferRecord> {
+    const payload = {
+      ...transfer,
+      id: isValidUUID(transfer.id) ? transfer.id : generateUUID(),
+    }
     try {
       const admin = createAdminClient()
       const { data, error } = await (admin as any)
         .from('account_transfers')
-        .insert(transfer)
+        .insert(payload)
         .select()
         .single()
 
@@ -519,12 +673,15 @@ export class FinanceRepository {
         PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNT_TRANSFERS, data as AccountTransferRecord)
         return data as AccountTransferRecord
       }
+      if (error) {
+        console.warn('[FinanceRepository.recordTransfer] DB error:', error.message)
+      }
     } catch (e) {
       console.warn('[FinanceRepository.recordTransfer] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNT_TRANSFERS, transfer)
-    return transfer
+    PrintERPDataStore.addItem(STORAGE_KEYS.ACCOUNT_TRANSFERS, payload)
+    return payload
   }
 
   static async getTransfers(companyId: string): Promise<AccountTransferRecord[]> {
@@ -552,24 +709,34 @@ export class FinanceRepository {
   // ============================================================================
 
   static async recordCashClosing(closing: CashClosingRecord): Promise<CashClosingRecord> {
+    const payload = {
+      ...closing,
+      id: isValidUUID(closing.id) ? closing.id : generateUUID(),
+    }
+    const dbPayload = { ...payload }
+    delete (dbPayload as any).account_name // Not in PostgreSQL table schema
+
     try {
       const admin = createAdminClient()
       const { data, error } = await (admin as any)
         .from('cash_closings')
-        .insert(closing)
+        .insert(dbPayload)
         .select()
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.CASH_CLOSINGS, data as CashClosingRecord)
-        return data as CashClosingRecord
+        PrintERPDataStore.addItem(STORAGE_KEYS.CASH_CLOSINGS, { ...data, account_name: closing.account_name } as CashClosingRecord)
+        return { ...data, account_name: closing.account_name } as CashClosingRecord
+      }
+      if (error) {
+        console.warn('[FinanceRepository.recordCashClosing] DB error:', error.message)
       }
     } catch (e) {
       console.warn('[FinanceRepository.recordCashClosing] DB fallback:', e)
     }
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.CASH_CLOSINGS, closing)
-    return closing
+    PrintERPDataStore.addItem(STORAGE_KEYS.CASH_CLOSINGS, payload)
+    return payload
   }
 
   static async getCashClosings(companyId: string, closingDate?: string): Promise<CashClosingRecord[]> {

@@ -5,7 +5,7 @@
 // Job Profitability, Branch Profitability, Bank Reconciliation
 // ==============================================================================
 
-import { FinanceRepository } from '../lib/repositories/finance.repository.ts'
+import { FinanceRepository, generateUUID } from '../lib/repositories/finance.repository.ts'
 import { BillingRepository } from '../lib/repositories/billing.repository.ts'
 import { SupplierRepository } from '../lib/repositories/supplier.repository.ts'
 import { CostingRepository } from '../lib/repositories/costing.repository.ts'
@@ -162,7 +162,7 @@ export class FinanceService {
     }
 
     const txnNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'PAYMENT', 'PAY')
-    const txnId = `txn-${Date.now()}-${txnNumber}`
+    const txnId = generateUUID()
     const now = new Date().toISOString()
     const pDate = params.paymentDate || now.split('T')[0]
 
@@ -187,7 +187,7 @@ export class FinanceService {
 
     const lines: JournalEntryLineRecord[] = [
       {
-        id: `jel-${Date.now()}-1`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: paymentAccount.id,
@@ -199,7 +199,7 @@ export class FinanceService {
         created_at: now,
       },
       {
-        id: `jel-${Date.now()}-2`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: arAccount.id,
@@ -255,7 +255,7 @@ export class FinanceService {
     }
 
     const txnNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'SUPPLIER_PAYMENT', 'BILL-PAY')
-    const txnId = `txn-${Date.now()}-${txnNumber}`
+    const txnId = generateUUID()
     const now = new Date().toISOString()
     const pDate = params.paymentDate || now.split('T')[0]
 
@@ -280,7 +280,7 @@ export class FinanceService {
 
     const lines: JournalEntryLineRecord[] = [
       {
-        id: `jel-${Date.now()}-1`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: apAccount.id,
@@ -292,7 +292,7 @@ export class FinanceService {
         created_at: now,
       },
       {
-        id: `jel-${Date.now()}-2`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: paymentAccount.id,
@@ -400,7 +400,7 @@ export class FinanceService {
     }
 
     const txnNumber = params.expenseNumber || await FinanceRepository.getNextDocumentNumber(params.companyId, 'EXPENSE', 'EXP')
-    const txnId = `txn-${Date.now()}-${txnNumber}`
+    const txnId = generateUUID()
     const now = new Date().toISOString()
     const eDate = params.expenseDate || now.split('T')[0]
 
@@ -439,7 +439,7 @@ export class FinanceService {
 
     const lines: JournalEntryLineRecord[] = [
       {
-        id: `jel-${Date.now()}-1`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: expenseAccount.id,
@@ -451,7 +451,7 @@ export class FinanceService {
         created_at: now,
       },
       {
-        id: `jel-${Date.now()}-2`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: paymentAccount.id,
@@ -707,7 +707,7 @@ export class FinanceService {
 
     const transferNum = await FinanceRepository.getNextDocumentNumber(params.companyId, 'TRANSFER', 'TRF')
     const txnNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'TRANSACTION', 'TXN')
-    const txnId = `txn-${Date.now()}-${txnNumber}`
+    const txnId = generateUUID()
     const now = new Date().toISOString()
     const tDate = params.transferDate || now.split('T')[0]
     const fee = Number(params.feeAmount || 0)
@@ -732,7 +732,7 @@ export class FinanceService {
 
     const lines: JournalEntryLineRecord[] = [
       {
-        id: `jel-${Date.now()}-1`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: toAcc.id,
@@ -744,7 +744,7 @@ export class FinanceService {
         created_at: now,
       },
       {
-        id: `jel-${Date.now()}-2`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: fromAcc.id,
@@ -761,7 +761,7 @@ export class FinanceService {
       const accounts = await FinanceRepository.getAccounts(params.companyId)
       const feeAccount = accounts.find((a) => a.code === '6070') || accounts.find((a) => a.account_type === 'EXPENSE')!
       lines.push({
-        id: `jel-${Date.now()}-3`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: feeAccount.id,
@@ -777,7 +777,7 @@ export class FinanceService {
     await FinanceRepository.recordTransaction(header, lines)
 
     const transfer: AccountTransferRecord = {
-      id: `trf-${Date.now()}-${transferNum}`,
+      id: generateUUID(),
       company_id: params.companyId,
       branch_id: params.branchId || null,
       transfer_number: transferNum,
@@ -829,7 +829,7 @@ export class FinanceService {
     }
 
     const refundNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'REFUND', 'REF')
-    const txnId = `txn-${Date.now()}-${refundNumber}`
+    const txnId = generateUUID()
     const now = new Date().toISOString()
     const rDate = params.refundDate || now.split('T')[0]
 
@@ -854,7 +854,7 @@ export class FinanceService {
 
     const lines: JournalEntryLineRecord[] = [
       {
-        id: `jel-${Date.now()}-1`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: revAccount.id,
@@ -866,7 +866,7 @@ export class FinanceService {
         created_at: now,
       },
       {
-        id: `jel-${Date.now()}-2`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: refundAccount.id,
@@ -903,7 +903,7 @@ export class FinanceService {
     const accMap = new Map(accounts.map((a) => [a.id, a]))
 
     const jvNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'JOURNAL_ENTRY', 'JV')
-    const txnId = `txn-${Date.now()}-${jvNumber}`
+    const txnId = generateUUID()
     const now = new Date().toISOString()
     const aDate = params.adjustmentDate || now.split('T')[0]
 
@@ -920,7 +920,7 @@ export class FinanceService {
       totalAmount += debit
 
       journalLines.push({
-        id: `jel-${Date.now()}-${i + 1}`,
+        id: generateUUID(),
         transaction_id: txnId,
         company_id: params.companyId,
         account_id: acc.id,
@@ -984,7 +984,7 @@ export class FinanceService {
       const accounts = await FinanceRepository.getAccounts(params.companyId)
       const adjAccount = accounts.find((a) => a.code === '6070') || accounts.find((a) => a.account_type === 'EXPENSE')!
       const txnNumber = await FinanceRepository.getNextDocumentNumber(params.companyId, 'TRANSACTION', 'TXN')
-      adjTxnId = `txn-${Date.now()}-${txnNumber}`
+      adjTxnId = generateUUID()
 
       const header: FinancialTransactionRecord = {
         id: adjTxnId,
@@ -1008,7 +1008,7 @@ export class FinanceService {
         variance > 0
           ? [
               {
-                id: `jel-${Date.now()}-1`,
+                id: generateUUID(),
                 transaction_id: adjTxnId,
                 company_id: params.companyId,
                 account_id: acc.id,
@@ -1020,7 +1020,7 @@ export class FinanceService {
                 created_at: now,
               },
               {
-                id: `jel-${Date.now()}-2`,
+                id: generateUUID(),
                 transaction_id: adjTxnId,
                 company_id: params.companyId,
                 account_id: adjAccount.id,
@@ -1034,7 +1034,7 @@ export class FinanceService {
             ]
           : [
               {
-                id: `jel-${Date.now()}-1`,
+                id: generateUUID(),
                 transaction_id: adjTxnId,
                 company_id: params.companyId,
                 account_id: adjAccount.id,
@@ -1046,7 +1046,7 @@ export class FinanceService {
                 created_at: now,
               },
               {
-                id: `jel-${Date.now()}-2`,
+                id: generateUUID(),
                 transaction_id: adjTxnId,
                 company_id: params.companyId,
                 account_id: acc.id,
@@ -1063,7 +1063,7 @@ export class FinanceService {
     }
 
     const closing: CashClosingRecord = {
-      id: `cc-${Date.now()}-${closingNum}`,
+      id: generateUUID(),
       company_id: params.companyId,
       branch_id: params.branchId || null,
       closing_number: closingNum,
@@ -1327,6 +1327,16 @@ export class FinanceService {
       }
     }
 
+    // Authoritative fallback: if journal transactions does not yet include customer payments, use billing payments
+    if (customerReceipts === 0) {
+      const allBillingPayments = await BillingRepository.getPayments(companyId).catch(() => [])
+      const paymentsInPeriod = allBillingPayments.filter((p) => {
+        const d = p.payment_date || p.created_at?.split('T')[0] || ''
+        return (!startDate || d >= startDate) && (!endDate || d <= endDate)
+      })
+      customerReceipts = paymentsInPeriod.reduce((s, p) => s + Number(p.amount || 0), 0)
+    }
+
     const operatingTotal = Number((customerReceipts - supplierPayments - opexPaid).toFixed(2))
     const investingTotal = Number((-equipmentPurchases).toFixed(2))
     const financingTotal = Number((capitalInjections - ownerDrawings).toFixed(2))
@@ -1571,18 +1581,87 @@ export class FinanceService {
 
     // 1. Chart of Accounts & Balances
     const accounts = await FinanceRepository.getAccounts(companyId, branchId)
+    const allBillingPayments = await BillingRepository.getPayments(companyId).catch(() => [])
+
+    // Calculate all-time collections by payment method
+    let allTimeCashCollected = 0
+    let allTimeBankCollected = 0
+    let allTimeBkashCollected = 0
+    let allTimeNagadCollected = 0
+
+    for (const p of allBillingPayments) {
+      const amt = Number(p.amount || 0)
+      const m = (p.payment_method || '').toLowerCase()
+      if (m === 'cash') allTimeCashCollected += amt
+      else if (['bank', 'bank_transfer', 'cheque'].includes(m)) allTimeBankCollected += amt
+      else if (m.includes('bkash')) allTimeBkashCollected += amt
+      else if (m.includes('nagad')) allTimeNagadCollected += amt
+    }
+
+    // Calculate all-time cash expenses
+    const allExpenses = await this.getExpenses(companyId, { branchId })
+    let allTimeCashExpenses = 0
+    for (const exp of allExpenses.items || []) {
+      const m = (exp.payment_method || '').toLowerCase()
+      if (m === 'cash') allTimeCashExpenses += Number(exp.amount || 0)
+    }
+
+    // Calculate net cash transfers
+    const allTransfers = await FinanceRepository.getTransfers(companyId)
+    let netCashTransferDelta = 0
+    const cashAcc = accounts.find((a) => a.code === '1010' || a.account_subtype === 'CASH')
+    if (cashAcc) {
+      for (const tr of allTransfers) {
+        if (tr.status === 'POSTED') {
+          if (tr.from_account_id === cashAcc.id) {
+            netCashTransferDelta -= (Number(tr.amount || 0) + Number(tr.fee_amount || 0))
+          }
+          if (tr.to_account_id === cashAcc.id) {
+            netCashTransferDelta += Number(tr.amount || 0)
+          }
+        }
+      }
+    }
+
+    // Daily cash closing variances
+    const allClosings = await FinanceRepository.getCashClosings(companyId)
+    let totalClosingVariance = 0
+    for (const cl of allClosings) {
+      if (cl.status === 'APPROVED' && (!cashAcc || cl.account_id === cashAcc.id)) {
+        totalClosingVariance += Number(cl.variance || 0)
+      }
+    }
+
+    // Authoritative calculation of Cash in Hand
+    const openingCash = Number(cashAcc?.opening_balance || 0)
+    const expectedAuthoritativeCash = Number((openingCash + allTimeCashCollected - allTimeCashExpenses + netCashTransferDelta + totalClosingVariance).toFixed(2))
+
+    // Reconcile and synchronize Cash in Hand balance in PostgreSQL accounts table
+    if (cashAcc && Math.abs(Number(cashAcc.current_balance || 0) - expectedAuthoritativeCash) > 0.001) {
+      cashAcc.current_balance = expectedAuthoritativeCash
+      FinanceRepository.setAccountBalance(cashAcc.id, companyId, expectedAuthoritativeCash).catch((err) => {
+        console.warn('[FinanceService.getFinancialDashboard] Sync cash balance warning:', err)
+      })
+    }
+
     let cashBal = 0
     let bankBal = 0
     let mfsBal = 0
     let bankAccountsCount = 0
 
     for (const acc of accounts) {
-      if (acc.account_subtype === 'CASH') cashBal += Number(acc.current_balance || 0)
-      if (acc.account_subtype === 'BANK') {
+      if (acc.account_subtype === 'CASH' || acc.code === '1010') {
+        cashBal += Number(acc.current_balance || 0)
+      } else if (acc.account_subtype === 'BANK') {
         bankBal += Number(acc.current_balance || 0)
         bankAccountsCount++
+      } else if (acc.account_subtype === 'MFS') {
+        mfsBal += Number(acc.current_balance || 0)
       }
-      if (acc.account_subtype === 'MFS') mfsBal += Number(acc.current_balance || 0)
+    }
+
+    if (cashBal === 0 && expectedAuthoritativeCash > 0) {
+      cashBal = expectedAuthoritativeCash
     }
 
     // 2. Invoices & Revenue
@@ -1707,6 +1786,11 @@ export class FinanceService {
       return (!startDate || d >= startDate) && (!endDate || d <= endDate)
     })
 
+    const paymentsInPeriod = allBillingPayments.filter((p) => {
+      const d = p.payment_date || p.created_at?.split('T')[0] || ''
+      return (!startDate || d >= startDate) && (!endDate || d <= endDate)
+    })
+
     let totalPaymentsReceived = 0
     let paymentsCount = 0
     let cashReceived = 0
@@ -1741,7 +1825,21 @@ export class FinanceService {
       }
     }
 
-    if (totalPaymentsReceived === 0 && invoicesInPeriod.length > 0) {
+    // Authoritative fallback: if financial_transactions has no customer payments recorded, use billing payments
+    if (totalPaymentsReceived === 0 && paymentsInPeriod.length > 0) {
+      for (const p of paymentsInPeriod) {
+        const amt = Number(p.amount || 0)
+        totalPaymentsReceived += amt
+        paymentsCount++
+
+        const method = (p.payment_method || '').toLowerCase()
+        if (method === 'cash') cashReceived += amt
+        else if (['bank', 'bank_transfer', 'cheque'].includes(method)) bankReceived += amt
+        else if (method.includes('bkash')) bkashReceived += amt
+        else if (method.includes('nagad')) nagadReceived += amt
+        else cardReceived += amt
+      }
+    } else if (totalPaymentsReceived === 0 && invoicesInPeriod.length > 0) {
       for (const inv of invoicesInPeriod) {
         const p = Number(inv.paid_amount || 0)
         if (p > 0) {
@@ -1857,6 +1955,23 @@ export class FinanceService {
       }
     })
 
+    // If recent transactions from financial_transactions is empty, show recent billing payments
+    if (recentTransactions.length === 0 && allBillingPayments.length > 0) {
+      for (const p of allBillingPayments.slice(0, 10)) {
+        recentTransactions.push({
+          id: p.id,
+          type: 'CUSTOMER_PAYMENT',
+          title: 'Payment Received',
+          subtitle: p.receipt_number || p.customer_name || 'Customer payment',
+          amount: Number(p.amount || 0),
+          isCredit: true,
+          time: p.payment_date ? new Date(p.payment_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Recent',
+          date: p.payment_date,
+          color: 'emerald',
+        })
+      }
+    }
+
     // 11. Monthly Summary Table (Past 4 months)
     const monthlySummary: {
       month: string
@@ -1885,7 +2000,13 @@ export class FinanceService {
       })
 
       const mRev = mInvoices.reduce((s, i) => s + Number(i.grand_total || 0), 0)
-      const mRec = mInvoices.reduce((s, i) => s + Number(i.paid_amount || 0), 0)
+      const mRecInvoices = mInvoices.reduce((s, i) => s + Number(i.paid_amount || 0), 0)
+      const mPayments = allBillingPayments.filter((p) => {
+        const d = p.payment_date || p.created_at?.split('T')[0] || ''
+        return d >= mStart && d <= mEnd
+      })
+      const mPayAmt = mPayments.reduce((s, p) => s + Number(p.amount || 0), 0)
+      const mRec = Math.max(mRecInvoices, mPayAmt)
       const mDue = mInvoices.reduce((s, i) => s + Number(i.due_amount || 0), 0)
 
       const mTxns = allTxns.filter((t) => {

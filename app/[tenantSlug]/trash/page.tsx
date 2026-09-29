@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import {
   Trash2,
   RefreshCw,
@@ -24,6 +24,7 @@ import {
   Clock,
   Info,
   ShieldAlert,
+  Loader2,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -35,7 +36,13 @@ import { PageHeader } from '@/components/shared/page-header'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { TrashRepository } from '@/lib/repositories/trash.repository'
+import {
+  getTrashItemsAction,
+  restoreFromTrashAction,
+  permanentDeleteAction,
+  emptyTrashAction,
+  purgeExpiredTrashAction,
+} from '@/actions/trash.actions'
 import {
   TRASH_RETENTION_DAYS,
   getTrashDaysRemaining,
@@ -45,23 +52,66 @@ import {
 import { cn } from '@/lib/utils'
 
 function TrashContent() {
+  const params = useParams()
   const searchParams = useSearchParams()
   const tabParam = searchParams?.get('tab')
   const { company } = useTenant()
   const { tBilingual } = useI18n()
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
   const companyId = company?.id || 'default'
 
   const [trashItems, setTrashItems] = useDataStore<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, [])
   const [selectedCategory, setSelectedCategory] = useState<string>(tabParam || 'all')
   const [search, setSearch] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isActionPending, setIsActionPending] = useState(false)
+
+  // Resilient company matching across UUID, slug, default, and c-01
+  const matchesCompany = useCallback(
+    (item: TrashRecord) => {
+      if (!companyId || companyId === 'default' || companyId === 'all') return true
+      if (!item.company_id || item.company_id === 'default') return true
+      if (item.company_id === companyId) return true
+      if (tenantSlug && (item.company_id === tenantSlug || companyId === tenantSlug)) return true
+      if (company?.slug && (item.company_id === company.slug || companyId === company.slug)) return true
+      if (item.company_id === 'c-01' || companyId === 'c-01') return true
+      return false
+    },
+    [companyId, tenantSlug, company?.slug]
+  )
+
+  // Load authoritative trash items from server and merge with client store
+  const loadTrashData = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const res = await getTrashItemsAction(companyId)
+      if (res.success && Array.isArray(res.data)) {
+        const serverItems = res.data as TrashRecord[]
+        // Merge without duplicates
+        const map = new Map<string, TrashRecord>()
+        serverItems.forEach((item) => map.set(item.id, item))
+        trashItems.forEach((item) => {
+          if (!map.has(item.id)) map.set(item.id, item)
+        })
+        const merged = Array.from(map.values())
+        setTrashItems(merged)
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, merged)
+      }
+    } catch (e) {
+      console.error('Error fetching trash items:', e)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [companyId, trashItems, setTrashItems])
 
   useEffect(() => {
     if (tabParam) {
       setSelectedCategory(tabParam)
     }
     // Auto-purge any records older than 30 days on page load
-    TrashRepository.purgeExpiredTrash(companyId, TRASH_RETENTION_DAYS).catch(() => {})
-  }, [tabParam, companyId])
+    purgeExpiredTrashAction(companyId, tenantSlug, TRASH_RETENTION_DAYS).catch(() => {})
+    loadTrashData()
+  }, [tabParam, companyId, tenantSlug])
 
   // Modals state
   const [itemToPermanentDelete, setItemToPermanentDelete] = useState<TrashRecord | null>(null)
@@ -78,7 +128,7 @@ function TrashContent() {
 
   // Summary counts
   const counts = useMemo(() => {
-    const list = trashItems.filter((i) => !companyId || i.company_id === companyId || i.company_id === 'default')
+    const list = trashItems.filter(matchesCompany)
     return {
       total: list.length,
       quotations: list.filter((i) => i.category === 'quotations').length,
@@ -88,13 +138,13 @@ function TrashContent() {
       materials: list.filter((i) => i.category === 'materials').length,
       suppliers: list.filter((i) => i.category === 'suppliers').length,
     }
-  }, [trashItems, companyId])
+  }, [trashItems, matchesCompany])
 
   // Filtered items
   const filteredItems = useMemo(() => {
     return trashItems
       .filter((item) => {
-        const matchCompany = !companyId || item.company_id === companyId || item.company_id === 'default'
+        const matchComp = matchesCompany(item)
         const matchCategory = selectedCategory === 'all' || item.category === selectedCategory
         const term = search.toLowerCase().trim()
         const matchSearch =
@@ -104,15 +154,24 @@ function TrashContent() {
           (item.reference_number && item.reference_number.toLowerCase().includes(term)) ||
           (item.deleted_by_name && item.deleted_by_name.toLowerCase().includes(term))
 
-        return matchCompany && matchCategory && matchSearch
+        return matchComp && matchCategory && matchSearch
       })
       .sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime())
-  }, [trashItems, companyId, selectedCategory, search])
+  }, [trashItems, matchesCompany, selectedCategory, search])
 
   // Restore action
   const handleRestore = async (item: TrashRecord) => {
+    setIsActionPending(true)
     try {
-      await TrashRepository.restoreFromTrash(item.id, companyId)
+      const res = await restoreFromTrashAction(item.id, companyId, tenantSlug)
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to restore item.')
+      }
+
+      setTrashItems((prev) => prev.filter((t) => t.id !== item.id))
+      const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== item.id))
+
       showNotification(
         tBilingual(
           `Restored "${item.title}" successfully back to active records.`,
@@ -121,14 +180,25 @@ function TrashContent() {
       )
     } catch (err: any) {
       showNotification(err.message || 'Failed to restore item.')
+    } finally {
+      setIsActionPending(false)
     }
   }
 
   // Permanent delete action
   const handlePermanentDelete = async () => {
     if (!itemToPermanentDelete) return
+    setIsActionPending(true)
     try {
-      await TrashRepository.permanentDelete(itemToPermanentDelete.id, companyId)
+      const res = await permanentDeleteAction(itemToPermanentDelete.id, companyId, tenantSlug)
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to delete item permanently.')
+      }
+
+      setTrashItems((prev) => prev.filter((t) => t.id !== itemToPermanentDelete.id))
+      const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== itemToPermanentDelete.id))
+
       setIsPermanentModalOpen(false)
       setItemToPermanentDelete(null)
       showNotification(
@@ -139,23 +209,41 @@ function TrashContent() {
       )
     } catch (err: any) {
       showNotification(err.message || 'Failed to delete item permanently.')
+    } finally {
+      setIsActionPending(false)
     }
   }
 
   // Empty trash action
   const handleEmptyTrash = async () => {
+    setIsActionPending(true)
     try {
       const categoryToClear = selectedCategory === 'all' ? undefined : (selectedCategory as TrashCategory)
-      const count = await TrashRepository.emptyTrash(companyId, categoryToClear)
+      const res = await emptyTrashAction(companyId, categoryToClear, tenantSlug)
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to empty trash.')
+      }
+
+      if (categoryToClear) {
+        setTrashItems((prev) => prev.filter((t) => t.category !== categoryToClear))
+        const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.category !== categoryToClear))
+      } else {
+        setTrashItems([])
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [])
+      }
+
       setIsEmptyTrashModalOpen(false)
       showNotification(
         tBilingual(
-          `Permanently purged ${count} items from trash.`,
-          `ট্র্যাশ থেকে ${count} টি আইটেম স্থায়ীভাবে মুছে ফেলা হয়েছে।`
+          `Permanently purged ${res.count ?? ''} items from trash.`,
+          `ট্র্যাশ থেকে আইটেম স্থায়ীভাবে মুছে ফেলা হয়েছে।`
         )
       )
     } catch (err: any) {
       showNotification(err.message || 'Failed to empty trash.')
+    } finally {
+      setIsActionPending(false)
     }
   }
 
@@ -219,17 +307,30 @@ function TrashContent() {
         icon={Trash2}
         iconColor="text-rose-600"
         actions={
-          counts.total > 0 && (
+          <div className="flex items-center gap-2">
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setIsEmptyTrashModalOpen(true)}
-              className="text-xs font-bold text-rose-700 hover:text-rose-800 hover:bg-rose-50 border-rose-200 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
+              onClick={() => loadTrashData()}
+              disabled={isLoading}
+              className="text-xs font-semibold"
             >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5 text-rose-600" />
-              {tBilingual('Empty Trash', 'ট্র্যাশ খালি করুন')}
+              <RefreshCw className={cn('mr-1.5 h-3.5 w-3.5', isLoading && 'animate-spin')} />
+              {tBilingual('Refresh', 'রিফ্রেশ')}
             </Button>
-          )
+            {counts.total > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsEmptyTrashModalOpen(true)}
+                disabled={isActionPending}
+                className="text-xs font-bold text-rose-700 hover:text-rose-800 hover:bg-rose-50 border-rose-200 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5 text-rose-600" />
+                {tBilingual('Empty Trash', 'ট্র্যাশ খালি করুন')}
+              </Button>
+            )}
+          </div>
         }
       />
 
