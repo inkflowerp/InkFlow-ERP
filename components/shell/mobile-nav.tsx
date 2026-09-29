@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import {
   Menu,
   X,
@@ -56,6 +56,13 @@ import {
   Key,
   RotateCcw,
   Flame,
+  Activity,
+  TrendingDown,
+  Clock,
+  BookOpen,
+  PieChart,
+  Scale,
+  ArrowLeftRight,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -118,6 +125,14 @@ const iconMap: Record<string, React.ElementType> = {
   Sliders,
   Key,
   Shield,
+  Activity,
+  TrendingDown,
+  Clock,
+  BookOpen,
+  PieChart,
+  Scale,
+  ArrowLeftRight,
+  RotateCcw,
 }
 
 export function MobileNav() {
@@ -133,9 +148,11 @@ export function MobileNav() {
   const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>({
     company_settings: true,
     hr: true,
+    accounting: true,
   })
 
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { signOut } = useAuth()
   const { company, currentRole, currentBranch, currentUser } = useTenant()
   const { appName, appLogoUrl, tagline } = usePlatformSettings()
@@ -198,7 +215,27 @@ export function MobileNav() {
       ? pathname.slice(`/${company.slug}`.length) || '/'
       : pathname
 
-    if (pathname === itemHref || cleanPath === itemHref) return true
+    const [hrefPath, hrefQuery] = itemHref.split('?')
+    const isPathMatch = pathname === hrefPath || cleanPath === hrefPath
+
+    // If itemHref has query parameters (e.g. /accounting?tab=expenses)
+    if (hrefQuery) {
+      if (!isPathMatch) return false
+      const currentTab = searchParams?.get('tab') || 'overview'
+      const targetParams = new URLSearchParams(hrefQuery)
+      const targetTab = targetParams.get('tab') || 'overview'
+      return currentTab === targetTab
+    }
+
+    // If itemHref is /accounting (Finance Dashboard root)
+    if (cleanPath === '/accounting' && hrefPath === '/accounting') {
+      if (exact) {
+        const currentTab = searchParams?.get('tab')
+        return !currentTab || currentTab === 'overview'
+      }
+    }
+
+    if (isPathMatch) return true
 
     if ((itemHref === '/trash' || itemHref === '/settings/trash') && (cleanPath === '/trash' || cleanPath === '/settings/trash' || cleanPath.startsWith('/trash/') || cleanPath.startsWith('/settings/trash/'))) {
       return true
@@ -212,11 +249,11 @@ export function MobileNav() {
       return false
     }
 
-    if (cleanPath.startsWith(`${itemHref}/`)) {
+    if (cleanPath.startsWith(`${hrefPath}/`)) {
       return true
     }
     return false
-  }, [pathname, company?.slug])
+  }, [pathname, company?.slug, searchParams])
 
   // Filter sections by search and permissions (including child sub-items)
   const filteredNavSections = useMemo(() => {
@@ -277,7 +314,8 @@ export function MobileNav() {
           if (
             hasActiveChild ||
             (cleanPath.startsWith('/settings') && item.key === 'company_settings') ||
-            (cleanPath.startsWith('/hr') && item.key === 'hr')
+            (cleanPath.startsWith('/hr') && item.key === 'hr') ||
+            (cleanPath.startsWith('/accounting') && item.key === 'accounting')
           ) {
             setExpandedSubNav((prev) => ({ ...prev, [item.key]: true }))
           }
@@ -492,9 +530,9 @@ export function MobileNav() {
                                       ? isActive
                                         ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
                                         : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold'
-                                      : isActive
+                                      : isActive && !hasChildren
                                       ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-500/20'
-                                      : isChildActive && !isActive
+                                      : isChildActive
                                       ? 'bg-blue-50 text-blue-800 font-semibold dark:bg-blue-950/40 dark:text-blue-300'
                                       : 'text-slate-700 hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800'
                                   )}
@@ -502,7 +540,7 @@ export function MobileNav() {
                                   <Icon
                                     className={cn(
                                       'h-4 w-4 shrink-0 transition-transform group-hover:scale-110',
-                                      isPrimary || isActive
+                                      isPrimary || (isActive && !hasChildren)
                                         ? 'text-white'
                                         : isChildActive
                                         ? 'text-blue-600 dark:text-blue-400'

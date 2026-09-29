@@ -88,7 +88,9 @@ export function AppShell({
             </div>
             <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden print:overflow-visible print:h-auto print:min-h-0 print:block">
               <div className="print:hidden">
-                <Sidebar />
+                <React.Suspense fallback={null}>
+                  <Sidebar />
+                </React.Suspense>
               </div>
               <div className="flex flex-1 flex-col min-w-0 min-h-0 overflow-hidden print:overflow-visible print:h-auto print:min-h-0 print:block">
                 <div className="print:hidden">

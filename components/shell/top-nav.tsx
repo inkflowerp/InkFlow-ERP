@@ -48,7 +48,9 @@ export function TopNav() {
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2.5 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-2 sm:gap-4">
       {/* LEFT: Mobile Nav Drawer + Company Selector + Breadcrumbs */}
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
-        <MobileNav />
+        <React.Suspense fallback={<div className="h-10 w-10 shrink-0" />}>
+          <MobileNav />
+        </React.Suspense>
         <CompanySelector />
         <div className="hidden 2xl:block pl-3 border-l border-slate-200 dark:border-slate-800 shrink-0">
           <Breadcrumbs />

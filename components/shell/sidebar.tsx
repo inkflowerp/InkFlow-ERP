@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import {
   LayoutDashboard,
   Printer,
@@ -55,6 +55,13 @@ import {
   Shield,
   RotateCcw,
   Flame,
+  Activity,
+  TrendingDown,
+  Clock,
+  BookOpen,
+  PieChart,
+  Scale,
+  ArrowLeftRight,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -112,6 +119,14 @@ const iconMap: Record<string, React.ElementType> = {
   Sliders,
   Key,
   Shield,
+  Activity,
+  TrendingDown,
+  Clock,
+  BookOpen,
+  PieChart,
+  Scale,
+  ArrowLeftRight,
+  RotateCcw,
 }
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'printerp_sidebar_collapsed'
@@ -120,6 +135,7 @@ const EXPANDED_SUB_NAV_STORAGE_KEY = 'printerp_nav_expanded_sub_nav'
 
 export function Sidebar() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { company } = useTenant()
   const { appName, appLogoUrl, tagline } = usePlatformSettings()
   const { can, isOwner } = usePermissions()
@@ -158,18 +174,18 @@ export function Sidebar() {
     return { today: true, work: true, management: true, settings: true }
   })
 
-  // State of expanded sub-item groups (e.g. company_settings, hr)
+  // State of expanded sub-item groups (e.g. company_settings, hr, accounting)
   const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') {
-      return { company_settings: true, hr: true }
+      return { company_settings: true, hr: true, accounting: true }
     }
     try {
       const saved = localStorage.getItem(EXPANDED_SUB_NAV_STORAGE_KEY)
       if (saved) {
-        return { hr: true, company_settings: true, ...JSON.parse(saved) }
+        return { hr: true, company_settings: true, accounting: true, ...JSON.parse(saved) }
       }
     } catch {}
-    return { company_settings: true, hr: true }
+    return { company_settings: true, hr: true, accounting: true }
   })
 
   const navSections = useMemo(() => getNavigationConfig(), [])
@@ -268,7 +284,27 @@ export function Sidebar() {
       ? pathname.slice(`/${company.slug}`.length) || '/'
       : pathname
 
-    if (pathname === itemHref || cleanPath === itemHref) return true
+    const [hrefPath, hrefQuery] = itemHref.split('?')
+    const isPathMatch = pathname === hrefPath || cleanPath === hrefPath
+
+    // If itemHref has query parameters (e.g. /accounting?tab=expenses)
+    if (hrefQuery) {
+      if (!isPathMatch) return false
+      const currentTab = searchParams?.get('tab') || 'overview'
+      const targetParams = new URLSearchParams(hrefQuery)
+      const targetTab = targetParams.get('tab') || 'overview'
+      return currentTab === targetTab
+    }
+
+    // If itemHref is /accounting (Finance Dashboard root)
+    if (cleanPath === '/accounting' && hrefPath === '/accounting') {
+      if (exact) {
+        const currentTab = searchParams?.get('tab')
+        return !currentTab || currentTab === 'overview'
+      }
+    }
+
+    if (isPathMatch) return true
 
     if ((itemHref === '/trash' || itemHref === '/settings/trash') && (cleanPath === '/trash' || cleanPath === '/settings/trash' || cleanPath.startsWith('/trash/') || cleanPath.startsWith('/settings/trash/'))) {
       return true
@@ -283,11 +319,11 @@ export function Sidebar() {
       return false
     }
 
-    if (cleanPath.startsWith(`${itemHref}/`)) {
+    if (cleanPath.startsWith(`${hrefPath}/`)) {
       return true
     }
     return false
-  }, [pathname, company?.slug])
+  }, [pathname, company?.slug, searchParams])
 
   // Automatically ensure active route's parent group and sub-nav are expanded
   useEffect(() => {
@@ -318,7 +354,8 @@ export function Sidebar() {
           if (
             hasActiveChild ||
             (cleanPath.startsWith('/settings') && item.key === 'company_settings') ||
-            (cleanPath.startsWith('/hr') && item.key === 'hr')
+            (cleanPath.startsWith('/hr') && item.key === 'hr') ||
+            (cleanPath.startsWith('/accounting') && item.key === 'accounting')
           ) {
             setExpandedSubNav((prev) => {
               if (prev[item.key]) return prev
@@ -490,9 +527,9 @@ export function Sidebar() {
                                 ? isActive
                                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
                                   : 'bg-gradient-to-r from-blue-600/95 to-indigo-600/95 text-white font-bold hover:from-blue-600 hover:to-indigo-600 shadow-sm shadow-blue-500/20 active:scale-98'
-                                : isActive
+                                : isActive && !hasChildren
                                 ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
-                                : isChildActive && !isActive
+                                : isChildActive
                                 ? 'bg-blue-50 text-blue-800 font-semibold dark:bg-blue-950/40 dark:text-blue-300'
                                 : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
                               collapsed && 'justify-center px-2'
@@ -501,7 +538,7 @@ export function Sidebar() {
                             <Icon
                               className={cn(
                                 'h-4 w-4 shrink-0 transition-transform group-hover/nav:scale-105',
-                                isPrimary || isActive
+                                isPrimary || (isActive && !hasChildren)
                                   ? 'text-white'
                                   : isChildActive
                                   ? 'text-blue-600 dark:text-blue-400'

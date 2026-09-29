@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter, usePathname } from 'next/navigation'
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { cn } from '@/lib/utils'
 import {
   Wallet,
   Plus,
@@ -39,6 +40,7 @@ import {
   ArrowLeftRight,
   Calendar,
   ChevronDown,
+  ChevronLeft,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -105,13 +107,34 @@ import {
   submitCashClosingAction,
 } from '@/actions/finance.actions'
 
-export default function AccountingPage() {
+function AccountingContent() {
   const params = useParams()
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+
+  const tabParam = searchParams.get('tab')
+  const [activeTab, setActiveTab] = useState<string>(tabParam || 'overview')
+
+  // Keep activeTab in sync with URL searchParams
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam)
+    } else {
+      setActiveTab('overview')
+    }
+  }, [tabParam])
+
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab)
+    const targetUrl = newTab === 'overview'
+      ? getTenantNavHref('/accounting', pathname, slug)
+      : getTenantNavHref(`/accounting?tab=${newTab}`, pathname, slug)
+    router.push(targetUrl, { scroll: false })
+  }
 
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
@@ -135,7 +158,6 @@ export default function AccountingPage() {
   const [cashClosings] = useDataStore<CashClosingRecord[]>(STORAGE_KEYS.CASH_CLOSINGS, [])
 
   // UI State
-  const [activeTab, setActiveTab] = useState<string>('overview')
   const [selectedLedgerAccountId, setSelectedLedgerAccountId] = useState<string>('')
   const [receivablesSearch, setReceivablesSearch] = useState<string>('')
   const [payablesSearch, setPayablesSearch] = useState<string>('')
@@ -481,14 +503,117 @@ export default function AccountingPage() {
     )
   }
 
+  const tabHeaders: Record<string, {
+    title: string
+    titleBn: string
+    description: string
+    descriptionBn: string
+    icon: React.ElementType
+    colorClass: string
+  }> = {
+    overview: {
+      title: 'Finance Dashboard',
+      titleBn: 'ফাইন্যান্স ড্যাশবোর্ড',
+      description: 'Track your cash flow, receivables, payables, expenses and profit in one place.',
+      descriptionBn: 'ক্যাশ ফ্লো, বাকি, পাওনা, খরচ এবং মুনাফার সামগ্রিক হিসাব ও বিশ্লেষণ।',
+      icon: Activity,
+      colorClass: 'bg-emerald-500 text-white',
+    },
+    expenses: {
+      title: 'Expenses & Staff Salary',
+      titleBn: 'খরচ ও স্টাফ বেতন',
+      description: 'Track operating expenditures, shop-floor costs, and employee salary distributions.',
+      descriptionBn: 'দৈনন্দিন খরচ, কারখানা পরিচালন ব্যয় ও কর্মীদের বেতন পরিশোধের হিসাব।',
+      icon: TrendingDown,
+      colorClass: 'bg-rose-600 text-white',
+    },
+    receivables: {
+      title: 'Customer Due (Accounts Receivable)',
+      titleBn: 'গ্রাহকের বাকি ও আদায়',
+      description: 'Manage overdue customer balances, age-wise buckets, and pending collections.',
+      descriptionBn: 'গ্রাহকদের বকেয়া বিল, সময়সীমা অনুযায়ী বাকি তালিকা ও দ্রুত কালেকশন।',
+      icon: Users,
+      colorClass: 'bg-amber-500 text-white',
+    },
+    payables: {
+      title: 'Supplier Due (Accounts Payable)',
+      titleBn: 'সরবরাহকারী ও মহাজন দেনা',
+      description: 'Track material supplier bills, credit terms, and scheduled vendor payments.',
+      descriptionBn: 'কাঁচামাল সরবরাহকারী ও মহাজনদের দেনা এবং পরিশোধের সময়সূচী।',
+      icon: ShoppingBag,
+      colorClass: 'bg-pink-600 text-white',
+    },
+    closings: {
+      title: 'Daily Cash Closings & Register',
+      titleBn: 'ক্যাশ ক্লোজিং ও রেজিস্টার',
+      description: 'Daily cash drawer audits, counted cash reconciliation, and discrepancy tracking.',
+      descriptionBn: 'দৈনিক ক্যাশ ড্রয়ার অডিট, হিসাবের সাথে গোনা টাকার মিল ও ক্যাশ ভ্যারিয়েন্স।',
+      icon: Clock,
+      colorClass: 'bg-purple-600 text-white',
+    },
+    ledger: {
+      title: 'General Ledger',
+      titleBn: 'সাধারণ খতিয়ান',
+      description: 'Account-by-account transaction journal with running balances and auditing trails.',
+      descriptionBn: 'হিসাবভিত্তিক সকল লেনদেনের সম্পূর্ণ বিবরণী ও রানিং ব্যালেন্স লেজার।',
+      icon: BookOpen,
+      colorClass: 'bg-blue-600 text-white',
+    },
+    pnl: {
+      title: 'Profit & Loss Statement (P&L)',
+      titleBn: 'লাভ-ক্ষতি বিবরণী',
+      description: 'Comprehensive revenue, COGS, operating overheads, and net profit margins.',
+      descriptionBn: 'মোট বিক্রয় আয়, বিক্রিত পণ্যের ব্যয় ও নিট পরিচালন মুনাফার পূর্ণ বিবরণী।',
+      icon: PieChart,
+      colorClass: 'bg-teal-600 text-white',
+    },
+    balance_sheet: {
+      title: 'Balance Sheet Statement',
+      titleBn: 'ব্যালেন্স শিট (স্থিতিপত্র)',
+      description: 'Assets, liabilities, and shareholder equity snapshot according to accounting standards.',
+      descriptionBn: 'প্রতিষ্ঠানের যাবতীয় সম্পদ, দায় এবং মূলধনের সামগ্রিক আর্থিক চিত্র।',
+      icon: Scale,
+      colorClass: 'bg-indigo-600 text-white',
+    },
+    cash_flow: {
+      title: 'Cash Flow Statement',
+      titleBn: 'নগদ প্রবাহ বিবরণী',
+      description: 'Operating, investing, and financing cash inflows and outflows summary.',
+      descriptionBn: 'পরিচালন, বিনিয়োগ ও অর্থায়ন কার্যক্রম থেকে নগদ টাকার প্রকৃত প্রবাহ।',
+      icon: ArrowLeftRight,
+      colorClass: 'bg-emerald-600 text-white',
+    },
+    trial_balance: {
+      title: 'Trial Balance Statement',
+      titleBn: 'রেওয়ামিল (ট্রায়াল ব্যালেন্স)',
+      description: 'Debit and credit balance reconciliation across all active ledger accounts.',
+      descriptionBn: 'সকল হিসাবের ডেবিট ও ক্রেডিট উদ্বৃত্তের নির্ভুল গাণিতিক সমতা পরীক্ষা।',
+      icon: FileCheck2,
+      colorClass: 'bg-sky-600 text-white',
+    },
+    job_profitability: {
+      title: 'Job Costing & Profitability',
+      titleBn: 'কস্টিং ও অর্ডারভিত্তিক লাভ',
+      description: 'Actual material and labor margins calculated per finished production job.',
+      descriptionBn: 'সম্পন্ন প্রতিটি কাজের কাঁচামাল ও শ্রম ব্যয়ের নিট লাভ বিশ্লেষণ।',
+      icon: Calculator,
+      colorClass: 'bg-emerald-600 text-white',
+    },
+    accounts: {
+      title: 'Master Chart of Accounts',
+      titleBn: 'হিসাব তালিকা',
+      description: 'Directory of all assets, liabilities, equity, revenue, and expense accounts.',
+      descriptionBn: 'প্রতিষ্ঠানের সম্পদ, দায়, মূলধন, আয় ও ব্যয়ের সুবিন্যস্ত হিসাব তালিকা।',
+      icon: Landmark,
+      colorClass: 'bg-slate-800 text-white',
+    },
+  }
+
+  const currentHeader = tabHeaders[activeTab] || tabHeaders.overview
+  const HeaderIcon = currentHeader.icon
+
   return (
-    <PanelAccessGuard
-      module="payments"
-      action="view"
-      panelTitle="Finance & Accounts"
-      panelTitleBn="হিসাব ও ক্যাশবুক"
-    >
-      <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-20">
       {/* Toast Notification */}
       {notification && (
         <div className="fixed top-20 right-6 z-50 p-4 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2">
@@ -497,18 +622,28 @@ export default function AccountingPage() {
         </div>
       )}
 
-      {/* Page Header - Matching Reference Image */}
+      {/* Dynamic Module Header with Breadcrumb Back Link */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
         <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-xs shrink-0">
-            <Wallet className="h-6 w-6" />
+          <div className={cn('h-11 w-11 rounded-2xl flex items-center justify-center shadow-xs shrink-0', currentHeader.colorClass)}>
+            <HeaderIcon className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-              Finance Dashboard
+            {activeTab !== 'overview' && (
+              <button
+                type="button"
+                onClick={() => handleTabChange('overview')}
+                className="inline-flex items-center gap-1 text-2xs font-bold text-blue-600 dark:text-blue-400 hover:underline mb-0.5 cursor-pointer bangla-text"
+              >
+                <ChevronLeft className="w-3 h-3" />
+                <span>{tBilingual('Back to Finance Dashboard', 'ফাইন্যান্স ড্যাশবোর্ডে ফিরুন')}</span>
+              </button>
+            )}
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight bangla-text">
+              {tBilingual(currentHeader.title, currentHeader.titleBn)}
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Track your cash flow, receivables, payables, expenses and profit in one place.
+            <p className="text-xs text-slate-500 dark:text-slate-400 bangla-text">
+              {tBilingual(currentHeader.description, currentHeader.descriptionBn)}
             </p>
           </div>
         </div>
@@ -594,175 +729,33 @@ export default function AccountingPage() {
         </div>
       </div>
 
-      {/* Modernized Pill Tabs Navigation to switch between Dashboard and Statements */}
-      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-x-auto touch-scroll backdrop-blur-md">
-        <Button
-          variant={activeTab === 'overview' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('overview')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'overview'
-              ? 'bg-emerald-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
+      {/* Mobile-Only Quick Tab Selector (when sidebar is hidden on small screens < lg) */}
+      <div className="lg:hidden flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="flex items-center gap-2">
+          <HeaderIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bangla-text">
+            {tBilingual('Active Module:', 'বর্তমান বিভাগ:')}
+          </span>
+        </div>
+        <select
+          value={activeTab}
+          onChange={(e) => handleTabChange(e.target.value)}
+          aria-label={tBilingual('Select Finance Module', 'ফাইন্যান্স মডিউল নির্বাচন করুন')}
+          className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bangla-text max-w-[180px] sm:max-w-[240px]"
         >
-          <Activity className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Finance Dashboard', 'ফাইন্যান্স ড্যাশবোর্ড')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'expenses' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('expenses')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all flex items-center gap-1.5 ${
-            activeTab === 'expenses'
-              ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-xs'
-              : 'text-rose-700 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100'
-          }`}
-        >
-          <TrendingDown className="w-3.5 h-3.5" />
-          <span>{tBilingual('Expenses & Salary', 'খরচ ও স্টাফ বেতন')}</span>
-        </Button>
-
-        <Button
-          variant={activeTab === 'receivables' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('receivables')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'receivables'
-              ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <Users className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Customer Due', 'গ্রাহকের বাকি')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'payables' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('payables')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'payables'
-              ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <ShoppingBag className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Supplier Due', 'পাওনাদার')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'closings' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('closings')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'closings'
-              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <Clock className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Cash Closings', 'ক্যাশ হিস্ট্রি')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'ledger' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('ledger')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'ledger'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <BookOpen className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('General Ledger', 'খতিয়ান')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'pnl' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('pnl')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'pnl'
-              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <PieChart className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('P&L Statement', 'লাভ-ক্ষতি')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'balance_sheet' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('balance_sheet')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'balance_sheet'
-              ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <Scale className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Balance Sheet', 'ব্যালেন্স শিট')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'cash_flow' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('cash_flow')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'cash_flow'
-              ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <ArrowLeftRight className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Cash Flow', 'ক্যাশ ফ্লো')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'trial_balance' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('trial_balance')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'trial_balance'
-              ? 'bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <FileCheck2 className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Trial Balance', 'রেওয়ামিল')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'job_profitability' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('job_profitability')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'job_profitability'
-              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <Calculator className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Job Profitability', 'কস্টিং লাভ')}
-        </Button>
-
-        <Button
-          variant={activeTab === 'accounts' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('accounts')}
-          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
-            activeTab === 'accounts'
-              ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-          }`}
-        >
-          <Landmark className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Chart of Accounts', 'হিসাব তালিকা')}
-        </Button>
+          <option value="overview">{tBilingual('Finance Dashboard', 'ফাইন্যান্স ড্যাশবোর্ড')}</option>
+          <option value="expenses">{tBilingual('Expenses & Salary', 'খরচ ও স্টাফ বেতন')}</option>
+          <option value="receivables">{tBilingual('Customer Due', 'গ্রাহকের বাকি')}</option>
+          <option value="payables">{tBilingual('Supplier Due', 'মহাজনের পাওনা')}</option>
+          <option value="closings">{tBilingual('Cash Closings', 'ক্যাশ ক্লোজিং')}</option>
+          <option value="ledger">{tBilingual('General Ledger', 'সাধারণ খতিয়ান')}</option>
+          <option value="pnl">{tBilingual('P&L Statement', 'লাভ-ক্ষতি বিবরণী')}</option>
+          <option value="balance_sheet">{tBilingual('Balance Sheet', 'ব্যালেন্স শিট')}</option>
+          <option value="cash_flow">{tBilingual('Cash Flow', 'ক্যাশ ফ্লো')}</option>
+          <option value="trial_balance">{tBilingual('Trial Balance', 'রেওয়ামিল')}</option>
+          <option value="job_profitability">{tBilingual('Job Profitability', 'কস্টিং ও লাভ')}</option>
+          <option value="accounts">{tBilingual('Chart of Accounts', 'হিসাব তালিকা')}</option>
+        </select>
       </div>
 
       {/* Main Tab Views */}
@@ -779,7 +772,7 @@ export default function AccountingPage() {
           onOpenPaySupplierModal={() => setIsPaySupplierModalOpen(true)}
           onOpenCashClosingModal={() => setIsCashClosingModalOpen(true)}
           onOpenPaymentModal={() => router.push(getTenantNavHref('/billing', pathname, slug))}
-          onNavigateTab={(tab) => setActiveTab(tab)}
+          onNavigateTab={(tab) => handleTabChange(tab)}
           onExport={handleExportStatement}
         />
       )}
@@ -1182,6 +1175,32 @@ export default function AccountingPage() {
         />
       )}
     </div>
+  )
+}
+
+export default function AccountingPage() {
+  return (
+    <PanelAccessGuard
+      module="payments"
+      action="view"
+      panelTitle="Finance & Accounts"
+      panelTitleBn="হিসাব ও ক্যাশবুক"
+    >
+      <React.Suspense
+        fallback={
+          <div className="space-y-6 pb-20 animate-pulse">
+            <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-1/3" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+              ))}
+            </div>
+            <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+          </div>
+        }
+      >
+        <AccountingContent />
+      </React.Suspense>
     </PanelAccessGuard>
   )
 }
