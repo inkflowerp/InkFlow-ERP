@@ -190,8 +190,8 @@ function KpiSparkline({
   color?: string
   id: string
 }) {
-  const width = 56
-  const height = 20
+  const width = 48
+  const height = 14
 
   const strokeColor = color || (isGood ? '#10B981' : '#EF4444')
 
@@ -202,7 +202,7 @@ function KpiSparkline({
     const min = Math.min(...data)
     const max = Math.max(...data)
     const range = max - min || 1
-    const padding = 2
+    const padding = 1.5
     const usableHeight = height - padding * 2
 
     const points: [number, number][] = data.map((val, idx) => {
@@ -228,10 +228,10 @@ function KpiSparkline({
     areaPath = `${linePath} L ${width} ${height} L 0 ${height} Z`
   } else {
     if (direction === 'down') {
-      linePath = 'M 2 6 C 14 6, 24 14, 38 12 C 46 10, 52 16, 54 16'
+      linePath = 'M 2 4 C 12 4, 20 10, 32 8 C 38 7, 44 11, 46 11'
       areaPath = `${linePath} L ${width} ${height} L 0 ${height} Z`
     } else {
-      linePath = 'M 2 16 C 14 14, 24 8, 38 10 C 46 12, 52 4, 54 4'
+      linePath = 'M 2 11 C 12 10, 20 5, 32 7 C 38 8, 44 3, 46 3'
       areaPath = `${linePath} L ${width} ${height} L 0 ${height} Z`
     }
   }
@@ -239,9 +239,9 @@ function KpiSparkline({
   const gradId = `spark-grad-${id.replace(/[^a-zA-Z0-9_-]/g, '')}`
 
   return (
-    <div className="w-[56px] h-[20px] shrink-0 overflow-hidden select-none pointer-events-none">
+    <div className="w-[48px] h-[14px] shrink-0 overflow-hidden select-none pointer-events-none">
       <svg
-        viewBox="0 0 56 20"
+        viewBox="0 0 48 14"
         className="w-full h-full overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -257,7 +257,7 @@ function KpiSparkline({
           d={linePath}
           fill="none"
           stroke={strokeColor}
-          strokeWidth="1.8"
+          strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -370,16 +370,16 @@ export function KpiCard({
     return (
       <div
         className={cn(
-          'p-4 rounded-xl bg-card border border-border shadow-xs animate-pulse flex flex-col justify-between min-h-[105px]',
+          'py-2 px-3 sm:py-2.5 sm:px-3.5 rounded-xl bg-card border border-border shadow-xs animate-pulse flex flex-col justify-between min-h-[64px]',
           className
         )}
       >
         <div className="flex items-center justify-between">
-          <div className="h-3.5 w-24 bg-muted rounded" />
-          <div className="h-7 w-7 bg-muted rounded-lg" />
+          <div className="h-3 w-20 bg-muted rounded" />
+          <div className="h-5.5 w-5.5 bg-muted rounded-md" />
         </div>
-        <div className="h-7 w-32 bg-muted rounded mt-2" />
-        <div className="h-3 w-20 bg-muted rounded mt-1.5" />
+        <div className="h-5 w-24 bg-muted rounded mt-1" />
+        <div className="h-2.5 w-16 bg-muted rounded mt-1" />
       </div>
     )
   }
@@ -388,22 +388,22 @@ export function KpiCard({
     <div
       onClick={onClick}
       className={cn(
-        'bg-card text-card-foreground border border-border p-4 shadow-xs rounded-xl transition-colors duration-150 flex flex-col justify-between relative overflow-hidden',
+        'bg-card text-card-foreground border border-border py-2 px-3 sm:py-2.5 sm:px-3.5 shadow-xs rounded-xl transition-colors duration-150 flex flex-col justify-between relative overflow-hidden',
         onClick ? 'cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 active:scale-[0.99]' : '',
         isSelected && 'ring-2 ring-primary/40 border-primary bg-blue-50/10 dark:bg-blue-950/20',
         className
       )}
     >
       {/* 1. TOP ROW: Title on Left, Subtle Icon/Pulse on Right */}
-      <div className="flex items-center justify-between gap-1.5">
+      <div className="flex items-center justify-between gap-1.5 leading-none">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">
+          <span className="text-2xs sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate leading-tight">
             {title}
           </span>
           {badge && (
             <span
               className={cn(
-                'inline-block px-1.5 py-0.5 rounded text-3xs font-bold uppercase tracking-wider shrink-0',
+                'inline-block px-1.5 py-0.5 rounded text-3xs font-bold uppercase tracking-wider shrink-0 leading-none',
                 badgeColor || 'bg-muted text-muted-foreground'
               )}
             >
@@ -414,13 +414,13 @@ export function KpiCard({
 
         <div className="flex items-center gap-1 shrink-0">
           {hasLivePulse ? (
-            <span className="relative flex h-2.5 w-2.5">
+            <span className="relative flex h-2 w-2">
               <span className={cn('animate-ping absolute inline-flex h-full w-full rounded-full opacity-75', styleConfig.ping)} />
-              <span className={cn('relative inline-flex rounded-full h-2.5 w-2.5', styleConfig.dot)} />
+              <span className={cn('relative inline-flex rounded-full h-2 w-2', styleConfig.dot)} />
             </span>
           ) : Icon ? (
-            <div className="h-7 w-7 rounded-lg bg-muted/50 dark:bg-muted/30 flex items-center justify-center shrink-0">
-              <Icon className={cn('h-4 w-4 shrink-0', styleConfig.icon)} />
+            <div className="h-6 w-6 rounded-md bg-muted/50 dark:bg-muted/30 flex items-center justify-center shrink-0">
+              <Icon className={cn('h-3.5 w-3.5 shrink-0', styleConfig.icon)} />
             </div>
           ) : null}
 
@@ -432,7 +432,7 @@ export function KpiCard({
                 onMenuClick?.(e)
               }}
               aria-label="Options"
-              className="p-1 -mr-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              className="p-0.5 -mr-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
             >
               <MoreVertical className="w-3.5 h-3.5" />
             </button>
@@ -440,11 +440,11 @@ export function KpiCard({
         </div>
       </div>
 
-      {/* 2. MIDDLE ROW: Large Value with Clean Foreground Hierarchy + Tabular Figures (24-28px) */}
-      <div className="text-2xl font-bold font-sans tracking-tight mt-2 leading-none flex items-baseline gap-1 text-foreground tabular-nums">
+      {/* 2. MIDDLE ROW: Large Value with Clean Foreground Hierarchy + Tabular Figures */}
+      <div className="text-xl sm:text-2xl font-bold font-sans tracking-tight mt-1 leading-tight flex items-baseline gap-1 text-foreground tabular-nums">
         {isCurrency && typeof value === 'number' ? (
           <>
-            <span className="font-semibold text-xl text-muted-foreground mr-0.5">৳</span>
+            <span className="font-semibold text-base sm:text-lg text-muted-foreground mr-0.5">৳</span>
             {formatLakhCrore(value)}
           </>
         ) : (
@@ -452,20 +452,20 @@ export function KpiCard({
         )}
 
         {unit && (
-          <span className="text-xs font-normal text-muted-foreground ml-1 font-sans">
+          <span className="text-2xs font-normal text-muted-foreground ml-1 font-sans">
             {unit}
           </span>
         )}
       </div>
 
       {/* Embedded children if any (e.g. progress bars, meters) */}
-      {children && <div className="mt-2 w-full">{children}</div>}
+      {children && <div className="mt-1.5 w-full">{children}</div>}
 
       {/* 3. BOTTOM ROW: Helper Note / Subtitle / Trend */}
       {(trend || subtitle || comparisonText || (showSparkline && sparklineData)) && (
-        <div className="flex items-center justify-between gap-2 mt-1">
+        <div className="flex items-center justify-between gap-1.5 mt-1 leading-tight">
           {trend ? (
-            <div className="flex items-center gap-1 font-semibold text-2xs truncate">
+            <div className="flex items-center gap-1 font-semibold text-2xs truncate leading-tight">
               <span
                 className={cn(
                   isGood
@@ -482,11 +482,11 @@ export function KpiCard({
               )}
             </div>
           ) : subtitle ? (
-            <div className="text-2xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium truncate">
+            <div className="text-2xs text-slate-400 dark:text-slate-500 font-medium truncate leading-tight">
               {subtitle}
             </div>
           ) : comparisonText ? (
-            <div className="text-2xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium truncate">
+            <div className="text-2xs text-slate-400 dark:text-slate-500 font-medium truncate leading-tight">
               {comparisonText}
             </div>
           ) : (
@@ -505,7 +505,7 @@ export function KpiCard({
         </div>
       )}
 
-      {footer && <div className="mt-2 pt-1.5 border-t border-slate-100 dark:border-slate-800">{footer}</div>}
+      {footer && <div className="mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">{footer}</div>}
     </div>
   )
 }
@@ -530,7 +530,7 @@ export function KpiGrid({
   }[columns] || 'grid-cols-2 sm:grid-cols-4'
 
   return (
-    <div className={cn('grid gap-3', colClass, className)}>
+    <div className={cn('grid gap-2.5 sm:gap-3', colClass, className)}>
       {children}
     </div>
   )

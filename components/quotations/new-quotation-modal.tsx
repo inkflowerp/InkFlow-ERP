@@ -2045,7 +2045,7 @@ export function NewQuotationModal({
                     2
                   </div>
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Quotation Information & Validity
+                    Quote Info
                   </h3>
                 </div>
 
@@ -2254,7 +2254,7 @@ export function NewQuotationModal({
                                   isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
                                 )}
                               >
-                                📦 Unit Pcs
+                                📦 Unit
                               </button>
                             </div>
                           )}
@@ -2435,8 +2435,21 @@ export function NewQuotationModal({
                             <option value="set">{tBilingual('set', 'সেট')}</option>
                             <option value="pack">{tBilingual('pack', 'প্যাক')}</option>
                             <option value="box">{tBilingual('box', 'বক্স')}</option>
-                            <option value="pair">{tBilingual('pair', 'জোড়া')}</option>
+                            <option value="book">{tBilingual('book', 'বই')}</option>
+                            <option value="pad">{tBilingual('pad', 'প্যাড')}</option>
+                            <option value="sheet">{tBilingual('sheet', 'শিট')}</option>
+                            <option value="roll">{tBilingual('roll', 'রোল')}</option>
+                            <option value="ream">{tBilingual('ream', 'রিম')}</option>
+                            <option value="bundle">{tBilingual('bundle', 'বান্ডিল')}</option>
                             <option value="carton">{tBilingual('carton', 'কার্টুন')}</option>
+                            <option value="pair">{tBilingual('pair', 'জোড়া')}</option>
+                            <option value="dozen">{tBilingual('dozen', 'ডজন')}</option>
+                            <option value="kg">{tBilingual('kg', 'কেজি')}</option>
+                            <option value="bag">{tBilingual('bag', 'ব্যাগ')}</option>
+                            <option value="rft">{tBilingual('rft', 'রানিং ফুট')}</option>
+                            <option value="sft">{tBilingual('sft', 'বর্গফুট')}</option>
+                            <option value="sq.inch">{tBilingual('Sq. Inch', 'বর্গ ইঞ্চি')}</option>
+                            <option value="lot">{tBilingual('lot', 'লট')}</option>
                           </select>
                         </div>
 
@@ -2471,13 +2484,13 @@ export function NewQuotationModal({
                           </span>
                         </div>
 
-                        <div>
+                        <div className="w-full">
                           <Label className="text-2xs font-semibold mb-1 block">Substrate / Material Spec</Label>
                           <Input
                             placeholder="e.g. 280 GSM Chinese Frontlit Flex, 300 GSM Art Card, 3mm Acrylic"
                             value={item.material_spec || ''}
                             onChange={(e) => handleItemChange(index, 'material_spec', e.target.value)}
-                            className="text-xs h-8 max-w-xl"
+                            className="text-xs h-8 w-full"
                           />
                         </div>
                       </div>
@@ -2800,6 +2813,16 @@ export function NewQuotationModal({
                 <option value="rft">{tBilingual('rft', 'রানিং ফুট')}</option>
                 <option value="set">{tBilingual('set', 'সেট')}</option>
                 <option value="box">{tBilingual('box', 'বক্স')}</option>
+                <option value="pack">{tBilingual('pack', 'প্যাক')}</option>
+                <option value="book">{tBilingual('book', 'বই')}</option>
+                <option value="pad">{tBilingual('pad', 'প্যাড')}</option>
+                <option value="sheet">{tBilingual('sheet', 'শিট')}</option>
+                <option value="roll">{tBilingual('roll', 'রোল')}</option>
+                <option value="ream">{tBilingual('ream', 'রিম')}</option>
+                <option value="bundle">{tBilingual('bundle', 'বান্ডিল')}</option>
+                <option value="carton">{tBilingual('carton', 'কার্টুন')}</option>
+                <option value="sq.inch">{tBilingual('Sq. Inch', 'বর্গ ইঞ্চি')}</option>
+                <option value="kg">{tBilingual('kg', 'কেজি')}</option>
               </select>
             </div>
           </div>

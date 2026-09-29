@@ -599,9 +599,9 @@ export default function DeliveryLogisticsPage() {
     return (
       <div className="space-y-6 max-w-7xl pb-12 p-4 sm:p-6 animate-pulse">
         <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
-        <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-6 gap-2.5 sm:gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-[72px] bg-slate-200 dark:bg-slate-800 rounded-xl" />
           ))}
         </div>
         <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl" />

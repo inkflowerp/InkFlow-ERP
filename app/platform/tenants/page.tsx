@@ -597,19 +597,19 @@ export default function PlatformTenantsPage() {
       </div>
 
       {/* KPI Metrics Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Total Tenants</span>
-            <div className="h-8 w-8 rounded-xl bg-indigo-600/15 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
-              <Building2 className="h-4 w-4" />
+            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Total Tenants</span>
+            <div className="h-7 w-7 rounded-lg bg-indigo-600/15 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+              <Building2 className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-white mt-2 flex items-baseline gap-2">
+          <div className="text-xl font-black text-white mt-1 flex items-baseline gap-2">
             {companies.length}
             <span className="text-2xs font-normal text-slate-500 tabular-nums">orgs</span>
           </div>
-          <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1.5">
+          <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1.5 truncate">
             <span className="text-indigo-400 font-bold">
               {companies.reduce((acc, c) => acc + (c.users_count || 0), 0)}
             </span>{' '}
@@ -617,14 +617,14 @@ export default function PlatformTenantsPage() {
           </div>
         </Card>
 
-        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Active Tenants</span>
-            <div className="h-8 w-8 rounded-xl bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <CheckCircle2 className="h-4 w-4" />
+            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Active Tenants</span>
+            <div className="h-7 w-7 rounded-lg bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <CheckCircle2 className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-emerald-400 mt-2 flex items-baseline gap-2">
+          <div className="text-xl font-black text-emerald-400 mt-1 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'active').length}
             <span className="text-2xs font-semibold text-emerald-400/80 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
               {companies.length > 0
@@ -632,70 +632,70 @@ export default function PlatformTenantsPage() {
                 : '0%'}
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-1">Operational workspaces</div>
+          <div className="text-2xs text-slate-400 mt-0.5 truncate">Operational workspaces</div>
         </Card>
 
-        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Free Trials</span>
-            <div className="h-8 w-8 rounded-xl bg-blue-600/15 border border-blue-500/20 text-blue-400 flex items-center justify-center">
-              <Sparkles className="h-4 w-4" />
+            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Free Trials</span>
+            <div className="h-7 w-7 rounded-lg bg-blue-600/15 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+              <Sparkles className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-blue-400 mt-2 flex items-baseline gap-2">
+          <div className="text-xl font-black text-blue-400 mt-1 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'trial').length}
             <span className="text-2xs font-normal text-slate-500 tabular-nums">evaluating</span>
           </div>
-          <div className="text-2xs text-slate-400 mt-1">Trial evaluation accounts</div>
+          <div className="text-2xs text-slate-400 mt-0.5 truncate">Trial accounts</div>
         </Card>
 
         {/* Incomplete / Started-but-not-finished Registrations KPI Card */}
         <Card
           onClick={() => setStatusFilter('incomplete')}
-          className={`bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group cursor-pointer transition-all shadow-lg hover:border-amber-500/40 ${
+          className={`bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group cursor-pointer transition-all shadow-lg hover:border-amber-500/40 ${
             statusFilter === 'incomplete' ? 'ring-2 ring-amber-500/50 bg-amber-950/20' : ''
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-400">Incomplete Registrations</span>
-            <div className="h-8 w-8 rounded-xl bg-amber-600/15 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-              <Hourglass className="h-4 w-4" />
+            <span className="text-2xs sm:text-xs font-semibold text-amber-400">Incomplete Reg.</span>
+            <div className="h-7 w-7 rounded-lg bg-amber-600/15 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+              <Hourglass className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-amber-400 mt-2 flex items-baseline gap-2">
+          <div className="text-xl font-black text-amber-400 mt-1 flex items-baseline gap-2">
             {incompleteRegistrations.length}
             <span className="text-2xs font-normal text-slate-400 tabular-nums">pending</span>
           </div>
-          <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1.5">
+          <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1.5 truncate">
             <span className="text-amber-300 font-semibold">{incompleteMetrics.pending_verification_count} awaiting OTP</span>
           </div>
         </Card>
 
-        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Suspended / Risk</span>
-            <div className="h-8 w-8 rounded-xl bg-red-600/15 border border-red-500/20 text-red-400 flex items-center justify-center">
-              <AlertTriangle className="h-4 w-4" />
+            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Suspended</span>
+            <div className="h-7 w-7 rounded-lg bg-red-600/15 border border-red-500/20 text-red-400 flex items-center justify-center">
+              <AlertTriangle className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-red-400 mt-2 flex items-baseline gap-2">
+          <div className="text-xl font-black text-red-400 mt-1 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'suspended').length}
             <span className="text-2xs font-normal text-slate-500 tabular-nums">restricted</span>
           </div>
-          <div className="text-2xs text-slate-400 mt-1">Access restricted by policy</div>
+          <div className="text-2xs text-slate-400 mt-0.5 truncate">Restricted by policy</div>
         </Card>
 
-        <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg col-span-2 sm:col-span-1">
+        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Portfolio MRR</span>
-            <div className="h-8 w-8 rounded-xl bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <CreditCard className="h-4 w-4" />
+            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Portfolio MRR</span>
+            <div className="h-7 w-7 rounded-lg bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <CreditCard className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="text-2xl font-black text-emerald-400 mt-2">
+          <div className="text-xl font-black text-emerald-400 mt-1">
             <CurrencyDisplay amount={companies.reduce((acc, c) => acc + (c.monthly_fee || 0), 0)} />
           </div>
-          <div className="text-2xs text-slate-400 mt-1">Monthly SaaS revenue</div>
+          <div className="text-2xs text-slate-400 mt-0.5 truncate">Monthly SaaS revenue</div>
         </Card>
       </div>
 

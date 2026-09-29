@@ -32,6 +32,7 @@ import {
   Users,
   Calendar,
   ChevronRight,
+  ChevronDown,
   Ban,
   FileText,
   Percent,
@@ -1099,17 +1100,13 @@ function BillingContent() {
     })
 
     const list = Array.from(custMap.values())
-    const filteredBySector = sectorFilter === 'all'
-      ? list
-      : list.filter((c) => c.invoices.some((inv) => getSectorForInvoice(inv) === sectorFilter))
-
     const q = search.toLowerCase()
-    if (!q) return filteredBySector.sort((a, b) => b.totalDue - a.totalDue)
+    if (!q) return list.sort((a, b) => b.totalDue - a.totalDue)
 
-    return filteredBySector
+    return list
       .filter((c) => c.customerName.toLowerCase().includes(q) || (c.customerPhone && c.customerPhone.includes(q)))
       .sort((a, b) => b.totalDue - a.totalDue)
-  }, [invoices, search, sectorFilter])
+  }, [invoices, search])
 
   // Quick Action: Send Payment Reminder
   const handleSendReminder = async (invoiceId: string) => {
@@ -1383,230 +1380,222 @@ function BillingContent() {
           3. MAIN TABS (INVOICES / REQUESTS / PAYMENTS / RECEIVABLES) + PERIOD SELECTOR
          ========================================================================= */}
       <div className="space-y-4">
-        {/* Navigation Tabs Header & Period Control Bar */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
-          {/* Main Module Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
-            <button
-              onClick={() => handleTabChange('invoices')}
-              className={cn(
-                'px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0',
-                activeTab === 'invoices'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              )}
-            >
-              <Receipt className="h-4 w-4" />
-              <span>Invoices</span>
-              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
-                {invoices.length}
-              </Badge>
-            </button>
+        {/* Unified Single Row Toolbar: Search | Status Filter (Dropdown) | [ Invoices, Requests, Payments, Receivables ] --- Selected Date | Date filter (dropdown) | Refresh */}
+        <Card className="p-2.5 sm:p-3 shadow-xs border-slate-200 dark:border-slate-800 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5">
+            {/* Left: Search, Status Filter Dropdown & Main Module Tabs */}
+            <div className="flex flex-1 flex-wrap items-center gap-2.5 min-w-0">
+              {/* 1. Search */}
+              <div className="relative flex-1 min-w-[200px] max-w-xs">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Input
+                  placeholder="Search invoice #, customer, phone, BIN..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 pr-8 text-xs h-9 font-medium rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xs"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch('')}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
 
-            <button
-              onClick={() => handleTabChange('requests')}
-              className={cn(
-                'px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0',
-                activeTab === 'requests'
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              {/* 2. Status Filter (Dropdown) */}
+              {activeTab === 'invoices' && (
+                <div className="relative shrink-0">
+                  <select
+                    value={invoiceFilterTab}
+                    onChange={(e) => setInvoiceFilterTab(e.target.value)}
+                    className="h-9 pl-3 pr-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer appearance-none"
+                  >
+                    <option value="all">All Invoices ({invoices.length})</option>
+                    <option value="unpaid">Unpaid / Due ({invoices.filter((i) => (i.due_amount || 0) > 0 && i.status !== 'cancelled').length})</option>
+                    <option value="overdue">Overdue ({effectiveMetrics?.overdueCount || 0})</option>
+                    <option value="paid">Paid ({invoices.filter((i) => i.status === 'paid' || ((i.due_amount || 0) <= 0 && i.status !== 'cancelled')).length})</option>
+                    <option value="partially_paid">Partially Paid ({invoices.filter((i) => (i.paid_amount || 0) > 0 && (i.due_amount || 0) > 0 && i.status !== 'cancelled').length})</option>
+                    <option value="vat">VAT 6.3 Tax Invoices ({invoices.filter((i) => i.invoice_type === 'vat_invoice').length})</option>
+                    <option value="cancelled">Cancelled ({invoices.filter((i) => i.status === 'cancelled').length})</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </div>
+                </div>
               )}
-            >
-              <FileSpreadsheet className="h-4 w-4" />
-              <span>Invoice Requests</span>
-              {pendingRequestsCount > 0 ? (
-                <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse')}>
-                  {pendingRequestsCount} Hold
-                </Badge>
-              ) : (
-                <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
-                  {invoiceRequests.length}
-                </Badge>
-              )}
-            </button>
 
-            <button
-              onClick={() => handleTabChange('payments')}
-              className={cn(
-                'px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0',
-                activeTab === 'payments'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              )}
-            >
-              <DollarSign className="h-4 w-4" />
-              <span>Payments</span>
-              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
-                {payments.length}
-              </Badge>
-            </button>
+              {/* 3. Main Module Tabs [Invoices, Invoice Requests, Payments, Receivables] */}
+              <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800/80 p-0.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs shrink-0 overflow-x-auto scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => handleTabChange('invoices')}
+                  className={cn(
+                    'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
+                    activeTab === 'invoices'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  )}
+                >
+                  <Receipt className="h-3.5 w-3.5" />
+                  <span>Invoices</span>
+                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300')}>
+                    {invoices.length}
+                  </Badge>
+                </button>
 
-            <button
-              onClick={() => handleTabChange('receivables')}
-              className={cn(
-                'px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0',
-                activeTab === 'receivables'
-                  ? 'bg-purple-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              )}
-            >
-              <Percent className="h-4 w-4" />
-              <span>Receivables</span>
-              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
-                {customerReceivables.length}
-              </Badge>
-            </button>
-          </div>
+                <button
+                  type="button"
+                  onClick={() => handleTabChange('requests')}
+                  className={cn(
+                    'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
+                    activeTab === 'requests'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  )}
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5" />
+                  <span>Invoice Requests</span>
+                  {pendingRequestsCount > 0 ? (
+                    <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse')}>
+                      {pendingRequestsCount} Hold
+                    </Badge>
+                  ) : (
+                    <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300')}>
+                      {invoiceRequests.length}
+                    </Badge>
+                  )}
+                </button>
 
-          {/* Period Filter Dropdown & Refresh Tools */}
-          <div className="flex items-center gap-2 shrink-0 flex-wrap">
-            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs shadow-2xs">
-              <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value as BillingPeriod)}
-                className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
-                title="Select reporting period"
-              >
-                <option value="today" className="bg-white dark:bg-slate-900">Today</option>
-                <option value="this_week" className="bg-white dark:bg-slate-900">This Week</option>
-                <option value="this_month" className="bg-white dark:bg-slate-900">This Month</option>
-                <option value="all_time" className="bg-white dark:bg-slate-900">All Time</option>
-                <option value="custom" className="bg-white dark:bg-slate-900">Custom Date</option>
-              </select>
-              {effectiveMetrics?.startDate && (
-                <span className="text-2xs text-slate-400 tabular-nums hidden sm:inline ml-1 border-l border-slate-200 dark:border-slate-700 pl-2">
-                  {effectiveMetrics?.startDate === effectiveMetrics?.endDate ? effectiveMetrics.startDate : `${effectiveMetrics.startDate} to ${effectiveMetrics.endDate}`}
-                </span>
-              )}
+                <button
+                  type="button"
+                  onClick={() => handleTabChange('payments')}
+                  className={cn(
+                    'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
+                    activeTab === 'payments'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  )}
+                >
+                  <DollarSign className="h-3.5 w-3.5" />
+                  <span>Payments</span>
+                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300')}>
+                    {payments.length}
+                  </Badge>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleTabChange('receivables')}
+                  className={cn(
+                    'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
+                    activeTab === 'receivables'
+                      ? 'bg-purple-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  )}
+                >
+                  <Percent className="h-3.5 w-3.5" />
+                  <span>Receivables</span>
+                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300')}>
+                    {customerReceivables.length}
+                  </Badge>
+                </button>
+              </div>
             </div>
 
-            {selectedPeriod === 'custom' && (
-              <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
-                <input
-                  type="date"
-                  value={customStartDate}
-                  onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none"
-                  title="From Date"
-                />
-                <span className="text-slate-400 font-bold px-0.5 text-xs">to</span>
-                <input
-                  type="date"
-                  value={customEndDate}
-                  onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none"
-                  title="To Date"
-                />
-                <Button
-                  size="sm"
-                  onClick={() => loadBillingData()}
-                  className="h-7 px-2.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer rounded-lg"
-                >
-                  Apply
-                </Button>
-              </div>
-            )}
+            {/* Right: Selected Date, Date Filter (Dropdown) & Refresh */}
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0 justify-end">
+              {/* 4. Selected Date */}
+              {selectedPeriod === 'custom' ? (
+                <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/90 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs shadow-2xs">
+                  <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none h-7"
+                    title="From Date"
+                  />
+                  <span className="text-slate-400 font-bold px-0.5 text-xs">to</span>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none h-7"
+                    title="To Date"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => loadBillingData()}
+                    className="h-7 px-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer rounded-lg"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 bg-slate-100/70 dark:bg-slate-800/70 px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs font-semibold text-slate-600 dark:text-slate-300 tabular-nums whitespace-nowrap">
+                  <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                  <span>
+                    {effectiveMetrics?.startDate === effectiveMetrics?.endDate
+                      ? effectiveMetrics?.startDate
+                      : `${effectiveMetrics?.startDate} to ${effectiveMetrics?.endDate}`}
+                  </span>
+                </div>
+              )}
 
-            <button
-              onClick={() => loadBillingData()}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer shadow-2xs"
-              title="Refresh financial metrics"
-            >
-              <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin text-blue-600')} />
-            </button>
+              {/* 5. Date filter (dropdown) */}
+              <div className="relative shrink-0">
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value as BillingPeriod)}
+                  className="h-9 pl-3 pr-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer appearance-none"
+                >
+                  <option value="today">{tBilingual('Today', 'আজ')}</option>
+                  <option value="this_week">{tBilingual('This Week', 'এই সপ্তাহ')}</option>
+                  <option value="this_month">{tBilingual('This Month', 'এই মাস')}</option>
+                  <option value="all_time">{tBilingual('All Time', 'সর্বমোট')}</option>
+                  <option value="custom">{tBilingual('Custom Date', 'কাস্টম তারিখ')}</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </div>
+              </div>
+
+              {/* 6. Refresh */}
+              <button
+                type="button"
+                onClick={() => loadBillingData()}
+                className="h-9 w-9 flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer shrink-0"
+                title="Refresh billing data"
+              >
+                <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin text-blue-600')} />
+              </button>
+            </div>
           </div>
-        </div>
+        </Card>
 
         {/* -------------------------------------------------------------------------
             TAB 2: INVOICES DIRECTORY & CONTROL
            ------------------------------------------------------------------------- */}
         {activeTab === 'invoices' && (
           <div className="space-y-4">
-            {/* Filter Pills & Fast Search */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-              {/* Status Filter Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                {[
-                  { id: 'all', label: 'All Invoices' },
-                  { id: 'unpaid', label: 'Unpaid / Due' },
-                  { id: 'overdue', label: 'Overdue' },
-                  { id: 'paid', label: 'Paid' },
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    onClick={() => setInvoiceFilterTab(f.id)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer shrink-0',
-                      invoiceFilterTab === f.id
-                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
-                        : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
-                    )}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-
-                {/* More Filters Dropdown (Partially Paid, VAT 6.3, Cancelled) */}
-                <select
-                  value={['partially_paid', 'vat', 'cancelled'].includes(invoiceFilterTab) ? invoiceFilterTab : ''}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setInvoiceFilterTab(e.target.value)
-                    }
-                  }}
-                  className={cn(
-                    'h-7.5 px-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer outline-none shrink-0',
-                    ['partially_paid', 'vat', 'cancelled'].includes(invoiceFilterTab)
-                      ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900'
-                      : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
-                  )}
-                  title="Filter by special status or tax type"
+            {/* Filter status indicator when filtered */}
+            {invoiceFilterTab !== 'all' && (
+              <div className="flex items-center justify-between px-1 text-xs">
+                <span className="text-slate-500 font-medium">
+                  Filtered by: <strong className="text-slate-800 dark:text-slate-200">{invoiceFilterTab.replace('_', ' ')}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setInvoiceFilterTab('all')}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
                 >
-                  <option value="" className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
-                    More Filters...
-                  </option>
-                  <option value="partially_paid" className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
-                    Partially Paid
-                  </option>
-                  <option value="vat" className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
-                    VAT 6.3 Tax Invoices
-                  </option>
-                  <option value="cancelled" className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
-                    Cancelled
-                  </option>
-                </select>
-
-                {['partially_paid', 'vat', 'cancelled'].includes(invoiceFilterTab) && (
-                  <button
-                    onClick={() => setInvoiceFilterTab('all')}
-                    className="text-2xs text-rose-500 hover:underline font-semibold ml-1 cursor-pointer shrink-0"
-                  >
-                    Clear Filter
-                  </button>
-                )}
+                  Clear Filter
+                </button>
               </div>
-
-              {/* Fast Search */}
-              <div className="relative w-full md:w-72">
-                <Input
-                  placeholder="Search invoice #, customer, phone, BIN..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="h-9 text-xs pr-8 rounded-xl bg-white dark:bg-slate-900"
-                />
-                {search ? (
-                  <button
-                    onClick={() => setSearch('')}
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                ) : (
-                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-                )}
-              </div>
-            </div>
+            )}
 
             {/* Invoices List / Table */}
             <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
@@ -2013,30 +2002,9 @@ function BillingContent() {
            ------------------------------------------------------------------------- */}
         {activeTab === 'payments' && (
           <div className="space-y-4">
-            {/* Search Payments */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div className="text-xs text-slate-500 tabular-nums">
-                Showing {filteredPayments.length} recorded payments
-              </div>
-
-              <div className="relative w-full md:w-72">
-                <Input
-                  placeholder="Search receipt #, customer, method, TrxID..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="h-9 text-xs pr-8 rounded-xl bg-white dark:bg-slate-900"
-                />
-                {search ? (
-                  <button
-                    onClick={() => setSearch('')}
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                ) : (
-                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-                )}
-              </div>
+            {/* Payments Count Header */}
+            <div className="flex items-center justify-between px-1 text-xs text-slate-500 tabular-nums">
+              <span>Showing {filteredPayments.length} recorded payments</span>
             </div>
 
             {/* Payments Table */}
@@ -2173,44 +2141,6 @@ function BillingContent() {
            ------------------------------------------------------------------------- */}
         {activeTab === 'receivables' && (
           <div className="space-y-4">
-            {/* Sector Category Filters HUD */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-              {[
-                { id: 'all', labelEn: 'All Sectors', labelBn: 'সকল সেক্টর', count: sectorCounts.all, icon: '🖨️' },
-                { id: 'digital_print', labelEn: 'Digital Flex/Vinyl', labelBn: 'ডিজিটাল ব্যানার', count: sectorCounts.digital_print, icon: '🎨' },
-                { id: 'offset_print', labelEn: 'Offset Press', labelBn: 'অফসেট প্রেস', count: sectorCounts.offset_print, icon: '📑' },
-                { id: 'signage_fabrication', labelEn: '3D Signage', labelBn: '৩ডি সাইনেজ', count: sectorCounts.signage_fabrication, icon: '💡' },
-                { id: 'ready_merchandise', labelEn: 'Merchandise', labelBn: 'মার্চেন্ডাইজ', count: sectorCounts.ready_merchandise, icon: '🎁' },
-              ].map((sec) => {
-                const isSelected = sectorFilter === sec.id
-                return (
-                  <button
-                    key={sec.id}
-                    onClick={() => setSectorFilter(sec.id as any)}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer',
-                      isSelected
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-                    )}
-                  >
-                    <span>{sec.icon}</span>
-                    <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
-                    <Badge
-                      className={cn(
-                        'text-2xs px-1.5 py-0 tabular-nums font-bold',
-                        isSelected
-                          ? 'bg-blue-800 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                      )}
-                    >
-                      {sec.count}
-                    </Badge>
-                  </button>
-                )
-              })}
-            </div>
-
             {/* Aging Summary Buckets */}
             {receivablesAging && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -2227,26 +2157,6 @@ function BillingContent() {
                     </span>
                   </Card>
                 ))}
-
-                <Card className="p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-rose-300/80 dark:border-rose-900/50 shadow-xs bg-rose-50/20 rounded-2xl">
-                  <span className="text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">
-                    Total Overdue
-                  </span>
-                  <div className="text-base font-black font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1">
-                    {formatBDT(receivablesAging.totalOverdue || 0)}
-                  </div>
-                  <span className="text-xs text-rose-600/80 font-numeric tabular-nums">Overdue Debt</span>
-                </Card>
-
-                <Card className="p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-300/80 dark:border-slate-700/80 shadow-xs rounded-2xl">
-                  <span className="text-2xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
-                    Total Receivables
-                  </span>
-                  <div className="text-base font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
-                    {formatBDT(receivablesAging.totalReceivables || 0)}
-                  </div>
-                  <span className="text-2xs text-slate-500 tabular-nums">All Open Accounts</span>
-                </Card>
               </div>
             )}
 
@@ -2260,16 +2170,6 @@ function BillingContent() {
                   <CardDescription className="text-xs text-slate-500 mt-0.5">
                     Select any customer to send payment reminder or collect payment
                   </CardDescription>
-                </div>
-
-                <div className="relative w-full sm:w-64">
-                  <Input
-                    placeholder="Filter customer name or phone..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="h-8 text-xs pr-8 rounded-xl bg-white dark:bg-slate-900"
-                  />
-                  <Search className="absolute right-2.5 top-2 h-4 w-4 text-slate-400 pointer-events-none" />
                 </div>
               </CardHeader>
 

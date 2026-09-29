@@ -1386,7 +1386,7 @@ export function WorkOrderModal({
                                 isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
                               )}
                             >
-                              📦 Unit Pcs
+                              📦 Unit
                             </button>
                           </div>
                         )}
@@ -1559,8 +1559,21 @@ export function WorkOrderModal({
                           <option value="set">{tBilingual('set', 'সেট')}</option>
                           <option value="pack">{tBilingual('pack', 'প্যাক')}</option>
                           <option value="box">{tBilingual('box', 'বক্স')}</option>
-                          <option value="pair">{tBilingual('pair', 'জোড়া')}</option>
+                          <option value="book">{tBilingual('book', 'বই')}</option>
+                          <option value="pad">{tBilingual('pad', 'প্যাড')}</option>
+                          <option value="sheet">{tBilingual('sheet', 'শিট')}</option>
+                          <option value="roll">{tBilingual('roll', 'রোল')}</option>
+                          <option value="ream">{tBilingual('ream', 'রিম')}</option>
+                          <option value="bundle">{tBilingual('bundle', 'বান্ডিল')}</option>
                           <option value="carton">{tBilingual('carton', 'কার্টুন')}</option>
+                          <option value="pair">{tBilingual('pair', 'জোড়া')}</option>
+                          <option value="dozen">{tBilingual('dozen', 'ডজন')}</option>
+                          <option value="kg">{tBilingual('kg', 'কেজি')}</option>
+                          <option value="bag">{tBilingual('bag', 'ব্যাগ')}</option>
+                          <option value="rft">{tBilingual('rft', 'রানিং ফুট')}</option>
+                          <option value="sft">{tBilingual('sft', 'বর্গফুট')}</option>
+                          <option value="sq.inch">{tBilingual('Sq. Inch', 'বর্গ ইঞ্চি')}</option>
+                          <option value="lot">{tBilingual('lot', 'লট')}</option>
                         </select>
                       </div>
                     </div>

@@ -303,73 +303,73 @@ export default function MachineriesListPage() {
       />
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        <Card className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total</span>
-            <Cpu className="h-4 w-4 text-slate-400" />
+            <span className="text-2xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total</span>
+            <Cpu className="h-3.5 w-3.5 text-slate-400" />
           </div>
-          <p className="text-xl font-black text-slate-900 dark:text-white mt-1">
+          <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-0.5 leading-tight">
             {metrics?.totalMachines ?? machineries.length}
           </p>
         </Card>
 
-        <Card className="p-3 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Available</span>
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <span className="text-2xs sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Available</span>
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
           </div>
-          <p className="text-xl font-black text-emerald-700 dark:text-emerald-400 mt-1">
+          <p className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-400 mt-0.5 leading-tight">
             {metrics?.available ?? machineries.filter((m) => m.status === 'available').length}
           </p>
         </Card>
 
-        <Card className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">In Use</span>
-            <PlayCircle className="h-4 w-4 text-blue-600" />
+            <span className="text-2xs sm:text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">In Use</span>
+            <PlayCircle className="h-3.5 w-3.5 text-blue-600" />
           </div>
-          <p className="text-xl font-black text-blue-700 dark:text-blue-400 mt-1">
+          <p className="text-lg sm:text-xl font-black text-blue-700 dark:text-blue-400 mt-0.5 leading-tight">
             {metrics?.inUse ?? machineries.filter((m) => m.status === 'in_use').length}
           </p>
         </Card>
 
-        <Card className="p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Scheduled</span>
-            <Clock className="h-4 w-4 text-indigo-600" />
+            <span className="text-2xs sm:text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Scheduled</span>
+            <Clock className="h-3.5 w-3.5 text-indigo-600" />
           </div>
-          <p className="text-xl font-black text-indigo-700 dark:text-indigo-400 mt-1">
+          <p className="text-lg sm:text-xl font-black text-indigo-700 dark:text-indigo-400 mt-0.5 leading-tight">
             {metrics?.scheduled ?? machineries.filter((m) => m.status === 'scheduled').length}
           </p>
         </Card>
 
-        <Card className="p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Maintenance</span>
-            <Wrench className="h-4 w-4 text-amber-600" />
+            <span className="text-2xs sm:text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Maintenance</span>
+            <Wrench className="h-3.5 w-3.5 text-amber-600" />
           </div>
-          <p className="text-xl font-black text-amber-700 dark:text-amber-400 mt-1">
+          <p className="text-lg sm:text-xl font-black text-amber-700 dark:text-amber-400 mt-0.5 leading-tight">
             {metrics?.maintenance ?? machineries.filter((m) => m.status === 'maintenance').length}
           </p>
         </Card>
 
-        <Card className="p-3 bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Breakdown</span>
-            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <span className="text-2xs sm:text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Breakdown</span>
+            <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
           </div>
-          <p className="text-xl font-black text-red-700 dark:text-red-400 mt-1">
+          <p className="text-lg sm:text-xl font-black text-red-700 dark:text-red-400 mt-0.5 leading-tight">
             {metrics?.breakdown ?? machineries.filter((m) => m.status === 'breakdown').length}
           </p>
         </Card>
 
-        <Card className="p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 shadow-xs col-span-2 sm:col-span-1">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 shadow-xs col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Offline</span>
-            <PowerOff className="h-4 w-4 text-slate-500" />
+            <span className="text-2xs sm:text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Offline</span>
+            <PowerOff className="h-3.5 w-3.5 text-slate-500" />
           </div>
-          <p className="text-xl font-black text-slate-700 dark:text-slate-300 mt-1">
+          <p className="text-lg sm:text-xl font-black text-slate-700 dark:text-slate-300 mt-0.5 leading-tight">
             {metrics?.offline ?? machineries.filter((m) => m.status === 'offline').length}
           </p>
         </Card>

@@ -455,7 +455,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
           {/* 4 KPIs Skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-28 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+              <div key={i} className="h-[72px] rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3" />
             ))}
           </div>
 
@@ -504,7 +504,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
           {/* 4 KPIs Skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-28 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+              <div key={i} className="h-[72px] rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3" />
             ))}
           </div>
 

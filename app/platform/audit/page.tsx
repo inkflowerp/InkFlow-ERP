@@ -446,107 +446,107 @@ export default function PlatformAuditPage() {
       </div>
 
       {/* 2. Telemetry KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {/* Total Trail */}
-        <Card className="bg-slate-900/90 border-slate-800/80 rounded-2xl shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 h-16 w-16 bg-indigo-500/5 rounded-bl-full pointer-events-none" />
-          <CardContent className="p-4 flex items-center justify-between">
+        <Card className="bg-slate-900/90 border-slate-800/80 rounded-xl shadow-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 h-14 w-14 bg-indigo-500/5 rounded-bl-full pointer-events-none" />
+          <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
               <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
                 Total Audit Events
               </div>
-              <div className="text-2xl font-black text-white mt-1">
+              <div className="text-xl font-black text-white mt-0.5 leading-tight">
                 {metricsLoading ? (
                   <span className="text-slate-600 animate-pulse">...</span>
                 ) : (
                   (metrics?.total_logs ?? totalCount).toLocaleString()
                 )}
               </div>
-              <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1.5">
+              <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1.5">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 <span className="font-semibold text-emerald-400">+{metrics?.logs_today ?? 0}</span> today
               </div>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
-              <Layers className="h-5 w-5" />
+            <div className="h-8 w-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+              <Layers className="h-4 w-4" />
             </div>
           </CardContent>
         </Card>
 
         {/* Security & Auth */}
-        <Card className="bg-slate-900/90 border-slate-800/80 rounded-2xl shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 h-16 w-16 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
-          <CardContent className="p-4 flex items-center justify-between">
+        <Card className="bg-slate-900/90 border-slate-800/80 rounded-xl shadow-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 h-14 w-14 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
+          <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
               <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
                 Auth & Security
               </div>
-              <div className="text-2xl font-black text-white mt-1">
+              <div className="text-xl font-black text-white mt-0.5 leading-tight">
                 {metricsLoading ? (
                   <span className="text-slate-600 animate-pulse">...</span>
                 ) : (
                   (metrics?.security_events_count ?? 0).toLocaleString()
                 )}
               </div>
-              <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1">
+              <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1">
                 <Lock className="h-3 w-3 text-emerald-400" />
                 <span>Logins, MFA, Passwords</span>
               </div>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <ShieldCheck className="h-5 w-5" />
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <ShieldCheck className="h-4 w-4" />
             </div>
           </CardContent>
         </Card>
 
         {/* Tenant Governance */}
-        <Card className="bg-slate-900/90 border-slate-800/80 rounded-2xl shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 h-16 w-16 bg-purple-500/5 rounded-bl-full pointer-events-none" />
-          <CardContent className="p-4 flex items-center justify-between">
+        <Card className="bg-slate-900/90 border-slate-800/80 rounded-xl shadow-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 h-14 w-14 bg-purple-500/5 rounded-bl-full pointer-events-none" />
+          <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
               <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
                 Tenant & Plan Actions
               </div>
-              <div className="text-2xl font-black text-white mt-1">
+              <div className="text-xl font-black text-white mt-0.5 leading-tight">
                 {metricsLoading ? (
                   <span className="text-slate-600 animate-pulse">...</span>
                 ) : (
                   (metrics?.tenant_events_count ?? 0).toLocaleString()
                 )}
               </div>
-              <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1">
+              <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1">
                 <Building2 className="h-3 w-3 text-purple-400" />
                 <span>Lifecycle & Tier Changes</span>
               </div>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
-              <Building2 className="h-5 w-5" />
+            <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+              <Building2 className="h-4 w-4" />
             </div>
           </CardContent>
         </Card>
 
         {/* Active Superadmins */}
-        <Card className="bg-slate-900/90 border-slate-800/80 rounded-2xl shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 h-16 w-16 bg-cyan-500/5 rounded-bl-full pointer-events-none" />
-          <CardContent className="p-4 flex items-center justify-between">
+        <Card className="bg-slate-900/90 border-slate-800/80 rounded-xl shadow-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 h-14 w-14 bg-cyan-500/5 rounded-bl-full pointer-events-none" />
+          <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
               <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
                 Privileged Actors
               </div>
-              <div className="text-2xl font-black text-white mt-1">
+              <div className="text-xl font-black text-white mt-0.5 leading-tight">
                 {metricsLoading ? (
                   <span className="text-slate-600 animate-pulse">...</span>
                 ) : (
                   (metrics?.unique_actors_count ?? 1).toLocaleString()
                 )}
               </div>
-              <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1">
+              <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1">
                 <User className="h-3 w-3 text-cyan-400" />
                 <span>Root Administrators</span>
               </div>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
-              <User className="h-5 w-5" />
+            <div className="h-8 w-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+              <User className="h-4 w-4" />
             </div>
           </CardContent>
         </Card>

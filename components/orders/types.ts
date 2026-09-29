@@ -175,6 +175,7 @@ export function formatOrderItemQuantityAndUnit(
   let unitDisplay = item.unit || 'pcs'
   if (unitDisplay.toLowerCase() === 'pcs') unitDisplay = tBilingual('pcs', 'পিস')
   else if (unitDisplay.toLowerCase() === 'sft') unitDisplay = tBilingual('sft', 'বর্গফুট')
+  else if (unitDisplay.toLowerCase() === 'sq.inch' || unitDisplay.toLowerCase() === 'sqinch' || unitDisplay.toLowerCase() === 'sqin') unitDisplay = tBilingual('Sq. Inch', 'বর্গ ইঞ্চি')
   else if (unitDisplay.toLowerCase() === 'set') unitDisplay = tBilingual('set', 'সেট')
   else if (unitDisplay.toLowerCase() === 'pack') unitDisplay = tBilingual('pack', 'প্যাক')
   else if (unitDisplay.toLowerCase() === 'box') unitDisplay = tBilingual('box', 'বক্স')

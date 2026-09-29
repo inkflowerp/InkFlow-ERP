@@ -169,6 +169,7 @@ export const COMMON_SELLING_UNITS = [
   { code: 'job', name: 'Job / Flat Charge', name_bn: 'এককালীন চার্জ', measurement_type: 'job' },
   { code: 'trip', name: 'Trip', name_bn: 'ট্রিপ', measurement_type: 'job' },
   { code: 'hour', name: 'Hour', name_bn: 'ঘণ্টা', measurement_type: 'time' },
+  { code: 'sqinch', name: 'Square Inch', name_bn: 'বর্গ ইঞ্চি', measurement_type: 'area' },
 ]
 
 export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> = {
@@ -251,6 +252,15 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
     code: 'sqm',
     name: 'Square Meter',
     name_bn: 'বর্গমিটার',
+    category: 'area',
+    measurement_type: 'area',
+    decimal_precision: 2,
+    is_active: true,
+  },
+  sqinch: {
+    code: 'sqinch',
+    name: 'Square Inch',
+    name_bn: 'বর্গ ইঞ্চি',
     category: 'area',
     measurement_type: 'area',
     decimal_precision: 2,
@@ -410,6 +420,7 @@ export function normalizeUnitCode(unitStr?: string | null): string {
   if (!unitStr) return 'pcs'
   const clean = unitStr.trim().toLowerCase()
   if (clean === 'sqft' || clean === 'sft' || clean === 'sq.ft' || clean === 'sq_ft') return 'sft'
+  if (clean === 'sqinch' || clean === 'sq.inch' || clean === 'sq_inch' || clean === 'sqin') return 'sqinch'
   if (clean === 'pcs' || clean === 'pc' || clean === 'piece' || clean === 'pieces') return 'pcs'
   if (clean === 'rft' || clean === 'running_ft') return 'rft'
   if (clean === 'ltr' || clean === 'liter' || clean === 'litre') return 'liter'
