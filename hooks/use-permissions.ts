@@ -32,11 +32,20 @@ export function usePermissions() {
       ''
     ).toLowerCase().trim()
 
-    if (raw === 'business_owner' || raw === 'owner' || raw === 'platform_owner') return 'business_owner'
-    if (raw === 'sales_manager' || raw === 'sales' || raw === 'sales_executive' || raw === 'manager') return 'sales_manager'
-    if (raw === 'designer' || raw === 'graphic_designer') return 'designer'
-    if (raw === 'operator' || raw === 'machine_operator' || raw === 'technician') return 'operator'
-    if (raw === 'production_manager' || raw === 'production') return 'production_manager'
+    if (raw === 'business_owner' || raw === 'owner' || raw === 'platform_owner' || raw === 'admin') return 'business_owner'
+    if (
+      raw === 'designer' ||
+      raw === 'graphic_designer' ||
+      raw.includes('design') ||
+      raw.includes('graphic') ||
+      raw.includes('prepress') ||
+      raw.includes('artwork')
+    ) {
+      return 'designer'
+    }
+    if (raw === 'sales_manager' || raw === 'sales' || raw === 'sales_executive' || raw === 'manager' || raw.includes('sale')) return 'sales_manager'
+    if (raw === 'operator' || raw === 'machine_operator' || raw === 'technician' || raw.includes('operat')) return 'operator'
+    if (raw === 'production_manager' || raw === 'production' || raw.includes('production')) return 'production_manager'
     return 'general_staff'
   }, [currentUser, responsibilities, currentRole])
 
@@ -62,22 +71,25 @@ export function usePermissions() {
         currentRole === 'designer' ||
         currentRole === 'installer' ||
         currentRole === 'accountant' ||
-        userResponsibilities.some((r) => [
-          'operator',
-          'machine_operator',
-          'designer',
-          'graphic_designer',
-          'sales',
-          'sales_manager',
-          'sales_executive',
-          'production',
-          'production_manager',
-          'accountant',
-          'accounts',
-          'delivery',
-          'delivery_coordinator',
-          'installer',
-        ].includes(r))
+        userResponsibilities.some((r) => {
+          const s = String(r).toLowerCase()
+          return [
+            'operator',
+            'machine_operator',
+            'designer',
+            'graphic_designer',
+            'sales',
+            'sales_manager',
+            'sales_executive',
+            'production',
+            'production_manager',
+            'accountant',
+            'accounts',
+            'delivery',
+            'delivery_coordinator',
+            'installer',
+          ].includes(s) || s.includes('design') || s.includes('graphic') || s.includes('prepress') || s.includes('operat')
+        })
     )
 
     const hasOwnerClaim = Boolean(
@@ -199,28 +211,51 @@ export function usePermissions() {
   const respList = (Array.isArray(userCtx.responsibilities) ? userCtx.responsibilities : []) as string[]
   const userRoleSlugs = Array.isArray(currentUser?.roles) ? currentUser.roles.map((r: any) => r?.slug || r?.name || '') : []
 
-  const isOperator =
-    !userCtx.isOwner && (
-      activeRole === 'operator' ||
-      (activeRole as any) === 'machine_operator' ||
-      (currentRole as any) === 'operator' ||
-      (currentRole as any) === 'machine_operator' ||
-      respList.includes('operator') ||
-      respList.includes('machine_operator') ||
-      userRoleSlugs.includes('operator') ||
-      userRoleSlugs.includes('machine_operator')
-    )
-
   const isDesigner =
     !userCtx.isOwner && (
       activeRole === 'designer' ||
       (activeRole as any) === 'graphic_designer' ||
       (currentRole as any) === 'designer' ||
       (currentRole as any) === 'graphic_designer' ||
-      respList.includes('designer') ||
-      respList.includes('graphic_designer') ||
-      userRoleSlugs.includes('designer') ||
-      userRoleSlugs.includes('graphic_designer')
+      respList.some((r) => {
+        const s = String(r).toLowerCase()
+        return (
+          s === 'designer' ||
+          s === 'graphic_designer' ||
+          s.includes('design') ||
+          s.includes('graphic') ||
+          s.includes('prepress') ||
+          s.includes('artwork')
+        )
+      }) ||
+      userRoleSlugs.some((r) => {
+        const s = String(r).toLowerCase()
+        return (
+          s === 'designer' ||
+          s === 'graphic_designer' ||
+          s.includes('design') ||
+          s.includes('graphic') ||
+          s.includes('prepress') ||
+          s.includes('artwork')
+        )
+      })
+    )
+
+  const isOperator =
+    !userCtx.isOwner &&
+    !isDesigner && (
+      activeRole === 'operator' ||
+      (activeRole as any) === 'machine_operator' ||
+      (currentRole as any) === 'operator' ||
+      (currentRole as any) === 'machine_operator' ||
+      respList.some((r) => {
+        const s = String(r).toLowerCase()
+        return s === 'operator' || s === 'machine_operator' || s.includes('operat') || s.includes('technician') || s.includes('pressman')
+      }) ||
+      userRoleSlugs.some((r) => {
+        const s = String(r).toLowerCase()
+        return s === 'operator' || s === 'machine_operator' || s.includes('operat') || s.includes('technician') || s.includes('pressman')
+      })
     )
 
   const isSales =

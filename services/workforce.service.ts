@@ -13,6 +13,7 @@ import { TenantRepository } from '../lib/repositories/tenant.repository.ts'
 import { AuthEmailService } from './auth-email.service.ts'
 import { AuthService } from './auth.service.ts'
 import { sanitizeUsername, isValidUsernameFormat, generateSafeEmployeeUsername } from '../lib/auth/identifier-helper.ts'
+import { normalizePortalRole } from '../lib/auth/rbac.client.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type {
   EmployeeRecord,
@@ -298,12 +299,13 @@ export class WorkforceService {
   static async resolveRoleIdForEmployee(companyId: string, roleInput?: string): Promise<string> {
     try {
       const roles = await TenantRepository.getRoles(companyId)
-      const norm = (roleInput || '').toLowerCase().trim()
+      const rawNorm = (roleInput || '').toLowerCase().trim()
+      const norm = normalizePortalRole(rawNorm)
 
       const byId = roles.find((r) => r.id === roleInput)
       if (byId) return byId.id
 
-      const bySlug = roles.find((r) => r.slug?.toLowerCase() === norm)
+      const bySlug = roles.find((r) => r.slug?.toLowerCase() === norm || r.slug?.toLowerCase() === rawNorm)
       if (bySlug) return bySlug.id
 
       const mapping: Record<string, string> = {
@@ -311,21 +313,37 @@ export class WorkforceService {
         technician: 'operator',
         designer: 'designer',
         sales: 'sales_manager',
+        sales_manager: 'sales_manager',
         sales_executive: 'sales_manager',
         accounts: 'accountant',
         accountant: 'accountant',
         billing: 'accountant',
         manager: 'production_manager',
+        production_manager: 'production_manager',
         branch_manager: 'production_manager',
         staff: 'general_staff',
       }
-      const mappedSlug = mapping[norm]
+      const mappedSlug = mapping[norm] || mapping[rawNorm]
       if (mappedSlug) {
         const matched = roles.find((r) => r.slug?.toLowerCase() === mappedSlug)
         if (matched) return matched.id
       }
 
-      const byName = roles.find((r) => r.name?.toLowerCase().includes(norm))
+      // Check if any role slug or name includes 'designer' or 'design' if norm is designer
+      if (norm === 'designer') {
+        const designerRole = roles.find((r) =>
+          r.slug?.toLowerCase().includes('design') ||
+          r.name?.toLowerCase().includes('design') ||
+          r.name?.toLowerCase().includes('graphic')
+        )
+        if (designerRole) return designerRole.id
+      }
+
+      const byName = roles.find((r) =>
+        r.name?.toLowerCase().includes(norm) ||
+        (rawNorm && r.name?.toLowerCase().includes(rawNorm)) ||
+        (rawNorm && rawNorm.includes(r.name?.toLowerCase()))
+      )
       if (byName) return byName.id
 
       const fallback = roles.find((r) => r.slug === 'operator') || roles.find((r) => r.slug === 'general_staff') || roles[0]
@@ -384,6 +402,17 @@ export class WorkforceService {
 
     const password = portalCreds.password?.trim() || `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`
     let userId = employee.user_id || portalCreds.user_id || null
+
+    const rawAssigned = portalCreds.role || employee.role || 'operator'
+    const normalizedRole = normalizePortalRole(rawAssigned)
+    const canonicalResp =
+      normalizedRole === 'sales'
+        ? 'sales_manager'
+        : normalizedRole === 'accounts'
+        ? 'accountant'
+        : normalizedRole === 'manager'
+        ? 'production_manager'
+        : normalizedRole
 
     try {
       const admin = createAdminClient()
@@ -501,8 +530,6 @@ export class WorkforceService {
           .maybeSingle()
 
         let companyUserId = existingCU?.id
-        const assignedRole = portalCreds.role || employee.role || 'operator'
-        const normalizedRole = assignedRole === 'sales' ? 'sales_manager' : assignedRole
 
         if (!companyUserId) {
           const { data: newCU } = await (admin as any)
@@ -513,7 +540,7 @@ export class WorkforceService {
               branch_id: employee.branch_id || null,
               invited_email: email,
               status: 'active',
-              responsibilities: [normalizedRole],
+              responsibilities: [canonicalResp],
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
@@ -526,7 +553,7 @@ export class WorkforceService {
             .update({
               branch_id: employee.branch_id || null,
               status: 'active',
-              responsibilities: [normalizedRole],
+              responsibilities: [canonicalResp],
               updated_at: new Date().toISOString(),
             })
             .eq('id', companyUserId)
@@ -543,7 +570,7 @@ export class WorkforceService {
             company_id: employee.company_id,
             user_id: userId,
             branch_id: employee.branch_id || null,
-            responsibilities: [normalizedRole],
+            responsibilities: [canonicalResp],
             status: 'active',
             updated_at: new Date().toISOString(),
           }
@@ -555,7 +582,7 @@ export class WorkforceService {
           PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, localUsers)
         } catch {}
 
-        const roleId = await this.resolveRoleIdForEmployee(employee.company_id, portalCreds.role || 'operator')
+        const roleId = await this.resolveRoleIdForEmployee(employee.company_id, normalizedRole)
         if (roleId && companyUserId) {
           await (admin as any).from('user_roles').delete().eq('company_user_id', companyUserId)
           await (admin as any).from('user_roles').insert({
@@ -585,11 +612,22 @@ export class WorkforceService {
 
         if (!('error' in rec)) {
           inviteUrl = `${resolvedBaseUrl}/verify?token=${rec.token}&email=${encodeURIComponent(email)}&purpose=registration`
+          const roleDisplayName =
+            normalizedRole === 'designer'
+              ? 'Graphic Designer & Prepress'
+              : normalizedRole === 'sales'
+              ? 'Sales Executive'
+              : normalizedRole === 'accounts'
+              ? 'Accountant'
+              : normalizedRole === 'manager'
+              ? 'Production Manager'
+              : portalCreds.role || employee.role || 'Team Member'
+
           await AuthEmailService.sendUserInvitationEmail({
             email,
             inviteUrl,
             companyName: companyName || 'InkFlow PrintERP',
-            roleName: portalCreds.role || employee.role || 'Team Member',
+            roleName: roleDisplayName,
             invitedByName: actorName,
             tenantId: employee.company_id,
             userName: employee.name,
@@ -607,7 +645,7 @@ export class WorkforceService {
       email,
       username: cleanUsername,
       password,
-      role: portalCreds.role || 'operator',
+      role: normalizedRole,
       user_id: userId,
       status: inviteSentAt ? 'invited' : 'active',
       last_invite_sent_at: inviteSentAt || portalCreds.last_invite_sent_at || null,
@@ -658,7 +696,7 @@ export class WorkforceService {
       create_login: true,
       email: targetEmail,
       username: employee.portal_credentials?.username || targetEmail.split('@')[0],
-      role: employee.portal_credentials?.role || 'operator',
+      role: normalizePortalRole(employee.portal_credentials?.role || employee.role),
       password: employee.portal_credentials?.password,
       send_invitation: true,
     }

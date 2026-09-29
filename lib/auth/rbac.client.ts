@@ -91,8 +91,8 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     customers: { view: true },
     quotations: { view: true },
     orders: { view: true, create: true, edit: true, print: true },
-    design: { view: true, create: true, edit: true, send: true, download: true, approve: true },
-    invoices: { view: true },
+    design: { view: true, create: true, edit: true, send: true, download: true, approve: true, manage: true },
+    invoices: {},
     payments: {},
     production: { view: true },
     machineries: { view: true },
@@ -101,7 +101,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     reports: {},
     settings: {},
     branches: {},
-    tasks: { view: true, complete: true },
+    tasks: { view: true, create: true, edit: true, complete: true },
     notifications: { view: true },
     support: { view: true, create: true, send: true },
     products: { view: true },
@@ -398,7 +398,51 @@ export function normalizeResponsibilitySlug(slug: string): ResponsibilitySlug {
     general_staff: 'general_staff',
     staff: 'general_staff',
   }
-  return map[slug.toLowerCase()] || 'general_staff'
+  const s = (slug || '').toLowerCase().trim()
+  if (map[s]) return map[s]
+
+  // Substring pattern matching for descriptive titles (e.g. "Senior Graphic Designer & Prepress")
+  if (s.includes('design') || s.includes('graphic') || s.includes('prepress') || s.includes('pre-press') || s.includes('artwork')) {
+    return 'designer'
+  }
+  if (s.includes('sale') || s.includes('marketing') || s.includes('crm')) {
+    return 'sales_manager'
+  }
+  if (s.includes('account') || s.includes('bill') || s.includes('finance') || s.includes('cashier')) {
+    return 'accountant'
+  }
+  if (s.includes('product') || s.includes('factory') || s.includes('supervisor')) {
+    return 'production_manager'
+  }
+  if (s.includes('deliver') || s.includes('install') || s.includes('courier')) {
+    return 'delivery_coordinator'
+  }
+  if (s.includes('store') || s.includes('inventor') || s.includes('stock')) {
+    return 'store_manager'
+  }
+  if (s.includes('operat') || s.includes('technician') || s.includes('pressman') || s.includes('machinist')) {
+    return 'operator'
+  }
+  if (s.includes('owner') || s.includes('admin') || s.includes('director')) {
+    return 'business_owner'
+  }
+
+  return 'general_staff'
+}
+
+/**
+ * Normalizes an employee job title or portal role to the canonical portal role dropdown slug:
+ * 'designer' | 'operator' | 'sales' | 'accounts' | 'manager' | 'general_staff'
+ */
+export function normalizePortalRole(rawRole?: string | null): 'designer' | 'operator' | 'sales' | 'accounts' | 'manager' | 'general_staff' {
+  if (!rawRole) return 'operator'
+  const resp = normalizeResponsibilitySlug(rawRole)
+  if (resp === 'designer') return 'designer'
+  if (resp === 'sales_manager') return 'sales'
+  if (resp === 'accountant') return 'accounts'
+  if (resp === 'production_manager') return 'manager'
+  if (resp === 'operator') return 'operator'
+  return 'general_staff'
 }
 
 /**

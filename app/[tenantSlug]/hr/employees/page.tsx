@@ -112,6 +112,8 @@ import {
   isValidUsernameFormat,
   generateSafeEmployeeUsername,
 } from '@/lib/auth/identifier-helper'
+import { normalizePortalRole } from '@/lib/auth/rbac.client'
+import { usePermissions } from '@/hooks/use-permissions'
 
 const ROLE_PRESETS = [
   {
@@ -245,6 +247,7 @@ function EmployeeListContent() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { company } = useTenant()
+  const { can, isOwner } = usePermissions()
   const { locale, tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
@@ -717,7 +720,7 @@ function EmployeeListContent() {
             username: emp.portal_credentials.username || '',
             email: emp.portal_credentials.email || emp.email || '',
             password: emp.portal_credentials.password || '',
-            role: emp.portal_credentials.role || 'operator',
+            role: normalizePortalRole(emp.portal_credentials.role || emp.role),
             send_invitation: emp.portal_credentials.send_invitation ?? true,
           }
         : {
@@ -725,7 +728,7 @@ function EmployeeListContent() {
             username: '',
             email: emp.email || '',
             password: '',
-            role: 'operator',
+            role: normalizePortalRole(emp.role),
             send_invitation: true,
           },
       document_attachments: (emp.document_attachments as any) || [
@@ -768,7 +771,7 @@ function EmployeeListContent() {
       email: fallbackEmail,
       username: cleanUname,
       password: pc?.password || `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
-      role: pc?.role || emp.role?.toLowerCase() || 'operator',
+      role: normalizePortalRole(pc?.role || emp.role),
       send_invitation: true,
     })
     setIs360DrawerOpen(true)
@@ -777,13 +780,14 @@ function EmployeeListContent() {
   const handleCopyLoginCard = (emp: EmployeeRecord) => {
     const pc = emp.portal_credentials
     const resolvedOrigin = typeof window !== 'undefined' ? window.location.origin : ''
-    const portalUrl = `${resolvedOrigin}/${tenantSlug || 'workspace'}/portal`
+    const portalUrl = `${resolvedOrigin}/login?tenant=${tenantSlug || 'workspace'}`
+    const assignedRole = normalizePortalRole(pc?.role || emp.role)
     const cardText = `
 🏢 InkFlow PrintERP - Employee Access Pass
 ═════════════════════════════════════════
 👤 Name: ${emp.name}${emp.name_bn ? ` (${emp.name_bn})` : ''}
 🆔 Employee ID: ${emp.employee_id_number}
-💼 Role: ${pc?.role || emp.role || 'Staff'}
+💼 Role: ${assignedRole === 'designer' ? 'Graphic Designer' : assignedRole} (${emp.role || 'Staff'})
 🏢 Department: ${emp.department}
 
 🔐 LOGIN CREDENTIALS:
@@ -804,7 +808,7 @@ function EmployeeListContent() {
   const handleCopyWhatsAppInvite = (emp: EmployeeRecord) => {
     const pc = emp.portal_credentials
     const resolvedOrigin = typeof window !== 'undefined' ? window.location.origin : ''
-    const portalUrl = `${resolvedOrigin}/${tenantSlug || 'workspace'}/portal`
+    const portalUrl = `${resolvedOrigin}/login?tenant=${tenantSlug || 'workspace'}`
     const waText = `
 আসসালামু আলাইকুম ${emp.name},
 InkFlow PrintERP পোর্টালে আপনার কর্মচারী অ্যাকাউন্ট প্রস্তুত করা হয়েছে।
@@ -840,7 +844,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
           inviteUrl: res.data.inviteUrl,
           email: res.data.email || targetEmail,
           employeeName: emp.name,
-          roleName: emp.portal_credentials?.role || emp.role || 'Operator',
+          roleName: normalizePortalRole(emp.portal_credentials?.role || emp.role) === 'designer' ? 'Graphic Designer & Prepress' : emp.portal_credentials?.role || emp.role || 'Operator',
         })
         const updatedPc = {
           ...(emp.portal_credentials || {}),
@@ -871,6 +875,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
         ? sanitizeUsername(credsForm.username)
         : generateSafeEmployeeUsername(selectedEmployee.name, selectedEmployee.employee_id_number, selectedEmployee.mobile)
 
+      const normalizedRole = normalizePortalRole(credsForm.role)
       const res = await updateEmployeeLoginCredentialsAction(
         selectedEmployee.id,
         {
@@ -878,7 +883,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
           email: credsForm.email.trim() || undefined,
           username: sanitizedUname,
           password: credsForm.password.trim() || undefined,
-          role: credsForm.role || 'operator',
+          role: normalizedRole,
           send_invitation: credsForm.send_invitation,
         },
         tenantSlug
@@ -891,12 +896,23 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
         setIsEditingCredentials(false)
 
         if (credsForm.send_invitation && res.data.portal_credentials?.invite_link) {
+          const roleDisplay =
+            normalizedRole === 'designer'
+              ? 'Graphic Designer & Prepress'
+              : normalizedRole === 'sales'
+              ? 'Sales Executive'
+              : normalizedRole === 'accounts'
+              ? 'Accountant'
+              : normalizedRole === 'manager'
+              ? 'Production Manager'
+              : res.data.portal_credentials.role || 'Operator'
+
           setInviteModalData({
             isOpen: true,
             inviteUrl: res.data.portal_credentials.invite_link,
             email: res.data.portal_credentials.email || credsForm.email,
             employeeName: res.data.name,
-            roleName: res.data.portal_credentials.role || 'Operator',
+            roleName: roleDisplay,
           })
         }
       } else {
@@ -959,6 +975,10 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
         medical_allowance: medical,
         food_allowance: 0,
         other_allowances: 0,
+      },
+      portal_credentials: {
+        ...prev.portal_credentials,
+        role: normalizePortalRole(preset.role),
       },
     }))
     notify(`Applied preset: ${preset.title}`)
@@ -2134,7 +2154,17 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                     <Input
                       placeholder="e.g. Master Offset Machine Operator"
                       value={empForm.role}
-                      onChange={(e) => setEmpForm({ ...empForm, role: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setEmpForm({
+                          ...empForm,
+                          role: val,
+                          portal_credentials: {
+                            ...empForm.portal_credentials,
+                            role: normalizePortalRole(val),
+                          },
+                        })
+                      }}
                       className="text-xs h-9"
                     />
                   </div>
@@ -3234,11 +3264,11 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                           }
                           className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                         >
-                          <option value="operator">{tBilingual('Operator / Technician', 'ফ্লোর অপারেটর')}</option>
-                          <option value="designer">{tBilingual('Graphic Designer', 'ডিজাইনার')}</option>
+                          <option value="designer">{tBilingual('Graphic Designer & Prepress', 'গ্রাফিক ডিজাইনার ও প্রিপ্রেস')}</option>
+                          <option value="operator">{tBilingual('Operator / Technician', 'ফ্লোর অপারেটর ও টেকনিশিয়ান')}</option>
                           <option value="sales">{tBilingual('Sales Executive', 'সেলস এক্সিকিউটিভ')}</option>
-                          <option value="accounts">{tBilingual('Accountant / Billing', 'অ্যাকাউন্ট্যান্ট')}</option>
-                          <option value="manager">{tBilingual('Branch Manager', 'ব্রাঞ্চ ম্যানেজার')}</option>
+                          <option value="accounts">{tBilingual('Accountant / Billing', 'হিসাবরক্ষক ও বিলিং')}</option>
+                          <option value="manager">{tBilingual('Branch / Production Manager', 'ব্রাঞ্চ ও কারখানা ম্যানেজার')}</option>
                           <option value="general_staff">{tBilingual('General Staff', 'সাধারণ কর্মী')}</option>
                         </select>
                       </div>
@@ -4652,7 +4682,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               email: fallbackEmail,
                               username: safeUser,
                               password: `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
-                              role: selectedEmployee.role ? selectedEmployee.role.toLowerCase() : 'operator',
+                              role: normalizePortalRole(selectedEmployee.role),
                               send_invitation: true,
                             })
                             setIsEditingCredentials(true)
@@ -4747,7 +4777,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                           </span>
                           <div className="mt-1">
                             <Badge variant="outline" className="capitalize bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 font-bold text-xs">
-                              {selectedEmployee.portal_credentials.role || 'Operator'}
+                              {normalizePortalRole(selectedEmployee.portal_credentials.role) === 'designer' ? 'Graphic Designer & Prepress' : selectedEmployee.portal_credentials.role || 'Operator'}
                             </Badge>
                           </div>
                         </div>
@@ -4839,7 +4869,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                               email: defaultEmail,
                               username: safeUser,
                               password: selectedEmployee.portal_credentials?.password || '',
-                              role: selectedEmployee.portal_credentials?.role || (selectedEmployee.role ? selectedEmployee.role.toLowerCase() : 'operator'),
+                              role: normalizePortalRole(selectedEmployee.portal_credentials?.role || selectedEmployee.role),
                               send_invitation: true,
                             })
                             setIsEditingCredentials(true)
@@ -4991,11 +5021,11 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             onChange={(e) => setCredsForm({ ...credsForm, role: e.target.value })}
                             className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                           >
-                            <option value="operator">{tBilingual('Operator / Technician', 'ফ্লোর অপারেটর')}</option>
-                            <option value="designer">{tBilingual('Graphic Designer', 'ডিজাইনার')}</option>
+                            <option value="designer">{tBilingual('Graphic Designer & Prepress', 'গ্রাফিক ডিজাইনার ও প্রিপ্রেস')}</option>
+                            <option value="operator">{tBilingual('Operator / Technician', 'ফ্লোর অপারেটর ও টেকনিশিয়ান')}</option>
                             <option value="sales">{tBilingual('Sales Executive', 'সেলস এক্সিকিউটিভ')}</option>
-                            <option value="accounts">{tBilingual('Accountant / Billing', 'অ্যাকাউন্ট্যান্ট')}</option>
-                            <option value="manager">{tBilingual('Branch Manager', 'ব্রাঞ্চ ম্যানেজার')}</option>
+                            <option value="accounts">{tBilingual('Accountant / Billing', 'হিসাবরক্ষক ও বিলিং')}</option>
+                            <option value="manager">{tBilingual('Branch / Production Manager', 'ব্রাঞ্চ ও কারখানা ম্যানেজার')}</option>
                             <option value="general_staff">{tBilingual('General Staff', 'সাধারণ কর্মী')}</option>
                           </select>
                         </div>
@@ -5075,7 +5105,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             email: fallbackEmail,
                             username: safeUser,
                             password: `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
-                            role: selectedEmployee.role ? selectedEmployee.role.toLowerCase() : 'operator',
+                            role: normalizePortalRole(selectedEmployee.role),
                             send_invitation: true,
                           })
                           setIsEditingCredentials(true)
