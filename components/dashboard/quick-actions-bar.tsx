@@ -347,7 +347,7 @@ export function QuickActionsBar({
                 key={action.id}
                 type="button"
                 onClick={action.onClick}
-                className="group relative flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xs active:scale-[0.98] transition-all duration-200 cursor-pointer text-left min-h-[56px] select-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/40"
+                className="group relative flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xs active:scale-[0.98] transition-all duration-200 cursor-pointer text-left min-h-[56px] select-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {/* Visual Icon Container */}
                 <div

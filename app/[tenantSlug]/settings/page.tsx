@@ -46,6 +46,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 const OFFICE_HOURS_PRESETS = [
@@ -279,7 +280,13 @@ export default function CompanySettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <PanelAccessGuard
+      module="settings"
+      action="view"
+      panelTitle="Company Profile & Settings"
+      panelTitleBn="প্রতিষ্ঠান পরিচিতি ও সেটিংস"
+    >
+      <div className="space-y-6 max-w-5xl">
       {/* Title & Actions */}
       <PageHeader
         titleEn="Company Profile & Settings"
@@ -925,7 +932,8 @@ export default function CompanySettingsPage() {
           </Button>
         </div>
       </form>
-    </div>
+      </div>
+    </PanelAccessGuard>
   )
 }
 

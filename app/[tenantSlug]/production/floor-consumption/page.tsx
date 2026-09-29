@@ -26,6 +26,7 @@ import { useI18n } from '@/i18n/context'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { Card, CardContent } from '@/components/ui/card'
 import { PrintFloorConsumptionUnit } from '@/components/inventory/print-floor-consumption-unit'
 import { LogConsumptionModal } from '@/components/inventory/log-consumption-modal'
@@ -135,7 +136,13 @@ export default function FloorConsumptionPage() {
   if (!mounted) return null
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto min-h-screen">
+    <PanelAccessGuard
+      module="production"
+      action="view"
+      panelTitle="Floor Consumption & Tracking"
+      panelTitleBn="কারখানা ফ্লোর কনজাম্পশন"
+    >
+      <div className="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto min-h-screen">
       {/* Page Header */}
       <PageHeader
         titleEn="Factory Floor Consumption & Tracking"
@@ -282,5 +289,6 @@ export default function FloorConsumptionPage() {
         />
       )}
     </div>
+    </PanelAccessGuard>
   )
 }

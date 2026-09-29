@@ -26,6 +26,14 @@
     --ring: 221 83% 53%;
     --radius: 0.75rem;
 
+    /* Semantic Feedback Accents */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
     /* Printing & Signage CMYK Industry Accents */
     --cmyk-cyan: 191 97% 45%;
     --cmyk-magenta: 326 100% 50%;
@@ -54,10 +62,45 @@
     --border: 217.2 32.6% 18%;
     --input: 217.2 32.6% 18%;
     --ring: 224.3 76.3% 48%;
+
+    /* Semantic Feedback Accents */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
   }
 }
 
 @theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --radius: var(--radius);
+
   --font-sans: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-bangla: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-inter), var(--font-hind-siliguri), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -96,8 +139,8 @@ html {
 }
 
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   font-family: var(--font-sans);
   font-size: 0.875rem; /* 14px standard UI base */
   line-height: 1.5;
@@ -109,8 +152,8 @@ body {
 }
 
 .dark body {
-  background-color: #090d16;
-  color: #f8fafc;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
 /* Headings Base Hierarchy - Consistent, proportional, no awkward single-word wrapping */
@@ -137,17 +180,17 @@ h3 {
 }
 
 h4 {
-  font-size: 1rem;
+  font-size: 1.125rem;
   line-height: 1.4;
 }
 
 h5 {
-  font-size: 0.875rem;
+  font-size: 1rem;
   line-height: 1.4;
 }
 
 h6 {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   line-height: 1.4;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -175,34 +218,10 @@ button, input, select, textarea {
    harmonizes font sizes across all cards, modals, tables, badges & controls.
    ============================================================================== */
 
-/* 1. Standardized 2xs utility */
+/* Standardized 2xs utility */
 .text-2xs {
-  font-size: 0.6875rem !important; /* 11px */
-  line-height: 1rem !important;
-}
-
-/* 2. Micro-text utility normalization: Any remaining or dynamically computed arbitrary pixel sizes */
-.text-\[6px\], .text-\[7px\], .text-\[8px\], .text-\[9px\],
-[class*="text-[6px]"], [class*="text-[7px]"], [class*="text-[8px]"], [class*="text-[9px]"] {
-  font-size: 0.6875rem !important; /* 11px accessible floor (text-2xs) */
-  line-height: 1rem !important;
-  letter-spacing: 0.01em;
-}
-
-.text-\[10px\], [class*="text-[10px]"],
-.text-\[11px\], [class*="text-[11px]"] {
-  font-size: 0.6875rem !important; /* 11px normalized with text-2xs */
-  line-height: 1rem !important;
-}
-
-.text-\[13px\], [class*="text-[13px]"] {
-  font-size: 0.8125rem !important; /* 13px */
-  line-height: 1.1875rem !important;
-}
-
-.text-\[14px\], [class*="text-[14px]"] {
-  font-size: 0.875rem !important; /* 14px text-sm */
-  line-height: 1.25rem !important;
+  font-size: 0.6875rem; /* 11px */
+  line-height: 1rem;
 }
 
 /* 3. Global Table Typography Consistency */
@@ -234,18 +253,18 @@ textarea {
 
 
 option {
-  background-color: #ffffff;
-  color: #0f172a;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
 .dark option {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
 }
 
 .dark optgroup {
-  background-color: #0f172a !important;
-  color: #94a3b8 !important;
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--muted-foreground)) !important;
 }
 
 /* Numeric & Tabular Data - Tabular alignment on primary UI font for financial figures, KPIs, tables, codes & IDs */
@@ -368,6 +387,7 @@ input[data-numeric],
   }
 
   /* 2. Hide Non-Printable UI Chrome, Navigation, Floating Bars & Modals */
+  body:has([data-print-isolate="true"]) > *:not(:has([data-print-isolate="true"])),
   header:not(.print-header),
   aside:not(.print-aside),
   nav:not(.print-nav),
@@ -385,6 +405,21 @@ input[data-numeric],
   .support-banner {
     display: none !important;
     visibility: hidden !important;
+  }
+
+  /* Isolate printable document when present */
+  [data-print-isolate="true"] {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 1.5rem !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    z-index: 999999 !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   /* 3. Document Canvas Full-Width Unwrapping */

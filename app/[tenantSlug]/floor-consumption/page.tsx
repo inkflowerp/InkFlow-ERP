@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 
 export default function DirectFloorConsumptionRedirectPage() {
   const params = useParams()
@@ -14,8 +15,15 @@ export default function DirectFloorConsumptionRedirectPage() {
   }, [router, slug])
 
   return (
-    <div className="flex h-[60vh] items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
-    </div>
+    <PanelAccessGuard
+      module="production"
+      action="view"
+      panelTitle="Floor Consumptions"
+      panelTitleBn="কাঁচামাল খরচ"
+    >
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
+      </div>
+    </PanelAccessGuard>
   )
 }

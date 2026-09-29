@@ -39,6 +39,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CustomerFinancialSummaryCards } from '@/components/customers/customer-financial-summary'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { CustomerRatesTable } from '@/components/customers/customer-rates-table'
 import { CustomerProductAnalytics } from '@/components/customers/customer-product-analytics'
 import { CustomerTimeline } from '@/components/customers/customer-timeline'
@@ -956,7 +957,13 @@ export default function CustomerProfilePage() {
   const hasOpenWork = unpaidInvoices.length > 0 || openQuotations.length > 0 || activeOrders.length > 0
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+    <PanelAccessGuard
+      module="customers"
+      action="view"
+      panelTitle="Customer 360 Profile"
+      panelTitleBn="গ্রাহক ৩৬০ প্রোফাইল"
+    >
+      <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Back to Customer Directory link */}
       <div className="flex items-center justify-between">
         <Link
@@ -1772,7 +1779,7 @@ export default function CustomerProfilePage() {
 
       {/* EDIT CUSTOMER MODAL */}
       {isEditOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
           <div className="relative w-full max-w-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -1927,7 +1934,7 @@ export default function CustomerProfilePage() {
 
       {/* LOG COMMUNICATION MODAL */}
       {isLogCommOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="relative w-full max-w-md bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -2018,5 +2025,6 @@ export default function CustomerProfilePage() {
         onConfirm={confirmToggleActive}
       />
     </div>
+    </PanelAccessGuard>
   )
 }

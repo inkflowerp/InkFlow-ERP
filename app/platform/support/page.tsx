@@ -1042,7 +1042,7 @@ export default function PlatformSupportPage() {
 
       {/* INITIATE SUPPORT SESSION MODAL */}
       {showInitiateModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <Card className="w-full max-w-lg bg-slate-900 border-slate-800 shadow-2xl p-6 rounded-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
@@ -1210,7 +1210,7 @@ export default function PlatformSupportPage() {
 
       {/* EXTEND ACTIVE SESSION MODAL */}
       {showExtendModal && extendingSession && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <Card className="w-full max-w-md bg-slate-900 border-slate-800 shadow-2xl p-6 rounded-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">

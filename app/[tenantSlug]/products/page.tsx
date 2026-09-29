@@ -62,6 +62,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import type {
@@ -1878,7 +1879,13 @@ export default function ProductsCatalogPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl pb-12">
+    <PanelAccessGuard
+      module="products"
+      action="view"
+      panelTitle="Products & Commercial Masters"
+      panelTitleBn="পণ্য ও বাণিজ্যিক মাস্টার্স"
+    >
+      <div className="space-y-6 max-w-7xl pb-12">
       {/* Page Header with Direct Action Launchers */}
       <PageHeader
         titleEn="Products & Commercial Masters"
@@ -5253,5 +5260,6 @@ export default function ProductsCatalogPage() {
         onSave={handleSaveInstallationOption}
       />
     </div>
+    </PanelAccessGuard>
   )
 }

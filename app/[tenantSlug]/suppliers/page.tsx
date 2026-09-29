@@ -42,6 +42,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import type { SupplierRecord, SupplierCategory, SupplierPaymentTerms } from '@/types/crm.types'
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
@@ -305,7 +306,13 @@ export default function SuppliersPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <PanelAccessGuard
+      module="inventory"
+      action="view"
+      panelTitle="Supplier & Vendor Directory"
+      panelTitleBn="মহাজন ও সরবরাহকারী ডিরেক্টরি"
+    >
+      <div className="space-y-6 max-w-7xl">
       {/* Header */}
       <PageHeader
         titleEn="Supplier & Vendor Directory"
@@ -1056,6 +1063,7 @@ export default function SuppliersPage() {
         isLoading={isTrashing}
         onConfirm={confirmTrashSupplier}
       />
-    </div>
+      </div>
+    </PanelAccessGuard>
   )
 }

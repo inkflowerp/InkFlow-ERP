@@ -9,8 +9,8 @@ import type {
   SyncBatchResult,
 } from '../../types/sync.types.ts'
 
-const DEVICE_ID_KEY = 'inkflow_device_id'
-const CLIENT_OUTBOX_KEY = 'inkflow_client_outbox'
+const DEVICE_ID_KEY = 'printerp_device_id'
+const CLIENT_OUTBOX_KEY = 'printerp_client_outbox'
 
 export class ClientSyncManager {
   /**
@@ -18,6 +18,14 @@ export class ClientSyncManager {
    */
   static getDeviceId(): string {
     if (typeof window === 'undefined') return 'server_runtime_device'
+
+    try {
+      const legacyId = localStorage.getItem('inkflow_device_id')
+      if (legacyId && !localStorage.getItem(DEVICE_ID_KEY)) {
+        localStorage.setItem(DEVICE_ID_KEY, legacyId)
+        localStorage.removeItem('inkflow_device_id')
+      }
+    } catch {}
 
     let deviceId = localStorage.getItem(DEVICE_ID_KEY)
     if (!deviceId) {
@@ -68,7 +76,7 @@ export class ClientSyncManager {
 
       // Emit sync event for UI
       window.dispatchEvent(
-        new CustomEvent('inkflow_sync_queue_changed', {
+        new CustomEvent('printerp_sync_queue_changed', {
           detail: { companyId, pendingCount: existing.length },
         })
       )
@@ -83,6 +91,11 @@ export class ClientSyncManager {
   static getLocalOutbox(companyId: string): SyncBatchItemPayload[] {
     if (typeof window === 'undefined') return []
     try {
+      const legacyRaw = localStorage.getItem(`inkflow_client_outbox_${companyId}`)
+      if (legacyRaw && !localStorage.getItem(`${CLIENT_OUTBOX_KEY}_${companyId}`)) {
+        localStorage.setItem(`${CLIENT_OUTBOX_KEY}_${companyId}`, legacyRaw)
+        localStorage.removeItem(`inkflow_client_outbox_${companyId}`)
+      }
       const raw = localStorage.getItem(`${CLIENT_OUTBOX_KEY}_${companyId}`)
       return raw ? JSON.parse(raw) : []
     } catch {
@@ -101,7 +114,7 @@ export class ClientSyncManager {
     localStorage.setItem(`${CLIENT_OUTBOX_KEY}_${companyId}`, JSON.stringify(remaining))
 
     window.dispatchEvent(
-      new CustomEvent('inkflow_sync_queue_changed', {
+      new CustomEvent('printerp_sync_queue_changed', {
         detail: { companyId, pendingCount: remaining.length },
       })
     )

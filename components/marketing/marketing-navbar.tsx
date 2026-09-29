@@ -188,7 +188,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
       {/* Backdrop for mobile menu */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 top-16 sm:top-20 z-40 bg-slate-950/60 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 top-16 sm:top-20 z-40 bg-slate-950/60 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />

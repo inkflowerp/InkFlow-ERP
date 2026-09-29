@@ -236,7 +236,7 @@ export function MyWorkforceHub() {
             </div>
 
             {punchFeedback && (
-              <p className="text-[11px] text-cyan-300 animate-fade-in font-medium">{punchFeedback}</p>
+              <p className="text-2xs text-cyan-300 animate-fade-in font-medium">{punchFeedback}</p>
             )}
           </div>
         </div>
@@ -424,7 +424,7 @@ export function MyWorkforceHub() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-[10px] font-bold">
+                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
                     <tr>
                       <th className="px-4 py-3">{tBilingual('Date', 'তারিখ')}</th>
                       <th className="px-4 py-3">{tBilingual('Status', 'অবস্থা')}</th>
@@ -445,7 +445,7 @@ export function MyWorkforceHub() {
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <Badge
-                              className={`text-[10px] uppercase font-bold ${
+                              className={`text-2xs uppercase font-bold ${
                                 att.status === 'present'
                                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                   : isLate
@@ -518,7 +518,7 @@ export function MyWorkforceHub() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-[10px] font-bold">
+                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
                     <tr>
                       <th className="px-4 py-3">{tBilingual('Date', 'তারিখ')}</th>
                       <th className="px-4 py-3">{tBilingual('Duration', 'সময়কাল')}</th>
@@ -548,7 +548,7 @@ export function MyWorkforceHub() {
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Badge
-                            className={`text-[10px] uppercase font-bold ${
+                            className={`text-2xs uppercase font-bold ${
                               ot.status === 'approved' || ot.status === 'paid'
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                 : ot.status === 'rejected'
@@ -598,7 +598,7 @@ export function MyWorkforceHub() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-[10px] font-bold">
+                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
                     <tr>
                       <th className="px-4 py-3">{tBilingual('Type', 'ছুটির ধরন')}</th>
                       <th className="px-4 py-3">{tBilingual('Date Range', 'তারিখ')}</th>
@@ -624,7 +624,7 @@ export function MyWorkforceHub() {
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Badge
-                            className={`text-[10px] uppercase font-bold ${
+                            className={`text-2xs uppercase font-bold ${
                               lv.status === 'approved'
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                 : lv.status === 'rejected'
@@ -773,7 +773,7 @@ export function MyWorkforceHub() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-[10px] font-bold">
+                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
                     <tr>
                       <th className="px-4 py-3">{tBilingual('Voucher #', 'ভাউচার')}</th>
                       <th className="px-4 py-3">{tBilingual('Date', 'তারিখ')}</th>
@@ -799,7 +799,7 @@ export function MyWorkforceHub() {
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Badge
-                            className={`text-[10px] uppercase font-bold ${
+                            className={`text-2xs uppercase font-bold ${
                               adv.is_settled
                                 ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
                                 : adv.status === 'disbursed'

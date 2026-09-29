@@ -461,7 +461,7 @@ export function PlatformSupportConsole({
 
         {/* Slide-over Drawer for Tablet / Mobile (< xl) */}
         {selectedConversation && showDetailsPane && (
-          <div className="xl:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex justify-end">
+          <div className="xl:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-end">
             <div className="h-full bg-slate-900 shadow-2xl animate-in slide-in-from-right duration-200">
               <PlatformTicketInfo
                 conversation={selectedConversation}

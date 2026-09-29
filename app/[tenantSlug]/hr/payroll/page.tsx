@@ -44,6 +44,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
@@ -1175,7 +1176,14 @@ export default function PayrollPage() {
         </div>
       }
     >
-      <PayrollContent />
+      <PanelAccessGuard
+        module="hr"
+        action="view"
+        panelTitle="Payroll & Salary Processing"
+        panelTitleBn="পেরোল ও বেতন শিট"
+      >
+        <PayrollContent />
+      </PanelAccessGuard>
     </React.Suspense>
   )
 }

@@ -32,6 +32,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { Badge } from '@/components/ui/badge'
 import {
   MachineryRecord,
@@ -224,7 +225,13 @@ export default function MachineryDetailPage() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <PanelAccessGuard
+      module="machineries"
+      action="view"
+      panelTitle="Machinery Details"
+      panelTitleBn="মেশিন বিস্তারিত"
+    >
+      <div className="space-y-6 pb-12">
       {/* Top Breadcrumb Navigation */}
       <div className="flex items-center justify-between">
         <Link
@@ -919,5 +926,6 @@ export default function MachineryDetailPage() {
         onConfirm={confirmArchive}
       />
     </div>
+    </PanelAccessGuard>
   )
 }

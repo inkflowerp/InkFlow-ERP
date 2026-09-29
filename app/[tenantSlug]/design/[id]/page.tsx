@@ -1777,7 +1777,7 @@ function DesignDetailContent() {
 
                   {/* Top-Right Paste Helper Badge */}
                   <div className="absolute top-3 right-3 flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 text-2xs font-bold px-2 py-1 rounded bg-black/70 text-white backdrop-blur-xs border border-white/10">
+                    <span className="inline-flex items-center gap-1 text-2xs font-bold px-2 py-1 rounded bg-black/70 text-white backdrop-blur-sm border border-white/10">
                       <Clipboard className="h-3 w-3 text-indigo-400" /> Paste (<kbd className="font-mono text-2xs">Ctrl+V</kbd>)
                     </span>
                   </div>

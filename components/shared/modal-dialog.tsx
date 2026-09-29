@@ -38,7 +38,7 @@ interface ModalDialogProps {
   onConfirm?: () => void
   onSubmit?: (e: React.FormEvent) => void
   isConfirmLoading?: boolean
-  confirmVariant?: 'default' | 'destructive' | 'cmyk'
+  confirmVariant?: 'default' | 'destructive'
   hideFooter?: boolean
   footer?: React.ReactNode
   maxWidth?: string
@@ -120,7 +120,7 @@ export function ModalDialog({
 
       {/* FIXED FOOTER */}
       {footer ? (
-        <div className={cn('shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xs z-20', footerClassName)}>
+        <div className={cn('shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-border bg-muted/50 backdrop-blur-sm z-20', footerClassName)}>
           {footer}
         </div>
       ) : !hideFooter ? (

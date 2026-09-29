@@ -45,6 +45,7 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
   ProductionTaskRecord,
   ProductionTaskStatus,
@@ -443,8 +444,14 @@ export default function FinishingAndFabricationPage() {
   }
 
   return (
-    <FeatureGate feature="production">
-      <div className="space-y-5 max-w-7xl mx-auto pb-16 p-4 sm:p-6">
+    <PanelAccessGuard
+      module="production"
+      action="view"
+      panelTitle="Finishing & Fabrication"
+      panelTitleBn="ফিনিশিং ও সাইনেজ ফেব্রিকেশন"
+    >
+      <FeatureGate feature="production">
+        <div className="space-y-5 max-w-7xl mx-auto pb-16 p-4 sm:p-6">
         {/* =========================================================================
             1. HEADER: Standardized PageHeader matching Quotations & Billing
            ========================================================================= */}
@@ -1113,5 +1120,6 @@ export default function FinishingAndFabricationPage() {
         </ModalDialog>
       </div>
     </FeatureGate>
+    </PanelAccessGuard>
   )
 }

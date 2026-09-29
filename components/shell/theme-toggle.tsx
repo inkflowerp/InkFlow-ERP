@@ -44,7 +44,7 @@ export function ThemeToggle({ className, showDropdown = false, size = 'md' }: Th
         type="button"
         onClick={toggleTheme}
         className={cn(
-          'relative rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-400 cursor-pointer shadow-2xs transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/40 active:scale-95 shrink-0',
+          'relative rounded-lg border border-border bg-card p-2 text-foreground hover:bg-muted hover:text-foreground cursor-pointer shadow-2xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95 shrink-0',
           size === 'sm' ? 'h-8 w-8 p-1.5' : 'h-9 w-9',
           className
         )}
@@ -56,9 +56,9 @@ export function ThemeToggle({ className, showDropdown = false, size = 'md' }: Th
         aria-label={tBilingual('Toggle Theme', 'থিম পরিবর্তন')}
       >
         {resolvedTheme === 'dark' ? (
-          <Sun className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-amber-400 transition-transform duration-200 hover:rotate-45')} />
+          <Sun className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-amber-400 transition-opacity duration-150')} />
         ) : (
-          <Moon className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-slate-600 dark:text-slate-300 transition-transform duration-200 hover:-rotate-12')} />
+          <Moon className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-foreground transition-opacity duration-150')} />
         )}
       </button>
     )
@@ -70,7 +70,7 @@ export function ThemeToggle({ className, showDropdown = false, size = 'md' }: Th
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'relative flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-400 cursor-pointer shadow-2xs transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/40 active:scale-95 shrink-0',
+          'relative flex items-center justify-center rounded-lg border border-border bg-card p-2 text-foreground hover:bg-muted hover:text-foreground cursor-pointer shadow-2xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95 shrink-0',
           size === 'sm' ? 'h-8 w-8 p-1.5' : 'h-9 w-9',
           className
         )}
@@ -80,13 +80,13 @@ export function ThemeToggle({ className, showDropdown = false, size = 'md' }: Th
         {resolvedTheme === 'dark' ? (
           <Sun className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-amber-400')} />
         ) : (
-          <Moon className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-slate-600 dark:text-slate-300')} />
+          <Moon className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-foreground')} />
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-36 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl z-50 dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
-          <div className="px-2 py-1 text-2xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <div className="absolute right-0 mt-2 w-36 rounded-xl border border-border bg-popover text-popover-foreground p-1.5 shadow-xl z-50 animate-in fade-in-0 zoom-in-95">
+          <div className="px-2 py-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground">
             {tBilingual('Theme', 'থিম')}
           </div>
           <div className="space-y-0.5">
@@ -104,15 +104,15 @@ export function ThemeToggle({ className, showDropdown = false, size = 'md' }: Th
                   className={cn(
                     'flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors cursor-pointer',
                     isSelected
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 font-semibold'
-                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+                      ? 'bg-accent text-accent-foreground font-semibold'
+                      : 'text-foreground hover:bg-muted'
                   )}
                 >
                   <div className="flex items-center gap-2">
                     <Icon className="h-3.5 w-3.5" />
                     <span>{tBilingual(opt.labelEn, opt.labelBn)}</span>
                   </div>
-                  {isSelected && <Check className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />}
+                  {isSelected && <Check className="h-3.5 w-3.5 text-primary" />}
                 </button>
               )
             })}

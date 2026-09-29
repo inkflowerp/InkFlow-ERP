@@ -32,14 +32,12 @@ export function TopNav() {
     window.addEventListener('printerp_open_attendance_punch', handleOpen)
     window.addEventListener('printerp_close_attendance_modal', handleClose)
     window.addEventListener('printerp_toggle_attendance_modal', handleToggle)
-    window.addEventListener('inkflow_open_attendance_punch', handleOpen)
 
     return () => {
       window.removeEventListener('printerp_open_attendance_modal', handleOpen)
       window.removeEventListener('printerp_open_attendance_punch', handleOpen)
       window.removeEventListener('printerp_close_attendance_modal', handleClose)
       window.removeEventListener('printerp_toggle_attendance_modal', handleToggle)
-      window.removeEventListener('inkflow_open_attendance_punch', handleOpen)
     }
   }, [])
 
@@ -111,7 +109,7 @@ export function TopNav() {
         <button
           type="button"
           onClick={() => setIsAttendanceOpen(true)}
-          className="relative rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-400 cursor-pointer shadow-2xs transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/40 active:scale-95 shrink-0"
+          className="relative rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-blue-400 cursor-pointer shadow-2xs transition-all focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95 shrink-0"
           title={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
           aria-label={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
         >

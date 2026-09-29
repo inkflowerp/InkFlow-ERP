@@ -56,6 +56,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import { InvoiceRequestsPanel } from '@/components/billing/invoice-requests-panel'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
@@ -2703,7 +2704,14 @@ export default function BillingPage() {
         </div>
       }
     >
-      <BillingContent />
+      <PanelAccessGuard
+        module="invoices"
+        action="view"
+        panelTitle="Billing & Collections"
+        panelTitleBn="বিলিং ও কালেকশন"
+      >
+        <BillingContent />
+      </PanelAccessGuard>
     </React.Suspense>
   )
 }

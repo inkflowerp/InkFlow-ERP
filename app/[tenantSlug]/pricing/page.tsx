@@ -49,6 +49,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
   getPricingRulesAction,
   getPricingSummaryAction,
@@ -467,7 +468,13 @@ export default function PricingManagementPage() {
   }
 
   return (
-    <div className="space-y-6 pb-12 max-w-7xl">
+    <PanelAccessGuard
+      module="pricing"
+      action="view"
+      panelTitle="Pricing & Tariffs Control Center"
+      panelTitleBn="মূল্য নির্ধারণ ও ট্যারিফ মাস্টার"
+    >
+      <div className="space-y-6 pb-12 max-w-7xl">
       {/* Toast Notification */}
       {notification && (
         <div
@@ -1039,6 +1046,7 @@ export default function PricingManagementPage() {
           </div>
         </form>
       </ModalDialog>
-    </div>
+      </div>
+    </PanelAccessGuard>
   )
 }

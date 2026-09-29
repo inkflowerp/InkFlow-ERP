@@ -44,6 +44,7 @@ export class LocalCacheSecurityManager {
           if (
             key.includes(`__${targetTenantSlug}`) ||
             key.includes(`_${targetTenantSlug}`) ||
+            key === `printerp_client_outbox_${targetTenantSlug}` ||
             key === `inkflow_client_outbox_${targetTenantSlug}`
           ) {
             keysToRemove.push(key)
@@ -53,6 +54,8 @@ export class LocalCacheSecurityManager {
           if (
             key.startsWith('printerp_tenant_') ||
             key.startsWith('printerp_offline_') ||
+            key.startsWith('printerp_client_outbox') ||
+            key.startsWith('printerp_drafts') ||
             key.startsWith('inkflow_client_outbox') ||
             key.startsWith('inkflow_drafts') ||
             key.includes('__')
@@ -68,7 +71,7 @@ export class LocalCacheSecurityManager {
 
       // Notify window of cache purge
       window.dispatchEvent(
-        new CustomEvent('inkflow_tenant_cache_purged', {
+        new CustomEvent('printerp_tenant_cache_purged', {
           detail: {
             tenantSlug: targetTenantSlug || 'ALL',
             branchId: targetBranchId || 'ALL',
@@ -103,7 +106,7 @@ export class LocalCacheSecurityManager {
       }
 
       window.dispatchEvent(
-        new CustomEvent('inkflow_branch_cache_purged', {
+        new CustomEvent('printerp_branch_cache_purged', {
           detail: { companyId, branchId, timestamp: Date.now() },
         })
       )

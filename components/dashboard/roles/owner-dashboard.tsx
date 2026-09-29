@@ -360,7 +360,7 @@ export function OwnerDashboard({
 
               <Badge
                 variant="outline"
-                className="bg-white/15 text-white border-white/25 backdrop-blur-xs font-bold text-2xs sm:text-xs py-0.5 px-2.5 rounded-full flex items-center gap-1.5 shadow-2xs"
+                className="bg-white/15 text-white border-white/25 backdrop-blur-sm font-bold text-2xs sm:text-xs py-0.5 px-2.5 rounded-full flex items-center gap-1.5 shadow-2xs"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>{tBilingual('Digital • Offset • Signage Command Center', 'ডিজিটাল • অফসেট • সাইনেজ নিয়ন্ত্রণ কেন্দ্র')}</span>

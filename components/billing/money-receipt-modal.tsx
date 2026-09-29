@@ -258,6 +258,7 @@ export function MoneyReceiptModal({
         <div
           ref={printRef}
           data-money-receipt-canvas="true"
+          data-print-isolate="true"
           className="p-6 bg-white dark:bg-slate-950 border-2 border-slate-300 dark:border-slate-700 rounded-2xl space-y-5 text-slate-900 dark:text-white shadow-xs font-sans print:border-none print:shadow-none print:p-0 print:m-0"
         >
           {/* HEADER */}
@@ -433,7 +434,7 @@ export function MoneyReceiptModal({
                 size={64}
                 className="bg-white p-1 rounded"
               />
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
+              <span className="text-2xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
                 Scan to Verify Voucher
               </span>
             </div>

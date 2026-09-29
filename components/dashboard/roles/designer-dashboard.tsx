@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { useToast } from '@/components/shared/toast-feedback'
 import {
   Palette,
   Layers,
@@ -77,12 +78,11 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
   const [activeFilterTab, setActiveFilterTab] = useState<'all' | 'needs_design' | 'awaiting_approval' | 'revisions' | 'approved'>('all')
   const [showSpecsGuide, setShowSpecsGuide] = useState(false)
 
-  // Notification Toast
-  const [notification, setNotification] = useState<{ msg: string; type: 'success' | 'error' | 'info' } | null>(null)
+  // Global Toast
+  const { showToast: dispatchToast } = useToast()
   const showToast = useCallback((msg: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setNotification({ msg, type })
-    setTimeout(() => setNotification(null), 4000)
-  }, [])
+    dispatchToast({ type, title: msg, titleBn: msg })
+  }, [dispatchToast])
 
   // Modals state
   const [whatsAppModalJob, setWhatsAppModalJob] = useState<DesignJobRecord | null>(null)
@@ -281,27 +281,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
 
   return (
     <div className="space-y-6">
-      {/* Toast Notification */}
-      {notification && (
-        <div
-          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 text-sm font-semibold ${
-            notification.type === 'success'
-              ? 'bg-emerald-950 text-emerald-100 border-emerald-500/40'
-              : notification.type === 'error'
-              ? 'bg-rose-950 text-rose-100 border-rose-500/40'
-              : 'bg-indigo-950 text-indigo-100 border-indigo-500/40'
-          }`}
-        >
-          {notification.type === 'success' ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-          ) : notification.type === 'error' ? (
-            <AlertCircle className="h-5 w-5 text-rose-400 shrink-0" />
-          ) : (
-            <Info className="h-5 w-5 text-indigo-400 shrink-0" />
-          )}
-          <span>{notification.msg}</span>
-        </div>
-      )}
+
 
       {/* Hero Command Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-950 via-purple-900 to-slate-900 p-6 sm:p-7 text-white shadow-xl border border-purple-500/20">
@@ -309,7 +289,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center gap-2">
-              <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs font-semibold backdrop-blur-xs flex items-center gap-1.5 px-2.5 py-0.5">
+              <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs font-semibold backdrop-blur-sm flex items-center gap-1.5 px-2.5 py-0.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 {tBilingual('Pre-Press Command Center', 'প্রি-প্রেস কমান্ড সেন্টার')}
               </Badge>
@@ -403,7 +383,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>{tBilingual('Pre-Press Technical Reference & Specs', 'প্রি-প্রেস টেকনিক্যাল রেফারেন্স ও মাপ')}</span>
-                <Badge variant="outline" className="text-[10px] uppercase font-bold text-purple-700 dark:text-purple-400 border-purple-300">
+                <Badge variant="outline" className="text-2xs uppercase font-bold text-purple-700 dark:text-purple-400 border-purple-300">
                   Pre-Flight Standard
                 </Badge>
               </h2>
@@ -644,7 +624,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                         )}
 
                         {/* Version tag */}
-                        <Badge variant="outline" className="text-[11px] font-mono font-medium text-slate-600 dark:text-slate-400">
+                        <Badge variant="outline" className="text-2xs font-mono font-medium text-slate-600 dark:text-slate-400">
                           v{latestVer?.version_number || job.current_version || 1}
                         </Badge>
                       </div>
@@ -678,17 +658,17 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
 
                       {/* Preflight Checklist Badges */}
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 mr-1">Preflight:</span>
-                        <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <span className="text-2xs uppercase font-bold text-slate-400 mr-1">Preflight:</span>
+                        <span className="inline-flex items-center text-2xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                           ✓ CMYK
                         </span>
-                        <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <span className="inline-flex items-center text-2xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                           ✓ 300 DPI
                         </span>
-                        <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <span className="inline-flex items-center text-2xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                           ✓ 3mm Bleed
                         </span>
-                        <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        <span className="inline-flex items-center text-2xs font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                           ✓ Curves / Vector
                         </span>
                       </div>
@@ -753,17 +733,17 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
             {productionDesignTasks.map((t) => (
               <Card key={t.id} className="border border-slate-200 dark:border-slate-800 p-3.5">
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="outline" className="text-[11px] font-mono font-bold">
+                  <Badge variant="outline" className="text-2xs font-mono font-bold">
                     #{t.job_number || t.task_number}
                   </Badge>
-                  <Badge className="text-[10px] uppercase font-bold" variant={t.status === 'completed' ? 'default' : 'secondary'}>
+                  <Badge className="text-2xs uppercase font-bold" variant={t.status === 'completed' ? 'default' : 'secondary'}>
                     {t.status}
                   </Badge>
                 </div>
                 <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 mt-2 truncate">
                   {t.task_name}
                 </h4>
-                <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                <p className="text-2xs text-slate-500 mt-0.5 truncate">
                   Client: {t.customer_name || 'Direct'} • Qty: {t.quantity} {t.unit || 'Pcs'}
                 </p>
               </Card>
@@ -809,7 +789,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                       }`}
                     >
                       <div>{tmpl.title}</div>
-                      <span className="text-[10px] text-slate-500 font-normal">{tmpl.badge}</span>
+                      <span className="text-2xs text-slate-500 font-normal">{tmpl.badge}</span>
                     </button>
                   ))}
                 </div>
@@ -935,7 +915,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                       }`}
                     >
                       <div className="font-bold text-slate-900 dark:text-slate-100">{m.name}</div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">{m.specs}</div>
+                      <div className="text-2xs text-slate-500 mt-0.5">{m.specs}</div>
                     </div>
                   ))}
                 </div>

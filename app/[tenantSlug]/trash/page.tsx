@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
@@ -834,7 +835,14 @@ export default function TrashPage() {
         </div>
       }
     >
-      <TrashContent />
+      <PanelAccessGuard
+        module="settings"
+        action="view"
+        panelTitle="Trash Bin & Data Recovery"
+        panelTitleBn="রিসাইকেল বিন ও ডাটা পুনরুদ্ধার"
+      >
+        <TrashContent />
+      </PanelAccessGuard>
     </React.Suspense>
   )
 }

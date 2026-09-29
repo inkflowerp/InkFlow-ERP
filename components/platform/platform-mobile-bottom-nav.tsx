@@ -49,7 +49,6 @@ export function PlatformMobileBottomNav() {
       icon: Menu,
       isAction: true,
       onClick: () => {
-        window.dispatchEvent(new Event('inkflow_open_platform_nav'))
         window.dispatchEvent(new Event('printerp_open_platform_nav'))
       },
     },

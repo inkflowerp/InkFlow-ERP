@@ -189,7 +189,7 @@ export function BranchManagerDashboard({
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs font-semibold backdrop-blur-xs flex items-center gap-1.5 px-2.5 py-0.5">
+              <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs font-semibold backdrop-blur-sm flex items-center gap-1.5 px-2.5 py-0.5">
                 <Store className="h-3.5 w-3.5 text-emerald-400" />
                 <span>{tBilingual('Branch Command Center', 'ব্রাঞ্চ কমান্ড সেন্টার')}</span>
               </Badge>
@@ -307,7 +307,7 @@ export function BranchManagerDashboard({
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>{tBilingual('Branch Scope & Security Governance', 'ব্রাঞ্চ এক্সেস সীমা ও নিরাপত্তা পলিসি')}</span>
-                <Badge variant="outline" className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 border-emerald-300">
+                <Badge variant="outline" className="text-2xs uppercase font-bold text-emerald-700 dark:text-emerald-400 border-emerald-300">
                   {branch?.name || 'Branch-Scoped'}
                 </Badge>
               </h2>
@@ -499,7 +499,7 @@ export function BranchManagerDashboard({
           <Card className="border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs bg-white dark:bg-slate-900">
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-[10px] font-bold">
+                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
                   <tr>
                     <th className="px-4 py-3">Order #</th>
                     <th className="px-4 py-3">Customer</th>
@@ -523,7 +523,7 @@ export function BranchManagerDashboard({
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-bold text-slate-900 dark:text-slate-100">{ord.customer_name || 'Walk-in Client'}</div>
-                          <div className="text-[11px] text-slate-500 font-mono">{ord.customer_phone || '—'}</div>
+                          <div className="text-2xs text-slate-500 font-mono">{ord.customer_phone || '—'}</div>
                         </td>
                         <td className="px-4 py-3 max-w-xs truncate text-slate-700 dark:text-slate-300">
                           {itemSummary}
@@ -540,7 +540,7 @@ export function BranchManagerDashboard({
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Badge
-                            className={`text-[10px] uppercase font-bold ${
+                            className={`text-2xs uppercase font-bold ${
                               ord.status === 'ready_for_delivery' || (ord as any).status === 'ready_for_pickup'
                                 ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border-teal-300'
                                 : ord.status === 'in_production' || ord.status === 'finishing'

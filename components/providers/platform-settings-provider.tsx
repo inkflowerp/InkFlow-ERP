@@ -43,7 +43,7 @@ const PlatformSettingsContext = createContext<PlatformSettingsContextType>({
   refreshSettings: async () => {},
 })
 
-export const PLATFORM_SETTINGS_EVENT = 'inkflow_platform_settings_updated'
+export const PLATFORM_SETTINGS_EVENT = 'printerp_platform_settings_updated'
 
 interface PlatformSettingsProviderProps {
   children: React.ReactNode

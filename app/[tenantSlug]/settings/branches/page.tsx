@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import {
   GitBranch,
@@ -89,36 +89,16 @@ export default function BranchesSettingsPage() {
     setMounted(true)
   }, [])
 
-  // Guard: branch settings are strictly for owners and admins
-  if (mounted && !isOwner && !can('manage', 'branches')) {
-    return (
-      <div className="max-w-2xl mx-auto py-16 px-4 text-center">
-        <div className="p-8 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 space-y-4 shadow-sm">
-          <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
-            <ShieldAlert className="h-6 w-6" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 bangla-text">
-            {tBilingual('Branch Administration Restricted', 'শাখা ব্যবস্থাপনা সীমিত')}
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto bangla-text leading-relaxed">
-            {tBilingual(
-              'Company branches and multi-location hub administration are restricted to business owners.',
-              'প্রতিষ্ঠান শাখা ও হাব ব্যবস্থাপনা সেটিংস শুধুমাত্র প্রতিষ্ঠান মালিকের জন্য সংরক্ষিত।'
-            )}
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => router.push(getTenantNavHref('/dashboard', undefined, tenantSlug))}
-            className="cursor-pointer font-medium"
-          >
-            {tBilingual('Return to Dashboard', 'ড্যাশবোর্ডে ফিরুন')}
-          </Button>
-        </div>
-      </div>
-    )
-  }
 
+  const branchesRef = useRef(branches)
+  useEffect(() => {
+    branchesRef.current = branches
+  }, [branches])
+
+  const isFetchingRef = useRef(false)
   const loadLiveBranches = useCallback(async () => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
     try {
       const res = await listBranchesAction({ includeInactive: true })
       if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
@@ -133,23 +113,37 @@ export default function BranchesSettingsPage() {
           isMain: !!b.is_main,
           isActive: b.status === 'active' || b.status === undefined || b.is_active !== false,
         }))
-        setBranches(mapped)
+        const isSame = JSON.stringify(mapped) === JSON.stringify(branchesRef.current)
+        if (!isSame) {
+          setBranches(mapped)
+        }
       }
     } catch {
       // Fallback to existing store
+    } finally {
+      isFetchingRef.current = false
     }
   }, [setBranches])
 
   useEffect(() => {
     loadLiveBranches()
 
-    const handleSync = () => {
-      loadLiveBranches()
+    let timer: NodeJS.Timeout | null = null
+    const handleSync = (e: Event) => {
+      const ce = e as CustomEvent
+      if (e.type === 'printerp_data_sync' && ce.detail?.key && ce.detail.key !== STORAGE_KEYS.BRANCHES) {
+        return
+      }
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        loadLiveBranches()
+      }, 300)
     }
     window.addEventListener('printerp_table_synced:branches', handleSync)
     window.addEventListener('printerp_data_sync', handleSync)
 
     return () => {
+      if (timer) clearTimeout(timer)
       window.removeEventListener('printerp_table_synced:branches', handleSync)
       window.removeEventListener('printerp_data_sync', handleSync)
     }
@@ -356,6 +350,35 @@ export default function BranchesSettingsPage() {
         <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
         <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
         <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
+  }
+
+  // Guard: branch settings are strictly for owners and admins
+  if (!isOwner && !can('manage', 'branches')) {
+    return (
+      <div className="max-w-2xl mx-auto py-16 px-4 text-center">
+        <div className="p-8 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 space-y-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
+            <ShieldAlert className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 bangla-text">
+            {tBilingual('Branch Administration Restricted', 'শাখা ব্যবস্থাপনা সীমিত')}
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto bangla-text leading-relaxed">
+            {tBilingual(
+              'Company branches and multi-location hub administration are restricted to business owners.',
+              'প্রতিষ্ঠান শাখা ও হাব ব্যবস্থাপনা সেটিংস শুধুমাত্র প্রতিষ্ঠান মালিকের জন্য সংরক্ষিত।'
+            )}
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => router.push(getTenantNavHref('/dashboard', undefined, tenantSlug))}
+            className="cursor-pointer font-medium"
+          >
+            {tBilingual('Return to Dashboard', 'ড্যাশবোর্ডে ফিরুন')}
+          </Button>
+        </div>
       </div>
     )
   }

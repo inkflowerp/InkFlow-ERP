@@ -42,7 +42,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/80 bg-white/70 p-8 text-center dark:border-slate-800/80 dark:bg-slate-900/40 backdrop-blur-xs',
+        'flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/80 bg-white/70 p-8 text-center dark:border-slate-800/80 dark:bg-slate-900/40 backdrop-blur-sm',
         className
       )}
     >

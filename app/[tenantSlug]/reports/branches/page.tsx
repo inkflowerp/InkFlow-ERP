@@ -8,6 +8,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useI18n } from '@/i18n/context'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { BranchPerformanceDashboard } from '@/components/branches/branch-performance-dashboard'
 import { BranchComparisonView } from '@/components/branches/branch-comparison-view'
 import { BranchSwitcher } from '@/components/branches/branch-switcher'
@@ -65,33 +66,6 @@ export default function MultiBranchReportingPage() {
     setMounted(true)
   }, [])
 
-  if (mounted && !isOwner && !can('view', 'reports')) {
-    return (
-      <div className="max-w-2xl mx-auto py-16 px-4 text-center">
-        <div className="p-8 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 space-y-4 shadow-sm">
-          <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
-            <ShieldAlert className="h-6 w-6" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 bangla-text">
-            {tBilingual('Branch Reports Restricted', 'শাখা রিপোর্ট সীমিত')}
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto bangla-text leading-relaxed">
-            {tBilingual(
-              'Multi-branch consolidated reports are restricted to business owners.',
-              'একাধিক শাখার সমন্বিত রিপোর্ট শুধুমাত্র প্রতিষ্ঠান মালিকের জন্য সংরক্ষিত।'
-            )}
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => router.push(getTenantNavHref('/dashboard', undefined, tenantSlug))}
-            className="cursor-pointer font-medium"
-          >
-            {tBilingual('Return to Dashboard', 'ড্যাশবোর্ডে ফিরুন')}
-          </Button>
-        </div>
-      </div>
-    )
-  }
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -134,8 +108,12 @@ export default function MultiBranchReportingPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    let timer: NodeJS.Timeout | null = null
     const handleDataSync = () => {
-      loadData()
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        loadData()
+      }, 300)
     }
 
     window.addEventListener('printerp_table_synced:branches', handleDataSync)
@@ -145,6 +123,7 @@ export default function MultiBranchReportingPage() {
     window.addEventListener('printerp_data_sync', handleDataSync)
 
     return () => {
+      if (timer) clearTimeout(timer)
       window.removeEventListener('printerp_table_synced:branches', handleDataSync)
       window.removeEventListener('printerp_table_synced:orders', handleDataSync)
       window.removeEventListener('printerp_table_synced:payments', handleDataSync)
@@ -210,8 +189,42 @@ export default function MultiBranchReportingPage() {
     )
   }
 
+  if (!isOwner && !can('view', 'reports')) {
+    return (
+      <div className="max-w-2xl mx-auto py-16 px-4 text-center">
+        <div className="p-8 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 space-y-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
+            <ShieldAlert className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 bangla-text">
+            {tBilingual('Branch Reports Restricted', 'শাখা রিপোর্ট সীমিত')}
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto bangla-text leading-relaxed">
+            {tBilingual(
+              'Multi-branch consolidated reports are restricted to business owners.',
+              'একাধিক শাখার সমন্বিত রিপোর্ট শুধুমাত্র প্রতিষ্ঠান মালিকের জন্য সংরক্ষিত।'
+            )}
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => router.push(getTenantNavHref('/dashboard', undefined, tenantSlug))}
+            className="cursor-pointer font-medium"
+          >
+            {tBilingual('Return to Dashboard', 'ড্যাশবোর্ডে ফিরুন')}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 print:p-0 print:max-w-none">
+    <PanelAccessGuard
+      module="reports"
+      action="view"
+      panelTitle="Branch Performance & Multi-Outlet Analytics"
+      panelTitleBn="মাল্টি-ব্রাঞ্চ অ্যানালিটিক্স ও শাখা তুলনা"
+    >
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 print:p-0 print:max-w-none">
       {/* Navigation shortcuts / Breadcrumbs */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm print:hidden">
         <div className="flex items-center gap-2">
@@ -423,7 +436,8 @@ export default function MultiBranchReportingPage() {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </PanelAccessGuard>
   )
 }
 

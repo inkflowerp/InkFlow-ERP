@@ -48,6 +48,7 @@ import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
   ProductionTaskRecord,
   UnifiedProductionJob,
@@ -1331,8 +1332,14 @@ export default function AdvancedProductionPage() {
   }
 
   return (
-    <FeatureGate feature="production">
-      <div className="space-y-4 pb-16 max-w-7xl mx-auto">
+    <PanelAccessGuard
+      module="production"
+      action="view"
+      panelTitle="Printing Floor & Production"
+      panelTitleBn="প্রিন্টিং ফ্লোর ও প্রডাকশন"
+    >
+      <FeatureGate feature="production">
+        <div className="space-y-4 pb-16 max-w-7xl mx-auto">
         {/* =========================================================================
             1. HEADER: Standardized PageHeader matching Quotations & Billing
            ========================================================================= */}
@@ -1936,5 +1943,6 @@ export default function AdvancedProductionPage() {
         )}
       </div>
     </FeatureGate>
+    </PanelAccessGuard>
   )
 }

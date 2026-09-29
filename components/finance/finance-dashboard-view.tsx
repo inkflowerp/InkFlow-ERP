@@ -217,7 +217,7 @@ export function FinanceDashboardView({
             <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   revenueTrend.isUp
                     ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                     : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -225,7 +225,7 @@ export function FinanceDashboardView({
               >
                 {revenueTrend.isUp ? '↑' : '↓'} {revenueTrend.percent}%
               </span>
-              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+              <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 vs last period
               </span>
             </div>
@@ -255,7 +255,7 @@ export function FinanceDashboardView({
             <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   paymentsTrend.isUp
                     ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                     : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -263,7 +263,7 @@ export function FinanceDashboardView({
               >
                 {paymentsTrend.isUp ? '↑' : '↓'} {paymentsTrend.percent}%
               </span>
-              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+              <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 vs last period
               </span>
             </div>
@@ -293,7 +293,7 @@ export function FinanceDashboardView({
             <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   totalDueReceivable === 0
                     ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                     : 'text-amber-600 bg-amber-50 dark:bg-amber-950/50'
@@ -301,7 +301,7 @@ export function FinanceDashboardView({
               >
                 {totalDueReceivable === 0 ? '✓ Zero Due' : 'Active Due'}
               </span>
-              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+              <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 outstanding
               </span>
             </div>
@@ -330,7 +330,7 @@ export function FinanceDashboardView({
             <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   expensesTrend.isUp
                     ? 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
                     : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
@@ -338,7 +338,7 @@ export function FinanceDashboardView({
               >
                 {expensesTrend.isUp ? '↑' : '↓'} {expensesTrend.percent}%
               </span>
-              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+              <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 vs last period
               </span>
             </div>
@@ -367,7 +367,7 @@ export function FinanceDashboardView({
             <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   profitTrend.isUp
                     ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                     : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -375,7 +375,7 @@ export function FinanceDashboardView({
               >
                 {profitTrend.isUp ? '↑' : '↓'} {profitTrend.percent}%
               </span>
-              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+              <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 vs last period
               </span>
             </div>
@@ -692,7 +692,7 @@ export function FinanceDashboardView({
                 <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white font-mono truncate max-w-[85px] 2xl:max-w-[100px]">
                   ৳ {totalReceivedAmount.toLocaleString()}
                 </span>
-                <span className="text-[10px] 2xl:text-3xs text-slate-400 font-medium">
+                <span className="text-2xs text-slate-400 font-medium">
                   Total Received
                 </span>
               </div>
@@ -1106,7 +1106,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={onOpenPaymentModal}
-                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <CreditCard className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span className="leading-tight">Record Payment</span>
@@ -1116,7 +1116,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={onOpenSpendModal}
-                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <Receipt className="w-4 h-4 text-rose-600 shrink-0" />
                 <span className="leading-tight">Add Expense</span>
@@ -1126,7 +1126,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={onOpenPaySupplierModal}
-                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <ArrowLeftRight className="w-4 h-4 text-amber-600 shrink-0" />
                 <span className="leading-tight">Supplier Pay</span>
@@ -1136,7 +1136,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={onOpenTransferModal}
-                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <Landmark className="w-4 h-4 text-sky-600 shrink-0" />
                 <span className="leading-tight">Bank Transfer</span>
@@ -1146,7 +1146,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={() => onNavigateTab('receivables')}
-                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <FileText className="w-4 h-4 text-purple-600 shrink-0" />
                 <span className="leading-tight">Customer Due</span>
@@ -1156,7 +1156,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={() => onNavigateTab('payables')}
-                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
                 <span className="leading-tight">Supplier Due</span>
@@ -1166,7 +1166,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={onOpenCashClosingModal}
-                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <Wallet className="w-4 h-4 text-teal-600 shrink-0" />
                 <span className="leading-tight">Cash Closing</span>
@@ -1176,7 +1176,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={() => onNavigateTab('pnl')}
-                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <PieChart className="w-4 h-4 text-blue-600 shrink-0" />
                 <span className="leading-tight">Profit & Loss</span>

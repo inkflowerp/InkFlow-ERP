@@ -7,6 +7,9 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
+    plugins: {
+      ...nextVitals[0]?.plugins,
+    },
     rules: {
       "@next/next/no-location-assign-relative-destination": "warn",
       "@typescript-eslint/no-unused-vars": [
@@ -28,6 +31,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     ".agents/**",
+    ".agent/**",
     "scratch/**",
     "next-env.d.ts",
     "tests/**",

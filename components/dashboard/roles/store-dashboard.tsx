@@ -40,7 +40,7 @@ export function StoreDashboard({ metrics, onRefresh }: StoreDashboardProps) {
     <div className="space-y-6">
       <div className="p-5 bg-gradient-to-r from-amber-700 to-orange-800 text-white rounded-2xl shadow-md flex items-center justify-between">
         <div className="space-y-1">
-          <Badge className="bg-white/20 text-white border-none text-xs font-semibold backdrop-blur-xs">
+          <Badge className="bg-white/20 text-white border-none text-xs font-semibold backdrop-blur-sm">
             {tBilingual('Warehouse & Raw Materials Store', 'কাঁচামাল ও গুদাম ব্যবস্থাপনা')}
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black">

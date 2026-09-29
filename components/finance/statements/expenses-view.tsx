@@ -106,7 +106,7 @@ export function ExpensesView({
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `inkflow_expenses_${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute('download', `printerp_expenses_${new Date().toISOString().split('T')[0]}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

@@ -2,6 +2,7 @@
 
 import React, { Suspense } from 'react'
 import { DesignPanel } from '@/components/design/design-panel'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { Palette } from 'lucide-react'
 
 function DesignPanelLoading() {
@@ -17,8 +18,15 @@ function DesignPanelLoading() {
 
 export default function DesignerPage() {
   return (
-    <Suspense fallback={<DesignPanelLoading />}>
-      <DesignPanel defaultTab="new_tasks" />
-    </Suspense>
+    <PanelAccessGuard
+      module="design"
+      action="view"
+      panelTitle="Designer Workbench"
+      panelTitleBn="ডিজাইনার টার্মিনাল"
+    >
+      <Suspense fallback={<DesignPanelLoading />}>
+        <DesignPanel defaultTab="new_tasks" />
+      </Suspense>
+    </PanelAccessGuard>
   )
 }

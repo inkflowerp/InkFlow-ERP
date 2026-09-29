@@ -18,8 +18,8 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       <div className="relative w-full">
         <select
           className={cn(
-            'flex h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2 pr-8 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-colors shadow-xs bangla-text dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
-            error && 'border-red-500 focus-visible:ring-red-500',
+            'flex h-10 w-full appearance-none rounded-lg border border-input bg-background px-3 py-2 pr-8 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors shadow-xs bangla-text',
+            error && 'border-destructive focus-visible:ring-destructive',
             className
           )}
           ref={ref}
@@ -27,16 +27,16 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         >
           {Array.isArray(options)
             ? options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} className="bg-background text-foreground dark:bg-card dark:text-card-foreground">
                   {opt.label}
                 </option>
               ))
             : children}
         </select>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted-foreground">
           <ChevronDown className="h-4 w-4" />
         </div>
-        {error && <p className="mt-1 text-xs text-red-500 font-medium">{error}</p>}
+        {error && <p className="mt-1 text-xs text-destructive font-medium">{error}</p>}
       </div>
     )
   }

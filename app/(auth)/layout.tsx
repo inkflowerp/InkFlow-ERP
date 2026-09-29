@@ -63,7 +63,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl xl:text-[42px] font-black leading-[1.18] tracking-tight text-white">
+            <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black leading-[1.18] tracking-tight text-white">
               Easier than Excel. <br />
               Faster than paper. <br />
               <span className="bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">

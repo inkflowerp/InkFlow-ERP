@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { useToast } from '@/components/shared/toast-feedback'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { DesignRepository } from '@/lib/repositories/design.repository'
 import { sendToPrintOperatorAction } from '@/actions/design.actions'
@@ -79,16 +80,11 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [, startTransition] = useTransition()
 
-  // Notification Banner
-  const [notification, setNotification] = useState<{
-    msg: string
-    type: 'success' | 'warning' | 'info'
-  } | null>(null)
-
+  // Global Toast
+  const { showToast } = useToast()
   const showNotification = useCallback((msg: string, type: 'success' | 'warning' | 'info' = 'success') => {
-    setNotification({ msg, type })
-    setTimeout(() => setNotification(null), 4000)
-  }, [])
+    showToast({ type: type === 'warning' ? 'warning' : type === 'info' ? 'info' : 'success', title: msg, titleBn: msg })
+  }, [showToast])
 
   // Active Tab - Default is New
   const [activeTab, setActiveTab] = useState<string>(() => {
@@ -854,20 +850,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
         />
       )}
 
-      {/* Floating Toast Notification */}
-      {notification && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-slate-900/95 text-white dark:bg-slate-100 dark:text-slate-900 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
-          <Sparkles className="h-4 w-4 text-indigo-400 dark:text-indigo-600 shrink-0" />
-          <span>{notification.msg}</span>
-          <button
-            type="button"
-            onClick={() => setNotification(null)}
-            className="p-1 text-slate-400 hover:text-white dark:hover:text-black cursor-pointer ml-1"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
+
     </div>
   )
 }

@@ -92,7 +92,6 @@ export function PlatformHeader() {
           <button
             type="button"
             onClick={() => {
-              window.dispatchEvent(new Event('inkflow_open_platform_nav'))
               window.dispatchEvent(new Event('printerp_open_platform_nav'))
             }}
             className="lg:hidden flex items-center justify-center h-10 w-10 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700/60 cursor-pointer min-h-[44px] min-w-[44px]"

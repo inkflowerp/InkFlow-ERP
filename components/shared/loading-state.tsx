@@ -30,7 +30,7 @@ export function LoadingState({
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-xs"
+            className="p-4 rounded-xl bg-card text-card-foreground border border-border space-y-3 shadow-xs"
           >
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-20 rounded" />
@@ -48,11 +48,11 @@ export function LoadingState({
     return (
       <div
         className={cn(
-          'w-full space-y-3 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs',
+          'w-full space-y-3 p-4 rounded-xl bg-card text-card-foreground border border-border shadow-xs',
           className
         )}
       >
-        <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-2 border-b border-border">
           <Skeleton className="h-8 w-44 rounded-xl" />
           <Skeleton className="h-8 w-28 rounded-xl" />
         </div>
@@ -70,7 +70,7 @@ export function LoadingState({
     return (
       <div
         className={cn(
-          'w-full space-y-4 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs max-w-2xl',
+          'w-full space-y-4 p-6 rounded-xl bg-card text-card-foreground border border-border shadow-xs max-w-2xl',
           className
         )}
       >
@@ -98,14 +98,14 @@ export function LoadingState({
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-xs"
+            className="p-5 rounded-xl bg-card text-card-foreground border border-border space-y-3 shadow-xs"
           >
             <div className="flex items-center justify-between">
               <Skeleton className="h-5 w-32 rounded" />
               <Skeleton className="h-5 w-16 rounded-full" />
             </div>
             <Skeleton className="h-4 w-48 rounded" />
-            <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
+            <div className="pt-2 flex items-center justify-between border-t border-border">
               <Skeleton className="h-4 w-20 rounded" />
               <Skeleton className="h-8 w-24 rounded-xl" />
             </div>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { useToast } from '@/components/shared/toast-feedback'
 import {
   Users,
   Users2,
@@ -171,11 +172,10 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
 
   const [targetRoleId, setTargetRoleId] = useState('')
   const [targetBranchId, setTargetBranchId] = useState('')
-  const [notification, setNotification] = useState<string | null>(null)
+  const { showToast } = useToast()
 
   const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+    showToast({ type: 'success', title: msg, titleBn: msg })
   }
 
   // Helper: Match system user to employee workforce identity
@@ -674,13 +674,6 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
         </button>
       </div>
 
-      {/* Notification Banner */}
-      {notification && (
-        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-          <span>{notification}</span>
-        </div>
-      )}
 
       {/* TAB 1: USERS DIRECTORY */}
       {activeTab === 'users' && (

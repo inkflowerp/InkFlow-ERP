@@ -37,6 +37,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
   EmployeeRecord,
@@ -250,7 +251,13 @@ export default function SalaryReportPage() {
   }
 
   return (
-    <div className="space-y-5 max-w-7xl mx-auto pb-16 print:p-0 print:max-w-none print:w-full print:bg-white print:text-black">
+    <PanelAccessGuard
+      module="hr"
+      action="view"
+      panelTitle="Salary & Compensation Report"
+      panelTitleBn="বেতন ও ব্যাংক ট্রান্সফার রিপোর্ট"
+    >
+      <div className="space-y-5 max-w-7xl mx-auto pb-16 print:p-0 print:max-w-none print:w-full print:bg-white print:text-black">
       {/* Non-Print Header */}
       <div className="print:hidden space-y-4">
         <div className="flex items-center justify-between">
@@ -551,6 +558,7 @@ export default function SalaryReportPage() {
           <div className="border-t border-black pt-2">Approved By (Managing Director)</div>
         </div>
       </div>
-    </div>
+      </div>
+    </PanelAccessGuard>
   )
 }

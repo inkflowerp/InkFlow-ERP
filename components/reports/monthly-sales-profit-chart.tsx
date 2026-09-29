@@ -116,7 +116,7 @@ export function MonthlySalesProfitChart({
                       <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-30 bg-slate-900 text-white text-2xs py-2 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none border border-slate-700">
                         <div className="font-bold text-slate-200 mb-0.5 flex items-center justify-between gap-2">
                           <span>{item.monthLabel}</span>
-                          <span className="text-[10px] text-blue-300 font-mono">
+                          <span className="text-2xs text-blue-300 font-mono">
                             {item.margin}% margin
                           </span>
                         </div>

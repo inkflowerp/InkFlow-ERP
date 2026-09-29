@@ -40,6 +40,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
@@ -1278,8 +1279,15 @@ function MobileOperatorPanelContent() {
 
 export default function MobileOperatorPanelPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-slate-500">Loading operator workstation...</div>}>
-      <MobileOperatorPanelContent />
-    </Suspense>
+    <PanelAccessGuard
+      module="production"
+      action="view"
+      panelTitle="Shop Floor Terminal"
+      panelTitleBn="অপারেটর টার্মিনাল"
+    >
+      <Suspense fallback={<div className="p-6 text-sm text-slate-500">Loading operator workstation...</div>}>
+        <MobileOperatorPanelContent />
+      </Suspense>
+    </PanelAccessGuard>
   )
 }

@@ -35,6 +35,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { formatDate } from '@/lib/formatters'
 import {
   DEMO_CHANNEL_CONFIGS,
@@ -164,8 +165,14 @@ export default function CommunicationsHubPage() {
   const unreadCount = (notifications || []).filter((n) => !n.is_read).length
 
   return (
-    <FeatureGate feature="whatsapp_notifications">
-      <div className="space-y-6 max-w-7xl">
+    <PanelAccessGuard
+      module="settings"
+      action="manage"
+      panelTitle="Communication, In-App Feeds & Gateways"
+      panelTitleBn="মেসেজিং, নোটিফিকেশন ও গেটওয়ে"
+    >
+      <FeatureGate feature="whatsapp_notifications">
+        <div className="space-y-6 max-w-7xl">
       {/* Header */}
       <PageHeader
         titleEn="Communication, In-App Feeds & Gateways"
@@ -754,7 +761,8 @@ export default function CommunicationsHubPage() {
           </div>
         </form>
       </ModalDialog>
-      </div>
-    </FeatureGate>
+        </div>
+      </FeatureGate>
+    </PanelAccessGuard>
   )
 }

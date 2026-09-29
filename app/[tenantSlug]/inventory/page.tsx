@@ -55,6 +55,7 @@ import {
   Building,
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
@@ -3514,16 +3515,23 @@ function UnifiedInventoryContent() {
 
 export default function UnifiedInventoryPage() {
   return (
-    <React.Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-          <Package className="h-6 w-6 text-indigo-500 animate-pulse" />
-          <p className="text-xs text-slate-500">Loading Inventory...</p>
-        </div>
-      }
+    <PanelAccessGuard
+      module="inventory"
+      action="view"
+      panelTitle="Materials & Inventory"
+      panelTitleBn="কাঁচামাল ও ইনভেন্টরি"
     >
-      <UnifiedInventoryContent />
-    </React.Suspense>
+      <React.Suspense
+        fallback={
+          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+            <Package className="h-6 w-6 text-indigo-500 animate-pulse" />
+            <p className="text-xs text-slate-500">Loading Inventory...</p>
+          </div>
+        }
+      >
+        <UnifiedInventoryContent />
+      </React.Suspense>
+    </PanelAccessGuard>
   )
 }
 

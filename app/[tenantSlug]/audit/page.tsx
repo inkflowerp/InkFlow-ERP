@@ -22,6 +22,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { useI18n } from '@/i18n/context'
 import { getAuditLogsAction } from '@/actions/audit.actions'
 import { AuditLogEntry, AUDIT_ACTIONS } from '@/types/audit.types'
@@ -90,7 +91,13 @@ export default function TenantAuditLogsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 font-sans">
+    <PanelAccessGuard
+      module="settings"
+      action="manage"
+      panelTitle="Audit Trail & Security Logs"
+      panelTitleBn="অডিট ট্রেইল ও নিরাপত্তা লগ"
+    >
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 font-sans">
       {/* Page Header */}
       <PageHeader
         titleEn="Audit Trail & Security Event Logs"
@@ -373,7 +380,7 @@ export default function TenantAuditLogsPage() {
 
       {/* DETAIL MODAL: BEFORE / AFTER VALUE DIFF INSPECTOR */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in-0">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in-0">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedLog(null)}
@@ -473,6 +480,7 @@ export default function TenantAuditLogsPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </PanelAccessGuard>
   )
 }

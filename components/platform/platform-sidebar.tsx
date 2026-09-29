@@ -142,7 +142,7 @@ export function PlatformSidebar() {
       const localSlug =
         localStorage.getItem('printerp_current_company') ||
         localStorage.getItem('printerp_tenant_slug') ||
-        localStorage.getItem('inkflow_active_tenant')
+        localStorage.getItem('printerp_active_tenant')
       if (localSlug) {
         setBusinessSlug(localSlug)
         return
@@ -162,7 +162,13 @@ export function PlatformSidebar() {
   // Load persisted collapsed state from localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('inkflow_platform_sidebar_collapsed')
+      // Legacy migration
+      const legacy = localStorage.getItem('inkflow_platform_sidebar_collapsed')
+      if (legacy !== null && !localStorage.getItem('printerp_platform_sidebar_collapsed')) {
+        localStorage.setItem('printerp_platform_sidebar_collapsed', legacy)
+        localStorage.removeItem('inkflow_platform_sidebar_collapsed')
+      }
+      const saved = localStorage.getItem('printerp_platform_sidebar_collapsed')
       if (saved !== null) {
         setCollapsed(saved === 'true')
       }
@@ -175,7 +181,7 @@ export function PlatformSidebar() {
     setCollapsed((prev) => {
       const next = !prev
       try {
-        localStorage.setItem('inkflow_platform_sidebar_collapsed', String(next))
+        localStorage.setItem('printerp_platform_sidebar_collapsed', String(next))
       } catch {
         // Ignored
       }
@@ -188,14 +194,10 @@ export function PlatformSidebar() {
     const handleOpen = () => setMobileOpen(true)
     const handleClose = () => setMobileOpen(false)
 
-    window.addEventListener('inkflow_open_platform_nav', handleOpen)
-    window.addEventListener('inkflow_close_platform_nav', handleClose)
     window.addEventListener('printerp_open_platform_nav', handleOpen)
     window.addEventListener('printerp_close_platform_nav', handleClose)
 
     return () => {
-      window.removeEventListener('inkflow_open_platform_nav', handleOpen)
-      window.removeEventListener('inkflow_close_platform_nav', handleClose)
       window.removeEventListener('printerp_open_platform_nav', handleOpen)
       window.removeEventListener('printerp_close_platform_nav', handleClose)
     }

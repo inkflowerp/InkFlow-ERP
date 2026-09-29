@@ -114,9 +114,9 @@ const iconMap: Record<string, React.ElementType> = {
   Shield,
 }
 
-const SIDEBAR_COLLAPSED_STORAGE_KEY = 'inkflow_sidebar_collapsed'
-const EXPANDED_GROUPS_STORAGE_KEY = 'inkflow_nav_expanded_groups'
-const EXPANDED_SUB_NAV_STORAGE_KEY = 'inkflow_nav_expanded_sub_nav'
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'printerp_sidebar_collapsed'
+const EXPANDED_GROUPS_STORAGE_KEY = 'printerp_nav_expanded_groups'
+const EXPANDED_SUB_NAV_STORAGE_KEY = 'printerp_nav_expanded_sub_nav'
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -132,6 +132,12 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
     try {
+      // Legacy migration from inkflow_
+      const legacyCollapsed = localStorage.getItem('inkflow_sidebar_collapsed')
+      if (legacyCollapsed && !localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY)) {
+        localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, legacyCollapsed)
+        localStorage.removeItem('inkflow_sidebar_collapsed')
+      }
       return localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === 'true'
     } catch {
       return false
@@ -341,7 +347,7 @@ export function Sidebar() {
         {!collapsed ? (
           <Link
             href={getTenantNavHref('/dashboard', pathname, company?.slug)}
-            className="flex items-center gap-2.5 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-0.5"
+            className="flex items-center gap-2.5 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg p-0.5"
           >
             {/* CMYK Symbol or Custom Logo */}
             {appLogoUrl ? (
@@ -389,7 +395,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={handleToggleCollapsed}
-          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
+          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"
           title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
@@ -440,7 +446,7 @@ export function Sidebar() {
                   type="button"
                   onClick={() => toggleGroup(section.id)}
                   aria-expanded={isExpanded}
-                  className="w-full flex items-center justify-between px-3 py-1.5 text-2xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 cursor-pointer bangla-text group"
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-2xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer bangla-text group"
                 >
                   <span className="truncate">{sectionTitle}</span>
                   {isExpanded ? (
@@ -479,7 +485,7 @@ export function Sidebar() {
                             href={getTenantNavHref(item.href, pathname, company?.slug)}
                             aria-label={`${item.title} - ${item.titleBn}`}
                             className={cn(
-                              'flex flex-1 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all cursor-pointer bangla-text min-h-[38px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+                              'flex flex-1 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all cursor-pointer bangla-text min-h-[38px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                               isPrimary
                                 ? isActive
                                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
@@ -573,7 +579,7 @@ export function Sidebar() {
                                   href={getTenantNavHref(child.href, pathname, company?.slug)}
                                   aria-label={`${child.title} - ${child.titleBn}`}
                                   className={cn(
-                                    'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer bangla-text min-h-[32px] focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500',
+                                    'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer bangla-text min-h-[32px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                                     isSubActive
                                       ? 'bg-blue-600 text-white font-bold shadow-xs shadow-blue-500/20'
                                       : 'text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'

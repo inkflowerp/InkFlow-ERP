@@ -241,12 +241,19 @@ export function useDataStore<T = any>(
 
   const set = useCallback(
     (newData: T | ((prev: T) => T)) => {
-      setData((prev) => {
-        const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
-        const next = typeof newData === 'function' ? (newData as (prev: T) => T)(prev) : newData
-        PrintERPDataStore.set(key, next, true, slug)
-        return next
-      })
+      const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
+      if (typeof newData === 'function') {
+        setData((prev) => {
+          const next = (newData as (prev: T) => T)(prev)
+          queueMicrotask(() => {
+            PrintERPDataStore.set(key, next, true, slug)
+          })
+          return next
+        })
+      } else {
+        PrintERPDataStore.set(key, newData, true, slug)
+        setData(newData)
+      }
     },
     [key, customTenantSlug]
   )

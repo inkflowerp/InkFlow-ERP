@@ -701,13 +701,17 @@ export class PrintERPDataStore {
       try {
         localStorage.setItem(effectiveKey, JSON.stringify(actualData))
         if (actualEmitEvent) {
-          window.dispatchEvent(
-            new CustomEvent('printerp_data_sync', {
-              detail: { key, effectiveKey, data: actualData, timestamp: Date.now() },
-            })
-          )
-          window.dispatchEvent(new Event(`${key}_updated`))
-          window.dispatchEvent(new Event(`${effectiveKey}_updated`))
+          queueMicrotask(() => {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(
+                new CustomEvent('printerp_data_sync', {
+                  detail: { key, effectiveKey, data: actualData, timestamp: Date.now() },
+                })
+              )
+              window.dispatchEvent(new Event(`${key}_updated`))
+              window.dispatchEvent(new Event(`${effectiveKey}_updated`))
+            }
+          })
 
           // Instant cross-tab broadcast (only when broadcastCrossTab is enabled)
           if (broadcastCrossTab && 'BroadcastChannel' in window) {

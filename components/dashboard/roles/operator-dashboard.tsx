@@ -191,7 +191,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
             </div>
 
             {punchFeedback && (
-              <p className="text-[11px] text-cyan-300 font-medium">{punchFeedback}</p>
+              <p className="text-2xs text-cyan-300 font-medium">{punchFeedback}</p>
             )}
           </div>
         </div>
@@ -207,7 +207,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
           <Cpu className="h-5 w-5 text-blue-600 mr-2.5 shrink-0" />
           <div className="text-left">
             <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{tBilingual('Full Screen Terminal', 'ফুল টার্মিনাল')}</div>
-            <div className="text-[10px] text-slate-500">{tBilingual('Touch station queue', 'টাচ কিউ')}</div>
+            <div className="text-2xs text-slate-500">{tBilingual('Touch station queue', 'টাচ কিউ')}</div>
           </div>
         </Button>
 
@@ -219,7 +219,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
           <Flame className="h-5 w-5 text-amber-600 mr-2.5 shrink-0" />
           <div className="text-left">
             <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{tBilingual('Floor Consumptions', 'কাঁচামাল খরচ')}</div>
-            <div className="text-[10px] text-slate-500">{tBilingual('Log media & wastage', 'মিডিয়া ও অপচয়')}</div>
+            <div className="text-2xs text-slate-500">{tBilingual('Log media & wastage', 'মিডিয়া ও অপচয়')}</div>
           </div>
         </Button>
 
@@ -231,7 +231,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
           <Wrench className="h-5 w-5 text-purple-600 mr-2.5 shrink-0" />
           <div className="text-left">
             <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{tBilingual('Machinery Fleet', 'মেশিন যন্ত্রপাতি')}</div>
-            <div className="text-[10px] text-slate-500">{tBilingual('Log breakdown & repair', 'মেরামত ও রক্ষণাবেক্ষণ')}</div>
+            <div className="text-2xs text-slate-500">{tBilingual('Log breakdown & repair', 'মেরামত ও রক্ষণাবেক্ষণ')}</div>
           </div>
         </Button>
 
@@ -243,7 +243,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
           <UserCheck className="h-5 w-5 text-emerald-600 mr-2.5 shrink-0" />
           <div className="text-left">
             <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{tBilingual('My Attendance & Salary', 'আমার বেতন ও হাজিরা')}</div>
-            <div className="text-[10px] text-slate-500">{tBilingual('Leaves, OT & payslips', 'ছুটি, ওটি ও স্লিপ')}</div>
+            <div className="text-2xs text-slate-500">{tBilingual('Leaves, OT & payslips', 'ছুটি, ওটি ও স্লিপ')}</div>
           </div>
         </Button>
       </div>
@@ -364,7 +364,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
             <Card key={m.id} className="border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-400 transition-colors">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="capitalize text-[10px] font-bold">
+                  <Badge variant="outline" className="capitalize text-2xs font-bold">
                     {m.type.replace('_', ' ')}
                   </Badge>
                   <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold">

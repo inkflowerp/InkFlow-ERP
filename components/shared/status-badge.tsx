@@ -44,8 +44,8 @@ const STATUS_DICTIONARY: Record<string, StatusConfig> = {
   draft: {
     labelEn: 'Draft',
     labelBn: 'খসড়া',
-    containerClasses: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700',
-    dotClasses: 'bg-slate-500 dark:bg-slate-400',
+    containerClasses: 'bg-muted text-muted-foreground border-border',
+    dotClasses: 'bg-muted-foreground',
   },
   quotation: {
     labelEn: 'Quotation',
@@ -164,8 +164,8 @@ const STATUS_DICTIONARY: Record<string, StatusConfig> = {
   inactive: {
     labelEn: 'Inactive',
     labelBn: 'নিষ্ক্রিয়',
-    containerClasses: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700',
-    dotClasses: 'bg-slate-500 dark:bg-slate-400',
+    containerClasses: 'bg-muted text-muted-foreground border-border',
+    dotClasses: 'bg-muted-foreground',
   },
 }
 
@@ -176,8 +176,8 @@ export function StatusBadge({ status, className, showDot = true }: StatusBadgePr
   const config = STATUS_DICTIONARY[normalized] || {
     labelEn: status,
     labelBn: status,
-    containerClasses: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700',
-    dotClasses: 'bg-slate-500 dark:bg-slate-400',
+    containerClasses: 'bg-muted text-muted-foreground border-border',
+    dotClasses: 'bg-muted-foreground',
   }
 
   const label = tBilingual(config.labelEn, config.labelBn)

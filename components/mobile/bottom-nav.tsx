@@ -39,7 +39,7 @@ export function MobileBottomNav() {
   const isMessagesActive = pathname?.includes('/communications')
 
   const handleOpenMobileDrawer = () => {
-    window.dispatchEvent(new Event('inkflow_open_mobile_nav'))
+    window.dispatchEvent(new Event('printerp_open_mobile_nav'))
   }
 
   return (

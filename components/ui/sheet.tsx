@@ -37,14 +37,14 @@ export function Sheet({ open, onOpenChange, children, side = 'left', className }
     <div className="fixed inset-0 z-[100] flex">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in-0 duration-200"
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity animate-in fade-in-0 duration-200"
         onClick={() => onOpenChange(false)}
         aria-hidden="true"
       />
       {/* Sheet panel */}
       <div
         className={cn(
-          'fixed inset-y-0 z-[100] flex h-full h-[100dvh] max-h-screen w-[88vw] sm:w-80 max-w-sm flex-col min-h-0 border-slate-200 bg-white shadow-2xl transition-transform animate-in duration-300 dark:border-slate-800 dark:bg-slate-900 overflow-hidden',
+          'fixed inset-y-0 z-[100] flex h-full h-[100dvh] max-h-screen w-[88vw] sm:w-80 max-w-sm flex-col min-h-0 border-border bg-card text-card-foreground shadow-2xl transition-transform animate-in duration-300 overflow-hidden',
           side === 'left' ? 'left-0 border-r slide-in-from-left' : 'right-0 border-l slide-in-from-right',
           className
         )}
@@ -65,7 +65,7 @@ export function SheetHeader({
 }: React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }) {
   return (
     <div
-      className={cn('flex items-center justify-between border-b border-slate-100 dark:border-slate-800 p-3.5 sm:p-4 bg-white dark:bg-slate-900 shrink-0 min-h-[56px]', className)}
+      className={cn('flex items-center justify-between border-b border-border p-3.5 sm:p-4 bg-card text-card-foreground shrink-0 min-h-[56px]', className)}
       {...props}
     >
       <div className="flex-1 min-w-0">{children}</div>
@@ -73,7 +73,7 @@ export function SheetHeader({
         <button
           type="button"
           onClick={onClose}
-          className="ml-2 rounded-xl p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center shrink-0 active:scale-95 transition-all"
+          className="ml-2 rounded-xl p-2 text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center shrink-0 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label="Close menu"
         >
           <X className="h-5 w-5" />
@@ -84,9 +84,9 @@ export function SheetHeader({
 }
 
 export function SheetContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 sm:p-4 scrollbar-thin bg-white dark:bg-slate-900', className)} {...props} />
+  return <div className={cn('flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 sm:p-4 scrollbar-thin bg-card text-card-foreground', className)} {...props} />
 }
 
 export function SheetFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('border-t border-slate-100 dark:border-slate-800 p-3.5 sm:p-4 bg-white dark:bg-slate-900 shrink-0', className)} {...props} />
+  return <div className={cn('border-t border-border p-3.5 sm:p-4 bg-card text-card-foreground shrink-0', className)} {...props} />
 }

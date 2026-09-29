@@ -161,15 +161,11 @@ export function MobileNav() {
     window.addEventListener('printerp_open_mobile_nav', handleOpen)
     window.addEventListener('printerp_close_mobile_nav', handleClose)
     window.addEventListener('printerp_toggle_mobile_nav', handleToggle)
-    window.addEventListener('inkflow_open_mobile_nav', handleOpen)
-    window.addEventListener('inkflow_close_mobile_nav', handleClose)
 
     return () => {
       window.removeEventListener('printerp_open_mobile_nav', handleOpen)
       window.removeEventListener('printerp_close_mobile_nav', handleClose)
       window.removeEventListener('printerp_toggle_mobile_nav', handleToggle)
-      window.removeEventListener('inkflow_open_mobile_nav', handleOpen)
-      window.removeEventListener('inkflow_close_mobile_nav', handleClose)
     }
   }, [])
 

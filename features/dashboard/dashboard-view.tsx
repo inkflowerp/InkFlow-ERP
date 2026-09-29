@@ -6,38 +6,19 @@ import { getOwnerDashboardDataAction } from '@/actions/dashboard.actions'
 import type { OwnerDashboardSnapshot } from '@/services/dashboard.service'
 import { useRealtimeSync } from '@/hooks/use-realtime-sync'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { useToast } from '@/components/shared/toast-feedback'
 import {
   TrendingUp,
   Printer,
-  FileSpreadsheet,
-  Truck,
   Plus,
-  ArrowUpRight,
   AlertTriangle,
   AlertCircle,
   Clock,
-  Calendar,
-  CheckCircle2,
-  DollarSign,
-  Package,
-  Layers,
-  Receipt,
-  Users,
-  CreditCard,
-  Building,
-  FileText,
-  Percent,
   Sparkles,
   Play,
   Check,
-  Phone,
-  BarChart3,
-  ShieldCheck,
   ChevronRight,
-  ExternalLink,
   RefreshCw,
-  MoreHorizontal,
-  X,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { DashboardChartsSkeleton } from './dashboard-charts'
@@ -49,25 +30,20 @@ const DashboardCharts = dynamic(
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/shared/data-table'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { DateDisplay } from '@/components/shared/date-display'
-import { ModalDialog } from '@/components/shared/modal-dialog'
-import { WorkOrderModal } from '@/components/shared/work-order-modal'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import { KpiCard, KpiGrid, KpiColorVariant } from '@/components/shared/kpi-card'
-import { LiveDhakaClock } from '@/components/shared/live-dhaka-clock'
 import { TrialDashboardCard } from '@/components/subscriptions/trial-dashboard-card'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useI18n } from '@/i18n/context'
 
 import { ColumnDef } from '@/types/common.types'
-import { toBengaliNumerals, formatBDT } from '@/lib/formatters'
+import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { OwnerDashboard } from '@/components/dashboard/roles/owner-dashboard'
 import { SalesDashboard } from '@/components/dashboard/roles/sales-dashboard'
@@ -77,7 +53,6 @@ import { StoreDashboard } from '@/components/dashboard/roles/store-dashboard'
 import { DeliveryDashboard } from '@/components/dashboard/roles/delivery-dashboard'
 import { BranchManagerDashboard } from '@/components/dashboard/roles/branch-manager-dashboard'
 import { NewWorkWizard } from '@/components/orders/new-work-wizard'
-import { TodaysWorkFeed } from '@/components/dashboard/todays-work-feed'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   getAllowedQuickActions,
@@ -90,7 +65,7 @@ import {
 } from '@/lib/dashboard/dashboard-engine'
 
 import { CustomerRecord } from '@/types/crm.types'
-import { SalesOrderRecord, JobOrderRecord } from '@/types/order.types'
+import { SalesOrderRecord } from '@/types/order.types'
 import { ExpenseRecord } from '@/types/accounting.types'
 import { PaymentRecord, InvoiceRecord } from '@/types/billing.types'
 import { MaterialRecord } from '@/types/inventory.types'
@@ -100,29 +75,9 @@ import { DeliveryChallanRecord } from '@/types/logistics.types'
 import { QuotationRecord } from '@/types/quotation.types'
 import { cn } from '@/lib/utils'
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  TrendingUp,
-  Printer,
-  FileSpreadsheet,
-  Truck,
-  Plus,
-  AlertTriangle,
-  AlertCircle,
-  Clock,
-  CheckCircle2,
-  DollarSign,
-  Package,
-  Layers,
-  Receipt,
-  Users,
-  CreditCard,
-  Building,
-  FileText,
-  Percent,
-  Sparkles,
-  BarChart3,
-  ShieldCheck,
-}
+import { DashboardHeader } from './dashboard-header'
+import { DashboardQuickActions, ICON_MAP } from './dashboard-quick-actions'
+import { DashboardModals } from './dashboard-modals'
 
 interface TableOrderRecord extends Record<string, unknown> {
   id: string
@@ -171,9 +126,8 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
   // State Management
   const [activeModal, setActiveModal] = useState<string | null>(null)
   const [isMoreActionsOpen, setIsMoreActionsOpen] = useState(false)
-  const [notification, setNotification] = useState<string | null>(null)
-  const [errorState, setErrorState] = useState<string | null>(null)
   const [activeWorkItem, setActiveWorkItem] = useState<MyWorkItem | null>(null)
+  const { showToast } = useToast()
 
   // Owner Snapshot & Realtime State with Zero Hydration Mismatch
   const [ownerSnapshot, setOwnerSnapshot] = useState<OwnerDashboardSnapshot | null>(initialSnapshot)
@@ -263,29 +217,9 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     }
   }, [isOwner, lastEventTime, fetchOwnerSnapshot])
 
-  // Quick Action Forms State
-  const [customerName, setCustomerName] = useState('')
-  const [customerPhone, setCustomerPhone] = useState('')
-  const [customerLimit, setCustomerLimit] = useState('50000')
-
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
-  const [paymentAmount, setPaymentAmount] = useState('')
-  const [payMethod, setPayMethod] = useState<'cash' | 'bkash' | 'nagad' | 'bank_transfer' | 'cheque'>('cash')
-
-  const [expenseTitle, setExpenseTitle] = useState('')
-  const [expenseAmount, setExpenseAmount] = useState('')
-  const [expenseCategory, setExpenseCategory] = useState('maintenance')
-
-  const [materialName, setMaterialName] = useState('')
-  const [materialQty, setMaterialQty] = useState('')
-
-  const [problemDescription, setProblemDescription] = useState('')
-  const [problemSeverity, setProblemSeverity] = useState('rework')
-
-  const showNotification = (msg: string) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(null), 4000)
-  }
+  const showNotification = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
+    showToast({ type, title: msg, titleBn: msg })
+  }, [showToast])
 
   // Dashboard Data Aggregation
   const rawData = useMemo(() => ({
@@ -362,128 +296,6 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     } else if (actionType === 'call_client') {
       showNotification(`Dialing client for ${item.code}...`)
     }
-  }
-
-  // Modal Submissions
-  const handleCreateCustomer = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!customerName.trim()) return
-    const companyId = company?.id || ''
-    const newCust: CustomerRecord = {
-      id: `cust-${Date.now()}`,
-      company_id: companyId,
-      name: customerName.trim(),
-      name_bn: customerName.trim(),
-      mobile: customerPhone.trim(),
-      email: null,
-      customer_type: 'corporate',
-      credit_limit: parseFloat(customerLimit) || 0,
-      payment_terms: 'net_30',
-      tags: ['New Client'],
-      is_active: true,
-      total_orders_count: 0,
-      total_orders_amount: 0,
-      total_due_balance: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-    custHelpers.addItem(newCust)
-    setActiveModal(null)
-    setCustomerName('')
-    setCustomerPhone('')
-    showNotification(`Customer '${customerName}' registered successfully!`)
-  }
-
-  const handleRecordPayment = (e: React.FormEvent) => {
-    e.preventDefault()
-    const amt = parseFloat(paymentAmount) || 0
-    if (amt <= 0) return
-    const custId = selectedCustomerId || customers?.[0]?.id
-    const cust = (customers || []).find((c) => c.id === custId)
-    if (!cust) {
-      showNotification('Please select or register a customer first.')
-      return
-    }
-    PrintERPDataStore.recordPaymentCollection({
-      amount: amt,
-      customerId: cust.id,
-      paymentMethod: payMethod,
-      notes: 'Direct payment recorded from dashboard quick actions',
-      receivedByName: currentUser?.profile?.full_name || 'Accounts Staff',
-    })
-    setActiveModal(null)
-    setPaymentAmount('')
-    setSelectedCustomerId('')
-    showNotification(`Payment of ${formatBDT(amt)} received from ${cust.name}!`)
-  }
-
-  const handleCreateExpense = (e: React.FormEvent) => {
-    e.preventDefault()
-    const amt = parseFloat(expenseAmount) || 0
-    if (amt <= 0 || !expenseTitle.trim()) return
-    const expNum = `EXP-${Date.now().toString().slice(-4)}`
-    const newExp: ExpenseRecord = {
-      id: `exp-${Date.now()}`,
-      company_id: company?.id || '',
-      expense_number: expNum,
-      expense_date: new Date().toISOString().split('T')[0],
-      category: (expenseCategory as any) || 'maintenance',
-      amount: amt,
-      payment_method: 'cash',
-      vendor_name: null,
-      description: expenseTitle.trim(),
-      branch_name: currentBranch?.name || 'Main Branch',
-      recorded_by_name: currentUser?.profile?.full_name || 'Staff',
-      created_at: new Date().toISOString(),
-    }
-    PrintERPDataStore.addItem<ExpenseRecord>(STORAGE_KEYS.EXPENSES, newExp)
-    setActiveModal(null)
-    setExpenseTitle('')
-    setExpenseAmount('')
-    showNotification(`Expense '${expenseTitle}' (${formatBDT(amt)}) logged successfully!`)
-  }
-
-  const handleCreateMaterial = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!materialName.trim()) return
-    const newMat: MaterialRecord = {
-      id: `mat-${Date.now()}`,
-      company_id: company?.id || '',
-      sku: `MAT-${Date.now().toString().slice(-4)}`,
-      name: materialName.trim(),
-      name_bn: materialName.trim(),
-      category: 'rigid_sheet',
-      unit: 'sft',
-      is_roll: false,
-      current_stock: parseFloat(materialQty) || 0,
-      min_stock_level: 50,
-      last_purchase_price: 0,
-      average_cost: 0,
-      manual_cost: 0,
-      valuation_method: 'average_cost',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-    PrintERPDataStore.addItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, newMat)
-    setActiveModal(null)
-    setMaterialName('')
-    setMaterialQty('')
-    showNotification(`Stock entry for ${materialName} saved!`)
-  }
-
-  const handleReportProblem = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!problemDescription.trim()) return
-    if (activeWorkItem) {
-      prodHelpers.updateItem<ProductionJobRecord>(activeWorkItem.id, {
-        has_rework: true,
-        priority: 'very_urgent',
-      })
-      showNotification(`Incident reported for ${activeWorkItem.code}. Supervisor notified.`)
-    }
-    setActiveModal(null)
-    setProblemDescription('')
-    setActiveWorkItem(null)
   }
 
   const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
@@ -614,6 +426,20 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     return (deliveryChallans || []).filter((d) => d.status === 'scheduled' || d.status === 'assigned').length
   }, [deliveryChallans])
 
+  // Role-Specific Operational Dashboard Workspaces for Staff
+  const availableWorkspaces = useMemo(() => {
+    const list: { id: string; label: string; labelBn: string; icon: string }[] = []
+    if (isBranchManager) list.push({ id: 'branch_manager', label: 'Branch Management', labelBn: 'ব্রাঞ্চ ড্যাশবোর্ড', icon: '🏢' })
+    if (isSales) list.push({ id: 'sales', label: 'Sales & Orders', labelBn: 'সেলস ও অর্ডার', icon: '💼' })
+    if (isDesigner) list.push({ id: 'designer', label: 'Design Workbench', labelBn: 'ডিজাইন প্যানেল', icon: '🎨' })
+    if (isOperator) list.push({ id: 'operator', label: 'Shop Floor Terminal', labelBn: 'অপারেটর টার্মিনাল', icon: '⚙️' })
+    if (isDelivery) list.push({ id: 'delivery', label: 'Delivery & Challans', labelBn: 'ডেলিভারি ও চালান', icon: '🚚' })
+    if (isStore) list.push({ id: 'store', label: 'Inventory & Store', labelBn: 'স্টোর ও কাঁচামাল', icon: '📦' })
+    return list
+  }, [isBranchManager, isSales, isDesigner, isOperator, isDelivery, isStore])
+
+  const activeWorkspaceId = selectedRoleWorkspace || availableWorkspaces[0]?.id
+
   // 1. Business Owner Executive Control Center Dispatch
   if (isOwner) {
     if (isLoadingOwner && !ownerSnapshot) {
@@ -736,19 +562,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     )
   }
 
-  // 2. Role-Specific Operational Dashboard Dispatch for Staff
-  const availableWorkspaces = useMemo(() => {
-    const list: { id: string; label: string; labelBn: string; icon: string }[] = []
-    if (isBranchManager) list.push({ id: 'branch_manager', label: 'Branch Management', labelBn: 'ব্রাঞ্চ ড্যাশবোর্ড', icon: '🏢' })
-    if (isSales) list.push({ id: 'sales', label: 'Sales & Orders', labelBn: 'সেলস ও অর্ডার', icon: '💼' })
-    if (isDesigner) list.push({ id: 'designer', label: 'Design Workbench', labelBn: 'ডিজাইন প্যানেল', icon: '🎨' })
-    if (isOperator) list.push({ id: 'operator', label: 'Shop Floor Terminal', labelBn: 'অপারেটর টার্মিনাল', icon: '⚙️' })
-    if (isDelivery) list.push({ id: 'delivery', label: 'Delivery & Challans', labelBn: 'ডেলিভারি ও চালান', icon: '🚚' })
-    if (isStore) list.push({ id: 'store', label: 'Inventory & Store', labelBn: 'স্টোর ও কাঁচামাল', icon: '📦' })
-    return list
-  }, [isBranchManager, isSales, isDesigner, isOperator, isDelivery, isStore])
 
-  const activeWorkspaceId = selectedRoleWorkspace || availableWorkspaces[0]?.id
 
   if (!isOwner && availableWorkspaces.length > 0 && activeWorkspaceId) {
     const renderWorkspaceSwitcher = () => {
@@ -937,151 +751,24 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
   return (
     <div className="space-y-6 pb-12">
       {/* 1. TOP HEADER BANNER (Mobile-First, Bilingual) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-5 sm:p-6 text-white shadow-xl shadow-blue-900/10">
-        <div className="space-y-1.5 min-w-0">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 text-xs text-cyan-300 backdrop-blur-xs" suppressHydrationWarning>
-            <Sparkles className="h-3 w-3 shrink-0" />
-            <span className="truncate" suppressHydrationWarning>
-              {company ? tBilingual(company.name, company.name_bn || company.name) : 'PrintERP Organization'}
-              {currentBranch ? ` • ${currentBranch.name.split('(')[0].trim()}` : ''}
-            </span>
-          </div>
-
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight bangla-text leading-tight" suppressHydrationWarning>
-            {tBilingual('Welcome back,', 'স্বাগতম,')} {userDisplayName}
-          </h1>
-
-          <p className="text-xs sm:text-sm text-slate-200 bangla-text">
-            {tBilingual(
-              'Real-time operational dashboard tailored to your active responsibilities.',
-              'আপনার দায়িত্ব ও পারমিশন অনুযায়ী ব্যক্তিগতকৃত লাইভ ড্যাশবোর্ড।'
-            )}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap md:flex-col md:items-end gap-1.5 shrink-0">
-          <div className="flex flex-wrap items-center gap-1">
-            {activeResponsibilities.map((resp) => (
-              <Badge
-                key={resp}
-                variant="outline"
-                className="bg-white/10 text-white border-white/20 text-xs py-0.5 capitalize bangla-text"
-              >
-                {resp.replace('_', ' ')}
-              </Badge>
-            ))}
-          </div>
-          <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
-            <span className="flex items-center gap-1" suppressHydrationWarning>
-              <Calendar className="h-3.5 w-3.5 text-cyan-300" />
-              {new Date().toLocaleDateString(locale === 'bn' ? 'bn-BD' : 'en-US', {
-                timeZone: 'Asia/Dhaka',
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </span>
-            <span>·</span>
-            <LiveDhakaClock
-              showSeconds={true}
-              showIcon={true}
-              className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-cyan-200"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Notification Toast Feedback */}
-      {notification && (
-        <div className="p-3.5 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 shadow-sm animate-in fade-in-0">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span>{notification}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setNotification(null)}
-            className="p-1 text-emerald-600 hover:text-emerald-800 cursor-pointer"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
-
-      {/* Error State with Retry Button */}
-      {errorState && (
-        <div className="p-4 bg-red-50 text-red-800 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
-            <span>{errorState}</span>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setErrorState(null)
-              orderHelpers.reload()
-            }}
-            className="h-8 text-xs bg-white text-red-700 border-red-200"
-          >
-            <RefreshCw className="h-3 w-3 mr-1" />
-            {tBilingual('Retry', 'পুনরায় চেষ্টা')}
-          </Button>
-        </div>
-      )}
+      <DashboardHeader
+        companyName={company?.name}
+        companyNameBn={company?.name_bn}
+        branchName={currentBranch?.name}
+        userDisplayName={userDisplayName}
+        activeResponsibilities={activeResponsibilities}
+      />
 
       {/* Free Trial Upgrade Notice Card */}
       <TrialDashboardCard />
 
       {/* 2. PRIORITIZED QUICK ACTIONS HUB (Mobile-First, Large Touch Targets min 44px) */}
-      <Card className="p-4 border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-blue-600" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
-              {tBilingual('Quick Operations', 'দ্রুত কাজ')}
-            </span>
-          </div>
-          <span className="text-xs text-slate-500 dark:text-slate-400 bangla-text hidden sm:inline">
-            {tBilingual('1-click direct shortcuts', '১ ক্লিকে দ্রুত কাজ')}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5">
-          {quickActions.primaryActions.map((qa) => {
-            const Icon = ICON_MAP[qa.icon] || Plus
-            return (
-              <Button
-                key={qa.id}
-                type="button"
-                variant="outline"
-                onClick={() => handleExecuteQuickAction(qa)}
-                className="h-11 sm:h-12 px-2.5 flex items-center justify-start gap-2 text-xs font-bold border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-slate-800 transition-all cursor-pointer min-h-[44px] text-left"
-              >
-                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 shrink-0">
-                  <Icon className="h-4 w-4" />
-                </div>
-                <span className="truncate bangla-text leading-tight">
-                  {tBilingual(qa.labelEn, qa.labelBn)}
-                </span>
-              </Button>
-            )
-          })}
-
-          {quickActions.secondaryActions.length > 0 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsMoreActionsOpen(true)}
-              className="h-11 sm:h-12 px-2.5 flex items-center justify-center gap-2 text-xs font-bold border-dashed border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer min-h-[44px]"
-            >
-              <MoreHorizontal className="h-4 w-4 text-slate-500" />
-              <span className="bangla-text">{tBilingual('More Actions', 'অন্যান্য কাজ')}</span>
-            </Button>
-          )}
-        </div>
-      </Card>
+      <DashboardQuickActions
+        primaryActions={quickActions.primaryActions}
+        hasSecondaryActions={quickActions.secondaryActions.length > 0}
+        onExecuteAction={handleExecuteQuickAction}
+        onOpenMoreActions={() => setIsMoreActionsOpen(true)}
+      />
 
       {/* 3. NEEDS ATTENTION BAR (Action Required: Delays, Approvals, Revisions) */}
       {attentionItems.length > 0 && (
@@ -1344,16 +1031,22 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
         </CardContent>
       </Card>
 
-      {/* ========================================================================= */}
-      {/* QUICK ACTION MODALS                                                       */}
-      {/* ========================================================================= */}
-
-      {/* 1. Modal: Work Order (Integrated with Customer Autocomplete & Dual Save Actions) */}
-      <WorkOrderModal
-        isOpen={activeModal === 'work_order'}
-        onClose={() => setActiveModal(null)}
-        onSuccess={(savedOrder, sentToManager) => {
+      {/* Modals & Dialogs */}
+      <DashboardModals
+        activeModal={activeModal}
+        onCloseModal={() => {
           setActiveModal(null)
+          setActiveWorkItem(null)
+        }}
+        isMoreActionsOpen={isMoreActionsOpen}
+        onCloseMoreActions={() => setIsMoreActionsOpen(false)}
+        onExecuteQuickAction={handleExecuteQuickAction}
+        allAllowedActions={quickActions.allAllowedActions}
+        companyId={company?.id}
+        currentBranchName={currentBranch?.name}
+        currentUserName={currentUser?.profile?.full_name}
+        activeWorkItem={activeWorkItem}
+        onWorkOrderSuccess={(savedOrder, sentToManager) => {
           orderHelpers.reload()
           showNotification(
             sentToManager
@@ -1361,283 +1054,21 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
               : `Work Order #${savedOrder.order_number} registered successfully!`
           )
         }}
-        companyId={company?.id}
+        onCustomerAdded={(name) => {
+          custHelpers.reload()
+          showNotification(`Customer '${name}' registered successfully!`)
+        }}
+        onExpenseAdded={(title, amt) => {
+          showNotification(`Expense '${title}' (${formatBDT(amt)}) logged successfully!`)
+        }}
+        onMaterialAdded={(name) => {
+          showNotification(`Stock entry for ${name} saved!`)
+        }}
+        onProblemReported={(workCode) => {
+          prodHelpers.reload()
+          showNotification(`Incident reported for ${workCode}. Supervisor notified.`)
+        }}
       />
-
-      {/* 2. Modal: New Customer */}
-      <ModalDialog
-        open={activeModal === 'customer'}
-        onOpenChange={(open) => !open && setActiveModal(null)}
-        title="Add New Customer Profile"
-        description="Register a corporate client, advertising agency, or retail walk-in buyer."
-      >
-        <form onSubmit={handleCreateCustomer} className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="custName" required>Customer / Company Name</Label>
-            <Input
-              id="custName"
-              placeholder="e.g. Acme Advertising Ltd."
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className="h-10 text-xs"
-              required
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="custPhone" required>Phone / Mobile</Label>
-              <Input
-                id="custPhone"
-                placeholder="01711-XXXXXX"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="h-10 text-xs"
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="custLimit">Credit Limit (৳ BDT)</Label>
-              <Input
-                id="custLimit"
-                type="number"
-                value={customerLimit}
-                onChange={(e) => setCustomerLimit(e.target.value)}
-                className="h-10 text-xs"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setActiveModal(null)}
-              className="w-full sm:w-auto h-11 sm:h-9"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto h-11 sm:h-9 bg-blue-600 hover:bg-blue-700 font-bold"
-            >
-              Save Customer
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
-
-      {/* 3. Modal: Record Payment / Money Receipt */}
-      <RecordPaymentModal
-        open={activeModal === 'payment'}
-        onOpenChange={(open) => !open && setActiveModal(null)}
-      />
-
-      {/* 4. Modal: Add Expense */}
-      <ModalDialog
-        open={activeModal === 'expense'}
-        onOpenChange={(open) => !open && setActiveModal(null)}
-        title="Add Shop Floor Expense"
-        description="Record press electricity, ink purchase, machine maintenance, or refreshments."
-      >
-        <form onSubmit={handleCreateExpense} className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="expTitle" required>Expense Description</Label>
-            <Input
-              id="expTitle"
-              placeholder="e.g. Machine Solvent Cleaner & Wipes"
-              value={expenseTitle}
-              onChange={(e) => setExpenseTitle(e.target.value)}
-              className="h-10 text-xs"
-              required
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="expAmount" required>Amount (৳ BDT)</Label>
-              <Input
-                id="expAmount"
-                type="number"
-                placeholder="3500"
-                value={expenseAmount}
-                onChange={(e) => setExpenseAmount(e.target.value)}
-                className="h-10 text-xs"
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="expCategory">Category</Label>
-              <select
-                id="expCategory"
-                value={expenseCategory}
-                onChange={(e) => setExpenseCategory(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                <option value="maintenance">Machine Maintenance</option>
-                <option value="electricity">Factory Utilities / Electricity</option>
-                <option value="transport">Transport / Van Fare</option>
-                <option value="tea_snacks">Staff Overtime / Refreshment</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setActiveModal(null)}
-              className="w-full sm:w-auto h-11 sm:h-9"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto h-11 sm:h-9 bg-red-600 hover:bg-red-700 text-white font-bold"
-            >
-              Record Expense
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
-
-      {/* 5. Modal: Add Material / Media Stock */}
-      <ModalDialog
-        open={activeModal === 'material'}
-        onOpenChange={(open) => !open && setActiveModal(null)}
-        title="Add Material to Inventory"
-        description="Log new flex rolls or media sheets received from vendor."
-      >
-        <form onSubmit={handleCreateMaterial} className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="matName" required>Material Name & Spec</Label>
-            <Input
-              id="matName"
-              placeholder="e.g. Star Flex 320gsm (10ft roll)"
-              value={materialName}
-              onChange={(e) => setMaterialName(e.target.value)}
-              className="h-10 text-xs"
-              required
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="matQty" required>Quantity (Rolls / Sheets / Sft)</Label>
-              <Input
-                id="matQty"
-                placeholder="500"
-                value={materialQty}
-                onChange={(e) => setMaterialQty(e.target.value)}
-                className="h-10 text-xs"
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="matSupplier">Vendor</Label>
-              <select id="matSupplier" className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">
-                <option>Bangla Plastic & Media Ltd.</option>
-                <option>Dhaka Acrylic Center</option>
-                <option>Karnafuli Paper Mills</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setActiveModal(null)}
-              className="w-full sm:w-auto h-11 sm:h-9"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto h-11 sm:h-9 bg-teal-600 hover:bg-teal-700 text-white font-bold"
-            >
-              Save Inventory
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
-
-      {/* 6. Modal: Report Problem / Scrap */}
-      <ModalDialog
-        open={activeModal === 'report_problem'}
-        onOpenChange={(open) => !open && setActiveModal(null)}
-        title="Report Machine Floor Problem / Rework"
-        description={`Log media head strike, ink shortage, or scrap for ${activeWorkItem?.code || 'print run'}.`}
-      >
-        <form onSubmit={handleReportProblem} className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="probType" required>Issue Type</Label>
-            <select
-              id="probType"
-              value={problemSeverity}
-              onChange={(e) => setProblemSeverity(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-            >
-              <option value="rework">Media Head Strike / Reprint Needed</option>
-              <option value="color_mismatch">Color Calibration / ICC Profile Mismatch</option>
-              <option value="ink_out">Ink Cartridge Empty</option>
-              <option value="machine_jam">Roll Feed Jam / Mechanical Fault</option>
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="probDesc" required>Problem Description & Action Needed</Label>
-            <Input
-              id="probDesc"
-              placeholder="e.g. Banding on Cyan head after 8ft run"
-              value={problemDescription}
-              onChange={(e) => setProblemDescription(e.target.value)}
-              className="h-10 text-xs"
-              required
-            />
-          </div>
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setActiveModal(null)}
-              className="w-full sm:w-auto h-11 sm:h-9"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto h-11 sm:h-9 bg-red-600 hover:bg-red-700 text-white font-bold"
-            >
-              Dispatch Alert
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
-
-      {/* 7. Modal: More Quick Actions Drawer / Dialog */}
-      <ModalDialog
-        open={isMoreActionsOpen}
-        onOpenChange={(open) => !open && setIsMoreActionsOpen(false)}
-        title="All Authorized Quick Actions"
-        description="Select any operational shortcut available for your role."
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-          {quickActions.allAllowedActions.map((qa) => {
-            const Icon = ICON_MAP[qa.icon] || Plus
-            return (
-              <Button
-                key={qa.id}
-                type="button"
-                variant="outline"
-                onClick={() => handleExecuteQuickAction(qa)}
-                className="h-12 px-3 flex items-center justify-between text-xs font-bold border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer min-h-[44px]"
-              >
-                <div className="flex items-center gap-2.5 truncate">
-                  <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 shrink-0">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <span className="truncate bangla-text">{tBilingual(qa.labelEn, qa.labelBn)}</span>
-                </div>
-                <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-              </Button>
-            )
-          })}
-        </div>
-      </ModalDialog>
     </div>
   )
 }

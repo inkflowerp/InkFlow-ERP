@@ -13,7 +13,7 @@ export function Avatar({ src, alt, fallback, className, ...props }: AvatarProps)
   return (
     <div
       className={cn(
-        'relative flex h-9 w-9 shrink-0 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700',
+        'relative flex h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted ring-1 ring-border text-muted-foreground',
         className
       )}
       {...props}
@@ -27,7 +27,7 @@ export function Avatar({ src, alt, fallback, className, ...props }: AvatarProps)
           onError={() => setImageError(true)}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center font-medium text-xs text-slate-700 dark:text-slate-300 uppercase">
+        <div className="flex h-full w-full items-center justify-center font-medium text-xs text-foreground uppercase">
           {fallback.slice(0, 2)}
         </div>
       )}

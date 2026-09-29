@@ -40,6 +40,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
   MachineryRecord,
   MachineryStatus,
@@ -223,7 +224,13 @@ export default function MachineriesListPage() {
   }
 
   return (
-    <div className="space-y-6 pb-12 p-4 sm:p-6">
+    <PanelAccessGuard
+      module="machineries"
+      action="view"
+      panelTitle="Machineries & Fleet"
+      panelTitleBn="মেশিন ও যন্ত্রপাতি"
+    >
+      <div className="space-y-6 pb-12 p-4 sm:p-6">
       {/* Page Header */}
       <PageHeader
         titleEn="Machineries & Equipment Fleet"
@@ -819,5 +826,6 @@ export default function MachineriesListPage() {
         onConfirm={confirmArchive}
       />
     </div>
+    </PanelAccessGuard>
   )
 }

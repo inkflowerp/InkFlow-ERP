@@ -125,7 +125,7 @@ export default function PlatformSettingsPage() {
         setOriginalSettings(JSON.parse(JSON.stringify(settings)))
         setReason('')
         if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('inkflow_platform_settings_updated', { detail: settings }))
+          window.dispatchEvent(new CustomEvent('printerp_platform_settings_updated', { detail: settings }))
         }
       } else {
         showNotification((res as any).error || 'Failed to update settings', 'error')

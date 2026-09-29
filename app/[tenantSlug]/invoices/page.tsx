@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Receipt, Loader2 } from 'lucide-react'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 
 function InvoicesRedirectContent() {
   const params = useParams()
@@ -53,7 +54,14 @@ export default function InvoicesRedirectPage() {
         </div>
       }
     >
-      <InvoicesRedirectContent />
+      <PanelAccessGuard
+        module="invoices"
+        action="view"
+        panelTitle="Invoices"
+        panelTitleBn="চালান"
+      >
+        <InvoicesRedirectContent />
+      </PanelAccessGuard>
     </React.Suspense>
   )
 }

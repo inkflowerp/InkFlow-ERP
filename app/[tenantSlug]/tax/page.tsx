@@ -37,6 +37,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
@@ -244,7 +245,13 @@ export default function TaxPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl pb-16">
+    <PanelAccessGuard
+      module="settings"
+      action="manage"
+      panelTitle="Bangladesh VAT & NBR Tax Management"
+      panelTitleBn="বাংলাদেশ ভ্যাট ও এনবিআর ট্যাক্স"
+    >
+      <div className="space-y-6 max-w-7xl pb-16">
       {/* Header */}
       <PageHeader
         titleEn="Bangladesh VAT & NBR Tax Management"
@@ -1019,6 +1026,7 @@ export default function TaxPage() {
           </div>
         </div>
       </Card>
-    </div>
+      </div>
+    </PanelAccessGuard>
   )
 }

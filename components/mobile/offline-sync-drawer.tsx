@@ -53,7 +53,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex justify-end animate-in fade-in-0 cursor-pointer"
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-end animate-in fade-in-0 cursor-pointer"
       onClick={onClose}
     >
       <div

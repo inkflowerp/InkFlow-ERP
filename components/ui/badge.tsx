@@ -7,14 +7,14 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-blue-600 text-white shadow-xs hover:bg-blue-700',
-        secondary: 'border-transparent bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100',
-        destructive: 'border-transparent bg-red-600 text-white shadow-xs hover:bg-red-700',
-        outline: 'text-slate-700 border-slate-300 dark:text-slate-300 dark:border-slate-700',
-        success: 'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
-        warning: 'border-transparent bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800',
-        info: 'border-transparent bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 border-sky-200 dark:border-sky-800',
-        purple: 'border-transparent bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+        default: 'border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+        secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        destructive: 'border-transparent bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90',
+        outline: 'border border-border text-foreground',
+        success: 'border border-success/30 bg-success/15 text-success hover:bg-success/20',
+        warning: 'border border-warning/30 bg-warning/15 text-warning hover:bg-warning/20',
+        info: 'border border-info/30 bg-info/15 text-info hover:bg-info/20',
+        purple: 'border border-indigo-500/30 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/20',
       },
       size: {
         default: 'px-2.5 py-0.5 text-xs',

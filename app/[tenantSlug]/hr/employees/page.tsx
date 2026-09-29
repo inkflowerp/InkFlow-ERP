@@ -88,6 +88,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
@@ -5433,7 +5434,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
 
       {/* Employee Invitation Dispatched Modal */}
       {inviteModalData?.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-150">
           <div className="w-full max-w-md bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
@@ -5544,7 +5545,14 @@ export default function EmployeeListPage() {
         </div>
       }
     >
-      <EmployeeListContent />
+      <PanelAccessGuard
+        module="hr"
+        action="view"
+        panelTitle="Employee Directory"
+        panelTitleBn="কর্মীদের তালিকা ও ব্যবস্থাপনা"
+      >
+        <EmployeeListContent />
+      </PanelAccessGuard>
     </React.Suspense>
   )
 }

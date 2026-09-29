@@ -33,6 +33,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { cn } from '@/lib/utils'
@@ -341,8 +342,14 @@ export default function BusinessReportsPage() {
   }
 
   return (
-    <FeatureGate feature="reports">
-      <div className="space-y-6 pb-20">
+    <PanelAccessGuard
+      module="reports"
+      action="view"
+      panelTitle="Business Reports"
+      panelTitleBn="রিপোর্ট ও হিসাব"
+    >
+      <FeatureGate feature="reports">
+        <div className="space-y-6 pb-20">
         {/* Toast Notification */}
         {notification && (
           <div className="fixed top-20 right-6 z-50 p-4 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2">
@@ -658,7 +665,7 @@ export default function BusinessReportsPage() {
               <div className="flex flex-col items-end gap-0.5 shrink-0">
                 <span
                   className={cn(
-                    'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
+                    'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                     salesTrend === null || salesTrend >= 0
                       ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                       : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -667,7 +674,7 @@ export default function BusinessReportsPage() {
                   {salesTrend === null || salesTrend >= 0 ? '↑' : '↓'}{' '}
                   {salesTrend !== null ? Math.abs(salesTrend) : 100}%
                 </span>
-                <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                   vs last period
                 </span>
               </div>
@@ -699,7 +706,7 @@ export default function BusinessReportsPage() {
               <div className="flex flex-col items-end gap-0.5 shrink-0">
                 <span
                   className={cn(
-                    'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
+                    'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                     profitTrend === null || profitTrend >= 0
                       ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                       : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -708,7 +715,7 @@ export default function BusinessReportsPage() {
                   {profitTrend === null || profitTrend >= 0 ? '↑' : '↓'}{' '}
                   {profitTrend !== null ? Math.abs(profitTrend) : 100}%
                 </span>
-                <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                   vs last period
                 </span>
               </div>
@@ -740,7 +747,7 @@ export default function BusinessReportsPage() {
               <div className="flex flex-col items-end gap-0.5 shrink-0">
                 <span
                   className={cn(
-                    'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
+                    'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                     jobsTrend === null || jobsTrend >= 0
                       ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                       : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -749,7 +756,7 @@ export default function BusinessReportsPage() {
                   {jobsTrend === null || jobsTrend >= 0 ? '↑' : '↓'}{' '}
                   {jobsTrend !== null ? Math.abs(jobsTrend) : 100}%
                 </span>
-                <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                   vs last period
                 </span>
               </div>
@@ -781,7 +788,7 @@ export default function BusinessReportsPage() {
               <div className="flex flex-col items-end gap-0.5 shrink-0">
                 <span
                   className={cn(
-                    'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
+                    'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                     expensesTrend === null || expensesTrend <= 0
                       ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                       : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -790,7 +797,7 @@ export default function BusinessReportsPage() {
                   {expensesTrend === null || expensesTrend <= 0 ? '↓' : '↑'}{' '}
                   {expensesTrend !== null ? Math.abs(expensesTrend) : 0}%
                 </span>
-                <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                   vs last period
                 </span>
               </div>
@@ -820,10 +827,10 @@ export default function BusinessReportsPage() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span className="inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50">
+                <span className="inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50">
                   ↑ {profitMarginPercent}%
                 </span>
-                <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                   margin
                 </span>
               </div>
@@ -853,10 +860,10 @@ export default function BusinessReportsPage() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span className="inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-amber-600 bg-amber-50 dark:bg-amber-950/50">
+                <span className="inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-amber-600 bg-amber-50 dark:bg-amber-950/50">
                   59.6%
                 </span>
-                <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                   of revenue
                 </span>
               </div>
@@ -886,10 +893,10 @@ export default function BusinessReportsPage() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span className="inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-sky-600 bg-sky-50 dark:bg-sky-950/50">
+                <span className="inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-sky-600 bg-sky-50 dark:bg-sky-950/50">
                   Live
                 </span>
-                <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                   basket size
                 </span>
               </div>
@@ -919,10 +926,10 @@ export default function BusinessReportsPage() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span className="inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-violet-600 bg-violet-50 dark:bg-violet-950/50">
+                <span className="inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-violet-600 bg-violet-50 dark:bg-violet-950/50">
                   Tracked
                 </span>
-                <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
+                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                   workflow
                 </span>
               </div>
@@ -1280,7 +1287,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveQuickReport('sales')}
-                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
                   >
                     <TrendingUp className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span className="leading-tight">Sales Report</span>
@@ -1290,7 +1297,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveQuickReport('production')}
-                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
                   >
                     <ClipboardList className="w-4 h-4 text-blue-600 shrink-0" />
                     <span className="leading-tight">Production</span>
@@ -1300,7 +1307,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveQuickReport('inventory')}
-                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
                   >
                     <Package className="w-4 h-4 text-amber-600 shrink-0" />
                     <span className="leading-tight">Inventory</span>
@@ -1310,7 +1317,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveQuickReport('financial')}
-                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
                   >
                     <FileText className="w-4 h-4 text-purple-600 shrink-0" />
                     <span className="leading-tight">Financial</span>
@@ -1320,7 +1327,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveQuickReport('customer')}
-                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
                   >
                     <Users className="w-4 h-4 text-sky-600 shrink-0" />
                     <span className="leading-tight">Customer</span>
@@ -1330,7 +1337,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveQuickReport('supplier')}
-                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
                   >
                     <Truck className="w-4 h-4 text-indigo-600 shrink-0" />
                     <span className="leading-tight">Supplier</span>
@@ -1340,7 +1347,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveQuickReport('profitability')}
-                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
                   >
                     <Scale className="w-4 h-4 text-rose-600 shrink-0" />
                     <span className="leading-tight">Profitability</span>
@@ -1350,7 +1357,7 @@ export default function BusinessReportsPage() {
                   <button
                     type="button"
                     onClick={() => setShowDatePickerModal(true)}
-                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
+                    className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
                   >
                     <Calendar className="w-4 h-4 text-teal-600 shrink-0" />
                     <span className="leading-tight">Custom Date</span>
@@ -1365,7 +1372,7 @@ export default function BusinessReportsPage() {
             CUSTOM DATE PICKER MODAL
            ========================================================================= */}
         {showDatePickerModal && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full p-5 space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
@@ -1448,7 +1455,8 @@ export default function BusinessReportsPage() {
           expenses={effectiveExpenses}
           companyName={company?.name || 'Printing & Signage'}
         />
-      </div>
-    </FeatureGate>
+        </div>
+      </FeatureGate>
+    </PanelAccessGuard>
   )
 }

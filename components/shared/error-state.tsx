@@ -33,7 +33,7 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        'flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-50/40 p-8 text-center dark:border-rose-900/50 dark:bg-rose-950/20 backdrop-blur-xs',
+        'flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-50/40 p-8 text-center dark:border-rose-900/50 dark:bg-rose-950/20 backdrop-blur-sm',
         className
       )}
     >

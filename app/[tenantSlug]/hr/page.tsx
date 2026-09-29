@@ -46,6 +46,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
   WorkforceSummaryKPIs,
@@ -214,7 +215,13 @@ export default function HrmDashboardPage() {
   }
 
   return (
-    <div className="space-y-5 max-w-7xl pb-16">
+    <PanelAccessGuard
+      module="hr"
+      action="view"
+      panelTitle="HRM & Workforce Command"
+      panelTitleBn="এইচআরএম ও কর্মী ব্যবস্থাপনা"
+    >
+      <div className="space-y-5 max-w-7xl pb-16">
       {/* Toast Notification */}
       {notification && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0 shadow-xs">
@@ -784,6 +791,7 @@ export default function HrmDashboardPage() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </PanelAccessGuard>
   )
 }

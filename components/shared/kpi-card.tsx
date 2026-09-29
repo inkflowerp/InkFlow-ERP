@@ -136,13 +136,13 @@ export function KpiCard({
 
   if (isLoading) {
     return (
-      <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs animate-pulse space-y-3">
+      <div className="p-4 sm:p-5 rounded-xl bg-card text-card-foreground border border-border shadow-xs animate-pulse space-y-3">
         <div className="flex items-center justify-between">
-          <div className="h-3.5 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
-          <div className="h-9 w-9 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          <div className="h-3.5 w-24 bg-muted rounded" />
+          <div className="h-9 w-9 bg-muted rounded-xl" />
         </div>
-        <div className="h-7 w-32 bg-slate-200 dark:bg-slate-800 rounded" />
-        <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800/60 rounded" />
+        <div className="h-7 w-32 bg-muted rounded-md" />
+        <div className="h-3 w-20 bg-muted/60 rounded" />
       </div>
     )
   }
@@ -151,7 +151,7 @@ export function KpiCard({
     <div
       onClick={onClick}
       className={cn(
-        'group p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/90 shadow-xs transition-all duration-200 flex flex-col justify-between relative overflow-hidden',
+        'group p-4 sm:p-5 rounded-xl bg-card text-card-foreground border border-border shadow-xs transition-all duration-200 flex flex-col justify-between relative overflow-hidden',
         'border-l-4',
         variant.accentBorder,
         onClick ? 'cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md active:scale-[0.99]' : 'hover:shadow-xs',
@@ -162,7 +162,7 @@ export function KpiCard({
       {/* Top row: Title + Icon Badge */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5 min-w-0">
-          <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 block truncate bangla-text">
+          <span className="text-xs sm:text-sm font-semibold text-muted-foreground block truncate bangla-text">
             {title}
           </span>
           {badge && (
@@ -189,17 +189,17 @@ export function KpiCard({
       {/* Main Metric Value */}
       <div className="mt-2 flex items-baseline gap-1.5 flex-wrap">
         {isCurrency && typeof value === 'number' ? (
-          <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-numeric tabular-nums tracking-normal text-slate-900 dark:text-white" suppressHydrationWarning>
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-numeric tabular-nums tracking-normal text-foreground" suppressHydrationWarning>
             <CurrencyDisplay amount={value} />
           </div>
         ) : (
-          <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-numeric tabular-nums tracking-normal text-slate-900 dark:text-white" suppressHydrationWarning>
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold font-numeric tabular-nums tracking-normal text-foreground" suppressHydrationWarning>
             {formatVal(value)}
           </div>
         )}
 
         {unit && (
-          <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 bangla-text" suppressHydrationWarning>
+          <span className="text-xs sm:text-sm font-semibold text-muted-foreground bangla-text" suppressHydrationWarning>
             {unit}
           </span>
         )}

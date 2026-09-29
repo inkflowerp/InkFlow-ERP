@@ -1249,7 +1249,7 @@ export default function PlatformTenantsPage() {
 
       {/* 1. CREATE BUSINESS MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto">
           <Card className="w-full max-w-2xl bg-slate-900 border-slate-800 text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
             <CardHeader className="border-b border-slate-800 pb-4 shrink-0">
               <div className="flex items-center justify-between">
@@ -1608,7 +1608,7 @@ export default function PlatformTenantsPage() {
 
       {/* 1.1 POST-PROVISIONING CREDENTIALS SUMMARY MODAL */}
       {provisionedResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
           <Card className="w-full max-w-lg bg-slate-900 border-emerald-500/30 text-slate-100 shadow-2xl overflow-hidden">
             <div className="bg-emerald-950/40 border-b border-emerald-500/20 p-5 flex items-start gap-3">
               <div className="h-10 w-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
@@ -1773,7 +1773,7 @@ export default function PlatformTenantsPage() {
 
       {/* 2. CHANGE PLAN MODAL */}
       {planModalCompany && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
           <Card className="w-full max-w-xl bg-slate-900 border-slate-800 text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
             <CardHeader className="border-b border-slate-800 pb-4 shrink-0">
               <div className="flex items-center justify-between">
@@ -1916,7 +1916,7 @@ export default function PlatformTenantsPage() {
 
       {/* 3. SUSPEND / REACTIVATE MODAL */}
       {statusModalCompany && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <Card className="w-full max-w-md bg-slate-900 border-slate-800 text-slate-100 shadow-2xl">
             <CardHeader className="border-b border-slate-800 pb-3">
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
@@ -1975,7 +1975,7 @@ export default function PlatformTenantsPage() {
 
       {/* 3. SUPPORT ACCESS MODAL */}
       {supportModalCompany && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <Card className="w-full max-w-md bg-slate-900 border-slate-800 text-slate-100 shadow-2xl">
             <CardHeader className="border-b border-slate-800 pb-3">
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
@@ -2033,7 +2033,7 @@ export default function PlatformTenantsPage() {
 
       {/* 4. DELETE SINGLE TENANT MODAL */}
       {deleteModalCompany && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto">
           <Card className="w-full max-w-md bg-slate-900 border-red-800/60 text-slate-100 shadow-2xl shadow-red-950/40 my-8">
             <CardHeader className="border-b border-slate-800 pb-3">
               <div className="flex items-center justify-between">
@@ -2269,7 +2269,7 @@ export default function PlatformTenantsPage() {
 
       {/* 5. PURGE ALL TENANTS MODAL */}
       {showPurgeAllModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-0 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
           <Card className="w-full max-w-lg bg-slate-900 border-red-800 text-slate-100 shadow-2xl shadow-red-950/60">
             <CardHeader className="border-b border-slate-800 pb-3">
               <CardTitle className="text-base font-bold text-red-400 flex items-center gap-2">
@@ -2347,7 +2347,7 @@ export default function PlatformTenantsPage() {
 
       {/* 6. DELETE INCOMPLETE REGISTRATION MODAL */}
       {deleteIncompleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in-0 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in-0 duration-200">
           <Card className="w-full max-w-md bg-slate-900 border-amber-800/60 text-slate-100 shadow-2xl shadow-amber-950/40">
             <CardHeader className="border-b border-slate-800 pb-3">
               <CardTitle className="text-base font-bold text-amber-400 flex items-center gap-2">

@@ -57,6 +57,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
 import { PrintableQrPoster } from '@/components/attendance/printable-qr-poster'
 import { formatBDT, formatDate } from '@/lib/formatters'
@@ -2777,7 +2778,7 @@ function AttendanceContent() {
           {/* Detailed Daily Log Table (Scrollable Body) */}
           <div className="flex-1 min-h-0 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl relative shadow-2xs">
             {isReportLoading && (
-              <div className="absolute inset-0 bg-white/60 dark:bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-20">
+              <div className="absolute inset-0 bg-white/60 dark:bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-20">
                 <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-md">
                   <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
                   <span>{tBilingual('Loading attendance logs...', 'হাজিরা লগ লোড হচ্ছে...')}</span>
@@ -2785,7 +2786,7 @@ function AttendanceContent() {
               </div>
             )}
             <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur-xs text-slate-700 dark:text-slate-300 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800 font-bold text-2xs uppercase tracking-wider shadow-2xs">
+              <thead className="bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur-sm text-slate-700 dark:text-slate-300 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800 font-bold text-2xs uppercase tracking-wider shadow-2xs">
                 <tr>
                   <th className="p-3 pl-4">{tBilingual('Date', 'তারিখ')}</th>
                   <th className="p-3">{tBilingual('Day', 'বার')}</th>
@@ -3390,7 +3391,14 @@ export default function AttendancePage() {
         </div>
       }
     >
-      <AttendanceContent />
+      <PanelAccessGuard
+        module="hr"
+        action="view"
+        panelTitle="Attendance & Punching"
+        panelTitleBn="হাজিরা ও পাঞ্চিং"
+      >
+        <AttendanceContent />
+      </PanelAccessGuard>
     </React.Suspense>
   )
 }

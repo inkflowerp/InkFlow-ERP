@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { JobCostingRecord, CostHeads, calculateNegotiationMargin } from '@/types/costing.types'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
@@ -801,8 +802,14 @@ export default function JobCostingPage() {
   }
 
   return (
-    <FeatureGate feature="job_costing">
-      <div className="space-y-6 max-w-7xl pb-20">
+    <PanelAccessGuard
+      module="reports"
+      action="view"
+      panelTitle="Job Costing & Profitability Engine"
+      panelTitleBn="কস্টিং ও লাভ-মার্জিন ইঞ্জিন"
+    >
+      <FeatureGate feature="job_costing">
+        <div className="space-y-6 max-w-7xl pb-20">
         {/* Header with Cross-Module Navigation */}
         <PageHeader
           titleEn="Job Costing & Profitability Engine"
@@ -1909,7 +1916,8 @@ export default function JobCostingPage() {
             </form>
           )}
         </ModalDialog>
-      </div>
-    </FeatureGate>
+        </div>
+      </FeatureGate>
+    </PanelAccessGuard>
   )
 }
