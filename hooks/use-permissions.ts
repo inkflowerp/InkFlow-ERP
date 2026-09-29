@@ -254,11 +254,37 @@ export function usePermissions() {
       (currentRole as any) === 'machine_operator' ||
       respList.some((r) => {
         const s = String(r).toLowerCase()
-        return s === 'operator' || s === 'machine_operator' || s.includes('operat') || s.includes('technician') || s.includes('pressman')
+        return (
+          s === 'operator' ||
+          s === 'machine_operator' ||
+          s.includes('operat') ||
+          s.includes('technician') ||
+          s.includes('pressman') ||
+          s.includes('printer') ||
+          s.includes('press') ||
+          s.includes('offset') ||
+          s.includes('finisher') ||
+          s.includes('machinist') ||
+          s.includes('die-cut') ||
+          s.includes('fabricat')
+        )
       }) ||
       userRoleSlugs.some((r) => {
         const s = String(r).toLowerCase()
-        return s === 'operator' || s === 'machine_operator' || s.includes('operat') || s.includes('technician') || s.includes('pressman')
+        return (
+          s === 'operator' ||
+          s === 'machine_operator' ||
+          s.includes('operat') ||
+          s.includes('technician') ||
+          s.includes('pressman') ||
+          s.includes('printer') ||
+          s.includes('press') ||
+          s.includes('offset') ||
+          s.includes('finisher') ||
+          s.includes('machinist') ||
+          s.includes('die-cut') ||
+          s.includes('fabricat')
+        )
       })
     )
 

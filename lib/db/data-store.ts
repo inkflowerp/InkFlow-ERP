@@ -133,6 +133,8 @@ export const STORAGE_KEYS = {
   EMPLOYEES: 'printerp_tenant_employees',
   ATTENDANCE: 'printerp_tenant_attendance',
   SALARY_ADVANCES: 'printerp_tenant_salary_advances',
+  LEAVE_REQUESTS: 'printerp_tenant_leave_requests',
+  OVERTIME: 'printerp_tenant_overtime',
   DAILY_LABOR_LOGS: 'printerp_tenant_daily_labor_logs',
   PAYROLL: 'printerp_tenant_payroll',
   PAYROLL_PERIODS: 'printerp_tenant_payroll_periods',

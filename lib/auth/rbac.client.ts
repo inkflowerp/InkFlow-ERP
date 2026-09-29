@@ -416,6 +416,12 @@ export function normalizeResponsibilitySlug(slug: string): ResponsibilitySlug {
     production_manager: 'production_manager',
     operator: 'operator',
     machine_operator: 'operator',
+    print_operator: 'operator',
+    pressman: 'operator',
+    press_operator: 'operator',
+    offset_printer: 'operator',
+    digital_operator: 'operator',
+    finishing_operator: 'operator',
     store_manager: 'store_manager',
     inventory_manager: 'store_manager',
     accountant: 'accountant',
@@ -451,7 +457,20 @@ export function normalizeResponsibilitySlug(slug: string): ResponsibilitySlug {
   if (s.includes('store') || s.includes('inventor') || s.includes('stock')) {
     return 'store_manager'
   }
-  if (s.includes('operat') || s.includes('technician') || s.includes('pressman') || s.includes('machinist')) {
+  if (
+    s.includes('operat') ||
+    s.includes('technician') ||
+    s.includes('pressman') ||
+    s.includes('machinist') ||
+    s.includes('printer') ||
+    s.includes('printmaster') ||
+    s.includes('press') ||
+    s.includes('offset') ||
+    s.includes('finisher') ||
+    s.includes('die-cut') ||
+    s.includes('binder') ||
+    s.includes('fabricat')
+  ) {
     return 'operator'
   }
   if (s.includes('owner') || s.includes('admin') || s.includes('director')) {

@@ -104,7 +104,19 @@ export function resolveTenantRole(
   ) {
     return 'graphic_designer'
   }
-  if (raw === 'machine_operator' || raw === 'operator' || raw === 'technician' || raw.includes('operat')) {
+  if (
+    raw === 'machine_operator' ||
+    raw === 'operator' ||
+    raw === 'technician' ||
+    raw.includes('operat') ||
+    raw.includes('printer') ||
+    raw.includes('press') ||
+    raw.includes('offset') ||
+    raw.includes('finisher') ||
+    raw.includes('machinist') ||
+    raw.includes('die-cut') ||
+    raw.includes('fabricat')
+  ) {
     return 'machine_operator'
   }
   if (raw === 'production_manager' || raw === 'production' || raw.includes('production')) {
@@ -151,7 +163,19 @@ export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string
     return 'designer'
   }
   if (rawRole === 'sales_manager' || rawRole === 'sales' || rawRole === 'sales_executive' || rawRole === 'manager' || rawRole.includes('sale')) return 'manager'
-  if (rawRole === 'machine_operator' || rawRole === 'operator' || rawRole === 'technician' || rawRole.includes('operat')) return 'operator'
+  if (
+    rawRole === 'machine_operator' ||
+    rawRole === 'operator' ||
+    rawRole === 'technician' ||
+    rawRole.includes('operat') ||
+    rawRole.includes('printer') ||
+    rawRole.includes('press') ||
+    rawRole.includes('offset') ||
+    rawRole.includes('finisher') ||
+    rawRole.includes('machinist') ||
+    rawRole.includes('die-cut') ||
+    rawRole.includes('fabricat')
+  ) return 'operator'
   if (rawRole === 'production_manager' || rawRole === 'production' || rawRole.includes('production')) return 'manager'
   if (rawRole === 'accountant' || rawRole === 'accounts' || rawRole === 'billing' || rawRole.includes('account')) return 'accountant'
   if (rawRole === 'delivery_coordinator' || rawRole === 'delivery' || rawRole === 'installer' || rawRole.includes('deliver')) return 'installer'
