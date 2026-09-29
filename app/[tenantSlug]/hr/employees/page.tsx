@@ -761,9 +761,11 @@ function EmployeeListContent() {
     setIsEditingCredentials(editCreds)
     const pc = emp.portal_credentials
     const cleanUname = pc?.username || generateSafeEmployeeUsername(emp.name, emp.employee_id_number, emp.mobile)
+    const cleanSlug = tenantSlug ? tenantSlug.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase() : 'workspace'
+    const fallbackEmail = pc?.email || emp.email || (emp.mobile ? `${emp.mobile.replace(/\D/g, '') || cleanUname}@${cleanSlug}.inkflow.app` : `${cleanUname}@${cleanSlug}.inkflow.app`)
     setCredsForm({
-      create_login: pc?.create_login ?? false,
-      email: pc?.email || emp.email || `${cleanUname}@${tenantSlug || 'workspace'}.inkflow.app`,
+      create_login: editCreds ? true : (pc?.create_login ?? false),
+      email: fallbackEmail,
       username: cleanUname,
       password: pc?.password || `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
       role: pc?.role || emp.role?.toLowerCase() || 'operator',
@@ -872,7 +874,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
       const res = await updateEmployeeLoginCredentialsAction(
         selectedEmployee.id,
         {
-          create_login: credsForm.create_login,
+          create_login: true,
           email: credsForm.email.trim() || undefined,
           username: sanitizedUname,
           password: credsForm.password.trim() || undefined,
@@ -4612,11 +4614,21 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                           : 'No Portal Access'}
                       </Badge>
 
-                      {selectedEmployee.portal_credentials?.create_login ? (
+                      {isEditingCredentials ? (
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 text-xs px-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950"
+                          className="h-7 text-xs px-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                          onClick={() => setIsEditingCredentials(false)}
+                          disabled={isSavingCreds}
+                        >
+                          {tBilingual('Cancel', 'বাতিল')}
+                        </Button>
+                      ) : selectedEmployee.portal_credentials?.create_login ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs px-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 cursor-pointer"
                           onClick={() => handleTogglePortalAccess(false)}
                           disabled={isSavingCreds}
                         >
@@ -4626,7 +4638,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 text-xs px-2.5 bg-blue-600 text-white hover:bg-blue-700 border-none"
+                          className="h-7 text-xs px-2.5 bg-blue-600 text-white hover:bg-blue-700 border-none cursor-pointer"
                           onClick={() => {
                             const safeUser = generateSafeEmployeeUsername(
                               selectedEmployee.name,
@@ -4858,7 +4870,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                         )}
                       </div>
                     </div>
-                  ) : selectedEmployee.portal_credentials?.create_login && isEditingCredentials ? (
+                  ) : isEditingCredentials ? (
                     /* Inline Editing Mode */
                     <div className="space-y-3 bg-white dark:bg-slate-900 p-4 rounded-xl border border-blue-500/20">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
