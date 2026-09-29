@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import {
   GitBranch,
   Plus,
@@ -15,10 +16,13 @@ import {
   Search,
   Crown,
   User,
+  ShieldAlert,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { usePermissions } from '@/hooks/use-permissions'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -64,9 +68,14 @@ const DEFAULT_MAIN_BRANCH: BranchItem[] = [
 ]
 
 export default function BranchesSettingsPage() {
+  const router = useRouter()
+  const params = useParams()
   const { company, refreshTenant } = useTenant()
+  const { isOwner, can } = usePermissions()
   const { locale, tBilingual } = useI18n()
   const [mounted, setMounted] = useState(false)
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'app'
+
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
   const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, DEFAULT_MAIN_BRANCH)
   const [searchQuery, setSearchQuery] = useState('')
@@ -79,6 +88,35 @@ export default function BranchesSettingsPage() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Guard: branch settings are strictly for owners and admins
+  if (mounted && !isOwner && !can('manage', 'branches')) {
+    return (
+      <div className="max-w-2xl mx-auto py-16 px-4 text-center">
+        <div className="p-8 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 space-y-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
+            <ShieldAlert className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 bangla-text">
+            {tBilingual('Branch Administration Restricted', 'শাখা ব্যবস্থাপনা সীমিত')}
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto bangla-text leading-relaxed">
+            {tBilingual(
+              'Company branches and multi-location hub administration are restricted to business owners.',
+              'প্রতিষ্ঠান শাখা ও হাব ব্যবস্থাপনা সেটিংস শুধুমাত্র প্রতিষ্ঠান মালিকের জন্য সংরক্ষিত।'
+            )}
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => router.push(getTenantNavHref('/dashboard', undefined, tenantSlug))}
+            className="cursor-pointer font-medium"
+          >
+            {tBilingual('Return to Dashboard', 'ড্যাশবোর্ডে ফিরুন')}
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const loadLiveBranches = useCallback(async () => {
     try {

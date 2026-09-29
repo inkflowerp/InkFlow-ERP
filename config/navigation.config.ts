@@ -359,7 +359,8 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
               titleBn: 'শাখা ও কারখানা',
               href: '/settings/branches',
               icon: 'Building',
-              permission: { action: 'view', resource: 'branches' },
+              permission: { action: 'manage', resource: 'branches' },
+              ownerOnly: true,
             },
             {
               key: 'settings_attendance',

@@ -21,6 +21,7 @@ import {
   Crown,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { usePermissions } from '@/hooks/use-permissions'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -29,6 +30,7 @@ export function SettingsNav() {
   const pathname = usePathname()
   const params = useParams()
   const { company } = useTenant()
+  const { isOwner, can } = usePermissions()
   const { locale, tBilingual } = useI18n()
   const [mounted, setMounted] = useState(false)
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'rangao'
@@ -37,7 +39,10 @@ export function SettingsNav() {
     setMounted(true)
   }, [])
 
-  const links = [
+  const canManageBranches = isOwner || can('manage', 'branches')
+  const canManageSubscription = isOwner
+
+  const rawLinks = [
     {
       title: 'Overview',
       titleBn: 'মূল সেটিংস',
@@ -119,6 +124,12 @@ export function SettingsNav() {
       icon: Crown,
     },
   ]
+
+  const links = rawLinks.filter((link) => {
+    if (link.href === '/settings/branches' && !canManageBranches) return false
+    if (link.href === '/settings/subscription' && !canManageSubscription) return false
+    return true
+  })
 
   return (
     <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto gap-1 pb-px scrollbar-none mb-6 touch-scroll">

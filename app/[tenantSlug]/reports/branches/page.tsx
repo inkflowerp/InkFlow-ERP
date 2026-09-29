@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { useTenant } from '@/hooks/use-tenant'
+import { usePermissions } from '@/hooks/use-permissions'
 import { useI18n } from '@/i18n/context'
 import { PageHeader } from '@/components/shared/page-header'
 import { BranchPerformanceDashboard } from '@/components/branches/branch-performance-dashboard'
@@ -35,6 +36,7 @@ import {
   Printer,
   FileSpreadsheet,
   Calendar,
+  ShieldAlert,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -42,6 +44,7 @@ import { exportToCsv } from '@/services/reports.service'
 
 export default function MultiBranchReportingPage() {
   const { currentBranch, company } = useTenant()
+  const { isOwner, can } = usePermissions()
   const { tBilingual } = useI18n()
   const params = useParams()
   const pathname = usePathname()
@@ -61,6 +64,34 @@ export default function MultiBranchReportingPage() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  if (mounted && !isOwner && !can('view', 'reports')) {
+    return (
+      <div className="max-w-2xl mx-auto py-16 px-4 text-center">
+        <div className="p-8 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 space-y-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
+            <ShieldAlert className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 bangla-text">
+            {tBilingual('Branch Reports Restricted', 'শাখা রিপোর্ট সীমিত')}
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto bangla-text leading-relaxed">
+            {tBilingual(
+              'Multi-branch consolidated reports are restricted to business owners.',
+              'একাধিক শাখার সমন্বিত রিপোর্ট শুধুমাত্র প্রতিষ্ঠান মালিকের জন্য সংরক্ষিত।'
+            )}
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => router.push(getTenantNavHref('/dashboard', undefined, tenantSlug))}
+            className="cursor-pointer font-medium"
+          >
+            {tBilingual('Return to Dashboard', 'ড্যাশবোর্ডে ফিরুন')}
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
