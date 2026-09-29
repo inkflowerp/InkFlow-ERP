@@ -9,14 +9,25 @@ import { cn } from '@/lib/utils'
 interface ThemeToggleProps {
   className?: string
   showDropdown?: boolean
+  variant?: 'button' | 'switch'
   size?: 'sm' | 'md'
 }
 
-export function ThemeToggle({ className, showDropdown = false, size = 'md' }: ThemeToggleProps) {
+export function ThemeToggle({
+  className,
+  showDropdown = false,
+  variant = 'button',
+  size = 'md',
+}: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
   const { tBilingual } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Handle outside click for dropdown
   useEffect(() => {
@@ -38,6 +49,48 @@ export function ThemeToggle({ className, showDropdown = false, size = 'md' }: Th
     { mode: 'system', labelEn: 'System', labelBn: 'সিস্টেম', icon: Laptop },
   ]
 
+  // Direct pill switch with sliding thumb & Sun/Moon icons (no dropdown)
+  if (variant === 'switch') {
+    const isDark = mounted ? resolvedTheme === 'dark' : false
+    return (
+      <button
+        type="button"
+        role="switch"
+        aria-checked={isDark}
+        onClick={toggleTheme}
+        className={cn(
+          'relative inline-flex shrink-0 cursor-pointer rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+          size === 'sm' ? 'h-7 w-12 p-0.5' : 'h-8 w-14 p-1',
+          className
+        )}
+        title={
+          !mounted
+            ? tBilingual('Toggle dark/light mode', 'ডার্ক/লাইট মোড পরিবর্তন')
+            : isDark
+            ? tBilingual('Switch to Light Mode', 'লাইট মোডে পরিবর্তন করুন')
+            : tBilingual('Switch to Dark Mode', 'ডার্ক মোডে পরিবর্তন করুন')
+        }
+        aria-label={tBilingual('Toggle dark/light mode', 'ডার্ক/লাইট মোড পরিবর্তন')}
+      >
+        <span
+          className={cn(
+            'flex items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow-xs transition-transform duration-200 ease-in-out',
+            size === 'sm' ? 'h-5.5 w-5.5' : 'h-6 w-6',
+            isDark ? (size === 'sm' ? 'translate-x-5' : 'translate-x-6') : 'translate-x-0'
+          )}
+        >
+          {!mounted ? (
+            <span className={size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+          ) : isDark ? (
+            <Moon className={cn(size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5', 'text-blue-400')} />
+          ) : (
+            <Sun className={cn(size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5', 'text-amber-500')} />
+          )}
+        </span>
+      </button>
+    )
+  }
+
   if (!showDropdown) {
     return (
       <button
@@ -49,13 +102,17 @@ export function ThemeToggle({ className, showDropdown = false, size = 'md' }: Th
           className
         )}
         title={
-          resolvedTheme === 'dark'
+          !mounted
+            ? tBilingual('Toggle Theme', 'থিম পরিবর্তন')
+            : resolvedTheme === 'dark'
             ? tBilingual('Switch to Light Mode', 'লাইট মোডে পরিবর্তন করুন')
             : tBilingual('Switch to Dark Mode', 'ডার্ক মোডে পরিবর্তন করুন')
         }
         aria-label={tBilingual('Toggle Theme', 'থিম পরিবর্তন')}
       >
-        {resolvedTheme === 'dark' ? (
+        {!mounted ? (
+          <span className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'inline-block')} />
+        ) : resolvedTheme === 'dark' ? (
           <Sun className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-amber-400 transition-opacity duration-150')} />
         ) : (
           <Moon className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-foreground transition-opacity duration-150')} />
@@ -77,7 +134,9 @@ export function ThemeToggle({ className, showDropdown = false, size = 'md' }: Th
         title={tBilingual('Select Theme', 'থিম নির্বাচন করুন')}
         aria-label={tBilingual('Theme menu', 'থিম মেনু')}
       >
-        {resolvedTheme === 'dark' ? (
+        {!mounted ? (
+          <span className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'inline-block')} />
+        ) : resolvedTheme === 'dark' ? (
           <Sun className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-amber-400')} />
         ) : (
           <Moon className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-foreground')} />

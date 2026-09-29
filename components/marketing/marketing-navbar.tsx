@@ -2,36 +2,31 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   Printer,
   Menu,
   X,
   ArrowRight,
   Globe2,
-  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { useI18n } from '@/i18n/context'
 import { MARKETING_NAV_ITEMS } from '@/lib/marketing/marketing-data'
-import { usePublicSubscriptionPlans, toBengaliDigits } from '@/hooks/use-public-plans'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
+
+import { ThemeToggle } from '@/components/shell/theme-toggle'
 
 interface MarketingNavbarProps {
   onOpenDemo?: () => void
 }
 
 export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
-  const { appName, appLogoUrl, tagline } = usePlatformSettings()
+  const { appName, appLogoUrl } = usePlatformSettings()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const { locale, setLocale, tBilingual } = useI18n()
-  const { trialDays } = usePublicSubscriptionPlans()
-  const router = useRouter()
-
-  const trialDaysBn = toBengaliDigits(trialDays)
 
   useEffect(() => {
     setMobileMenuOpen(false)
@@ -39,7 +34,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
+      if (window.scrollY > 15) {
         setIsScrolled(true)
       } else {
         setIsScrolled(false)
@@ -54,189 +49,145 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
     else setLocale('en')
   }
 
-  const getLanguageLabel = () => {
-    if (locale === 'en') return 'EN'
-    return 'বাং'
-  }
-
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200 ${
         isScrolled
-          ? 'bg-slate-950/95 backdrop-blur-md border-b border-slate-800/80 shadow-lg shadow-black/20'
-          : 'bg-transparent border-b border-transparent'
+          ? 'bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-2xs'
+          : 'bg-white/80 dark:bg-slate-950/80 backdrop-blur-xs border-b border-slate-200/40 dark:border-slate-800/40'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20 gap-3 sm:gap-4">
-          {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+        <div className="flex items-center justify-between h-16 sm:h-18 gap-4">
+          {/* Logo & Platform Name */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
             {appLogoUrl ? (
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl object-contain bg-slate-900 border border-slate-700/60 p-1 shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform shrink-0"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-contain bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-0.5 shadow-2xs shrink-0"
               />
             ) : (
-              <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform shrink-0">
-                <Printer className="h-4 w-4 sm:h-5 sm:w-5" />
-                {/* CMYK Accent Dots */}
-                <div className="absolute -bottom-1 -right-1 flex gap-0.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" title="Cyan" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-500" title="Magenta" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400" title="Yellow" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-slate-900 border border-slate-700" title="Key" />
-                </div>
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs shrink-0">
+                <Printer className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
               </div>
             )}
-            <div className="flex flex-col shrink-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg sm:text-xl font-black tracking-tight text-white nav-link-nowrap">
-                  {appName}
-                </span>
-                <span className="rounded bg-cyan-500/10 px-1 sm:px-1.5 py-0.5 text-2xs sm:text-2xs font-bold uppercase tracking-wider text-cyan-400 border border-cyan-500/20 nav-link-nowrap">
-                  BD SaaS
-                </span>
-              </div>
-              <span className="text-2xs text-slate-400 font-medium hidden sm:inline leading-none nav-link-nowrap">
-                {tagline || 'Printing & Signage OS'}
-              </span>
-            </div>
+            <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              {appName}
+            </span>
           </Link>
 
-          {/* Desktop Navigation Links (Visible on LG 1024px+) */}
-          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 shrink-0">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8">
             {MARKETING_NAV_ITEMS.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
-                className="nav-link-nowrap px-2.5 xl:px-3 py-1.5 xl:py-2 text-xs xl:text-sm font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/60 transition-colors bangla-text shrink-0"
+                className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors bangla-text"
               >
                 {tBilingual(item.labelEn, item.labelBn)}
-              </a>
+              </Link>
             ))}
-
-            <Link
-              href="/about"
-              className="nav-link-nowrap px-2.5 xl:px-3 py-1.5 xl:py-2 text-xs xl:text-sm font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/60 transition-colors bangla-text shrink-0 hidden 2xl:inline-block"
-            >
-              {tBilingual('About', 'আমাদের সম্পর্কে')}
-            </Link>
-            <Link
-              href="/contact"
-              className="nav-link-nowrap px-2.5 xl:px-3 py-1.5 xl:py-2 text-xs xl:text-sm font-semibold text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/60 transition-colors bangla-text shrink-0 hidden 2xl:inline-block"
-            >
-              {tBilingual('Contact', 'যোগাযোগ')}
-            </Link>
           </nav>
 
-          {/* Right Action CTAs (Visible on LG 1024px+) */}
-          <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
-            {/* 1-Click Language Switcher */}
-            <LanguageSwitcher />
+          {/* Right Desktop Actions */}
+          <div className="hidden md:flex items-center gap-2 sm:gap-2.5">
+            {/* Direct Dark/Light Switch (No dropdown) */}
+            <ThemeToggle variant="switch" size="md" />
 
-            {/* Login Link */}
-            <Link
-              href="/login"
-              className="nav-link-nowrap text-xs xl:text-sm font-semibold text-slate-300 hover:text-white px-2.5 xl:px-3 py-1.5 xl:py-2 transition-colors bangla-text shrink-0"
+            {/* Language Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer h-9"
+              title={locale === 'en' ? 'Switch to Bangla' : 'Switch to English'}
+              aria-label="Toggle language"
             >
-              {tBilingual('Sign In', 'লগইন')}
+              <Globe2 className="h-3.5 w-3.5 text-slate-500" />
+              <span>{locale === 'en' ? 'বাং' : 'EN'}</span>
+            </button>
+
+            {/* Sign In Link */}
+            <Link href="/login">
+              <Button
+                variant="ghost"
+                className="h-9 px-3 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+              >
+                {tBilingual('Sign In', 'সাইন ইন')}
+              </Button>
             </Link>
 
             {/* Start Free Trial Primary CTA */}
-            <Link href="/register" className="shrink-0">
-              <Button className="nav-link-nowrap bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs xl:text-sm px-3.5 xl:px-5 h-9 xl:h-10 shadow-lg shadow-cyan-500/20 border border-cyan-400/30 group cursor-pointer shrink-0 bangla-text">
-                <span>{tBilingual('Start Free Trial', 'ফ্রি ট্রায়াল শুরু করুন')}</span>
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5 xl:h-4 xl:w-4 group-hover:translate-x-0.5 transition-transform shrink-0" />
+            <Link href="/register">
+              <Button className="h-9 px-4 text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer bangla-text">
+                <span>{tBilingual('Start Free Trial', 'ফ্রি ট্রায়াল শুরু')}</span>
               </Button>
             </Link>
           </div>
 
-          {/* Mobile / Tablet Header Bar (Visible under LG 1024px) */}
-          <div className="flex items-center gap-2 lg:hidden shrink-0">
-            {/* 1-Click Language Switcher */}
-            <LanguageSwitcher compact size="sm" />
+          {/* Mobile Actions: Theme Switch + Language + Hamburger */}
+          <div className="flex md:hidden items-center gap-1.5">
+            <ThemeToggle variant="switch" size="sm" />
 
-            {/* Tablet/Mobile Sign In */}
-            <Link
-              href="/login"
-              className="hidden sm:inline-flex nav-link-nowrap text-xs font-semibold text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 shrink-0 bangla-text"
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 h-8 px-2"
+              aria-label="Toggle language"
             >
-              {tBilingual('Sign In', 'লগইন')}
-            </Link>
+              <span>{locale === 'en' ? 'বাং' : 'EN'}</span>
+            </button>
 
-            {/* Tablet/Mobile Try Free */}
-            <Link href="/register" className="shrink-0">
-              <Button size="sm" className="nav-link-nowrap bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-bold px-3 h-8 shrink-0 bangla-text">
-                {tBilingual('Try Free', 'ট্রায়াল')}
-              </Button>
-            </Link>
-
-            {/* Hamburger Toggle */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none shrink-0 cursor-pointer"
-              aria-label="Toggle Navigation Menu"
+              className="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer h-8 w-8 flex items-center justify-center"
+              aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
+              aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Backdrop for mobile menu */}
+      {/* Mobile Menu Dropdown Drawer */}
       {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 top-16 sm:top-20 z-40 bg-slate-950/60 backdrop-blur-sm lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Mobile Menu Dropdown */}
-      {mobileMenuOpen && (
-        <div className="relative z-50 lg:hidden bg-slate-950/98 border-b border-slate-800 px-4 pt-3 pb-6 space-y-3 backdrop-blur-2xl animate-in slide-in-from-top-2 duration-200 max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-5rem)] overflow-y-auto shadow-2xl">
-          <div className="flex flex-col space-y-1">
+        <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 space-y-4 animate-in slide-in-from-top-2 duration-150">
+          <nav className="flex flex-col space-y-1">
             {MARKETING_NAV_ITEMS.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3.5 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-900 hover:text-cyan-400 transition-colors bangla-text"
+                className="px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 dark:hover:text-blue-400 transition-colors bangla-text"
               >
                 {tBilingual(item.labelEn, item.labelBn)}
-              </a>
+              </Link>
             ))}
-            <Link
-              href="/about"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3.5 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-900 hover:text-cyan-400 transition-colors bangla-text"
-            >
-              {tBilingual(`About ${appName}`, `${appName} পরিচিতি`)}
-            </Link>
-            <Link
-              href="/contact"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3.5 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-900 hover:text-cyan-400 transition-colors bangla-text"
-            >
-              {tBilingual('Contact & Support', 'যোগাযোগ ও সাপোর্ট')}
-            </Link>
+          </nav>
+
+          <div className="pt-2 pb-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between px-2">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+              {tBilingual('Appearance & Theme', 'থিম ও ডিসপ্লে')}
+            </span>
+            <ThemeToggle variant="switch" size="sm" />
           </div>
 
-          <div className="pt-4 border-t border-slate-800/80 flex flex-col gap-2.5">
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full">
               <Button
-                variant="ghost"
-                className="w-full justify-center border border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800 hover:text-white h-11 font-semibold bangla-text cursor-pointer"
+                variant="outline"
+                className="w-full h-11 text-sm font-semibold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer"
               >
-                {tBilingual('Sign In to Account', 'একাউন্টে লগইন করুন')}
+                {tBilingual('Sign In', 'সাইন ইন')}
               </Button>
             </Link>
+
             <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full">
-              <Button className="w-full justify-center bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold h-11 bangla-text">
-                <span>{tBilingual(`Start ${trialDays}-Day Free Trial`, `${trialDaysBn} দিনের ফ্রি ট্রায়াল শুরু`)}</span>
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button className="w-full h-11 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer bangla-text">
+                <span>{tBilingual('Start Free Trial', 'ফ্রি ট্রায়াল শুরু')}</span>
+                <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </Link>
           </div>

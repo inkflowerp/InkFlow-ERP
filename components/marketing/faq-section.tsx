@@ -4,115 +4,73 @@ import React, { useState } from 'react'
 import {
   HelpCircle,
   ChevronDown,
-  ChevronUp,
-  Sparkles,
-  MessageSquare,
-  Search,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { FAQS } from '@/lib/marketing/marketing-data'
 
-const CATEGORIES = [
-  { id: 'all', labelEn: 'All Questions', labelBn: 'সকল প্রশ্নোত্তর' },
-  { id: 'local', labelEn: 'Bangla & BDT', labelBn: 'বাংলা ও টাকা হিসাব' },
-  { id: 'production', labelEn: 'Production & Rolls', labelBn: 'প্রোডাকশন ও রোল ইনভেন্টরি' },
-  { id: 'billing', labelEn: 'Dues & Accounting', labelBn: 'বকেয়া ও একাউন্টিং' },
-]
-
 export function FAQSection() {
   const { tBilingual } = useI18n()
   const [openIdx, setOpenIdx] = useState<number | null>(0)
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
   const toggleFAQ = (idx: number) => {
     setOpenIdx(openIdx === idx ? null : idx)
   }
 
-  // Assign category indices for clean filtering
-  const filteredFaqs = FAQS.filter((_, idx) => {
-    if (selectedCategory === 'all') return true
-    if (selectedCategory === 'local') return [0, 1, 3, 4].includes(idx)
-    if (selectedCategory === 'production') return [2, 5, 6, 11].includes(idx)
-    if (selectedCategory === 'billing') return [7, 8, 9, 10].includes(idx)
-    return true
-  })
-
   return (
-    <section id="faq" className="py-16 sm:py-20 md:py-28 bg-slate-900/80 relative overflow-hidden border-t border-slate-800">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="faq" className="py-16 sm:py-24 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200/80 dark:border-slate-800">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-14">
         {/* Section Header */}
         <div className="text-center space-y-3 sm:space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs font-bold uppercase tracking-wider bangla-text">
-            <HelpCircle className="h-3.5 w-3.5 shrink-0" />
-            <span>{tBilingual('Got Questions? We Have Answers', 'সাধারণ জিজ্ঞাসা ও উত্তর')}</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
+            <HelpCircle className="h-3.5 w-3.5" />
+            <span>{tBilingual('Clear Answers', 'সাধারণ প্রশ্নোত্তর')}</span>
           </div>
 
-          <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight bangla-text">
-            {tBilingual(
-              'Frequently Asked Questions.',
-              'সচরাচর জিজ্ঞাসিত প্রশ্নোত্তর।'
-            )}
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight bangla-text">
+            {tBilingual('Frequently Asked Questions.', 'সচরাচর জিজ্ঞাসিত প্রশ্নোত্তর।')}
           </h2>
 
-          <p className="text-sm sm:text-lg text-slate-400 leading-relaxed bangla-text">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
-              'Everything you need to know about PrintERP software, Bengali localization, BDT pricing, and migration from paper slips or Excel.',
-              'প্রিন্টইআরপি ব্যবহারের নিয়ম, বাংলা ভাষা, বাংলাদেশি টাকা হিসাব এবং এক্সেল থেকে ডেটা আনার বিস্তারিত তথ্য।'
+              'Clear, direct answers about PrintERP features, roll tracking, Bengali localization, BDT pricing, and getting started.',
+              'প্রিন্টইআরপির ফিচার, রোল স্টক, বাংলা ভাষা, টাকা হিসাব এবং সহজে শুরু করার স্পষ্ট উত্তর।'
             )}
           </p>
         </div>
 
-        {/* Category Pills */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => {
-                setSelectedCategory(cat.id)
-                setOpenIdx(null)
-              }}
-              className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bangla-text ${
-                selectedCategory === cat.id
-                  ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
-                  : 'bg-slate-950/80 text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-900'
-              }`}
-            >
-              {tBilingual(cat.labelEn, cat.labelBn)}
-            </button>
-          ))}
-        </div>
-
-        {/* 12 Accessible Accordion Questions */}
-        <div className="mt-8 space-y-2.5 sm:space-y-3">
-          {filteredFaqs.map((faq, idx) => {
+        {/* Accordion List */}
+        <div className="space-y-3">
+          {FAQS.map((faq, idx) => {
             const isOpen = openIdx === idx
+
             return (
               <div
                 key={idx}
-                className="rounded-2xl border border-slate-800 bg-slate-950/80 overflow-hidden transition-all duration-200"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden transition-all shadow-2xs"
               >
                 <button
                   type="button"
                   onClick={() => toggleFAQ(idx)}
-                  className="w-full p-4 sm:p-5 md:p-6 text-left flex items-center justify-between gap-3 sm:gap-4 hover:bg-slate-900/60 transition-colors cursor-pointer"
+                  className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
                   aria-expanded={isOpen}
                 >
-                  <span className="font-bold text-sm sm:text-base md:text-lg text-white bangla-text leading-snug">
+                  <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white bangla-text pr-2">
                     {tBilingual(faq.qEn, faq.qBn)}
                   </span>
                   <div
-                    className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-                      isOpen ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-900 text-slate-400'
+                    className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                      isOpen
+                        ? 'rotate-180 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
                     }`}
                   >
-                    {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    <ChevronDown className="h-4 w-4" />
                   </div>
                 </button>
 
                 {isOpen && (
-                  <div className="px-4 pb-4 sm:px-5 sm:pb-5 md:px-6 md:pb-6 text-xs sm:text-sm md:text-base text-slate-300 leading-relaxed border-t border-slate-800/80 pt-3.5 sm:pt-4 bg-slate-900/30 animate-in fade-in-0 duration-200 bangla-text">
-                    {tBilingual(faq.aEn, faq.aBn)}
+                  <div className="px-4 sm:px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800/60 bangla-text animate-in fade-in-0 duration-150">
+                    <p>{tBilingual(faq.aEn, faq.aBn)}</p>
                   </div>
                 )}
               </div>

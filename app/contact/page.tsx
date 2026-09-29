@@ -3,10 +3,11 @@
 import React, { useState } from 'react'
 import { MarketingNavbar } from '@/components/marketing/marketing-navbar'
 import { MarketingFooter } from '@/components/marketing/marketing-footer'
-import { DemoModal } from '@/components/marketing/demo-modal'
+import { MarketingDemoProvider } from '@/components/marketing/demo-modal-context'
 import { useI18n } from '@/i18n/context'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
 import { Button } from '@/components/ui/button'
+import { submitDemoRequestAction } from '@/actions/lead.actions'
 import {
   Phone,
   Mail,
@@ -14,14 +15,15 @@ import {
   Clock,
   Send,
   CheckCircle2,
-  Building2,
-  User,
   MessageSquare,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react'
 
 export default function PublicContactPage() {
-  const [demoOpen, setDemoOpen] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { tBilingual } = useI18n()
   const { appName, supportHelpline, contactPhone, contactEmail, contactAddress } = usePlatformSettings()
 
@@ -33,223 +35,259 @@ export default function PublicContactPage() {
     message: '',
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
+    setIsSubmitting(true)
+    setErrorMessage(null)
+
+    try {
+      const res = await submitDemoRequestAction({
+        contactName: form.name,
+        pressName: form.pressName,
+        phone: form.phone,
+        email: form.email || undefined,
+        city: 'Dhaka',
+        businessType: 'General Inquiries',
+      })
+
+      if (res.success) {
+        setSubmitted(true)
+      } else {
+        setErrorMessage(res.error || 'Failed to submit inquiry')
+      }
+    } catch {
+      setErrorMessage('Something went wrong. Please reach out via WhatsApp or phone.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-white font-sans antialiased overflow-x-hidden">
-      <MarketingNavbar onOpenDemo={() => setDemoOpen(true)} />
+    <MarketingDemoProvider>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
+        <MarketingNavbar />
 
-      <main className="pt-20">
-        {/* Banner */}
-        <div className="py-16 bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800 text-center px-4">
-          <div className="max-w-3xl mx-auto space-y-3">
-            <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/30">
-              Get in Touch
-            </span>
-            <h1 className="text-4xl sm:text-5xl font-black text-white bangla-text">
-              {tBilingual('We’re Here to Help Your Press Grow.', 'আপনার প্রেসের সহযোগিতায় আমরা প্রস্তুত।')}
-            </h1>
-            <p className="text-slate-400 text-base max-w-xl mx-auto leading-relaxed bangla-text">
-              {tBilingual(
-                'Have a question about implementation, pricing, or custom hardware integrations? Reach out to our Dhaka support team.',
-                'সফটওয়্যার বাস্তবায়ন, ট্রেনিং বা কাস্টম ইন্টিগ্রেশনের যেকোনো প্রশ্নে আমাদের সাথে যোগাযোগ করুন।'
-              )}
-            </p>
+        <main className="pt-20">
+          {/* Banner */}
+          <div className="py-16 sm:py-20 bg-white dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-800 text-center px-4">
+            <div className="max-w-3xl mx-auto space-y-3">
+              <span className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-200/70 dark:border-blue-800/60">
+                Get in Touch
+              </span>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white bangla-text tracking-tight">
+                {tBilingual('We’re Here to Help Your Press Grow.', 'আপনার প্রেসের সহযোগিতায় আমরা প্রস্তুত।')}
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed bangla-text">
+                {tBilingual(
+                  'Have a question about implementation, pricing, or custom hardware integrations? Reach out to our Dhaka support team.',
+                  'সফটওয়্যার বাস্তবায়ন, ট্রেনিং বা কাস্টম ইন্টিগ্রেশনের যেকোনো প্রশ্নে আমাদের সাথে যোগাযোগ করুন।'
+                )}
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Contact Layout */}
-        <div className="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            {/* Left Info Column (5 Cols) */}
-            <div className="lg:col-span-5 space-y-6">
-              <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-6">
-                <h3 className="text-xl font-bold text-white bangla-text">
-                  {tBilingual('Dhaka Headquarters & Help Desk', 'ঢাকা প্রধান কার্যালয় ও সাপোর্ট ডেস্ক')}
-                </h3>
+          {/* Contact Layout */}
+          <div className="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+              {/* Left Info Column (5 Cols) */}
+              <div className="lg:col-span-5 space-y-6">
+                <div className="p-6 sm:p-7 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/60 space-y-6 shadow-2xs">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white bangla-text">
+                    {tBilingual('Dhaka Headquarters & Help Desk', 'ঢাকা প্রধান কার্যালয় ও সাপোর্ট ডেস্ক')}
+                  </h3>
 
-                <div className="space-y-4 text-xs sm:text-sm text-slate-300">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-white block">Official Address</span>
-                      <span className="text-slate-400">
-                        {contactAddress || 'Level 4, Modern Bhaban, Motijheel C/A, Dhaka-1000, Bangladesh'}
-                      </span>
+                  <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                    <div className="flex items-start gap-3">
+                      <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white block">Official Address</span>
+                        <span className="text-slate-600 dark:text-slate-400">
+                          {contactAddress || 'Level 4, Modern Bhaban, Motijheel C/A, Dhaka-1000, Bangladesh'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Phone className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white block">Direct Phone & Support Helpline</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-semibold tabular-nums">
+                          {supportHelpline || contactPhone || '+880 1819-876543 / +880 1711-234567'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white block">Email Inquiries</span>
+                        <span className="text-slate-600 dark:text-slate-400 tabular-nums">
+                          {contactEmail || 'support@printerp.com.bd'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white block">Press Support Hours</span>
+                        <span className="text-slate-600 dark:text-slate-400">
+                          Saturday – Thursday: 9:00 AM – 9:00 PM (Emergency 24/7 for Enterprise)
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <Phone className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-white block">Direct Phone & Support Helpline</span>
-                      <span className="text-cyan-400 tabular-nums">
-                        {supportHelpline || contactPhone || '+880 1819-876543 / +880 1711-234567'}
-                      </span>
-                    </div>
+                  <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800">
+                    <a
+                      href={`https://wa.me/${(supportHelpline || contactPhone || '8801819876543').replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center w-full gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      <span>Chat on WhatsApp Directly</span>
+                    </a>
                   </div>
-
-                  <div className="flex items-start gap-3">
-                    <Mail className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-white block">Email Inquiries</span>
-                      <span className="text-slate-400 tabular-nums">
-                        {contactEmail || 'support@printerp.com.bd'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <Clock className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-white block">Press Support Hours</span>
-                      <span className="text-slate-400">
-                        Saturday – Thursday: 9:00 AM – 9:00 PM (Emergency 24/7 for Enterprise)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-slate-800">
-                  <a
-                    href={`https://wa.me/${(supportHelpline || contactPhone || '8801819876543').replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center w-full gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors"
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                    <span>Chat on WhatsApp Directly</span>
-                  </a>
                 </div>
               </div>
-            </div>
 
-            {/* Right Contact Form (7 Cols) */}
-            <div className="lg:col-span-7">
-              <div className="p-6 sm:p-8 rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl space-y-6">
-                {submitted ? (
-                  <div className="text-center py-12 space-y-4">
-                    <div className="h-16 w-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
-                      <CheckCircle2 className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white bangla-text">
-                      {tBilingual('Message Dispatched!', 'আপনার বার্তা সফলভাবে পৌঁছেছে!')}
-                    </h3>
-                    <p className="text-sm text-slate-300 max-w-sm mx-auto leading-relaxed bangla-text">
-                      {tBilingual(
-                        `Thank you for reaching out. A ${appName} technical specialist will get back to you within 2 hours.`,
-                        `আমাদের টেকনিক্যাল সাপোর্ট টিম দ্রুততম সময়ের মধ্যে আপনার সাথে যোগাযোগ করবে।`
-                      )}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-1">
-                      <h3 className="text-xl font-bold text-white bangla-text">
-                        {tBilingual('Send Us a Message', 'আমাদের একটি বার্তা পাঠান')}
+              {/* Right Contact Form (7 Cols) */}
+              <div className="lg:col-span-7">
+                <div className="p-6 sm:p-8 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-2xs space-y-6">
+                  {submitted ? (
+                    <div className="text-center py-12 space-y-4">
+                      <div className="h-16 w-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800">
+                        <CheckCircle2 className="h-8 w-8" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white bangla-text">
+                        {tBilingual('Message Dispatched!', 'আপনার বার্তা সফলভাবে পৌঁছেছে!')}
                       </h3>
-                      <p className="text-xs text-slate-400">
-                        Fill out the details below and we will respond promptly.
+                      <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto leading-relaxed bangla-text">
+                        {tBilingual(
+                          `Thank you for reaching out. A ${appName} technical specialist will get back to you within 2 hours.`,
+                          `আমাদের টেকনিক্যাল সাপোর্ট টিম দ্রুততম সময়ের মধ্যে আপনার সাথে যোগাযোগ করবে।`
+                        )}
                       </p>
                     </div>
+                  ) : (
+                    <>
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white bangla-text">
+                          {tBilingual('Send Us a Message', 'আমাদের একটি বার্তা পাঠান')}
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Fill out the details below and we will respond promptly.
+                        </p>
+                      </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {errorMessage && (
+                        <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 flex items-center gap-2 text-rose-700 dark:text-rose-400 text-xs">
+                          <AlertCircle className="h-4 w-4 shrink-0" />
+                          <span>{errorMessage}</span>
+                        </div>
+                      )}
+
+                      <form onSubmit={handleSubmit} className="space-y-4 text-xs sm:text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                              Your Name *
+                            </label>
+                            <input
+                              required
+                              type="text"
+                              placeholder="Kamrul Hasan"
+                              value={form.name}
+                              onChange={(e) => setForm({ ...form, name: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                              Press / Shop Name *
+                            </label>
+                            <input
+                              required
+                              type="text"
+                              placeholder="e.g. Apex Digital Press"
+                              value={form.pressName}
+                              onChange={(e) => setForm({ ...form, pressName: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                              Mobile (WhatsApp) *
+                            </label>
+                            <input
+                              required
+                              type="tel"
+                              placeholder="01712-XXXXXX"
+                              value={form.phone}
+                              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm tabular-nums"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                              Email Address
+                            </label>
+                            <input
+                              type="email"
+                              placeholder="info@yourpress.com.bd"
+                              value={form.email}
+                              onChange={(e) => setForm({ ...form, email: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
+                            />
+                          </div>
+                        </div>
+
                         <div>
-                          <label className="block text-slate-300 font-semibold mb-1">
-                            Your Name *
+                          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                            How can we help your business? *
                           </label>
-                          <input
+                          <textarea
                             required
-                            type="text"
-                            placeholder="Kamrul Hasan"
-                            value={form.name}
-                            onChange={(e) => setForm({ ...form, name: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs"
+                            rows={4}
+                            placeholder="Tell us about your machine models, shop location, or specific requirements..."
+                            value={form.message}
+                            onChange={(e) => setForm({ ...form, message: e.target.value })}
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm resize-none"
                           />
                         </div>
 
-                        <div>
-                          <label className="block text-slate-300 font-semibold mb-1">
-                            Press / Shop Name *
-                          </label>
-                          <input
-                            required
-                            type="text"
-                            placeholder="e.g. Apex Digital Press"
-                            value={form.pressName}
-                            onChange={(e) => setForm({ ...form, pressName: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs"
-                          />
+                        <div className="pt-2">
+                          <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full h-11 font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer bangla-text"
+                          >
+                            {isSubmitting ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="mr-2 h-4 w-4" />
+                            )}
+                            <span>{tBilingual('Send Inquiries', 'বার্তা পাঠান')}</span>
+                          </Button>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-slate-300 font-semibold mb-1">
-                            Mobile (WhatsApp) *
-                          </label>
-                          <input
-                            required
-                            type="tel"
-                            placeholder="01712-XXXXXX"
-                            value={form.phone}
-                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs tabular-nums"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-slate-300 font-semibold mb-1">
-                            Email Address
-                          </label>
-                          <input
-                            type="email"
-                            placeholder="info@yourpress.com.bd"
-                            value={form.email}
-                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-slate-300 font-semibold mb-1">
-                          How can we help your business? *
-                        </label>
-                        <textarea
-                          required
-                          rows={4}
-                          placeholder="Tell us about your machine models, shop location, or specific requirements..."
-                          value={form.message}
-                          onChange={(e) => setForm({ ...form, message: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 text-xs resize-none"
-                        />
-                      </div>
-
-                      <div className="pt-2">
-                        <Button
-                          type="submit"
-                          className="w-full h-11 font-bold text-sm bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg cursor-pointer bangla-text"
-                        >
-                          <Send className="mr-2 h-4 w-4" />
-                          <span>{tBilingual('Send Inquiries', 'বার্তা পাঠান')}</span>
-                        </Button>
-                      </div>
-                    </form>
-                  </>
-                )}
+                      </form>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      <MarketingFooter />
-      <DemoModal isOpen={demoOpen} onClose={() => setDemoOpen(false)} />
-    </div>
+        <MarketingFooter />
+      </div>
+    </MarketingDemoProvider>
   )
 }
+
