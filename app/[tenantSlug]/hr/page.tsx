@@ -36,8 +36,6 @@ import {
   Check,
   X,
   Receipt,
-  Coins,
-  Award,
   PieChart,
   Printer,
 } from 'lucide-react'
@@ -190,11 +188,7 @@ export default function HrmDashboardPage() {
   const latestPayroll = payrollPeriods[0] || null
   const monthPayroll = summary?.monthFinancials.grossPayroll || latestPayroll?.total_gross_salary || employees.reduce((sum, e) => sum + Number(e.base_salary || 0), 0)
   const arrearsDue = summary?.monthFinancials.unpaidSalaryDue || latestPayroll?.total_due_amount || 0
-  const totalCommission = employees.reduce((sum, e) => {
-    const comm = (e.salary_structure as any)?.commission || 0
-    return sum + Number(comm)
-  }, 0)
-  const advanceGiven = summary?.monthFinancials.advancesDisbursedThisMonth || recentAdvances.reduce((sum, a) => sum + Number(a.amount || 0), 0) || summary?.monthFinancials.advancesOutstanding || 0
+
 
   // Payroll Disbursal Status calculations
   const totalNetSalary = latestPayroll?.total_net_salary || monthPayroll || 0
@@ -206,8 +200,8 @@ export default function HrmDashboardPage() {
     return (
       <div className="space-y-6 max-w-7xl pb-20 animate-pulse">
         <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-1/3" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
           ))}
         </div>
@@ -261,8 +255,8 @@ export default function HrmDashboardPage() {
         }
       />
 
-      {/* 8 Top Executive KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+      {/* 6 Top Executive KPI Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* KPI 1: Total Employees */}
         <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-blue-300 dark:hover:border-blue-700 transition-all flex flex-col justify-between rounded-2xl">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
@@ -394,51 +388,7 @@ export default function HrmDashboardPage() {
           </div>
         </Card>
 
-        {/* KPI 7: Total Commission */}
-        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex flex-col justify-between rounded-2xl">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              {tBilingual('Commission', 'মোট কমিশন')}
-            </span>
-            <div className="p-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 rounded-md">
-              <Award className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="mt-2">
-            <span className="text-lg font-black tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">
-              {formatBDT(totalCommission)}
-            </span>
-          </div>
-          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
-            <span>{tBilingual('Incentives', 'ইনসেন্টিভ')}</span>
-            <Link href={getTenantNavHref('/hr/salary-report', pathname, slug)} className="text-indigo-600 hover:underline font-semibold shrink-0">
-              {tBilingual('Audit', 'অডিট')}
-            </Link>
-          </div>
-        </Card>
 
-        {/* KPI 8: Advance Given */}
-        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-teal-300 dark:hover:border-teal-700 transition-all flex flex-col justify-between rounded-2xl">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              {tBilingual('Advance Given', 'প্রদত্ত অগ্রিম')}
-            </span>
-            <div className="p-1 bg-teal-50 dark:bg-teal-950/40 text-teal-600 rounded-md">
-              <Coins className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="mt-2">
-            <span className="text-lg font-black tracking-tight text-teal-600 dark:text-teal-400 font-mono">
-              {formatBDT(advanceGiven)}
-            </span>
-          </div>
-          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
-            <span>{recentAdvances.length} {tBilingual('Pending', 'অনিষ্পন্ন')}</span>
-            <Link href={getTenantNavHref('/hr/payroll', pathname, slug)} className="text-teal-600 hover:underline font-semibold shrink-0">
-              {tBilingual('Deduct', 'কাটতি')}
-            </Link>
-          </div>
-        </Card>
       </div>
 
       {/* Overview Row: Payroll Disbursal Status & Attendance Overview (Today) */}
