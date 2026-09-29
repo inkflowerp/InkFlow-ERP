@@ -562,12 +562,7 @@ const DEFAULT_ITEM = (tempId: string): ItemFormState => ({
   isSignageProduct: false,
   isOffsetProduct: false,
   showAdvanced: false,
-  available_dimension_presets: [
-    { label: '8 × 4 ft', width: 8, length: 4, unit: 'ft' },
-    { label: '10 × 4 ft', width: 10, length: 4, unit: 'ft' },
-    { label: '12 × 5 ft', width: 12, length: 5, unit: 'ft' },
-    { label: '20 × 10 ft', width: 20, length: 10, unit: 'ft' },
-  ],
+  available_dimension_presets: [],
   available_finishing_options: [],
 })
 
@@ -1797,324 +1792,316 @@ export function NewQuotationModal({
       >
         <div className="space-y-4 pt-1 pb-2 text-slate-900 dark:text-slate-100">
           {/* Submission Alerts */}
-          {submitError && (
-            <div className="p-3 bg-red-50 text-red-900 dark:bg-red-950/40 dark:text-red-200 rounded-xl border border-red-200 text-xs flex items-center gap-2 animate-in fade-in-0">
-              <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
-              <span>{submitError}</span>
-            </div>
-          )}
-
-          {sendSuccessMsg && (
-            <div className="p-3 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200 rounded-xl border border-emerald-200 text-xs flex items-center gap-2 animate-in fade-in-0">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>{sendSuccessMsg}</span>
-            </div>
-          )}
-
-          {/* =========================================================================
-              SECTION 1: CUSTOMER INFORMATION
+                {/* =========================================================================
+              CUSTOMER INFORMATION (LEFT - 2 COLUMN) & QUOTATION INFO & VALIDITY (RIGHT - 1 COLUMN)
              ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
-                  1
-                </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Customer Information
-                </h3>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {selectedCustomer && (
-                  <div className="flex items-center gap-1.5 mr-1">
-                    <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs font-semibold">
-                      <UserCheck className="h-3 w-3 mr-1 text-emerald-600" />
-                      Existing Customer
-                    </Badge>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleClearCustomer}
-                      className="h-6 text-2xs text-slate-400 hover:text-slate-700 cursor-pointer"
-                    >
-                      Change
-                    </Button>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+            {/* SECTION 1: CUSTOMER INFORMATION (2 COLUMNS) */}
+            <div className="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                      1
+                    </div>
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      Customer Information
+                    </h3>
                   </div>
-                )}
 
-                {/* Customer Type Tabs */}
-                <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
-                  {[
-                    { value: 'retail', label: 'Retail' },
-                    { value: 'reseller', label: 'Reseller' },
-                    { value: 'corporate', label: 'Corporate' },
-                    { value: 'government', label: 'Govt / Org' },
-                  ].map((tab) => (
-                    <button
-                      key={tab.value}
-                      type="button"
-                      onClick={() => setCustomerType(tab.value)}
-                      className={cn(
-                        'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
-                        customerType === tab.value
-                          ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  <div className="flex items-center gap-2">
+                    {selectedCustomer && (
+                      <div className="flex items-center gap-1.5 mr-1">
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs font-semibold">
+                          <UserCheck className="h-3 w-3 mr-1 text-emerald-600" />
+                          Existing Customer
+                        </Badge>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleClearCustomer}
+                          className="h-6 text-2xs text-slate-400 hover:text-slate-700 cursor-pointer"
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Customer Type Tabs */}
+                    <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
+                      {[
+                        { value: 'retail', label: 'Retail' },
+                        { value: 'reseller', label: 'Reseller' },
+                        { value: 'corporate', label: 'Corporate' },
+                        { value: 'government', label: 'Govt / Org' },
+                      ].map((tab) => (
+                        <button
+                          key={tab.value}
+                          type="button"
+                          onClick={() => setCustomerType(tab.value)}
+                          className={cn(
+                            'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
+                            customerType === tab.value
+                              ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                          )}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Customer Inputs Grid (2 Columns) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Customer Name with Search Dropdown */}
+                  <div className="relative" ref={nameSearchRef}>
+                    <Label htmlFor="custNameInput" className="text-xs font-semibold mb-1 block">
+                      Customer Name <span className="text-rose-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="custNameInput"
+                        placeholder="Search name or type new..."
+                        value={customerName}
+                        onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
+                        onFocus={() => {
+                          setActiveCustomerSearchField('name')
+                          if (customerName.trim().length > 0 && !selectedCustomer) {
+                            setShowCustomerDropdown(true)
+                          }
+                        }}
+                        onKeyDown={(e) => handleCustomerKeyDown('name', e)}
+                        className="text-xs h-9 pr-8 font-medium"
+                        autoFocus
+                      />
+                      {isSearchingCustomers && activeCustomerSearchField === 'name' && (
+                        <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
                       )}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+                    </div>
+
+                    {/* Suggestions Dropdown */}
+                    {activeCustomerSearchField === 'name' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
+                      <CustomerSuggestionsDropdown
+                        results={searchResults}
+                        highlightedIndex={customerHighlightedIndex}
+                        onSelect={handleSelectCustomer}
+                        onHover={setCustomerHighlightedIndex}
+                      />
+                    )}
+                  </div>
+
+                  {/* Mobile Phone with Search Dropdown */}
+                  <div className="relative" ref={phoneSearchRef}>
+                    <Label htmlFor="custPhoneInput" className="text-xs font-semibold mb-1 block">
+                      Mobile Phone <span className="text-rose-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="custPhoneInput"
+                        placeholder="017XXXXXXXX"
+                        value={customerPhone}
+                        onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
+                        onFocus={() => {
+                          setActiveCustomerSearchField('phone')
+                          if (customerPhone.trim().length > 0 && !selectedCustomer) {
+                            setShowCustomerDropdown(true)
+                          }
+                        }}
+                        onKeyDown={(e) => handleCustomerKeyDown('phone', e)}
+                        className="text-xs h-9 pr-8 font-numeric tabular-nums"
+                      />
+                      {isSearchingCustomers && activeCustomerSearchField === 'phone' && (
+                        <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
+                      )}
+                    </div>
+
+                    {/* Suggestions Dropdown */}
+                    {activeCustomerSearchField === 'phone' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
+                      <CustomerSuggestionsDropdown
+                        results={searchResults}
+                        highlightedIndex={customerHighlightedIndex}
+                        onSelect={handleSelectCustomer}
+                        onHover={setCustomerHighlightedIndex}
+                      />
+                    )}
+                  </div>
+
+                  {/* Company Name with Search Dropdown */}
+                  <div className="relative" ref={companySearchRef}>
+                    <Label htmlFor="custCompanyInput" className="text-xs font-semibold mb-1 block">
+                      Company Name
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="custCompanyInput"
+                        placeholder="e.g. Acme Advertising Ltd."
+                        value={customerCompany}
+                        onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
+                        onFocus={() => {
+                          setActiveCustomerSearchField('company')
+                          if (customerCompany.trim().length > 0 && !selectedCustomer) {
+                            setShowCustomerDropdown(true)
+                          }
+                        }}
+                        onKeyDown={(e) => handleCustomerKeyDown('company', e)}
+                        className="text-xs h-9 pr-8"
+                      />
+                      {isSearchingCustomers && activeCustomerSearchField === 'company' && (
+                        <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
+                      )}
+                    </div>
+
+                    {/* Suggestions Dropdown */}
+                    {activeCustomerSearchField === 'company' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
+                      <CustomerSuggestionsDropdown
+                        results={searchResults}
+                        highlightedIndex={customerHighlightedIndex}
+                        onSelect={handleSelectCustomer}
+                        onHover={setCustomerHighlightedIndex}
+                      />
+                    )}
+                  </div>
+
+                  {/* Email Address */}
+                  <div className="relative" ref={emailSearchRef}>
+                    <Label htmlFor="custEmailInput" className="text-xs font-semibold mb-1 block">
+                      Email Address
+                    </Label>
+                    <Input
+                      id="custEmailInput"
+                      type="email"
+                      placeholder="client@domain.com"
+                      value={customerEmail}
+                      onChange={(e) => handleCustomerFieldChange('email', e.target.value)}
+                      className="text-xs h-9"
+                    />
+                  </div>
+
+                  {/* Delivery / Office Address (Full width across 2 columns) */}
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="custAddressInput" className="text-xs font-semibold mb-1 block">
+                      Delivery / Office Address
+                    </Label>
+                    <Input
+                      id="custAddressInput"
+                      placeholder="e.g. 14 Motijheel C/A, Dhaka"
+                      value={customerAddress}
+                      onChange={(e) => setCustomerAddress(e.target.value)}
+                      className="text-xs h-9"
+                    />
+                  </div>
                 </div>
               </div>
+
+              {/* Save Customer Checkbox */}
+              {!selectedCustomer && (
+                <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <input
+                      type="checkbox"
+                      id="saveCustCheck"
+                      checked={saveCustomer}
+                      onChange={(e) => setSaveCustomer(e.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>Save customer details to directory for future quotations & orders</span>
+                  </label>
+                </div>
+              )}
+
+              {/* Duplicate Detection Alert */}
+              {duplicateWarning && duplicateWarning.matches.length > 0 && !selectedCustomer && (
+                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800 rounded-xl text-xs space-y-2">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <span>Existing Customer Found</span>
+                  </div>
+                  <p className="text-2xs text-amber-800 dark:text-amber-300">
+                    Profile matches <strong>{duplicateWarning.matches[0].customer.name}</strong> (
+                    {duplicateWarning.matches[0].customer.mobile}
+                    {duplicateWarning.matches[0].customer.company_name ? ` • ${duplicateWarning.matches[0].customer.company_name}` : ''}).
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleSelectCustomer(duplicateWarning.matches[0].customer)}
+                    className="h-7 text-xs bg-white text-amber-900 border-amber-300 hover:bg-amber-100"
+                  >
+                    Use Existing Customer Profile
+                  </Button>
+                </div>
+              )}
             </div>
 
-            {/* Customer Inputs Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Customer Name with Search Dropdown */}
-              <div className="relative" ref={nameSearchRef}>
-                <Label htmlFor="custNameInput" className="text-xs font-semibold mb-1 block">
-                  Customer Name <span className="text-rose-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="custNameInput"
-                    placeholder="Search name or type new..."
-                    value={customerName}
-                    onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
-                    onFocus={() => {
-                      setActiveCustomerSearchField('name')
-                      if (customerName.trim().length > 0 && !selectedCustomer) {
-                        setShowCustomerDropdown(true)
-                      }
-                    }}
-                    onKeyDown={(e) => handleCustomerKeyDown('name', e)}
-                    className="text-xs h-9 pr-8 font-medium"
-                    autoFocus
-                  />
-                  {isSearchingCustomers && activeCustomerSearchField === 'name' && (
-                    <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
-                  )}
+            {/* SECTION 2: QUOTATION METADATA (RIGHT - 1 COLUMN) */}
+            <div className="lg:col-span-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                    2
+                  </div>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Quotation Information & Validity
+                  </h3>
                 </div>
 
-                {/* Suggestions Dropdown */}
-                {activeCustomerSearchField === 'name' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
-                  <CustomerSuggestionsDropdown
-                    results={searchResults}
-                    highlightedIndex={customerHighlightedIndex}
-                    onSelect={handleSelectCustomer}
-                    onHover={setCustomerHighlightedIndex}
-                  />
-                )}
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5 text-xs">
+                  <div>
+                    <Label htmlFor="quoteDate" className="text-xs font-semibold mb-1 block">
+                      Quotation Date
+                    </Label>
+                    <Input
+                      id="quoteDate"
+                      type="date"
+                      value={quotationDate}
+                      onChange={(e) => setQuotationDate(e.target.value)}
+                      className="text-xs h-9"
+                    />
+                  </div>
 
-              {/* Mobile Phone with Search Dropdown */}
-              <div className="relative" ref={phoneSearchRef}>
-                <Label htmlFor="custPhoneInput" className="text-xs font-semibold mb-1 block">
-                  Mobile Phone <span className="text-rose-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="custPhoneInput"
-                    placeholder="017XXXXXXXX"
-                    value={customerPhone}
-                    onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
-                    onFocus={() => {
-                      setActiveCustomerSearchField('phone')
-                      if (customerPhone.trim().length > 0 && !selectedCustomer) {
-                        setShowCustomerDropdown(true)
-                      }
-                    }}
-                    onKeyDown={(e) => handleCustomerKeyDown('phone', e)}
-                    className="text-xs h-9 pr-8 font-numeric tabular-nums"
-                  />
-                  {isSearchingCustomers && activeCustomerSearchField === 'phone' && (
-                    <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
-                  )}
+                  <div>
+                    <Label htmlFor="validUntil" className="text-xs font-semibold mb-1 block">
+                      Valid Until
+                    </Label>
+                    <Input
+                      id="validUntil"
+                      type="date"
+                      value={validUntil}
+                      onChange={(e) => setValidUntil(e.target.value)}
+                      className="text-xs h-9"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="refNo" className="text-xs font-semibold mb-1 block">
+                      Reference / PO #
+                    </Label>
+                    <Input
+                      id="refNo"
+                      placeholder="e.g. PO-9842"
+                      value={referenceNo}
+                      onChange={(e) => setReferenceNo(e.target.value)}
+                      className="text-xs h-9"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="salesperson" className="text-xs font-semibold mb-1 block">
+                      Prepared By / Salesperson
+                    </Label>
+                    <Input
+                      id="salesperson"
+                      placeholder="Sales Representative"
+                      value={salespersonName}
+                      onChange={(e) => setSalespersonName(e.target.value)}
+                      className="text-xs h-9"
+                    />
+                  </div>
                 </div>
-
-                {/* Suggestions Dropdown */}
-                {activeCustomerSearchField === 'phone' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
-                  <CustomerSuggestionsDropdown
-                    results={searchResults}
-                    highlightedIndex={customerHighlightedIndex}
-                    onSelect={handleSelectCustomer}
-                    onHover={setCustomerHighlightedIndex}
-                  />
-                )}
-              </div>
-
-              {/* Company Name with Search Dropdown */}
-              <div className="relative" ref={companySearchRef}>
-                <Label htmlFor="custCompanyInput" className="text-xs font-semibold mb-1 block">
-                  Company Name
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="custCompanyInput"
-                    placeholder="e.g. Acme Advertising Ltd."
-                    value={customerCompany}
-                    onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
-                    onFocus={() => {
-                      setActiveCustomerSearchField('company')
-                      if (customerCompany.trim().length > 0 && !selectedCustomer) {
-                        setShowCustomerDropdown(true)
-                      }
-                    }}
-                    onKeyDown={(e) => handleCustomerKeyDown('company', e)}
-                    className="text-xs h-9 pr-8"
-                  />
-                  {isSearchingCustomers && activeCustomerSearchField === 'company' && (
-                    <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
-                  )}
-                </div>
-
-                {/* Suggestions Dropdown */}
-                {activeCustomerSearchField === 'company' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
-                  <CustomerSuggestionsDropdown
-                    results={searchResults}
-                    highlightedIndex={customerHighlightedIndex}
-                    onSelect={handleSelectCustomer}
-                    onHover={setCustomerHighlightedIndex}
-                  />
-                )}
-              </div>
-
-              {/* Row 2: Address, Email */}
-              <div className="sm:col-span-2">
-                <Label htmlFor="custAddressInput" className="text-xs font-semibold mb-1 block">
-                  Delivery / Office Address
-                </Label>
-                <Input
-                  id="custAddressInput"
-                  placeholder="e.g. 14 Motijheel C/A, Dhaka"
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  className="text-xs h-9"
-                />
-              </div>
-
-              <div className="sm:col-span-1 relative" ref={emailSearchRef}>
-                <Label htmlFor="custEmailInput" className="text-xs font-semibold mb-1 block">
-                  Email Address
-                </Label>
-                <Input
-                  id="custEmailInput"
-                  type="email"
-                  placeholder="client@domain.com"
-                  value={customerEmail}
-                  onChange={(e) => handleCustomerFieldChange('email', e.target.value)}
-                  className="text-xs h-9"
-                />
-              </div>
-            </div>
-
-            {/* Save Customer Checkbox */}
-            {!selectedCustomer && (
-              <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80">
-                <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-700 dark:text-slate-300">
-                  <input
-                    type="checkbox"
-                    id="saveCustCheck"
-                    checked={saveCustomer}
-                    onChange={(e) => setSaveCustomer(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>Save customer details to directory for future quotations & orders</span>
-                </label>
-              </div>
-            )}
-
-            {/* Duplicate Detection Alert */}
-            {duplicateWarning && duplicateWarning.matches.length > 0 && !selectedCustomer && (
-              <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800 rounded-xl text-xs space-y-2">
-                <div className="flex items-center gap-1.5 font-bold">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                  <span>Existing Customer Found</span>
-                </div>
-                <p className="text-2xs text-amber-800 dark:text-amber-300">
-                  Profile matches <strong>{duplicateWarning.matches[0].customer.name}</strong> (
-                  {duplicateWarning.matches[0].customer.mobile}
-                  {duplicateWarning.matches[0].customer.company_name ? ` • ${duplicateWarning.matches[0].customer.company_name}` : ''}).
-                </p>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleSelectCustomer(duplicateWarning.matches[0].customer)}
-                  className="h-7 text-xs bg-white text-amber-900 border-amber-300 hover:bg-amber-100"
-                >
-                  Use Existing Customer Profile
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* =========================================================================
-              SECTION 2: QUOTATION METADATA
-             ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
-                2
-              </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Quotation Information & Validity
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-              <div>
-                <Label htmlFor="quoteDate" className="text-xs font-semibold mb-1 block">
-                  Quotation Date
-                </Label>
-                <Input
-                  id="quoteDate"
-                  type="date"
-                  value={quotationDate}
-                  onChange={(e) => setQuotationDate(e.target.value)}
-                  className="text-xs h-9"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="validUntil" className="text-xs font-semibold mb-1 block">
-                  Valid Until
-                </Label>
-                <Input
-                  id="validUntil"
-                  type="date"
-                  value={validUntil}
-                  onChange={(e) => setValidUntil(e.target.value)}
-                  className="text-xs h-9"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="refNo" className="text-xs font-semibold mb-1 block">
-                  Reference / PO #
-                </Label>
-                <Input
-                  id="refNo"
-                  placeholder="e.g. PO-9842"
-                  value={referenceNo}
-                  onChange={(e) => setReferenceNo(e.target.value)}
-                  className="text-xs h-9"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="salesperson" className="text-xs font-semibold mb-1 block">
-                  Prepared By / Salesperson
-                </Label>
-                <Input
-                  id="salesperson"
-                  placeholder="Sales Representative"
-                  value={salespersonName}
-                  onChange={(e) => setSalespersonName(e.target.value)}
-                  className="text-xs h-9"
-                />
               </div>
             </div>
           </div>
@@ -2123,49 +2110,13 @@ export function NewQuotationModal({
               SECTION 3: ITEM BUILDER (MULTI-ITEM ESTIMATOR)
              ========================================================================= */}
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
-                  3
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Quotation Line Items ({items.length})
-                  </h3>
-                  <p className="text-2xs text-slate-400">
-                    Connected to Products & Services Catalog with accurate area, GSM, and finishing formulas.
-                  </p>
-                </div>
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                3
               </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddItem}
-                  className="h-7 text-xs font-bold gap-1 text-blue-600 border-blue-200 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-950/30 cursor-pointer"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add Catalog Item
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const tempId = `item-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
-                    const customItem = DEFAULT_ITEM(tempId)
-                    customItem.description = 'Custom Fabrication / Printing Work'
-                    customItem.rate_source = 'custom'
-                    setItems([...items, customItem])
-                  }}
-                  className="h-7 text-xs font-bold gap-1 text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-950/30 cursor-pointer"
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Add Custom Item
-                </Button>
-              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Quotation Line Items ({items.length})
+              </h3>
             </div>
 
             <div className="space-y-4">
@@ -2245,7 +2196,7 @@ export function NewQuotationModal({
                           onClick={() => handleToggleAdvanced(index)}
                           className="h-7 px-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 text-xs font-semibold cursor-pointer"
                         >
-                          {item.showAdvanced ? 'Simple Specs' : 'Detailed Specs'}
+                          {item.showAdvanced ? 'Simple Specs' : 'Additional Spec'}
                         </Button>
 
                         {items.length > 1 && (
@@ -2266,16 +2217,9 @@ export function NewQuotationModal({
                     {/* Primary Product Selection & Description */}
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                       <div className="sm:col-span-5">
-                        <div className="flex items-center justify-between mb-1">
-                          <Label className="text-xs font-semibold block">Connect Product / Service</Label>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenQuickAdd(index)}
-                            className="text-2xs text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-0.5 cursor-pointer"
-                          >
-                            <Plus className="h-3 w-3" /> Quick Add
-                          </button>
-                        </div>
+                        <Label className="text-xs font-semibold block mb-1">
+                          Product / Service
+                        </Label>
                         <CatalogItemCombobox
                           products={productsCatalog}
                           selectedProductId={item.product_id}
@@ -2324,26 +2268,6 @@ export function NewQuotationModal({
                       </div>
                     </div>
 
-                    {/* Standard Dimension Presets */}
-                    {isService && Array.isArray(item.available_dimension_presets) && item.available_dimension_presets.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                        {item.available_dimension_presets.map((preset, pIdx) => (
-                          <button
-                            key={pIdx}
-                            type="button"
-                            onClick={() => handleApplyPresetDimension(index, preset)}
-                            className={cn(
-                              'px-2 py-0.5 rounded-md text-2xs font-semibold border transition-all cursor-pointer',
-                              item.width === preset.width && item.height === preset.length
-                                ? 'bg-blue-600 text-white border-blue-600'
-                                : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
-                            )}
-                          >
-                            {preset.label || `${preset.width} × ${preset.length} ${preset.unit || 'ft'}`}
-                          </button>
-                        ))}
-                      </div>
-                    )}
 
                     {/* SERVICE CONTROLS: [Width] [Height] [Dim. Unit] [Qty] [Finishing] [Add on] [Rate] */}
                     {isService && (
@@ -2537,58 +2461,24 @@ export function NewQuotationModal({
                       </div>
                     )}
 
-                    {/* Detailed Production & Technical Specs Drawer */}
+                    {/* Additional Spec Drawer */}
                     {item.showAdvanced && (
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 text-xs animate-in fade-in-0">
+                      <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5 text-xs animate-in fade-in-0">
                         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                           <span className="text-2xs uppercase font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
                             <Wrench className="h-3.5 w-3.5 text-blue-600" />
-                            Technical Fabrication & Print Specifications
+                            Additional Spec
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          <div>
-                            <Label className="text-2xs font-semibold mb-1 block">Substrate / Material Spec</Label>
-                            <Input
-                              placeholder="e.g. 300 GSM Art Card, 3mm Acrylic"
-                              value={item.material_spec || ''}
-                              onChange={(e) => handleItemChange(index, 'material_spec', e.target.value)}
-                              className="text-xs h-8"
-                            />
-                          </div>
-
-                          <div>
-                            <Label className="text-2xs font-semibold mb-1 block">Color Spec / Ink Mode</Label>
-                            <Input
-                              placeholder="e.g. 4/4 Color CMYK, Spot Gold"
-                              value={item.color_spec || ''}
-                              onChange={(e) => handleItemChange(index, 'color_spec', e.target.value)}
-                              className="text-xs h-8"
-                            />
-                          </div>
-
-                          <div className="flex items-center gap-4 pt-4">
-                            <label className="flex items-center gap-1.5 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={item.installation_required}
-                                onChange={(e) => handleItemChange(index, 'installation_required', e.target.checked)}
-                                className="h-4 w-4 rounded border-slate-300 text-blue-600"
-                              />
-                              <span className="text-xs font-semibold">Site Fitting</span>
-                            </label>
-
-                            <label className="flex items-center gap-1.5 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={item.artwork_required}
-                                onChange={(e) => handleItemChange(index, 'artwork_required', e.target.checked)}
-                                className="h-4 w-4 rounded border-slate-300 text-blue-600"
-                              />
-                              <span className="text-xs font-semibold">Design Req.</span>
-                            </label>
-                          </div>
+                        <div>
+                          <Label className="text-2xs font-semibold mb-1 block">Substrate / Material Spec</Label>
+                          <Input
+                            placeholder="e.g. 280 GSM Chinese Frontlit Flex, 300 GSM Art Card, 3mm Acrylic"
+                            value={item.material_spec || ''}
+                            onChange={(e) => handleItemChange(index, 'material_spec', e.target.value)}
+                            className="text-xs h-8 max-w-xl"
+                          />
                         </div>
                       </div>
                     )}

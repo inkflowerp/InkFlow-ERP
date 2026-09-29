@@ -84,11 +84,17 @@ function LoginForm() {
           ? 'আপনার অ্যাকাউন্টটি নিষ্ক্রিয় করা হয়েছে। অনুগ্রহ করে আপনার প্রতিষ্ঠানের অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।'
           : 'Your account has been disabled by your administrator. Row Level Security has revoked all access to company records.'
       )
-    } else if (errParam === 'unauthorized' || errParam === 'unauthorized_tenant') {
+    } else if (errParam === 'unauthorized_google' || errParam === 'unauthorized_tenant') {
       setError(
         locale === 'bn'
           ? 'এই গুগল অ্যাকাউন্টটির সাথে কোনো অনুমোদিত প্রতিষ্ঠানের সংযোগ নেই। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন অথবা নতুন প্রতিষ্ঠান নিবন্ধন করুন।'
           : 'This Google account is not associated with an authorized business. Please contact your administrator or create a new company account.'
+      )
+    } else if (errParam === 'unauthorized') {
+      setStatusMessage(
+        locale === 'bn'
+          ? 'আপনার প্রতিষ্ঠানের ওয়ার্কস্পেসে প্রবেশ করতে অনুগ্রহ করে সাইন ইন করুন।'
+          : 'Please sign in to access your business workspace.'
       )
     } else if (errParam === 'cancelled') {
       setError(
@@ -131,6 +137,12 @@ function LoginForm() {
         locale === 'bn'
           ? 'আপনি সফলভাবে লগআউট হয়েছেন।'
           : 'You have been securely signed out of your session.'
+      )
+    } else if (searchParams.get('session_required') === 'true') {
+      setStatusMessage(
+        locale === 'bn'
+          ? 'আপনার সেশন পুনরায় যাচাই করা প্রয়োজন। অনুগ্রহ করে সাইন ইন করুন।'
+          : 'Please sign in to continue to your workspace.'
       )
     }
   }, [searchParams, setValue, locale])

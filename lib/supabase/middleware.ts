@@ -285,8 +285,8 @@ export async function updateSession(request: NextRequest) {
       if (isAuthPage) {
         if (pathname === '/login') {
           const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
-          // If already authenticated in this tenant, redirect to dashboard
-          if (isTenantAuthenticated && !hasAuthError && tenantSessionData?.companySlug === tenantSlug) {
+          // If actively authenticated in this tenant, redirect to dashboard
+          if (user && hasValidTenantCookie && !hasAuthError && tenantSessionData?.companySlug === tenantSlug) {
             const redirectTo = request.nextUrl.searchParams.get('redirectTo')
             const targetPath = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')
               ? redirectTo
@@ -307,6 +307,9 @@ export async function updateSession(request: NextRequest) {
             headers: requestHeaders,
           },
         })
+        if (!user && hasValidTenantCookie) {
+          res.cookies.delete(TENANT_SESSION_COOKIE)
+        }
         responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
         res.headers.set('X-Robots-Tag', 'noindex, nofollow')
         return res
@@ -361,10 +364,10 @@ export async function updateSession(request: NextRequest) {
     // C. ROOT DOMAIN ROUTING (e.g. inkflow.com.bd, localhost:3000)
     // --------------------------------------------------------------------------
     if (hostType === 'root') {
-      // 1. If authenticated tenant user visits /login on root domain -> redirect to their tenant workspace
+      // 1. If actively authenticated tenant user visits /login on root domain -> redirect to their tenant workspace
       if (pathname === '/login') {
         const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
-        if (hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
+        if (user && hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
           const targetSlug = tenantSessionData.companySlug
           if (isPslOrLocal) {
             const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)
@@ -372,9 +375,11 @@ export async function updateSession(request: NextRequest) {
           }
           const tenantUrl = getTenantLink(targetSlug, `/dashboard`, rootDomain)
           return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl), 307))
-        } else if (hasAuthError && hasValidTenantCookie) {
+        } else if ((hasAuthError || !user) && hasValidTenantCookie) {
+          // Stale tenant session cookie with no active Supabase user session: purge cookie to prevent redirect loops
           const res = NextResponse.next({ request })
           res.cookies.delete(TENANT_SESSION_COOKIE)
+          responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
           return res
         }
       }
@@ -383,7 +388,7 @@ export async function updateSession(request: NextRequest) {
       // If logged in as tenant -> redirect to their actual tenant workspace (e.g. vision.inkflow.com.bd/dashboard)
       // Otherwise redirect to /login
       if (pathname === '/dashboard') {
-        if (hasValidTenantCookie && tenantSessionData?.companySlug) {
+        if (user && hasValidTenantCookie && tenantSessionData?.companySlug) {
           const targetSlug = tenantSessionData.companySlug
           if (isPslOrLocal) {
             const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)
@@ -394,7 +399,11 @@ export async function updateSession(request: NextRequest) {
         } else {
           const loginUrl = request.nextUrl.clone()
           loginUrl.pathname = '/login'
-          return NextResponse.redirect(loginUrl, 307)
+          const res = NextResponse.redirect(loginUrl, 307)
+          if (hasValidTenantCookie) {
+            res.cookies.delete(TENANT_SESSION_COOKIE)
+          }
+          return res
         }
       }
 

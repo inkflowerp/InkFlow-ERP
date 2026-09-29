@@ -357,9 +357,20 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
       throw new Error('Forbidden: Cross-Tenant Access Denied')
     }
 
-    const redirectPath = '/dashboard'
+    let redirectPath = '/dashboard'
+    try {
+      const { headers } = await import('next/headers')
+      const headerStore = await headers()
+      const forwardPath = headerStore.get('x-forwarded-tenant-path')
+      if (forwardPath && forwardPath.startsWith('/') && !forwardPath.startsWith('/login')) {
+        redirectPath = forwardPath
+      } else if (targetSlug) {
+        redirectPath = `/${targetSlug}/dashboard`
+      }
+    } catch {}
+
     await performRedirect(
-      `/login?error=unauthorized&redirectTo=${encodeURIComponent(redirectPath)}`
+      `/login?redirectTo=${encodeURIComponent(redirectPath)}`
     )
     throw new Error('Unauthorized')
   }
