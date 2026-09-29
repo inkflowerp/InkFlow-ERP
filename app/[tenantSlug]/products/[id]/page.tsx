@@ -47,6 +47,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { MaterialConfigModal } from '@/components/products/material-config-modal'
 import { ServiceConfigModal } from '@/components/products/service-config-modal'
 import { ReadyProductModal } from '@/components/products/ready-product-modal'
@@ -663,52 +664,41 @@ export default function ProductDetailPage() {
       )}
 
       {/* Commercial KPI Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="p-4 shadow-xs">
-          <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">
-            {commercialEconomics?.costBasisType === 'direct_cost' ? 'Est. Direct Cost' : 'Effective Unit Cost'}
-          </span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            <CurrencyDisplay amount={commercialEconomics?.activeCostBasis || product.base_cost} />
-          </div>
-          <span className="text-2xs text-slate-400">
-            per {product.selling_unit || product.unit} (
-            {commercialEconomics?.costBasisType === 'direct_cost' ? 'Direct Job Cost' : 'Raw Material Yield'}
-            )
-          </span>
-        </Card>
+      <KpiGrid columns={4}>
+        <KpiCard
+          title={commercialEconomics?.costBasisType === 'direct_cost' ? 'Est. Direct Cost' : 'Effective Unit Cost'}
+          value={commercialEconomics?.activeCostBasis || product.base_cost}
+          isCurrency
+          icon={Calculator}
+          colorVariant="blue"
+          subtitle={`per ${product.selling_unit || product.unit} (${commercialEconomics?.costBasisType === 'direct_cost' ? 'Direct Job Cost' : 'Raw Material Yield'})`}
+        />
 
-        <Card className="p-4 border-l-4 border-l-blue-600 shadow-xs">
-          <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Catalog Selling Rate</span>
-          <div className="text-2xl font-black text-blue-600 mt-1 font-mono">
-            <CurrencyDisplay amount={product.selling_price} />
-          </div>
-          <span className="text-2xs text-blue-600 font-medium">
-            Pricing: {commercialEconomics?.pricingMethod?.replace('_', ' ')}
-          </span>
-        </Card>
+        <KpiCard
+          title="Catalog Selling Rate"
+          value={product.selling_price}
+          isCurrency
+          icon={Tag}
+          colorVariant="primary"
+          subtitle={`Pricing: ${commercialEconomics?.pricingMethod?.replace('_', ' ') || 'Standard'}`}
+        />
 
-        <Card className="p-4 border-l-4 border-l-amber-500 shadow-xs">
-          <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">3 Commercial Minimums</span>
-          <div className="text-xs font-bold text-amber-900 dark:text-amber-300 mt-1 space-y-0.5 font-mono">
-            <div>MOQ: {product.min_order_quantity || 1} {product.selling_unit || 'unit'}</div>
-            <div>Min Billable: {product.min_billable_quantity || 0} {product.selling_unit || 'unit'}</div>
-            <div>Min Charge: ৳{product.minimum_charge || 0}</div>
-          </div>
-        </Card>
+        <KpiCard
+          title="Commercial Minimums"
+          value={`MOQ: ${product.min_order_quantity || 1}`}
+          icon={AlertTriangle}
+          colorVariant="amber"
+          subtitle={`Min Billable: ${product.min_billable_quantity || 0} • Min Charge: ৳${product.minimum_charge || 0}`}
+        />
 
-        <Card className="p-4 bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 shadow-xs">
-          <span className="text-2xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
-            Gross Margin % ({commercialEconomics?.costBasisType === 'direct_cost' ? 'Direct Cost' : 'Material'})
-          </span>
-          <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">
-            {commercialEconomics?.grossMarginPercent || 0}%
-          </div>
-          <span className="text-2xs text-emerald-700 dark:text-emerald-400 font-medium">
-            Profit: ৳{commercialEconomics?.grossProfit || 0} / {product.selling_unit || product.unit}
-          </span>
-        </Card>
-      </div>
+        <KpiCard
+          title={`Gross Margin % (${commercialEconomics?.costBasisType === 'direct_cost' ? 'Direct Cost' : 'Material'})`}
+          value={`${commercialEconomics?.grossMarginPercent || 0}%`}
+          icon={TrendingUp}
+          colorVariant="emerald"
+          subtitle={`Profit: ৳${commercialEconomics?.grossProfit || 0} / ${product.selling_unit || product.unit}`}
+        />
+      </KpiGrid>
 
       {/* Navigation Tabs */}
       <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-bold overflow-x-auto">

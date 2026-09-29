@@ -47,6 +47,7 @@ import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
   WorkforceSummaryKPIs,
@@ -263,140 +264,112 @@ export default function HrmDashboardPage() {
       />
 
       {/* 6 Top Executive KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <KpiGrid columns={6}>
         {/* KPI 1: Total Employees */}
-        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-blue-300 dark:hover:border-blue-700 transition-all flex flex-col justify-between rounded-2xl">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              {tBilingual('Total Staff', 'মোট কর্মী')}
-            </span>
-            <div className="p-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 rounded-md">
-              <Users className="w-3.5 h-3.5" />
+        <KpiCard
+          titleEn="Total Staff"
+          titleBn="মোট কর্মী"
+          value={totalEmployeesCount}
+          icon={Users}
+          colorVariant="blue"
+          footer={
+            <div className="w-full flex items-center justify-between text-xs">
+              <span className="text-muted-foreground truncate">{employees.filter((e) => e.employee_type === 'permanent').length} {tBilingual('Perm', 'স্থায়ী')}</span>
+              <Link href={getTenantNavHref('/hr/employees', pathname, slug)} className="text-blue-600 dark:text-blue-400 hover:underline font-semibold shrink-0">
+                {tBilingual('List', 'তালিকা')} &rarr;
+              </Link>
             </div>
-          </div>
-          <div className="mt-2">
-            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white font-mono">{totalEmployeesCount}</span>
-          </div>
-          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
-            <span className="truncate">{employees.filter((e) => e.employee_type === 'permanent').length} {tBilingual('Perm', 'স্থায়ী')}</span>
-            <Link href={getTenantNavHref('/hr/employees', pathname, slug)} className="text-blue-600 hover:underline font-semibold shrink-0">
-              {tBilingual('List', 'তালিকা')}
-            </Link>
-          </div>
-        </Card>
+          }
+        />
 
         {/* KPI 2: Present Today */}
-        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all flex flex-col justify-between rounded-2xl">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-2xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
-              {tBilingual('Present Today', 'আজ উপস্থিত')}
-            </span>
-            <div className="p-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-md">
-              <UserCheck className="w-3.5 h-3.5" />
+        <KpiCard
+          titleEn="Present Today"
+          titleBn="আজ উপস্থিত"
+          value={presentTodayCount}
+          unit={`(${presentRate}%)`}
+          icon={UserCheck}
+          colorVariant="emerald"
+          footer={
+            <div className="w-full flex items-center justify-between text-xs">
+              <span className="text-emerald-600 dark:text-emerald-400 truncate">{tBilingual('On Floor', 'ফ্লোরে আছেন')}</span>
+              <Link href={getTenantNavHref('/hr/attendance', pathname, slug)} className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold shrink-0">
+                {tBilingual('Live', 'লাইভ')} &rarr;
+              </Link>
             </div>
-          </div>
-          <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="text-xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">{presentTodayCount}</span>
-            <span className="text-2xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">({presentRate}%)</span>
-          </div>
-          <div className="mt-2 text-2xs text-emerald-600/90 dark:text-emerald-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
-            <span>{tBilingual('On Floor', 'ফ্লোরে আছেন')}</span>
-            <Link href={getTenantNavHref('/hr/attendance', pathname, slug)} className="text-emerald-600 hover:underline font-semibold shrink-0">
-              {tBilingual('Live', 'লাইভ')}
-            </Link>
-          </div>
-        </Card>
+          }
+        />
 
         {/* KPI 3: Absent Today */}
-        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-rose-300 dark:hover:border-rose-700 transition-all flex flex-col justify-between rounded-2xl">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-2xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
-              {tBilingual('Absent Today', 'আজ অনুপস্থিত')}
-            </span>
-            <div className="p-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-md">
-              <UserX className="w-3.5 h-3.5" />
+        <KpiCard
+          titleEn="Absent Today"
+          titleBn="আজ অনুপস্থিত"
+          value={absentTodayCount}
+          unit={`(${absentRate}%)`}
+          icon={UserX}
+          colorVariant="danger"
+          footer={
+            <div className="w-full flex items-center justify-between text-xs text-rose-600 dark:text-rose-400">
+              <span>{approvedLeavesCount} {tBilingual('Leave', 'ছুটি')}</span>
+              <span className="text-muted-foreground">•</span>
+              <span className="truncate">{absentTodayCount} {tBilingual('Unauth', 'অনুপস্থিত')}</span>
             </div>
-          </div>
-          <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="text-xl font-black tracking-tight text-rose-600 dark:text-rose-400 font-mono">{absentTodayCount}</span>
-            <span className="text-2xs font-bold text-rose-600 dark:text-rose-400 font-mono">({absentRate}%)</span>
-          </div>
-          <div className="mt-2 text-2xs text-rose-600/90 dark:text-rose-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
-            <span>{approvedLeavesCount} {tBilingual('Leave', 'ছুটি')}</span>
-            <span className="text-slate-400">•</span>
-            <span className="truncate">{absentTodayCount} {tBilingual('Unauth', 'অনুপস্থিত')}</span>
-          </div>
-        </Card>
+          }
+        />
 
         {/* KPI 4: Late Arrivals */}
-        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-amber-300 dark:hover:border-amber-700 transition-all flex flex-col justify-between rounded-2xl">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-2xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
-              {tBilingual('Late Arrivals', 'দেরিতে আগমন')}
-            </span>
-            <div className="p-1 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-md">
-              <Clock className="w-3.5 h-3.5" />
+        <KpiCard
+          titleEn="Late Arrivals"
+          titleBn="দেরিতে আগমন"
+          value={lateTodayCount}
+          icon={Clock}
+          colorVariant="amber"
+          footer={
+            <div className="w-full flex items-center justify-between text-xs">
+              <span className="text-amber-600 dark:text-amber-400 truncate">{tBilingual('Check Grace', 'গ্রেস টাইম')}</span>
+              <Link href={getTenantNavHref('/hr/attendance', pathname, slug)} className="text-amber-600 dark:text-amber-400 hover:underline font-semibold shrink-0">
+                {tBilingual('Logs', 'লগ')} &rarr;
+              </Link>
             </div>
-          </div>
-          <div className="mt-2">
-            <span className="text-xl font-black tracking-tight text-amber-600 dark:text-amber-400 font-mono">{lateTodayCount}</span>
-          </div>
-          <div className="mt-2 text-2xs text-amber-600/90 dark:text-amber-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
-            <span>{tBilingual('Check Grace', 'গ্রেস টাইম')}</span>
-            <Link href={getTenantNavHref('/hr/attendance', pathname, slug)} className="text-amber-600 hover:underline font-semibold shrink-0">
-              {tBilingual('Logs', 'লগ')}
-            </Link>
-          </div>
-        </Card>
+          }
+        />
 
         {/* KPI 5: Arrears Due */}
-        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-rose-300 dark:hover:border-rose-700 transition-all flex flex-col justify-between rounded-2xl">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              {tBilingual('Arrears Due', 'বকেয়া পাওনা')}
-            </span>
-            <div className="p-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-md">
-              <Receipt className="w-3.5 h-3.5" />
+        <KpiCard
+          titleEn="Arrears Due"
+          titleBn="বকেয়া পাওনা"
+          value={arrearsDue}
+          isCurrency
+          icon={Receipt}
+          colorVariant="rose"
+          footer={
+            <div className="w-full flex items-center justify-between text-xs">
+              <span className="text-muted-foreground truncate">{tBilingual('Unpaid Due', 'বকেয়া বেতন')}</span>
+              <Link href={getTenantNavHref('/hr/payroll', pathname, slug)} className="text-rose-600 dark:text-rose-400 hover:underline font-semibold shrink-0">
+                {tBilingual('Clear', 'পরিশোধ')} &rarr;
+              </Link>
             </div>
-          </div>
-          <div className="mt-2">
-            <span className="text-lg font-black tracking-tight text-rose-600 dark:text-rose-400 font-mono">
-              {formatBDT(arrearsDue)}
-            </span>
-          </div>
-          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
-            <span>{tBilingual('Unpaid Due', 'বকেয়া বেতন')}</span>
-            <Link href={getTenantNavHref('/hr/payroll', pathname, slug)} className="text-rose-600 hover:underline font-semibold shrink-0">
-              {tBilingual('Clear', 'পরিশোধ')}
-            </Link>
-          </div>
-        </Card>
+          }
+        />
 
         {/* KPI 6: Month Payroll */}
-        <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-purple-300 dark:hover:border-purple-700 transition-all flex flex-col justify-between rounded-2xl">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              {tBilingual('Month Payroll', 'চলতি মাসের বেতন')}
-            </span>
-            <div className="p-1 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-md">
-              <Wallet className="w-3.5 h-3.5" />
+        <KpiCard
+          titleEn="Month Payroll"
+          titleBn="চলতি মাসের বেতন"
+          value={monthPayroll}
+          isCurrency
+          icon={Wallet}
+          colorVariant="purple"
+          footer={
+            <div className="w-full flex items-center justify-between text-xs">
+              <span className="text-muted-foreground truncate">{tBilingual('Gross Est.', 'মোট হিসাব')}</span>
+              <Link href={getTenantNavHref('/hr/payroll', pathname, slug)} className="text-purple-600 dark:text-purple-400 hover:underline font-semibold shrink-0">
+                {tBilingual('Sheet', 'শিট')} &rarr;
+              </Link>
             </div>
-          </div>
-          <div className="mt-2">
-            <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white font-mono">
-              {formatBDT(monthPayroll)}
-            </span>
-          </div>
-          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
-            <span>{tBilingual('Gross Est.', 'মোট হিসাব')}</span>
-            <Link href={getTenantNavHref('/hr/payroll', pathname, slug)} className="text-purple-600 hover:underline font-semibold shrink-0">
-              {tBilingual('Sheet', 'শিট')}
-            </Link>
-          </div>
-        </Card>
-
-
-      </div>
+          }
+        />
+      </KpiGrid>
 
       {/* Overview Row: Payroll Disbursal Status & Attendance Overview (Today) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

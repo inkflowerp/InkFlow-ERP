@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { Briefcase, Printer, Package, Banknote, Users } from 'lucide-react'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import type { BranchKPIs } from '../../types/branch.types.ts'
 
 interface BranchPerformanceDashboardProps {
@@ -53,161 +55,165 @@ export function BranchPerformanceDashboard({
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <KpiGrid columns={3}>
         {/* Card 1: Sales & Revenue */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-slate-400">Sales & Invoicing</span>
-            <span className="text-lg">💼</span>
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-slate-100">
-            ৳{kpis.sales.invoice_value.toLocaleString('en-IN')}
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
-            <div>
-              <span className="text-slate-400">Invoices: </span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                {kpis.sales.invoice_count}
-              </span>
+        <KpiCard
+          titleEn="Sales & Invoicing"
+          titleBn="বিক্রি ও ইনভয়েসিং"
+          value={kpis.sales.invoice_value}
+          isCurrency
+          icon={Briefcase}
+          colorVariant="primary"
+          footer={
+            <div className="grid grid-cols-2 gap-2 text-xs pt-2">
+              <div>
+                <span className="text-slate-400">Invoices: </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {kpis.sales.invoice_count}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400">Collection: </span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  ৳{kpis.sales.collection_amount.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400">Due/Outstanding: </span>
+                <span className="font-semibold text-rose-600 dark:text-rose-400">
+                  ৳{kpis.sales.outstanding_amount.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400">Quotes: </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {kpis.sales.quotation_count}
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="text-slate-400">Collection: </span>
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                ৳{kpis.sales.collection_amount.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-400">Due/Outstanding: </span>
-              <span className="font-semibold text-rose-600 dark:text-rose-400">
-                ৳{kpis.sales.outstanding_amount.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-400">Quotes: </span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                {kpis.sales.quotation_count}
-              </span>
-            </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* Card 2: Production Floor */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-slate-400">Production Floor</span>
-            <span className="text-lg">🖨️</span>
-          </div>
-          <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-black text-slate-900 dark:text-slate-100">
-              {kpis.production.in_progress_tasks} Active
-            </span>
-            <span className="text-xs text-slate-400">
-              / {kpis.production.completed_tasks} done
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
-            <div>
-              <span className="text-slate-400">Queued: </span>
-              <span className="font-semibold text-amber-600 dark:text-amber-400">
-                {kpis.production.queued_tasks}
-              </span>
+        <KpiCard
+          titleEn="Production Floor"
+          titleBn="উৎপাদন ফ্লোর"
+          value={`${kpis.production.in_progress_tasks} Active`}
+          subtitleEn={`/ ${kpis.production.completed_tasks} done`}
+          subtitleBn={`/ ${kpis.production.completed_tasks} সম্পন্ন`}
+          icon={Printer}
+          colorVariant="blue"
+          footer={
+            <div className="grid grid-cols-2 gap-2 text-xs pt-2">
+              <div>
+                <span className="text-slate-400">Queued: </span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                  {kpis.production.queued_tasks}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400">Utilization: </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {kpis.production.machine_utilization_rate}%
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400">Reworks: </span>
+                <span className="font-semibold text-rose-600 dark:text-rose-400">
+                  {kpis.production.rework_tasks}
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="text-slate-400">Utilization: </span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                {kpis.production.machine_utilization_rate}%
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-400">Reworks: </span>
-              <span className="font-semibold text-rose-600 dark:text-rose-400">
-                {kpis.production.rework_tasks}
-              </span>
-            </div>
-          </div>
-        </div>
+          }
+        />
 
-        {/* Card 3: Inventory & Transfers */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-slate-400">Inventory & Stock</span>
-            <span className="text-lg">📦</span>
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-slate-100">
-            ৳{kpis.inventory.total_stock_value.toLocaleString('en-IN')}
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
-            <div>
-              <span className="text-slate-400">Low Stock Alert: </span>
-              <span className={`font-semibold ${kpis.inventory.low_stock_item_count > 0 ? 'text-rose-600' : 'text-slate-700'}`}>
-                {kpis.inventory.low_stock_item_count} items
-              </span>
+        {/* Card 3: Inventory & Stock */}
+        <KpiCard
+          titleEn="Inventory & Stock"
+          titleBn="ইনভেন্টরি ও স্টক"
+          value={kpis.inventory.total_stock_value}
+          isCurrency
+          icon={Package}
+          colorVariant="emerald"
+          badge={kpis.inventory.low_stock_item_count > 0 ? `${kpis.inventory.low_stock_item_count} Low Stock` : undefined}
+          badgeColor="rose"
+          footer={
+            <div className="grid grid-cols-2 gap-2 text-xs pt-2">
+              <div>
+                <span className="text-slate-400">Low Stock Alert: </span>
+                <span className={`font-semibold ${kpis.inventory.low_stock_item_count > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                  {kpis.inventory.low_stock_item_count} items
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400">Inbound Transfers: </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {kpis.inventory.pending_inbound_transfers}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400">Outbound Transfers: </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {kpis.inventory.pending_outbound_transfers}
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="text-slate-400">Inbound Transfers: </span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                {kpis.inventory.pending_inbound_transfers}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-400">Outbound Transfers: </span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                {kpis.inventory.pending_outbound_transfers}
-              </span>
-            </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* Card 4: Finance & Cash Flow */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-slate-400">Branch Cash Balance</span>
-            <span className="text-lg">💵</span>
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-slate-100">
-            ৳{kpis.finance.cash_balance.toLocaleString('en-IN')}
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
-            <div>
-              <span className="text-slate-400">Expenses: </span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                ৳{kpis.finance.total_expenses.toLocaleString('en-IN')}
-              </span>
+        <KpiCard
+          titleEn="Branch Cash Balance"
+          titleBn="ব্রাঞ্চ ক্যাশ ব্যালেন্স"
+          value={kpis.finance.cash_balance}
+          isCurrency
+          icon={Banknote}
+          colorVariant="teal"
+          footer={
+            <div className="grid grid-cols-2 gap-2 text-xs pt-2">
+              <div>
+                <span className="text-slate-400">Expenses: </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  ৳{kpis.finance.total_expenses.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400">Net Flow: </span>
+                <span className={`font-semibold ${kpis.finance.net_cash_flow >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                  ৳{kpis.finance.net_cash_flow.toLocaleString('en-IN')}
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="text-slate-400">Net Flow: </span>
-              <span className={`font-semibold ${kpis.finance.net_cash_flow >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                ৳{kpis.finance.net_cash_flow.toLocaleString('en-IN')}
-              </span>
-            </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* Card 5: Workforce Attendance */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-slate-400">Workforce & Staff</span>
-            <span className="text-lg">👥</span>
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-slate-100">
-            {kpis.workforce.present_today} Present
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
-            <div>
-              <span className="text-slate-400">Total Staff: </span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                {kpis.workforce.total_employees}
-              </span>
+        <KpiCard
+          titleEn="Workforce & Staff"
+          titleBn="কর্মী ও স্টাফ"
+          value={`${kpis.workforce.present_today} Present`}
+          subtitleEn={`of ${kpis.workforce.total_employees} staff`}
+          subtitleBn={`মোট ${kpis.workforce.total_employees} জনের`}
+          icon={Users}
+          colorVariant="purple"
+          footer={
+            <div className="grid grid-cols-2 gap-2 text-xs pt-2">
+              <div>
+                <span className="text-slate-400">Total Staff: </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {kpis.workforce.total_employees}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400">Cross-Assigned: </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {kpis.workforce.on_temporary_assignment}
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="text-slate-400">Cross-Assigned: </span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                {kpis.workforce.on_temporary_assignment}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+          }
+        />
+      </KpiGrid>
     </div>
   )
 }

@@ -32,6 +32,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import {
@@ -244,87 +245,47 @@ export function PrintFloorConsumptionUnit({
       {/* ========================================================= */}
       {/* 4-KPI SUMMARY HUD BAR */}
       {/* ========================================================= */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* KPI 1: Dispatched to Floor */}
-        <Card className="p-3.5 bg-linear-to-br from-indigo-50/70 to-indigo-100/40 dark:from-indigo-950/40 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-900/60 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase text-indigo-700 dark:text-indigo-400 tracking-wider">
-              {tBilingual('Dispatched to Floor', 'ফ্লোরে বরাদ্দকৃত মাল')}
-            </span>
-            <div className="h-7 w-7 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-              <Layers className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-black text-slate-900 dark:text-white font-mono">
-              {kpis.totalDispatchedQty.toLocaleString()}
-            </span>
-            <span className="text-2xs text-slate-500 font-semibold font-mono">
-              {floorConsumptions.length} {tBilingual('lines', 'লাইন')}
-            </span>
-          </div>
-        </Card>
+      <KpiGrid columns={4}>
+        <KpiCard
+          titleEn="Dispatched to Floor"
+          titleBn="ফ্লোরে বরাদ্দকৃত মাল"
+          value={kpis.totalDispatchedQty}
+          icon={Layers}
+          colorVariant="indigo"
+          subtitleEn={`${floorConsumptions.length} lines`}
+          subtitleBn={`${floorConsumptions.length}টি লাইন`}
+        />
 
-        {/* KPI 2: Actually Consumed */}
-        <Card className="p-3.5 bg-linear-to-br from-emerald-50/70 to-emerald-100/40 dark:from-emerald-950/40 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-900/60 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase text-emerald-700 dark:text-emerald-400 tracking-wider">
-              {tBilingual('Actual Consumed', 'প্রকৃত ব্যবহৃত')}
-            </span>
-            <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <CheckCircle2 className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
-              {kpis.totalConsumedQty.toLocaleString()}
-            </span>
-            <span className="text-2xs text-slate-500 font-semibold font-mono">
-              {kpis.totalDispatchedQty > 0 ? Math.round((kpis.totalConsumedQty / kpis.totalDispatchedQty) * 100) : 0}% {tBilingual('consumed', 'ব্যবহৃত')}
-            </span>
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Actual Consumed"
+          titleBn="প্রকৃত ব্যবহৃত"
+          value={kpis.totalConsumedQty}
+          icon={CheckCircle2}
+          colorVariant="emerald"
+          subtitleEn={`${kpis.totalDispatchedQty > 0 ? Math.round((kpis.totalConsumedQty / kpis.totalDispatchedQty) * 100) : 0}% consumed`}
+          subtitleBn={`${kpis.totalDispatchedQty > 0 ? Math.round((kpis.totalConsumedQty / kpis.totalDispatchedQty) * 100) : 0}% ব্যবহৃত`}
+        />
 
-        {/* KPI 3: Floor Balance (Remaining at Machines) */}
-        <Card className="p-3.5 bg-linear-to-br from-blue-50/70 to-blue-100/40 dark:from-blue-950/40 dark:to-blue-900/20 border-blue-200 dark:border-blue-900/60 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase text-blue-700 dark:text-blue-400 tracking-wider">
-              {tBilingual('Floor Stock Balance', 'মেশিনে অবশিষ্ট মাল')}
-            </span>
-            <div className="h-7 w-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-              <Printer className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-black text-blue-700 dark:text-blue-400 font-mono">
-              {kpis.totalRemainingQty.toLocaleString()}
-            </span>
-            <Badge variant="outline" className="text-2xs font-mono bg-blue-50 dark:bg-blue-950 text-blue-700 border-blue-300 dark:border-blue-800">
-              {kpis.activeFloorItemsCount} active lines
-            </Badge>
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Floor Stock Balance"
+          titleBn="মেশিনে অবশিষ্ট মাল"
+          value={kpis.totalRemainingQty}
+          icon={Printer}
+          colorVariant="blue"
+          badge={`${kpis.activeFloorItemsCount} active`}
+          badgeColor="blue"
+        />
 
-        {/* KPI 4: Scrap & Wastage */}
-        <Card className="p-3.5 bg-linear-to-br from-rose-50/70 to-rose-100/40 dark:from-rose-950/40 dark:to-rose-900/20 border-rose-200 dark:border-rose-900/60 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase text-rose-700 dark:text-rose-400 tracking-wider">
-              {tBilingual('Scrap & Wastage', 'অপচয় / স্ক্র্যাপ')}
-            </span>
-            <div className="h-7 w-7 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-              <Flame className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-xl font-black text-rose-700 dark:text-rose-400 font-mono">
-              {kpis.totalWastageQty.toLocaleString()}
-            </span>
-            <span className="text-2xs font-bold text-rose-600 font-mono">
-              {kpis.scrapRatePercent}% rate
-            </span>
-          </div>
-        </Card>
-      </div>
+        <KpiCard
+          titleEn="Scrap & Wastage"
+          titleBn="অপচয় / স্ক্র্যাপ"
+          value={kpis.totalWastageQty}
+          icon={Flame}
+          colorVariant="rose"
+          badge={`${kpis.scrapRatePercent}% rate`}
+          badgeColor="rose"
+        />
+      </KpiGrid>
 
       {/* ========================================================= */}
       {/* ACTIVE MASTER ROLLS ON PRINT FLOOR SECTION */}

@@ -428,8 +428,13 @@ export class FinanceRepository {
     }
 
     // Fallback store handling
-    PrintERPDataStore.addItem(STORAGE_KEYS.FINANCIAL_TRANSACTIONS, { ...txnHeader, lines })
-    for (const line of lines) {
+    const normalizedLines = lines.map((l) => ({
+      ...l,
+      id: isValidUUID(l.id) ? l.id : generateUUID(),
+      transaction_id: txnId,
+    }))
+    PrintERPDataStore.addItem(STORAGE_KEYS.FINANCIAL_TRANSACTIONS, { ...txnHeader, lines: normalizedLines })
+    for (const line of normalizedLines) {
       PrintERPDataStore.addItem(STORAGE_KEYS.JOURNAL_ENTRY_LINES, line)
       const acc = await this.getAccountById(line.account_id, txn.company_id)
       if (acc) {
@@ -445,7 +450,7 @@ export class FinanceRepository {
       }
     }
 
-    return { ...txn, id: txnId, lines }
+    return { ...txn, id: txnId, lines: normalizedLines }
   }
 
   static async getTransactions(
@@ -499,9 +504,11 @@ export class FinanceRepository {
       })
       .map((t) => ({
         ...t,
-        lines: allLines
-          .filter((l) => l.transaction_id === t.id)
-          .sort((a, b) => (a.created_at || a.id || '').localeCompare(b.created_at || b.id || '')),
+        lines: (t.lines && t.lines.length > 0)
+          ? t.lines
+          : allLines
+              .filter((l) => l.transaction_id === t.id)
+              .sort((a, b) => (a.created_at || a.id || '').localeCompare(b.created_at || b.id || '')),
       }))
   }
 

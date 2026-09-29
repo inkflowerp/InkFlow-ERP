@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -12,45 +12,27 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  DollarSign,
-  TrendingUp,
-  Building,
-  CreditCard,
-  FileCheck2,
   TrendingDown,
   ArrowDownLeft,
   ArrowUpRight,
   ShieldCheck,
-  Eye,
-  EyeOff,
-  Sparkles,
-  PieChart,
-  HelpCircle,
-  BookOpen,
-  Scale,
-  Activity,
-  Calculator,
-  RotateCcw,
   ShoppingBag,
   RefreshCw,
-  Landmark,
   Receipt,
   Users,
   Download,
   ArrowLeftRight,
   Calendar,
   ChevronDown,
+  LayoutDashboard,
+  BarChart3,
   ChevronLeft,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
-import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
@@ -59,51 +41,42 @@ import type {
   AccountRecord,
   FinancialTransactionRecord,
   FinancialDashboardMetrics,
-  ProfitAndLossStatement,
-  BalanceSheetStatement,
-  CashFlowStatement,
-  TrialBalanceStatement,
-  GeneralLedgerEntry,
   ReceivablesAgingSummary,
   PayablesAgingSummary,
-  JobProfitabilityMetric,
+  ExpenseSummaryReport,
   CashClosingRecord,
 } from '@/types/finance.types'
 
+// The 8 Practical PrintERP Finance Components
 import { FinanceDashboardView } from '@/components/finance/finance-dashboard-view'
-import { FinanceQuickActions } from '@/components/finance/finance-quick-actions'
+import { CashBankView } from '@/components/finance/cash-bank-view'
+import { ReceivablesView } from '@/components/finance/receivables-view'
+import { PayablesView } from '@/components/finance/payables-view'
+import { ExpensesTabView } from '@/components/finance/expenses-tab-view'
+import { TransactionsLedgerView } from '@/components/finance/transactions-ledger-view'
+import { CashClosingView } from '@/components/finance/cash-closing-view'
+import { FinancialReportsView } from '@/components/finance/financial-reports-view'
+
+// Modals
 import { SpendMoneyModal } from '@/components/finance/modals/spend-money-modal'
 import { TransferMoneyModal } from '@/components/finance/modals/transfer-money-modal'
 import { PaySupplierModal } from '@/components/finance/modals/pay-supplier-modal'
-import { CustomerRefundModal } from '@/components/finance/modals/customer-refund-modal'
 import { CashClosingModal } from '@/components/finance/modals/cash-closing-modal'
-import { RecordAdjustmentModal } from '@/components/finance/modals/record-adjustment-modal'
+import { AddAccountModal } from '@/components/finance/modals/add-account-modal'
+import { CollectPaymentModal } from '@/components/finance/modals/collect-payment-modal'
 import { NextActionModal, type NextActionConfig } from '@/components/shared/next-action-modal'
-import { BalanceSheetView } from '@/components/finance/statements/balance-sheet-view'
-import { CashFlowView } from '@/components/finance/statements/cash-flow-view'
-import { TrialBalanceView } from '@/components/finance/statements/trial-balance-view'
-import { GeneralLedgerView } from '@/components/finance/statements/general-ledger-view'
-import { JobProfitabilityView } from '@/components/finance/statements/job-profitability-view'
-import { ExpensesView } from '@/components/finance/statements/expenses-view'
-import type { ExpenseSummaryReport } from '@/types/finance.types'
 
 import {
   getAccountsAction,
   getFinancialDashboardAction,
-  getProfitAndLossAction,
-  getBalanceSheetAction,
-  getCashFlowAction,
-  getTrialBalanceAction,
-  getGeneralLedgerAction,
   getReceivablesAgingAction,
   getPayablesAgingAction,
-  getJobProfitabilityAction,
   getExpensesAction,
+  getTransactionsAction,
+  getCashClosingsAction,
   recordExpenseAction,
   recordTransferAction,
   recordSupplierPaymentAction,
-  recordCustomerRefundAction,
-  recordFinancialAdjustmentAction,
   submitCashClosingAction,
 } from '@/actions/finance.actions'
 
@@ -117,15 +90,24 @@ function AccountingContent() {
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const tabParam = searchParams.get('tab')
-  const [activeTab, setActiveTab] = useState<string>(tabParam || 'overview')
 
-  // Keep activeTab in sync with URL searchParams
+  // Map aliases cleanly (e.g. closings -> cash-closing, accounts -> cash-bank, ledger -> transactions)
+  const resolveActiveTab = (param: string | null): string => {
+    if (!param || param === 'overview' || param === 'dashboard') return 'overview'
+    if (param === 'cash-bank' || param === 'accounts') return 'cash-bank'
+    if (param === 'receivables') return 'receivables'
+    if (param === 'payables') return 'payables'
+    if (param === 'expenses') return 'expenses'
+    if (param === 'transactions' || param === 'ledger') return 'transactions'
+    if (param === 'cash-closing' || param === 'closings') return 'cash-closing'
+    if (param === 'reports' || param === 'pnl' || param === 'balance_sheet' || param === 'cash_flow' || param === 'trial_balance') return 'reports'
+    return param
+  }
+
+  const [activeTab, setActiveTab] = useState<string>(resolveActiveTab(tabParam))
+
   useEffect(() => {
-    if (tabParam) {
-      setActiveTab(tabParam)
-    } else {
-      setActiveTab('overview')
-    }
+    setActiveTab(resolveActiveTab(tabParam))
   }, [tabParam])
 
   const handleTabChange = (newTab: string) => {
@@ -144,23 +126,15 @@ function AccountingContent() {
   // Data State
   const [accounts, setAccounts] = useState<AccountRecord[]>([])
   const [dashboardMetrics, setDashboardMetrics] = useState<FinancialDashboardMetrics | null>(null)
-  const [pnl, setPnl] = useState<ProfitAndLossStatement | null>(null)
-  const [balanceSheet, setBalanceSheet] = useState<BalanceSheetStatement | null>(null)
-  const [cashFlow, setCashFlow] = useState<CashFlowStatement | null>(null)
-  const [trialBalance, setTrialBalance] = useState<TrialBalanceStatement | null>(null)
-  const [ledgerEntries, setLedgerEntries] = useState<GeneralLedgerEntry[]>([])
   const [receivables, setReceivables] = useState<ReceivablesAgingSummary | null>(null)
   const [payables, setPayables] = useState<PayablesAgingSummary | null>(null)
-  const [jobProfitability, setJobProfitability] = useState<JobProfitabilityMetric[]>([])
   const [expensesReport, setExpensesReport] = useState<ExpenseSummaryReport | null>(null)
+  const [transactions, setTransactions] = useState<FinancialTransactionRecord[]>([])
+  const [cashClosings, setCashClosings] = useState<CashClosingRecord[]>([])
+
   const [customers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
   const [suppliers] = useDataStore<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS, [])
-  const [cashClosings] = useDataStore<CashClosingRecord[]>(STORAGE_KEYS.CASH_CLOSINGS, [])
 
-  // UI State
-  const [selectedLedgerAccountId, setSelectedLedgerAccountId] = useState<string>('')
-  const [receivablesSearch, setReceivablesSearch] = useState<string>('')
-  const [payablesSearch, setPayablesSearch] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
 
@@ -217,13 +191,25 @@ function AccountingContent() {
 
   const activeRange = getDateRangeForTimeframe(timeframe)
 
-  // Modals
+  // Modals state
   const [isSpendModalOpen, setIsSpendModalOpen] = useState(false)
+  const [spendCategoryPrefill, setSpendCategoryPrefill] = useState<string | undefined>()
+
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
+  const [transferFromAccountId, setTransferFromAccountId] = useState<string | undefined>()
+
   const [isPaySupplierModalOpen, setIsPaySupplierModalOpen] = useState(false)
-  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
+
   const [isCashClosingModalOpen, setIsCashClosingModalOpen] = useState(false)
-  const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState(false)
+  const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false)
+
+  const [isCollectModalOpen, setIsCollectModalOpen] = useState(false)
+  const [collectTarget, setCollectTarget] = useState<{
+    customerId?: string
+    customerName?: string
+    dueAmount?: number
+    invoiceId?: string
+  }>({})
 
   // Next Action Modal State
   const [nextActionConfig, setNextActionConfig] = useState<NextActionConfig | null>(null)
@@ -240,31 +226,23 @@ function AccountingContent() {
       const curStart = customStart !== undefined ? customStart : activeRange.startDate
       const curEnd = customEnd !== undefined ? customEnd : activeRange.endDate
 
-      const [accRes, dashRes, pnlRes, bsRes, cfRes, tbRes, glRes, arRes, apRes, jpRes, expRes] = await Promise.all([
+      const [accRes, dashRes, arRes, apRes, expRes, txnsRes, closingsRes] = await Promise.all([
         getAccountsAction().catch(() => ({ success: false, data: [] })),
         getFinancialDashboardAction({ startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: null })),
-        getProfitAndLossAction(curStart, curEnd).catch(() => ({ success: false, data: null })),
-        getBalanceSheetAction().catch(() => ({ success: false, data: null })),
-        getCashFlowAction(curStart, curEnd).catch(() => ({ success: false, data: null })),
-        getTrialBalanceAction().catch(() => ({ success: false, data: null })),
-        getGeneralLedgerAction({ accountId: selectedLedgerAccountId || undefined, startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: [] })),
         getReceivablesAgingAction().catch(() => ({ success: false, data: null })),
         getPayablesAgingAction().catch(() => ({ success: false, data: null })),
-        getJobProfitabilityAction().catch(() => ({ success: false, data: [] })),
         getExpensesAction({ startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: null })),
+        getTransactionsAction({ startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: [] })),
+        getCashClosingsAction().catch(() => ({ success: false, data: [] })),
       ])
 
       if (accRes && accRes.success && Array.isArray(accRes.data)) setAccounts(accRes.data)
       if (dashRes && dashRes.success && dashRes.data) setDashboardMetrics(dashRes.data)
-      if (pnlRes && pnlRes.success && pnlRes.data) setPnl(pnlRes.data)
-      if (bsRes && bsRes.success && bsRes.data) setBalanceSheet(bsRes.data)
-      if (cfRes && cfRes.success && cfRes.data) setCashFlow(cfRes.data)
-      if (tbRes && tbRes.success && tbRes.data) setTrialBalance(tbRes.data)
-      if (glRes && glRes.success && Array.isArray(glRes.data)) setLedgerEntries(glRes.data)
       if (arRes && arRes.success && arRes.data) setReceivables(arRes.data)
       if (apRes && apRes.success && apRes.data) setPayables(apRes.data)
-      if (jpRes && jpRes.success && Array.isArray(jpRes.data)) setJobProfitability(jpRes.data)
       if (expRes && expRes.success && expRes.data) setExpensesReport(expRes.data)
+      if (txnsRes && txnsRes.success && Array.isArray(txnsRes.data)) setTransactions(txnsRes.data)
+      if (closingsRes && closingsRes.success && Array.isArray(closingsRes.data)) setCashClosings(closingsRes.data)
     } catch (err: any) {
       console.warn('Failed to load finance data:', err)
     } finally {
@@ -300,7 +278,7 @@ function AccountingContent() {
         window.removeEventListener('storage', handleRealtimeSync)
       }
     }
-  }, [timeframe, selectedLedgerAccountId])
+  }, [timeframe])
 
   // Handlers for Modals
   const handleSpendMoney = async (data: any) => {
@@ -314,11 +292,11 @@ function AccountingContent() {
         descriptionEn: `Voucher recorded for BDT ${data.amount.toLocaleString()} (${data.category})`,
         descriptionBn: `৳${data.amount.toLocaleString()} টাকার ভাউচার সংরক্ষিত হয়েছে (${data.category})`,
         primaryAction: {
-          labelEn: 'View Cash Flow',
-          labelBn: 'ক্যাশ ফ্লো দেখুন',
+          labelEn: 'View Expenses',
+          labelBn: 'খরচ তালিকা দেখুন',
           onClick: () => {
             setIsNextActionOpen(false)
-            setActiveTab('cash_flow')
+            handleTabChange('expenses')
           },
         },
         secondaryActions: [
@@ -327,7 +305,7 @@ function AccountingContent() {
             labelBn: 'ড্যাশবোর্ডে ফিরুন',
             onClick: () => {
               setIsNextActionOpen(false)
-              setActiveTab('overview')
+              handleTabChange('overview')
             },
           },
         ],
@@ -349,19 +327,20 @@ function AccountingContent() {
         descriptionEn: `BDT ${data.amount.toLocaleString()} transferred successfully.`,
         descriptionBn: `৳${data.amount.toLocaleString()} সফলভাবে ট্রান্সফার করা হয়েছে।`,
         primaryAction: {
-          labelEn: 'View General Ledger',
-          labelBn: 'খতিয়ান দেখুন',
+          labelEn: 'View Cash & Bank',
+          labelBn: 'ক্যাশ ও ব্যাংক দেখুন',
           onClick: () => {
             setIsNextActionOpen(false)
-            setActiveTab('ledger')
+            handleTabChange('cash-bank')
           },
         },
         secondaryActions: [
           {
-            labelEn: 'Done',
-            labelBn: 'সম্পন্ন',
+            labelEn: 'Back to Dashboard',
+            labelBn: 'ড্যাশবোর্ডে ফিরুন',
             onClick: () => {
               setIsNextActionOpen(false)
+              handleTabChange('overview')
             },
           },
         ],
@@ -375,33 +354,33 @@ function AccountingContent() {
   const handlePaySupplier = async (data: any) => {
     const res = await recordSupplierPaymentAction(data)
     if (res.success) {
-      showNotification(tBilingual('Supplier payment recorded successfully', 'সরবরাহকারীর পেমেন্ট সফলভাবে সম্পন্ন হয়েছে'))
+      showNotification(tBilingual('Supplier payment recorded', 'মহাজন বিল পরিশোধ সফলভাবে সম্পন্ন হয়েছে'))
       await loadAllData()
       setNextActionConfig({
-        titleEn: 'Supplier Bill Paid ✓',
-        titleBn: 'সরবরাহকারীর পাওনা পরিশোধিত ✓',
-        descriptionEn: `Paid BDT ${data.amount.toLocaleString()} to ${data.supplierName}.`,
-        descriptionBn: `${data.supplierName} কে ৳${data.amount.toLocaleString()} পরিশোধ করা হয়েছে।`,
+        titleEn: 'Supplier Payment Posted ✓',
+        titleBn: 'মহাজন পরিশোধ সম্পন্ন হয়েছে ✓',
+        descriptionEn: `BDT ${data.amount.toLocaleString()} paid to ${data.supplierName}.`,
+        descriptionBn: `${data.supplierName} কে ৳${data.amount.toLocaleString()} প্রদান করা হয়েছে।`,
         primaryAction: {
-          labelEn: 'View Payables Aging',
-          labelBn: 'বাকি তালিকা দেখুন',
+          labelEn: 'View Payables',
+          labelBn: 'মহাজন দেনা দেখুন',
           onClick: () => {
             setIsNextActionOpen(false)
-            setActiveTab('payables')
+            handleTabChange('payables')
           },
         },
+        secondaryActions: [
+          {
+            labelEn: 'Back to Dashboard',
+            labelBn: 'ড্যাশবোর্ডে ফিরুন',
+            onClick: () => {
+              setIsNextActionOpen(false)
+              handleTabChange('overview')
+            },
+          },
+        ],
       })
       setIsNextActionOpen(true)
-    } else {
-      throw new Error(res.error)
-    }
-  }
-
-  const handleCustomerRefund = async (data: any) => {
-    const res = await recordCustomerRefundAction(data)
-    if (res.success) {
-      showNotification(tBilingual('Refund recorded successfully', 'রিফান্ড সফলভাবে সম্পন্ন হয়েছে'))
-      await loadAllData()
     } else {
       throw new Error(res.error)
     }
@@ -410,92 +389,40 @@ function AccountingContent() {
   const handleCashClosing = async (data: any) => {
     const res = await submitCashClosingAction(data)
     if (res.success) {
-      showNotification(tBilingual('Daily Cash Closing submitted successfully', 'ক্যাশ ড্রয়ার ক্লোজিং সম্পন্ন হয়েছে'))
+      showNotification(tBilingual('Cash closing recorded & locked', 'ক্যাশ ক্লোজিং সম্পন্ন ও লক হয়েছে'))
       await loadAllData()
     } else {
       throw new Error(res.error)
     }
   }
 
-  const handleRecordAdjustment = async (data: any) => {
-    const res = await recordFinancialAdjustmentAction(data)
-    if (res.success) {
-      showNotification(tBilingual('Journal adjustment posted successfully', 'জার্নাল অ্যাডজাস্টমেন্ট পোস্ট হয়েছে'))
-      await loadAllData()
-    } else {
-      throw new Error(res.error)
-    }
+  // Quick Action triggers
+  const handleTriggerCollect = (customerId?: string, customerName?: string, dueAmount?: number, invoiceId?: string) => {
+    setCollectTarget({ customerId, customerName, dueAmount, invoiceId })
+    setIsCollectModalOpen(true)
   }
 
-  const handleExportStatement = () => {
-    try {
-      const rows = [
-        ['InkFlow ERP - Financial Statement & Dashboard Export'],
-        ['Company', company?.name || 'PrintERP Tenant'],
-        ['Timeframe', `${activeRange.title} (${activeRange.label})`],
-        ['Exported At', new Date().toLocaleString()],
-        [],
-        ['Metric / Account', 'Category', 'Amount (BDT)'],
-        ['Total Revenue', 'Income Statement', String(dashboardMetrics?.monthly_revenue || 0)],
-        ['Total Payments Received', 'Cash Flow', String(dashboardMetrics?.total_payments_received || 0)],
-        ['Total Due (Receivables)', 'Current Asset', String(dashboardMetrics?.total_receivables || 0)],
-        ['Total Expenses', 'Income Statement', String(dashboardMetrics?.monthly_expenses || 0)],
-        ['Net Profit', 'Income Statement', String(dashboardMetrics?.monthly_net_profit || 0)],
-        ['Cash in Drawer', 'Liquid Asset', String(dashboardMetrics?.total_cash_balance || 0)],
-        ['Bank Balances', 'Liquid Asset', String(dashboardMetrics?.total_bank_balance || 0)],
-        ['MFS Balances', 'Liquid Asset', String(dashboardMetrics?.total_mfs_balance || 0)],
-        ['Total Payables', 'Current Liability', String(dashboardMetrics?.total_payables || 0)],
-        [],
-        ['Payment Breakdown', 'Amount (BDT)', 'Percentage'],
-        ['Cash', String(dashboardMetrics?.payment_breakdown?.cash || 0), `${dashboardMetrics?.payment_breakdown?.cash_pct || 0}%`],
-        ['Bank Transfer', String(dashboardMetrics?.payment_breakdown?.bank || 0), `${dashboardMetrics?.payment_breakdown?.bank_pct || 0}%`],
-        ['bKash', String(dashboardMetrics?.payment_breakdown?.bkash || 0), `${dashboardMetrics?.payment_breakdown?.bkash_pct || 0}%`],
-        ['Nagad', String(dashboardMetrics?.payment_breakdown?.nagad || 0), `${dashboardMetrics?.payment_breakdown?.nagad_pct || 0}%`],
-        ['Card / SSL', String(dashboardMetrics?.payment_breakdown?.card || 0), `${dashboardMetrics?.payment_breakdown?.card_pct || 0}%`],
-      ]
+  const handleTriggerPaySupplier = (supplierId?: string, supplierName?: string, dueAmount?: number) => {
+    setIsPaySupplierModalOpen(true)
+  }
 
-      if (dashboardMetrics?.top_receivables && dashboardMetrics.top_receivables.length > 0) {
-        rows.push([])
-        rows.push(['Top Customer Receivables', 'Phone', 'Due Amount (BDT)', 'Status'])
-        for (const item of dashboardMetrics.top_receivables) {
-          rows.push([item.name, item.phone || '-', String(item.amount), item.status])
-        }
-      }
+  const handleTriggerSpend = (prefillCat?: string) => {
+    setSpendCategoryPrefill(prefillCat)
+    setIsSpendModalOpen(true)
+  }
 
-      if (dashboardMetrics?.top_payables && dashboardMetrics.top_payables.length > 0) {
-        rows.push([])
-        rows.push(['Top Supplier Payables', 'Phone', 'Due Amount (BDT)', 'Status'])
-        for (const item of dashboardMetrics.top_payables) {
-          rows.push([item.name, item.phone || '-', String(item.amount), item.status])
-        }
-      }
-
-      const csvContent =
-        'data:text/csv;charset=utf-8,\uFEFF' +
-        rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n')
-      const encodedUri = encodeURI(csvContent)
-      const link = document.createElement('a')
-      link.setAttribute('href', encodedUri)
-      link.setAttribute(
-        'download',
-        `financial_statement_${timeframe}_${new Date().toISOString().split('T')[0]}.csv`
-      )
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      showNotification(tBilingual('Financial statement exported to CSV', 'আর্থিক বিবরণী সিএসভি ডাউনলোড সম্পন্ন'))
-    } catch {
-      showNotification('Export failed')
-    }
+  const handleTriggerTransfer = (fromAccId?: string) => {
+    setTransferFromAccountId(fromAccId)
+    setIsTransferModalOpen(true)
   }
 
   if (!mounted) {
     return (
       <div className="space-y-6 pb-20 animate-pulse">
         <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-1/3" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
           ))}
         </div>
         <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
@@ -503,6 +430,7 @@ function AccountingContent() {
     )
   }
 
+  // 8 Practical Sub-module Header Configs
   const tabHeaders: Record<string, {
     title: string
     titleBn: string
@@ -514,98 +442,66 @@ function AccountingContent() {
     overview: {
       title: 'Finance Dashboard',
       titleBn: 'ফাইন্যান্স ড্যাশবোর্ড',
-      description: 'Track your cash flow, receivables, payables, expenses and profit in one place.',
-      descriptionBn: 'ক্যাশ ফ্লো, বাকি, পাওনা, খরচ এবং মুনাফার সামগ্রিক হিসাব ও বিশ্লেষণ।',
-      icon: Activity,
+      description: 'Cash in Hand, Bank accounts, customer dues, supplier liabilities, and today collections.',
+      descriptionBn: 'ক্যাশ ব্যালেন্স, ব্যাংক তহবিল, কাস্টমার বাকি, মহাজন দেনা এবং আজকের কালেকশনের সার্বিক চিত্র।',
+      icon: LayoutDashboard,
       colorClass: 'bg-emerald-500 text-white',
     },
-    expenses: {
-      title: 'Expenses & Staff Salary',
-      titleBn: 'খরচ ও স্টাফ বেতন',
-      description: 'Track operating expenditures, shop-floor costs, and employee salary distributions.',
-      descriptionBn: 'দৈনন্দিন খরচ, কারখানা পরিচালন ব্যয় ও কর্মীদের বেতন পরিশোধের হিসাব।',
-      icon: TrendingDown,
-      colorClass: 'bg-rose-600 text-white',
+    'cash-bank': {
+      title: 'Cash & Bank Accounts',
+      titleBn: 'ক্যাশ ও ব্যাংক হিসাব',
+      description: 'Manage real money accounts: Cash in Drawer, Bank Checking, and bKash / Nagad / MFS.',
+      descriptionBn: 'ক্যাশ ড্রয়ার, ব্যাংক অ্যাকাউন্ট ও বিকাশ/নগদ ওয়ালেটে থাকা টাকা, স্থানান্তর ও স্টেটমেন্ট।',
+      icon: Wallet,
+      colorClass: 'bg-blue-600 text-white',
     },
     receivables: {
-      title: 'Customer Due (Accounts Receivable)',
-      titleBn: 'গ্রাহকের বাকি ও আদায়',
-      description: 'Manage overdue customer balances, age-wise buckets, and pending collections.',
-      descriptionBn: 'গ্রাহকদের বকেয়া বিল, সময়সীমা অনুযায়ী বাকি তালিকা ও দ্রুত কালেকশন।',
+      title: 'Receivables & Customer Due',
+      titleBn: 'গ্রাহকের বকেয়া ও বাকি আদায়',
+      description: 'Customer-wise outstanding, payment collection against invoices, payment history, and due aging.',
+      descriptionBn: 'ইনভয়েস বকেয়া, গ্রাহকের বাকি, মানি রিসিট সংগ্রহ ও সময়সীমাভিত্তিক বাকি বিশ্লেষণ।',
       icon: Users,
       colorClass: 'bg-amber-500 text-white',
     },
     payables: {
-      title: 'Supplier Due (Accounts Payable)',
-      titleBn: 'সরবরাহকারী ও মহাজন দেনা',
-      description: 'Track material supplier bills, credit terms, and scheduled vendor payments.',
-      descriptionBn: 'কাঁচামাল সরবরাহকারী ও মহাজনদের দেনা এবং পরিশোধের সময়সূচী।',
+      title: 'Payables & Supplier Dues',
+      titleBn: 'মহাজন দেনা ও বিল পরিশোধ',
+      description: 'Track material & paper purchase liabilities, vendor payouts, and payable aging.',
+      descriptionBn: 'কাঁচামাল ও কাগজের বকেয়া বিল, মহাজন পাওনা পরিশোধ ও দেনার মেয়াদ বিশ্লেষণ।',
       icon: ShoppingBag,
-      colorClass: 'bg-pink-600 text-white',
+      colorClass: 'bg-rose-600 text-white',
     },
-    closings: {
-      title: 'Daily Cash Closings & Register',
-      titleBn: 'ক্যাশ ক্লোজিং ও রেজিস্টার',
-      description: 'Daily cash drawer audits, counted cash reconciliation, and discrepancy tracking.',
-      descriptionBn: 'দৈনিক ক্যাশ ড্রয়ার অডিট, হিসাবের সাথে গোনা টাকার মিল ও ক্যাশ ভ্যারিয়েন্স।',
+    expenses: {
+      title: 'Expenses & Overheads',
+      titleBn: 'ব্যয় ও দৈনন্দিন খরচ',
+      description: 'Simple expense entry, operating overheads, recurring bills, and category budgets.',
+      descriptionBn: 'কারখানা ও দোকানের দৈনন্দিন খরচ, মাসিক নিয়মিত বিল এবং খাতভিত্তিক ব্যয় হিসাব।',
+      icon: TrendingDown,
+      colorClass: 'bg-rose-500 text-white',
+    },
+    transactions: {
+      title: 'Transactions Ledger',
+      titleBn: 'লেনদেন লেজার',
+      description: 'One unified ledger for all Money In, Money Out, and Transfer movements.',
+      descriptionBn: 'সকল জমা, খরচ এবং ট্রান্সফারের একক পূর্ণাঙ্গ ডিজিটাল খতিয়ান।',
+      icon: Receipt,
+      colorClass: 'bg-indigo-600 text-white',
+    },
+    'cash-closing': {
+      title: 'Daily Cash Closing',
+      titleBn: 'দৈনিক ক্যাশ ক্লোজিং',
+      description: 'Reconcile counted cash drawer against expected cash register balance and lock day records.',
+      descriptionBn: 'দিনের শেষে হিসাবমতে ড্রয়ার ক্যাশের সাথে গোনা টাকার মিল ও রেজিস্টার লক।',
       icon: Clock,
       colorClass: 'bg-purple-600 text-white',
     },
-    ledger: {
-      title: 'General Ledger',
-      titleBn: 'সাধারণ খতিয়ান',
-      description: 'Account-by-account transaction journal with running balances and auditing trails.',
-      descriptionBn: 'হিসাবভিত্তিক সকল লেনদেনের সম্পূর্ণ বিবরণী ও রানিং ব্যালেন্স লেজার।',
-      icon: BookOpen,
-      colorClass: 'bg-blue-600 text-white',
-    },
-    pnl: {
-      title: 'Profit & Loss Statement (P&L)',
-      titleBn: 'লাভ-ক্ষতি বিবরণী',
-      description: 'Comprehensive revenue, COGS, operating overheads, and net profit margins.',
-      descriptionBn: 'মোট বিক্রয় আয়, বিক্রিত পণ্যের ব্যয় ও নিট পরিচালন মুনাফার পূর্ণ বিবরণী।',
-      icon: PieChart,
+    reports: {
+      title: 'Financial Reports',
+      titleBn: 'ফাইন্যান্সিয়াল রিপোর্ট',
+      description: 'Practical management reports: Income & Expense, Cash Flow, Receivables, Payables, and Statements.',
+      descriptionBn: 'আয়-ব্যয়, নগদ প্রবাহ, বাকি আদায়, মহাজন দেনা এবং ব্যাংক হিসাব বিবরণী রিপোর্ট।',
+      icon: BarChart3,
       colorClass: 'bg-teal-600 text-white',
-    },
-    balance_sheet: {
-      title: 'Balance Sheet Statement',
-      titleBn: 'ব্যালেন্স শিট (স্থিতিপত্র)',
-      description: 'Assets, liabilities, and shareholder equity snapshot according to accounting standards.',
-      descriptionBn: 'প্রতিষ্ঠানের যাবতীয় সম্পদ, দায় এবং মূলধনের সামগ্রিক আর্থিক চিত্র।',
-      icon: Scale,
-      colorClass: 'bg-indigo-600 text-white',
-    },
-    cash_flow: {
-      title: 'Cash Flow Statement',
-      titleBn: 'নগদ প্রবাহ বিবরণী',
-      description: 'Operating, investing, and financing cash inflows and outflows summary.',
-      descriptionBn: 'পরিচালন, বিনিয়োগ ও অর্থায়ন কার্যক্রম থেকে নগদ টাকার প্রকৃত প্রবাহ।',
-      icon: ArrowLeftRight,
-      colorClass: 'bg-emerald-600 text-white',
-    },
-    trial_balance: {
-      title: 'Trial Balance Statement',
-      titleBn: 'রেওয়ামিল (ট্রায়াল ব্যালেন্স)',
-      description: 'Debit and credit balance reconciliation across all active ledger accounts.',
-      descriptionBn: 'সকল হিসাবের ডেবিট ও ক্রেডিট উদ্বৃত্তের নির্ভুল গাণিতিক সমতা পরীক্ষা।',
-      icon: FileCheck2,
-      colorClass: 'bg-sky-600 text-white',
-    },
-    job_profitability: {
-      title: 'Job Costing & Profitability',
-      titleBn: 'কস্টিং ও অর্ডারভিত্তিক লাভ',
-      description: 'Actual material and labor margins calculated per finished production job.',
-      descriptionBn: 'সম্পন্ন প্রতিটি কাজের কাঁচামাল ও শ্রম ব্যয়ের নিট লাভ বিশ্লেষণ।',
-      icon: Calculator,
-      colorClass: 'bg-emerald-600 text-white',
-    },
-    accounts: {
-      title: 'Master Chart of Accounts',
-      titleBn: 'হিসাব তালিকা',
-      description: 'Directory of all assets, liabilities, equity, revenue, and expense accounts.',
-      descriptionBn: 'প্রতিষ্ঠানের সম্পদ, দায়, মূলধন, আয় ও ব্যয়ের সুবিন্যস্ত হিসাব তালিকা।',
-      icon: Landmark,
-      colorClass: 'bg-slate-800 text-white',
     },
   }
 
@@ -622,21 +518,21 @@ function AccountingContent() {
         </div>
       )}
 
-      {/* Dynamic Module Header with Breadcrumb Back Link */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+      {/* Main Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className={cn('h-11 w-11 rounded-2xl flex items-center justify-center shadow-xs shrink-0', currentHeader.colorClass)}>
-            <HeaderIcon className="h-6 w-6" />
+          <div className={cn('p-3 rounded-2xl shadow-xs shrink-0', currentHeader.colorClass)}>
+            <HeaderIcon className="w-6 h-6" />
           </div>
           <div>
             {activeTab !== 'overview' && (
               <button
                 type="button"
                 onClick={() => handleTabChange('overview')}
-                className="inline-flex items-center gap-1 text-2xs font-bold text-blue-600 dark:text-blue-400 hover:underline mb-0.5 cursor-pointer bangla-text"
+                className="text-3xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mb-0.5 font-semibold cursor-pointer"
               >
                 <ChevronLeft className="w-3 h-3" />
-                <span>{tBilingual('Back to Finance Dashboard', 'ফাইন্যান্স ড্যাশবোর্ডে ফিরুন')}</span>
+                <span>{tBilingual('Finance Dashboard', 'ফাইন্যান্স ড্যাশবোর্ড')}</span>
               </button>
             )}
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight bangla-text">
@@ -648,9 +544,9 @@ function AccountingContent() {
           </div>
         </div>
 
-        {/* Header Controls */}
+        {/* Header Controls: Timeframe selector, Export, and Refresh */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Date Range Picker Display */}
+          {/* Date Range Display */}
           <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
             <span>{activeRange.label}</span>
@@ -702,15 +598,6 @@ function AccountingContent() {
             )}
           </div>
 
-          {/* Export Action Button */}
-          <Button
-            onClick={handleExportStatement}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export</span>
-          </Button>
-
           {/* Refresh Button */}
           <Button
             variant="outline"
@@ -729,7 +616,7 @@ function AccountingContent() {
         </div>
       </div>
 
-      {/* Mobile-Only Quick Tab Selector (when sidebar is hidden on small screens < lg) */}
+      {/* Mobile-Only Quick Tab Selector (when sidebar is hidden on small screens) */}
       <div className="lg:hidden flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
         <div className="flex items-center gap-2">
           <HeaderIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
@@ -741,401 +628,167 @@ function AccountingContent() {
           value={activeTab}
           onChange={(e) => handleTabChange(e.target.value)}
           aria-label={tBilingual('Select Finance Module', 'ফাইন্যান্স মডিউল নির্বাচন করুন')}
-          className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bangla-text max-w-[180px] sm:max-w-[240px]"
+          className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bangla-text max-w-[200px]"
         >
-          <option value="overview">{tBilingual('Finance Dashboard', 'ফাইন্যান্স ড্যাশবোর্ড')}</option>
-          <option value="expenses">{tBilingual('Expenses & Salary', 'খরচ ও স্টাফ বেতন')}</option>
-          <option value="receivables">{tBilingual('Customer Due', 'গ্রাহকের বাকি')}</option>
-          <option value="payables">{tBilingual('Supplier Due', 'মহাজনের পাওনা')}</option>
-          <option value="closings">{tBilingual('Cash Closings', 'ক্যাশ ক্লোজিং')}</option>
-          <option value="ledger">{tBilingual('General Ledger', 'সাধারণ খতিয়ান')}</option>
-          <option value="pnl">{tBilingual('P&L Statement', 'লাভ-ক্ষতি বিবরণী')}</option>
-          <option value="balance_sheet">{tBilingual('Balance Sheet', 'ব্যালেন্স শিট')}</option>
-          <option value="cash_flow">{tBilingual('Cash Flow', 'ক্যাশ ফ্লো')}</option>
-          <option value="trial_balance">{tBilingual('Trial Balance', 'রেওয়ামিল')}</option>
-          <option value="job_profitability">{tBilingual('Job Profitability', 'কস্টিং ও লাভ')}</option>
-          <option value="accounts">{tBilingual('Chart of Accounts', 'হিসাব তালিকা')}</option>
+          <option value="overview">{tBilingual('Dashboard', 'ফাইন্যান্স ড্যাশবোর্ড')}</option>
+          <option value="cash-bank">{tBilingual('Cash & Bank', 'ক্যাশ ও ব্যাংক')}</option>
+          <option value="receivables">{tBilingual('Receivables', 'কাস্টমার বাকি')}</option>
+          <option value="payables">{tBilingual('Payables', 'মহাজন দেনা')}</option>
+          <option value="expenses">{tBilingual('Expenses', 'ব্যয় ও খরচ')}</option>
+          <option value="transactions">{tBilingual('Transactions', 'লেনদেন লেজার')}</option>
+          <option value="cash-closing">{tBilingual('Cash Closing', 'ক্যাশ ক্লোজিং')}</option>
+          <option value="reports">{tBilingual('Financial Reports', 'ফাইন্যান্সিয়াল রিপোর্ট')}</option>
         </select>
       </div>
 
-      {/* Main Tab Views */}
+      {/* ------------------------------------------------------------- */}
+      {/* 8 PRACTICAL SUB-MODULE VIEWS (Zero traditional accounting bloat) */}
+      {/* ------------------------------------------------------------- */}
+
+      {/* View 1: Dashboard */}
       {activeTab === 'overview' && (
         <FinanceDashboardView
           metrics={dashboardMetrics}
-          pnl={pnl}
+          receivables={receivables}
+          payables={payables}
+          accounts={accounts}
+          recentTransactions={transactions}
+          onOpenMoneyIn={() => handleTriggerCollect()}
+          onOpenSpendModal={() => handleTriggerSpend()}
+          onOpenTransferModal={() => handleTriggerTransfer()}
+          onOpenCashClosingModal={() => setIsCashClosingModalOpen(true)}
+          onNavigateTab={handleTabChange}
+          onCollectCustomerDue={(cid, cname, damt) => handleTriggerCollect(cid, cname, damt)}
+          onPaySupplier={(sid, sname, damt) => handleTriggerPaySupplier(sid, sname, damt)}
+        />
+      )}
+
+      {/* View 2: Cash & Bank */}
+      {activeTab === 'cash-bank' && (
+        <CashBankView
+          accounts={accounts}
+          transactions={transactions}
+          onOpenAddAccount={() => setIsAddAccountModalOpen(true)}
+          onOpenMoneyIn={() => handleTriggerCollect()}
+          onOpenSpendModal={(accId) => handleTriggerSpend()}
+          onOpenTransferModal={(accId) => handleTriggerTransfer(accId)}
+          isLoading={isLoading}
+        />
+      )}
+
+      {/* View 3: Receivables */}
+      {activeTab === 'receivables' && (
+        <ReceivablesView
+          receivables={receivables}
+          customers={customers}
+          accounts={accounts}
+          transactions={transactions}
+          onOpenCollectModal={(cid, cname, damt, invId) => handleTriggerCollect(cid, cname, damt, invId)}
+        />
+      )}
+
+      {/* View 4: Payables */}
+      {activeTab === 'payables' && (
+        <PayablesView
+          payables={payables}
+          suppliers={suppliers}
+          accounts={accounts}
+          transactions={transactions}
+          onOpenPaySupplierModal={(sid, sname, damt) => handleTriggerPaySupplier(sid, sname, damt)}
+        />
+      )}
+
+      {/* View 5: Expenses */}
+      {activeTab === 'expenses' && (
+        <ExpensesTabView
+          report={expensesReport}
+          accounts={accounts}
+          onOpenSpendModal={(cat) => handleTriggerSpend(cat)}
+          isLoading={isLoading}
+        />
+      )}
+
+      {/* View 6: Transactions */}
+      {activeTab === 'transactions' && (
+        <TransactionsLedgerView
+          transactions={transactions}
+          accounts={accounts}
+          isLoading={isLoading}
+        />
+      )}
+
+      {/* View 7: Cash Closing */}
+      {activeTab === 'cash-closing' && (
+        <CashClosingView
+          cashClosings={cashClosings}
+          accounts={accounts}
+          onSuccessClosing={() => {
+            const r = getDateRangeForTimeframe(timeframe)
+            loadAllData(r.startDate, r.endDate)
+          }}
+          isLoading={isLoading}
+        />
+      )}
+
+      {/* View 8: Financial Reports */}
+      {activeTab === 'reports' && (
+        <FinancialReportsView
+          accounts={accounts}
+          transactions={transactions}
           receivables={receivables}
           payables={payables}
           expensesReport={expensesReport}
-          accounts={accounts}
-          onOpenSpendModal={() => setIsSpendModalOpen(true)}
-          onOpenTransferModal={() => setIsTransferModalOpen(true)}
-          onOpenPaySupplierModal={() => setIsPaySupplierModalOpen(true)}
-          onOpenCashClosingModal={() => setIsCashClosingModalOpen(true)}
-          onOpenPaymentModal={() => router.push(getTenantNavHref('/billing', pathname, slug))}
-          onNavigateTab={(tab) => handleTabChange(tab)}
-          onExport={handleExportStatement}
+          timeframeLabel={activeRange.title}
         />
       )}
 
-      {activeTab === 'receivables' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {tBilingual('Accounts Receivable & Aging', 'বাকি আদায় তালিকা')}
-            </CardTitle>
-            <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder={tBilingual('Search customer or inv...', 'গ্রাহক বা ইনভয়েস খুঁজুন...')}
-                value={receivablesSearch}
-                onChange={(e) => setReceivablesSearch(e.target.value)}
-                className="h-8 pl-8 text-xs rounded-xl"
-              />
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="p-3">{tBilingual('Invoice #', 'ইনভয়েস নং')}</th>
-                    <th className="p-3">{tBilingual('Customer', 'গ্রাহকের নাম')}</th>
-                    <th className="p-3">{tBilingual('Due Date', 'পরিশোধের শেষ তারিখ')}</th>
-                    <th className="p-3 text-right">{tBilingual('Total', 'মোট বিল')}</th>
-                    <th className="p-3 text-right">{tBilingual('Paid', 'পরিশোধ')}</th>
-                    <th className="p-3 text-right">{tBilingual('Due', 'বাকি')}</th>
-                    <th className="p-3 text-center">{tBilingual('Aging Bucket', 'মেয়াদ')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                  {(receivables?.items || [])
-                    .filter(
-                      (i) =>
-                        !receivablesSearch ||
-                        i.party_name.toLowerCase().includes(receivablesSearch.toLowerCase()) ||
-                        i.reference_id.toLowerCase().includes(receivablesSearch.toLowerCase())
-                    )
-                    .map((i) => (
-                      <tr key={i.reference_id} className="hover:bg-slate-50/50">
-                        <td className="p-3 font-mono font-medium text-blue-600">{i.reference_id}</td>
-                        <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">{i.party_name}</td>
-                        <td className="p-3 text-slate-500">{i.due_date}</td>
-                        <td className="p-3 text-right font-mono">৳{i.total_amount.toLocaleString()}</td>
-                        <td className="p-3 text-right font-mono text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
-                        <td className="p-3 text-right font-mono font-bold text-amber-600">৳{i.due_amount.toLocaleString()}</td>
-                        <td className="p-3 text-center">
-                          <Badge variant="outline" className="text-2xs font-medium">
-                            {i.bucket === '0_30' ? '1–30 Days' : i.bucket === '31_60' ? '31–60 Days' : '60+ Days'}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  {(receivables?.items || []).filter(
-                    (i) =>
-                      !receivablesSearch ||
-                      i.party_name.toLowerCase().includes(receivablesSearch.toLowerCase()) ||
-                      i.reference_id.toLowerCase().includes(receivablesSearch.toLowerCase())
-                  ).length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
-                        {tBilingual('No receivable records found', 'কোনো বকেয়া বিল পাওয়া যায়নি')}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* ------------------------------------------------------------- */}
+      {/* MODALS */}
+      {/* ------------------------------------------------------------- */}
 
-      {activeTab === 'payables' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {tBilingual('Supplier Payables & Aging', 'সরবরাহকারী পাওনা')}
-            </CardTitle>
-            <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder={tBilingual('Search supplier or code...', 'মহাজন বা কোড খুঁজুন...')}
-                value={payablesSearch}
-                onChange={(e) => setPayablesSearch(e.target.value)}
-                className="h-8 pl-8 text-xs rounded-xl"
-              />
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="p-3">{tBilingual('Supplier Code', 'কোড')}</th>
-                    <th className="p-3">{tBilingual('Supplier Name', 'সরবরাহকারী')}</th>
-                    <th className="p-3 text-right">{tBilingual('Purchases', 'মোট ক্রয়')}</th>
-                    <th className="p-3 text-right">{tBilingual('Paid', 'পরিশোধ')}</th>
-                    <th className="p-3 text-right">{tBilingual('Net Due', 'নিট পাওনা')}</th>
-                    <th className="p-3 text-center">{tBilingual('Action', 'অ্যাকশন')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                  {(payables?.items || [])
-                    .filter(
-                      (i) =>
-                        !payablesSearch ||
-                        i.party_name.toLowerCase().includes(payablesSearch.toLowerCase()) ||
-                        i.reference_id.toLowerCase().includes(payablesSearch.toLowerCase())
-                    )
-                    .map((i) => (
-                      <tr key={i.reference_id} className="hover:bg-slate-50/50">
-                        <td className="p-3 font-mono text-slate-500">{i.reference_id}</td>
-                        <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">{i.party_name}</td>
-                        <td className="p-3 text-right font-mono">৳{i.total_amount.toLocaleString()}</td>
-                        <td className="p-3 text-right font-mono text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
-                        <td className="p-3 text-right font-mono font-bold text-rose-600">৳{i.due_amount.toLocaleString()}</td>
-                        <td className="p-3 text-center">
-                          <Button
-                            size="sm"
-                            className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg"
-                            onClick={() => setIsPaySupplierModalOpen(true)}
-                          >
-                            {tBilingual('Pay Supplier', 'পরিশোধ')}
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  {(payables?.items || []).filter(
-                    (i) =>
-                      !payablesSearch ||
-                      i.party_name.toLowerCase().includes(payablesSearch.toLowerCase()) ||
-                      i.reference_id.toLowerCase().includes(payablesSearch.toLowerCase())
-                  ).length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-slate-400 text-xs">
-                        {tBilingual('No payable records found', 'কোনো মহাজন পাওনা পাওয়া যায়নি')}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {activeTab === 'closings' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {tBilingual('Daily Cash Closings & Drawer Audits', 'দৈনিক ক্যাশ ক্লোজিং ইতিহাস')}
-            </CardTitle>
-            <Button
-              size="sm"
-              onClick={() => setIsCashClosingModalOpen(true)}
-              className="h-8 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-xl"
-            >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              <span>{tBilingual('New Cash Closing', '+ নতুন ক্লোজিং')}</span>
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="p-3">{tBilingual('Closing #', 'ক্লোজিং নং')}</th>
-                    <th className="p-3">{tBilingual('Date', 'তারিখ')}</th>
-                    <th className="p-3">{tBilingual('Drawer / Account', 'হিসাব')}</th>
-                    <th className="p-3 text-right">{tBilingual('Expected', 'হিসাবমতো')}</th>
-                    <th className="p-3 text-right">{tBilingual('Counted', 'গোনা টাকা')}</th>
-                    <th className="p-3 text-right">{tBilingual('Variance', 'অমিল')}</th>
-                    <th className="p-3">{tBilingual('Closed By', 'ক্লোজ করেছেন')}</th>
-                    <th className="p-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                  {cashClosings.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50/50">
-                      <td className="p-3 font-mono font-medium text-purple-600">{c.closing_number}</td>
-                      <td className="p-3 text-slate-500">{c.closing_date}</td>
-                      <td className="p-3 font-medium text-slate-800 dark:text-slate-200">{c.account_name}</td>
-                      <td className="p-3 text-right font-mono">৳{c.expected_cash.toLocaleString()}</td>
-                      <td className="p-3 text-right font-mono font-bold">৳{c.counted_cash.toLocaleString()}</td>
-                      <td className={`p-3 text-right font-mono font-bold ${Math.abs(c.variance) <= 0.01 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                        {c.variance > 0 ? `+৳${c.variance}` : `৳${c.variance}`}
-                      </td>
-                      <td className="p-3 text-slate-600 dark:text-slate-400">{c.closed_by_name}</td>
-                      <td className="p-3 text-center">
-                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 text-2xs">
-                          {c.status}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Advanced Statements */}
-      {activeTab === 'ledger' && (
-        <GeneralLedgerView
-          entries={ledgerEntries}
-          accounts={accounts}
-          selectedAccountId={selectedLedgerAccountId}
-          onSelectAccount={(accId) => setSelectedLedgerAccountId(accId)}
-          isLoading={isLoading}
-        />
-      )}
-
-      {activeTab === 'balance_sheet' && (
-        <BalanceSheetView statement={balanceSheet} isLoading={isLoading} />
-      )}
-
-      {activeTab === 'cash_flow' && (
-        <CashFlowView statement={cashFlow} isLoading={isLoading} />
-      )}
-
-      {activeTab === 'trial_balance' && (
-        <TrialBalanceView statement={trialBalance} isLoading={isLoading} />
-      )}
-
-      {activeTab === 'job_profitability' && (
-        <JobProfitabilityView metrics={jobProfitability} isLoading={isLoading} />
-      )}
-
-      {activeTab === 'pnl' && pnl && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
-              <span>{tBilingual('Profit & Loss Statement', 'লাভ-ক্ষতি বিবরণী')}</span>
-            </CardTitle>
-            <Badge className="bg-emerald-600 text-white text-xs">
-              {tBilingual('Net Margin:', 'মার্জিন:')} {pnl.operating_margin_percentage}%
-            </Badge>
-          </CardHeader>
-          <CardContent className="pt-4 space-y-4 text-xs">
-            <div className="flex justify-between font-bold text-sm text-slate-800 dark:text-slate-200 pb-2 border-b">
-              <span>{tBilingual('1. Total Sales Revenue', '১. মোট বিক্রয় আয়')}</span>
-              <span className="text-emerald-600">৳{pnl.revenue.total.toLocaleString()}</span>
-            </div>
-
-            <div className="space-y-1 pl-3 border-l-2 border-slate-200 dark:border-slate-700">
-              <div className="flex justify-between font-bold text-slate-700 dark:text-slate-300">
-                <span>{tBilingual('2. Cost of Goods Sold', '২. বিক্রিত পণ্যের ব্যয়')}</span>
-                <span className="text-rose-600">-৳{pnl.cost_of_goods_sold.total.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-slate-500 pl-3">
-                <span>• {tBilingual('Material Costs', 'কাঁচামাল খরচ')}</span>
-                <span>৳{pnl.cost_of_goods_sold.material_cost.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-slate-500 pl-3">
-                <span>• {tBilingual('Production Labor Costs', 'শ্রমিক মজুরি')}</span>
-                <span>৳{pnl.cost_of_goods_sold.labor_cost.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-slate-500 pl-3">
-                <span>• {tBilingual('Machine Electricity & Operations', 'মেশিন ও বিদ্যুৎ খরচ')}</span>
-                <span>৳{pnl.cost_of_goods_sold.machine_cost.toLocaleString()}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-between font-bold text-sm bg-slate-50 dark:bg-slate-850 p-2.5 rounded-xl">
-              <span>{tBilingual('Gross Profit', 'মোট মুনাফা')}</span>
-              <span className="text-emerald-600">৳{pnl.gross_profit.toLocaleString()} ({pnl.gross_margin_percentage}%)</span>
-            </div>
-
-            <div className="space-y-1 pl-3 border-l-2 border-slate-200 dark:border-slate-700">
-              <div className="flex justify-between font-bold text-slate-700 dark:text-slate-300">
-                <span>{tBilingual('3. Operating Expenses', '৩. পরিচালন ব্যয়')}</span>
-                <span className="text-rose-600">-৳{pnl.operating_expenses.total.toLocaleString()}</span>
-              </div>
-              {pnl.operating_expenses.categories.map((c) => (
-                <div key={c.category} className="flex justify-between text-slate-500 pl-3">
-                  <span>• {c.category}</span>
-                  <span>৳{c.amount.toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-between font-bold text-base bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-3 rounded-xl text-emerald-900 dark:text-emerald-200">
-              <span>{tBilingual('Net Operating Profit', 'নিট পরিচালনা মুনাফা')}</span>
-              <span>৳{pnl.net_profit.toLocaleString()}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {activeTab === 'accounts' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {tBilingual('Master Chart of Accounts', 'হিসাব তালিকা')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="p-3 w-20">Code</th>
-                    <th className="p-3">Account Name</th>
-                    <th className="p-3">Type</th>
-                    <th className="p-3">Subtype</th>
-                    <th className="p-3 text-right">Balance (৳)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                  {accounts.map((a) => (
-                    <tr key={a.id} className="hover:bg-slate-50/50">
-                      <td className="p-3 font-mono font-medium text-slate-500">{a.code}</td>
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
-                        {a.name} {a.name_bn ? `(${a.name_bn})` : ''}
-                      </td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="text-2xs">
-                          {a.account_type}
-                        </Badge>
-                      </td>
-                      <td className="p-3 font-mono text-2xs text-slate-500">{a.account_subtype}</td>
-                      <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100">
-                        ৳{a.current_balance.toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {activeTab === 'expenses' && (
-        <ExpensesView
-          report={expensesReport}
-          isLoading={isLoading}
-          onOpenSpendModal={() => setIsSpendModalOpen(true)}
-          onRefresh={loadAllData}
-        />
-      )}
-
-      {/* Modals */}
+      {/* Spend Money Modal */}
       <SpendMoneyModal
         isOpen={isSpendModalOpen}
-        onClose={() => setIsSpendModalOpen(false)}
+        onClose={() => {
+          setIsSpendModalOpen(false)
+          setSpendCategoryPrefill(undefined)
+        }}
         accounts={accounts}
         onSubmit={handleSpendMoney}
       />
 
+      {/* Collect Customer Payment Modal */}
+      <CollectPaymentModal
+        isOpen={isCollectModalOpen}
+        onClose={() => {
+          setIsCollectModalOpen(false)
+          setCollectTarget({})
+        }}
+        customers={customers}
+        accounts={accounts}
+        initialCustomerId={collectTarget.customerId}
+        initialCustomerName={collectTarget.customerName}
+        initialDueAmount={collectTarget.dueAmount}
+        initialInvoiceId={collectTarget.invoiceId}
+        onSuccess={() => {
+          showNotification(tBilingual('Payment collection recorded successfully', 'টাকা জমা সফলভাবে এন্ট্রি হয়েছে'))
+          const r = getDateRangeForTimeframe(timeframe)
+          loadAllData(r.startDate, r.endDate)
+        }}
+      />
+
+      {/* Transfer Money Modal */}
       <TransferMoneyModal
         isOpen={isTransferModalOpen}
-        onClose={() => setIsTransferModalOpen(false)}
+        onClose={() => {
+          setIsTransferModalOpen(false)
+          setTransferFromAccountId(undefined)
+        }}
         accounts={accounts}
         onSubmit={handleTransferMoney}
       />
 
+      {/* Pay Supplier Modal */}
       <PaySupplierModal
         isOpen={isPaySupplierModalOpen}
         onClose={() => setIsPaySupplierModalOpen(false)}
@@ -1144,14 +797,7 @@ function AccountingContent() {
         onSubmit={handlePaySupplier}
       />
 
-      <CustomerRefundModal
-        isOpen={isRefundModalOpen}
-        onClose={() => setIsRefundModalOpen(false)}
-        accounts={accounts}
-        customers={customers}
-        onSubmit={handleCustomerRefund}
-      />
-
+      {/* Cash Closing Modal */}
       <CashClosingModal
         isOpen={isCashClosingModalOpen}
         onClose={() => setIsCashClosingModalOpen(false)}
@@ -1159,11 +805,16 @@ function AccountingContent() {
         onSubmit={handleCashClosing}
       />
 
-      <RecordAdjustmentModal
-        isOpen={isAdjustmentModalOpen}
-        onClose={() => setIsAdjustmentModalOpen(false)}
-        accounts={accounts}
-        onSubmit={handleRecordAdjustment}
+      {/* Add Money Account Modal */}
+      <AddAccountModal
+        isOpen={isAddAccountModalOpen}
+        onClose={() => setIsAddAccountModalOpen(false)}
+        existingAccounts={accounts}
+        onSuccess={(newAcc) => {
+          showNotification(tBilingual('New money account created successfully', 'নতুন হিসাব সফলভাবে তৈরি হয়েছে'))
+          const r = getDateRangeForTimeframe(timeframe)
+          loadAllData(r.startDate, r.endDate)
+        }}
       />
 
       {/* Next Action Modal */}
@@ -1181,26 +832,11 @@ function AccountingContent() {
 export default function AccountingPage() {
   return (
     <PanelAccessGuard
-      module="payments"
+      module="accounting"
       action="view"
       panelTitle="Finance & Accounts"
-      panelTitleBn="হিসাব ও ক্যাশবুক"
     >
-      <React.Suspense
-        fallback={
-          <div className="space-y-6 pb-20 animate-pulse">
-            <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-1/3" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
-              ))}
-            </div>
-            <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
-          </div>
-        }
-      >
-        <AccountingContent />
-      </React.Suspense>
+      <AccountingContent />
     </PanelAccessGuard>
   )
 }

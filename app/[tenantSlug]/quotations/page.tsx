@@ -46,6 +46,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { FeatureGate } from '@/components/shared/feature-gate'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import {
   QuotationRecord,
   QuotationStatus,
@@ -1011,109 +1012,86 @@ export default function QuotationsPage() {
            ========================================================================= */}
         <div className="space-y-3">
           {/* 6 Executive Metric Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <KpiGrid columns={6}>
             {/* 1. Total Quoted / Pipeline Value */}
-            <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
-              <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <span>Total Quoted</span>
-                <FileSpreadsheet className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
-                {formatBDT(effectiveMetrics?.totalPipelineValue || 0)}
-              </div>
-              <div className="text-2xs text-slate-500 font-numeric tabular-nums mt-1 flex items-center gap-1">
-                <span className="font-semibold text-slate-700 dark:text-slate-300">{effectiveMetrics?.totalCount || 0}</span>
-                <span>Proposals Created</span>
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Total Quoted"
+              titleBn="মোট প্রস্তাবনা"
+              value={effectiveMetrics?.totalPipelineValue || 0}
+              isCurrency
+              icon={FileSpreadsheet}
+              colorVariant="blue"
+              subtitleEn={`${effectiveMetrics?.totalCount || 0} Proposals Created`}
+              subtitleBn={`${effectiveMetrics?.totalCount || 0}টি প্রস্তাবনা তৈরি`}
+            />
 
             {/* 2. Won / Accepted */}
-            <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-emerald-200/80 dark:border-emerald-900/40 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-800 transition-all rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-              <div className="flex items-center justify-between text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                <span>Accepted / Won</span>
-                <FileCheck2 className="h-3.5 w-3.5 text-emerald-500 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1.5">
-                {formatBDT(effectiveMetrics?.wonValue || 0)}
-              </div>
-              <div className="text-2xs text-emerald-700/80 dark:text-emerald-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
-                <span className="font-semibold">{effectiveMetrics?.wonCount || 0}</span>
-                <span>Converted to Orders</span>
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Accepted / Won"
+              titleBn="অনুমোদিত / গৃহীত"
+              value={effectiveMetrics?.wonValue || 0}
+              isCurrency
+              icon={FileCheck2}
+              colorVariant="emerald"
+              subtitleEn={`${effectiveMetrics?.wonCount || 0} Converted to Orders`}
+              subtitleBn={`${effectiveMetrics?.wonCount || 0}টি অর্ডারে রূপান্তরিত`}
+            />
 
             {/* 3. Pending / Sent */}
-            <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-amber-200/80 dark:border-amber-900/40 shadow-xs hover:border-amber-300 dark:hover:border-amber-800 transition-all rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-              <div className="flex items-center justify-between text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                <span>Active Pipeline</span>
-                <Clock className="h-3.5 w-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1.5">
-                {formatBDT(effectiveMetrics?.pendingValue || 0)}
-              </div>
-              <div className="text-2xs text-amber-700/80 dark:text-amber-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
-                <span className="font-semibold">{effectiveMetrics?.pendingCount || 0}</span>
-                <span>Awaiting Decision</span>
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Active Pipeline"
+              titleBn="চলতি পাইপলাইন"
+              value={effectiveMetrics?.pendingValue || 0}
+              isCurrency
+              icon={Clock}
+              colorVariant="amber"
+              subtitleEn={`${effectiveMetrics?.pendingCount || 0} Awaiting Decision`}
+              subtitleBn={`${effectiveMetrics?.pendingCount || 0}টি সিদ্ধান্তের অপেক্ষায়`}
+            />
 
             {/* 4. Expiring Soon */}
-            <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-rose-300/80 dark:border-rose-900/50 shadow-xs hover:border-rose-400 dark:hover:border-rose-800 transition-all rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-              <div className="text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider flex items-center justify-between">
-                <span>Expiring Soon</span>
-                {(effectiveMetrics?.expiringCount || 0) > 0 ? (
-                  <span className="h-2 w-2 rounded-full bg-rose-600 animate-ping" />
-                ) : (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600" />
-                )}
-              </div>
-              <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1.5">
-                {formatBDT(effectiveMetrics?.expiringValue || 0)}
-              </div>
-              <div className="text-2xs text-rose-600/90 font-numeric tabular-nums mt-1 flex items-center gap-1">
-                <span className="font-semibold">{effectiveMetrics?.expiringCount || 0}</span>
-                <span>Critical / Warning</span>
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Expiring Soon"
+              titleBn="মেয়াদোত্তীর্ণের পথে"
+              value={effectiveMetrics?.expiringValue || 0}
+              isCurrency
+              icon={AlertTriangle}
+              colorVariant="danger"
+              badge={(effectiveMetrics?.expiringCount || 0) > 0 ? 'Urgent' : undefined}
+              badgeColor="bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800"
+              subtitleEn={`${effectiveMetrics?.expiringCount || 0} Critical / Warning`}
+              subtitleBn={`${effectiveMetrics?.expiringCount || 0}টি জরুরি নোটিশ`}
+            />
 
             {/* 5. Avg. Deal Value */}
-            <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-violet-500" />
-              <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <span>Avg Deal Value</span>
-                <Building className="h-3.5 w-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
-                {formatBDT(effectiveMetrics?.avgDealValue || 0)}
-              </div>
-              <div className="text-2xs text-slate-500 font-numeric tabular-nums mt-1">
-                Avg Margin: <strong className="text-slate-700 dark:text-slate-300">{effectiveMetrics?.avgMargin || 40}%</strong>
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Avg Deal Value"
+              titleBn="গড় ডিল মূল্য"
+              value={effectiveMetrics?.avgDealValue || 0}
+              isCurrency
+              icon={Building}
+              colorVariant="purple"
+              subtitleEn={`Avg Margin: ${effectiveMetrics?.avgMargin || 40}%`}
+              subtitleBn={`গড় মার্জিন: ${effectiveMetrics?.avgMargin || 40}%`}
+            />
 
             {/* 6. Win Rate % */}
-            <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-blue-200/80 dark:border-blue-900/40 shadow-xs hover:border-blue-300 dark:hover:border-blue-800 transition-all rounded-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-blue-600" />
-              <div className="flex items-center justify-between text-2xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
-                <span>Win Rate</span>
-                <Activity className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-blue-600 dark:text-blue-400 mt-1.5 flex items-baseline gap-1">
-                <span>{effectiveMetrics?.winRate || 0}%</span>
-                <span className={cn('text-2xs font-bold', healthTier.color)}>({healthTier.label})</span>
-              </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+            <KpiCard
+              titleEn="Win Rate"
+              titleBn="জয়ের হার"
+              value={`${effectiveMetrics?.winRate || 0}%`}
+              icon={Activity}
+              colorVariant="cyan"
+              subtitle={healthTier.label}
+            >
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
                 <div
                   className={cn('h-full rounded-full transition-all duration-500', healthTier.bar)}
                   style={{ width: `${Math.min(100, Math.max(0, winRateNum))}%` }}
                 />
               </div>
-            </Card>
-          </div>
+            </KpiCard>
+          </KpiGrid>
 
           {/* Period Selector & Custom Date-to-Date Range Bar (Below KPI Cards) */}
           <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">

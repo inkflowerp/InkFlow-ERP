@@ -105,6 +105,24 @@ export class FinanceService {
     return FinanceRepository.createAccount(account)
   }
 
+  static async getTransactions(
+    companyId: string,
+    options?: {
+      startDate?: string
+      endDate?: string
+      type?: string
+      status?: string
+      accountId?: string
+      branchId?: string
+    }
+  ): Promise<FinancialTransactionRecord[]> {
+    return FinanceRepository.getTransactions(companyId, options)
+  }
+
+  static async getCashClosings(companyId: string, closingDate?: string): Promise<CashClosingRecord[]> {
+    return FinanceRepository.getCashClosings(companyId, closingDate)
+  }
+
   // ============================================================================
   // 2. CUSTOMER PAYMENTS & RECEIVABLES RECONCILIATION
   // ============================================================================
@@ -1560,9 +1578,6 @@ export class FinanceService {
   // 11. FINANCIAL DASHBOARD
   // ============================================================================
 
-  static async getTransactions(companyId: string, options?: any): Promise<FinancialTransactionRecord[]> {
-    return FinanceRepository.getTransactions(companyId, options)
-  }
 
   static async getFinancialDashboard(
     companyId: string,

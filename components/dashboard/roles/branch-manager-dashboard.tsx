@@ -270,14 +270,16 @@ export function BranchManagerDashboard({
         <KpiCard
           titleEn="Today's Branch Sales"
           titleBn="আজকের ব্রাঞ্চ সেলস"
-          value={formatBDT(metrics.todaySalesTotal)}
+          value={metrics.todaySalesTotal}
+          isCurrency={true}
           icon={TrendingUp}
           colorVariant="success"
         />
         <KpiCard
           titleEn="Today's Cash Collection"
           titleBn="আজকের নগদ কালেকশন"
-          value={formatBDT(metrics.todayCollectionsTotal)}
+          value={metrics.todayCollectionsTotal}
+          isCurrency={true}
           icon={DollarSign}
           colorVariant="cyan"
         />

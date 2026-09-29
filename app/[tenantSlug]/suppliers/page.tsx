@@ -43,6 +43,7 @@ import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import type { SupplierRecord, SupplierCategory, SupplierPaymentTerms } from '@/types/crm.types'
 import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
@@ -389,87 +390,63 @@ export default function SuppliersPage() {
       )}
 
       {/* KPI HUD */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+      <KpiGrid columns={5}>
         {/* Total Vendors */}
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-              {tBilingual('Total Vendors', 'মোট সরবরাহকারী')}
-            </span>
-            <Truck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            {stats.totalVendors}
-          </div>
-          <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
-            {stats.activeVendors} Active partners
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Total Vendors"
+          titleBn="মোট সরবরাহকারী"
+          value={stats.totalVendors}
+          icon={Truck}
+          colorVariant="teal"
+          subtitleEn={`${stats.activeVendors} Active partners`}
+          subtitleBn={`${stats.activeVendors} জন সক্রিয় অংশীদার`}
+        />
 
         {/* Total Outstanding Due */}
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-500">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-              {tBilingual('Total Payable Due', 'মোট মহাজনের পাওনা')}
-            </span>
-            <CreditCard className="h-4 w-4 text-amber-600" />
-          </div>
-          <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 font-mono">
-            {formatBDT(stats.totalPayableDue)}
-          </div>
-          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {stats.vendorsWithDue} vendors pending payment
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Total Payable Due"
+          titleBn="মোট মহাজনের পাওনা"
+          value={stats.totalPayableDue}
+          isCurrency
+          icon={CreditCard}
+          colorVariant="amber"
+          subtitleEn={`${stats.vendorsWithDue} vendors pending payment`}
+          subtitleBn={`${stats.vendorsWithDue} জন সরবরাহকারীর পাওনা বাকি`}
+        />
 
         {/* Contract Rates */}
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-              {tBilingual('Agreed Rates', 'নির্ধারিত চুক্তি দর')}
-            </span>
-            <Tag className="h-4 w-4 text-sky-600" />
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            {stats.activeContracts}
-          </div>
-          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Catalog buying specs
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Agreed Rates"
+          titleBn="নির্ধারিত চুক্তি দর"
+          value={stats.activeContracts}
+          icon={Tag}
+          colorVariant="sky"
+          subtitleEn="Catalog buying specs"
+          subtitleBn="ক্যাটালগ ক্রয় শর্তাবলী"
+        />
 
         {/* Market Hubs */}
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-              {tBilingual('Market Hubs', 'মার্কেট হাব')}
-            </span>
-            <MapPin className="h-4 w-4 text-purple-600" />
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            {stats.uniqueHubs || 5}
-          </div>
-          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Nayabazar, Chawkbazar, etc.
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Market Hubs"
+          titleBn="মার্কেট হাব"
+          value={stats.uniqueHubs || 5}
+          icon={MapPin}
+          colorVariant="purple"
+          subtitleEn="Nayabazar, Chawkbazar, etc."
+          subtitleBn="নয়াবাজার, চকবাজার ইত্যাদি"
+        />
 
         {/* Avg Credit Term */}
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 col-span-2 lg:col-span-1">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-              {tBilingual('Standard Credit', 'সাধারণ বাকি মেয়াদ')}
-            </span>
-            <Clock className="h-4 w-4 text-indigo-600" />
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            15-30 Days
-          </div>
-          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Post-dated Cheque cycle
-          </div>
-        </Card>
-      </div>
+        <KpiCard
+          titleEn="Standard Credit"
+          titleBn="সাধারণ বাকি মেয়াদ"
+          value="15-30 Days"
+          icon={Clock}
+          colorVariant="indigo"
+          subtitleEn="Post-dated Cheque cycle"
+          subtitleBn="চেক পেমেন্ট সাইকেল"
+        />
+      </KpiGrid>
 
       {/* FILTER & SEARCH CONTROL BAR */}
       <Card className="p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 space-y-3.5">

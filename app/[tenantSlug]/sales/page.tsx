@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
@@ -236,61 +237,65 @@ export default function SalesManagerPage() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-            <span>Today&apos;s Sales Booked</span>
-            <TrendingUp className="h-4 w-4 text-emerald-600" />
-          </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-            <CurrencyDisplay amount={totalBookedSales} />
-          </div>
-          <div className="text-2xs text-emerald-600 mt-1 flex items-center gap-1">
-            <ArrowUpRight className="h-3 w-3" /> Live active revenue
-          </div>
-        </Card>
+      <KpiGrid columns={4}>
+        <KpiCard
+          titleEn="Today's Sales Booked"
+          titleBn="আজকের বিক্রয় বুকিং"
+          value={totalBookedSales}
+          isCurrency
+          icon={TrendingUp}
+          colorVariant="emerald"
+          trend={{
+            value: 'Live',
+            labelEn: 'active revenue',
+            labelBn: 'সক্রিয় আয়',
+            direction: 'up',
+          }}
+        />
 
-        <Card className="p-4">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-            <span>Pending Quotations</span>
-            <FileSpreadsheet className="h-4 w-4 text-amber-600" />
-          </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-            {pendingQuotes.length} Quotes
-          </div>
-          <div className="text-2xs text-slate-400 mt-1">
-            Value: <CurrencyDisplay amount={pendingQuotesValue} />
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Pending Quotations"
+          titleBn="অপেক্ষমান দরপ্রস্তাব"
+          value={pendingQuotes.length}
+          unitEn="Quotes"
+          unitBn="টি কোটেশন"
+          icon={FileSpreadsheet}
+          colorVariant="amber"
+          subtitleEn={`Value: ${formatBDT(pendingQuotesValue)}`}
+          subtitleBn={`মূল্য: ${formatBDT(pendingQuotesValue)}`}
+        />
 
-        <Card className="p-4">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-            <span>Active Orders</span>
-            <Receipt className="h-4 w-4 text-blue-600" />
-          </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-            {orders.length} Booked
-          </div>
-          <div className="text-2xs text-blue-600 mt-1">
-            Direct production pipeline
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Active Orders"
+          titleBn="সক্রিয় জব অর্ডার"
+          value={orders.length}
+          unitEn="Booked"
+          unitBn="টি অর্ডার"
+          icon={Receipt}
+          colorVariant="blue"
+          subtitleEn="Direct production pipeline"
+          subtitleBn="উৎপাদন পাইপলাইন"
+        />
 
-        <Card className="p-4">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-            <span>Ready for Delivery</span>
-            <Truck className="h-4 w-4 text-purple-600" />
-          </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-            {orders.filter((o) => o.status === 'ready_for_delivery').length} Orders
-          </div>
-          <div className="text-2xs text-purple-600 mt-1">
-            <Link href={getTenantNavHref('/delivery', pathname, slug)} className="hover:underline">
-              Generate Challans &rarr;
+        <KpiCard
+          titleEn="Ready for Delivery"
+          titleBn="ডেলিভারির জন্য প্রস্তুত"
+          value={orders.filter((o) => o.status === 'ready_for_delivery').length}
+          unitEn="Orders"
+          unitBn="টি অর্ডার"
+          icon={Truck}
+          colorVariant="purple"
+          footer={
+            <Link
+              href={getTenantNavHref('/delivery', pathname, slug)}
+              className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline inline-flex items-center gap-1"
+            >
+              <span>{tBilingual('Generate Challans', 'চালান তৈরি করুন')}</span>
+              <span>&rarr;</span>
             </Link>
-          </div>
-        </Card>
-      </div>
+          }
+        />
+      </KpiGrid>
 
       {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto touch-scroll pb-px">

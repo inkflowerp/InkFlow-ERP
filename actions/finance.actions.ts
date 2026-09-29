@@ -325,3 +325,30 @@ export async function getExpensesAction(options?: {
   }
 }
 
+export async function getTransactionsAction(options?: {
+  startDate?: string
+  endDate?: string
+  type?: string
+  status?: string
+  accountId?: string
+  branchId?: string
+}) {
+  try {
+    const companyId = await getTenantCompanyId()
+    const txns = await FinanceService.getTransactions(companyId, options)
+    return { success: true, data: txns }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to fetch transactions.' }
+  }
+}
+
+export async function getCashClosingsAction(closingDate?: string) {
+  try {
+    const companyId = await getTenantCompanyId()
+    const closings = await FinanceService.getCashClosings(companyId, closingDate)
+    return { success: true, data: closings }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to fetch cash closings.' }
+  }
+}
+

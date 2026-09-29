@@ -45,6 +45,7 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
   ProductionTaskRecord,
@@ -528,114 +529,80 @@ export default function FinishingAndFabricationPage() {
         )}
 
         {/* =========================================================================
-            2. TOP STATION METRICS KPI BAR (6 Cards matching DesignMetricsBar)
+            2. TOP STATION METRICS KPI BAR (Standardized KpiGrid)
            ========================================================================= */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            {
-              id: 'all',
-              label: tBilingual('Total Tasks', 'মোট কাজ'),
-              count: tasks.length,
-              icon: Layers,
-              iconBg: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
-              active: selectedStation === 'all' && selectedStatus === 'all',
-              onClick: () => {
-                setSelectedStation('all')
-                setSelectedStatus('all')
-              },
-            },
-            {
-              id: 'digital_finishing',
-              label: tBilingual('Digital Wide', 'ডিজিটাল ফিনিশিং'),
-              count: stationMetrics.digitalCount,
-              icon: Scissors,
-              iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400',
-              active: selectedStation === 'digital_finishing',
-              onClick: () => {
-                setSelectedStation('digital_finishing')
-                setSelectedStatus('all')
-              },
-            },
-            {
-              id: 'offset_binding',
-              label: tBilingual('Offset & Binding', 'অফসেট ও বাইন্ডিং'),
-              count: stationMetrics.offsetCount,
-              icon: Layers,
-              iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400',
-              active: selectedStation === 'offset_binding',
-              onClick: () => {
-                setSelectedStation('offset_binding')
-                setSelectedStatus('all')
-              },
-            },
-            {
-              id: 'signage_fabrication',
-              label: tBilingual('Signage & Acrylic', 'সাইনেজ ও এক্রিলিক'),
-              count: stationMetrics.signageCount,
-              icon: Wrench,
-              iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/80 dark:text-amber-400',
-              active: selectedStation === 'signage_fabrication',
-              onClick: () => {
-                setSelectedStation('signage_fabrication')
-                setSelectedStatus('all')
-              },
-            },
-            {
-              id: 'in_progress',
-              label: tBilingual('Active on Bench', 'বেঞ্চে চলমান'),
-              count: stationMetrics.inProgressCount,
-              icon: Play,
-              iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/80 dark:text-purple-400',
-              active: selectedStatus === 'in_progress',
-              onClick: () => {
-                setSelectedStatus('in_progress')
-              },
-            },
-            {
-              id: 'completed',
-              label: tBilingual('QC Passed Today', 'আজ সম্পন্ন'),
-              count: stationMetrics.qcReadyCount,
-              icon: CheckCircle2,
-              iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400',
-              active: selectedStatus === 'completed',
-              onClick: () => {
-                setSelectedStatus('completed')
-              },
-            },
-          ].map((card) => {
-            const Icon = card.icon
-            return (
-              <button
-                key={card.id}
-                type="button"
-                onClick={card.onClick}
-                className={cn(
-                  'bg-white dark:bg-slate-900 border rounded-2xl p-3.5 sm:p-4 text-left transition-all duration-150 flex items-center gap-3.5 shadow-2xs hover:shadow-xs cursor-pointer',
-                  card.active
-                    ? 'border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-xs'
-                    : 'border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700'
-                )}
-              >
-                <div
-                  className={cn(
-                    'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform',
-                    card.iconBg
-                  )}
-                >
-                  <Icon className="w-5 h-5 stroke-[2.2]" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white leading-none">
-                    {card.count}
-                  </div>
-                  <div className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 truncate">
-                    {card.label}
-                  </div>
-                </div>
-              </button>
-            )
-          })}
-        </div>
+        <KpiGrid columns={6}>
+          <KpiCard
+            titleEn="Total Tasks"
+            titleBn="মোট কাজ"
+            value={tasks.length}
+            icon={Layers}
+            colorVariant="slate"
+            selected={selectedStation === 'all' && selectedStatus === 'all'}
+            onClick={() => {
+              setSelectedStation('all')
+              setSelectedStatus('all')
+            }}
+          />
+          <KpiCard
+            titleEn="Digital Wide"
+            titleBn="ডিজিটাল ফিনিশিং"
+            value={stationMetrics.digitalCount}
+            icon={Scissors}
+            colorVariant="indigo"
+            selected={selectedStation === 'digital_finishing'}
+            onClick={() => {
+              setSelectedStation('digital_finishing')
+              setSelectedStatus('all')
+            }}
+          />
+          <KpiCard
+            titleEn="Offset & Binding"
+            titleBn="অফসেট ও বাইন্ডিং"
+            value={stationMetrics.offsetCount}
+            icon={Layers}
+            colorVariant="blue"
+            selected={selectedStation === 'offset_binding'}
+            onClick={() => {
+              setSelectedStation('offset_binding')
+              setSelectedStatus('all')
+            }}
+          />
+          <KpiCard
+            titleEn="Signage & Acrylic"
+            titleBn="সাইনেজ ও এক্রিলিক"
+            value={stationMetrics.signageCount}
+            icon={Wrench}
+            colorVariant="amber"
+            selected={selectedStation === 'signage_fabrication'}
+            onClick={() => {
+              setSelectedStation('signage_fabrication')
+              setSelectedStatus('all')
+            }}
+          />
+          <KpiCard
+            titleEn="Active on Bench"
+            titleBn="বেঞ্চে চলমান"
+            value={stationMetrics.inProgressCount}
+            icon={Play}
+            colorVariant="purple"
+            selected={selectedStatus === 'in_progress'}
+            onClick={() => {
+              setSelectedStatus('in_progress')
+            }}
+          />
+          <KpiCard
+            titleEn="QC Passed Today"
+            titleBn="আজ সম্পন্ন"
+            value={stationMetrics.qcReadyCount}
+            icon={CheckCircle2}
+            colorVariant="emerald"
+            selected={selectedStatus === 'completed'}
+            onClick={() => {
+              setSelectedStatus('completed')
+            }}
+          />
+        </KpiGrid>
 
         {/* =========================================================================
             3. STATION CATEGORIES TABS (Pills matching Design Panel)

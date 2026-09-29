@@ -57,6 +57,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import { InvoiceRequestsPanel } from '@/components/billing/invoice-requests-panel'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
@@ -1310,107 +1311,86 @@ function BillingContent() {
          ========================================================================= */}
       <div className="space-y-3">
         {/* 6 Executive Metric Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <KpiGrid columns={6}>
           {/* 1. Total Invoiced */}
-          <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
-            <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              <span>Total Invoiced</span>
-              <FileSpreadsheet className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
-              {formatBDT(effectiveMetrics?.salesAmount || 0)}
-            </div>
-            <div className="text-2xs text-slate-500 font-numeric tabular-nums mt-1 flex items-center gap-1">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">{effectiveMetrics?.salesCount || 0}</span>
-              <span>Bills Generated</span>
-            </div>
-          </Card>
+          <KpiCard
+            titleEn="Total Invoiced"
+            titleBn="মোট চালানের মূল্য"
+            value={effectiveMetrics?.salesAmount || 0}
+            isCurrency
+            icon={FileSpreadsheet}
+            colorVariant="blue"
+            subtitleEn={`${effectiveMetrics?.salesCount || 0} Bills Generated`}
+            subtitleBn={`${effectiveMetrics?.salesCount || 0}টি বিল তৈরি`}
+          />
 
           {/* 2. Collected */}
-          <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-emerald-200/80 dark:border-emerald-900/40 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-800 transition-all rounded-2xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-            <div className="flex items-center justify-between text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-              <span>Collected</span>
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1.5">
-              {formatBDT(effectiveMetrics?.collectionAmount || 0)}
-            </div>
-            <div className="text-2xs text-emerald-700/80 dark:text-emerald-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
-              <span className="font-semibold">{effectiveMetrics?.collectionCount || 0}</span>
-              <span>Payments Received</span>
-            </div>
-          </Card>
+          <KpiCard
+            titleEn="Collected"
+            titleBn="মোট আদায়"
+            value={effectiveMetrics?.collectionAmount || 0}
+            isCurrency
+            icon={ShieldCheck}
+            colorVariant="emerald"
+            subtitleEn={`${effectiveMetrics?.collectionCount || 0} Payments Received`}
+            subtitleBn={`${effectiveMetrics?.collectionCount || 0}টি পেমেন্ট সম্পন্ন`}
+          />
 
           {/* 3. Outstanding Due */}
-          <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-amber-200/80 dark:border-amber-900/40 shadow-xs hover:border-amber-300 dark:hover:border-amber-800 transition-all rounded-2xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-            <div className="flex items-center justify-between text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-              <span>Outstanding Due</span>
-              <Clock className="h-3.5 w-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1.5">
-              {formatBDT(effectiveMetrics?.outstandingDue ?? effectiveMetrics?.totalReceivables ?? 0)}
-            </div>
-            <div className="text-2xs text-amber-700/80 dark:text-amber-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
-              <span className="font-semibold">{effectiveMetrics?.outstandingDueCount ?? effectiveMetrics?.dueTodayCount ?? 0}</span>
-              <span>Bills Pending</span>
-            </div>
-          </Card>
+          <KpiCard
+            titleEn="Outstanding Due"
+            titleBn="চলতি বকেয়া"
+            value={effectiveMetrics?.outstandingDue ?? effectiveMetrics?.totalReceivables ?? 0}
+            isCurrency
+            icon={Clock}
+            colorVariant="amber"
+            subtitleEn={`${effectiveMetrics?.outstandingDueCount ?? effectiveMetrics?.dueTodayCount ?? 0} Bills Pending`}
+            subtitleBn={`${effectiveMetrics?.outstandingDueCount ?? effectiveMetrics?.dueTodayCount ?? 0}টি বিল বকেয়া`}
+          />
 
           {/* 4. Overdue */}
-          <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-rose-300/80 dark:border-rose-900/50 shadow-xs hover:border-rose-400 dark:hover:border-rose-800 transition-all rounded-2xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-            <div className="text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider flex items-center justify-between">
-              <span>Overdue</span>
-              {(effectiveMetrics?.overdueAmount || 0) > 0 ? (
-                <span className="h-2 w-2 rounded-full bg-rose-600 animate-ping" />
-              ) : (
-                <CheckCircle2 className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600" />
-              )}
-            </div>
-            <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1.5">
-              {formatBDT(effectiveMetrics?.overdueAmount || 0)}
-            </div>
-            <div className="text-2xs text-rose-600/90 font-numeric tabular-nums mt-1 flex items-center gap-1">
-              <span className="font-semibold">{effectiveMetrics?.overdueCount || 0}</span>
-              <span>Overdue Bills</span>
-            </div>
-          </Card>
+          <KpiCard
+            titleEn="Overdue"
+            titleBn="মেয়াদোত্তীর্ণ বকেয়া"
+            value={effectiveMetrics?.overdueAmount || 0}
+            isCurrency
+            icon={AlertTriangle}
+            colorVariant="danger"
+            badge={(effectiveMetrics?.overdueAmount || 0) > 0 ? 'Urgent' : undefined}
+            badgeColor="bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800"
+            subtitleEn={`${effectiveMetrics?.overdueCount || 0} Overdue Bills`}
+            subtitleBn={`${effectiveMetrics?.overdueCount || 0}টি বকেয়া বিল`}
+          />
 
           {/* 5. Total Receivable */}
-          <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-violet-500" />
-            <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              <span>Total Receivable</span>
-              <Building className="h-3.5 w-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
-              {formatBDT(effectiveMetrics?.totalReceivables || 0)}
-            </div>
-            <div className="text-2xs text-slate-500 font-numeric tabular-nums mt-1">All Open Accounts</div>
-          </Card>
+          <KpiCard
+            titleEn="Total Receivable"
+            titleBn="মোট পাওনা"
+            value={effectiveMetrics?.totalReceivables || 0}
+            isCurrency
+            icon={Building}
+            colorVariant="purple"
+            subtitleEn="All Open Accounts"
+            subtitleBn="সকল চলমান হিসাব"
+          />
 
           {/* 6. Collection Efficiency Rate */}
-          <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-blue-200/80 dark:border-blue-900/40 shadow-xs hover:border-blue-300 dark:hover:border-blue-800 transition-all rounded-2xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-blue-600" />
-            <div className="flex items-center justify-between text-2xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
-              <span>Collection Rate</span>
-              <Activity className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-blue-600 dark:text-blue-400 mt-1.5 flex items-baseline gap-1">
-              <span>{effectiveMetrics?.collectionRate || 0}%</span>
-              <span className={cn('text-2xs font-bold', healthTier.color)}>({healthTier.label})</span>
-            </div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+          <KpiCard
+            titleEn="Collection Rate"
+            titleBn="আদায়ের হার"
+            value={`${effectiveMetrics?.collectionRate || 0}%`}
+            icon={Activity}
+            colorVariant="cyan"
+            subtitle={healthTier.label}
+          >
+            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
               <div
                 className={cn('h-full rounded-full transition-all duration-500', healthTier.bar)}
                 style={{ width: `${Math.min(100, Math.max(0, collectionRateNum))}%` }}
               />
             </div>
-          </Card>
-        </div>
+          </KpiCard>
+        </KpiGrid>
       </div>
 
       {/* =========================================================================

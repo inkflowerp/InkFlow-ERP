@@ -46,6 +46,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
   EmployeeRecord,
@@ -423,75 +424,55 @@ function PayrollContent() {
       />
 
       {/* Top 4 KPI Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs text-slate-500 uppercase font-semibold">
-              {tBilingual('Gross Payroll', 'মোট বেতন প্রাক্কলন')}
-            </span>
-            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
-              <Wallet className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
-            {formatBDT(totalGross)}
-          </div>
-          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
-            Period: {currentPeriod?.period_name || 'No Active Sheet'}
-          </p>
-        </Card>
+      <KpiGrid columns={4}>
+        <KpiCard
+          titleEn="Gross Payroll"
+          titleBn="মোট বেতন প্রাক্কলন"
+          value={totalGross}
+          isCurrency
+          icon={Wallet}
+          colorVariant="blue"
+          subtitleEn={`Period: ${currentPeriod?.period_name || 'No Active Sheet'}`}
+          subtitleBn={`পিরিয়ড: ${currentPeriod?.period_name || 'কোন সক্রিয় শিট নেই'}`}
+        />
 
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs text-slate-500 uppercase font-semibold">
-              {tBilingual('Net Payable', 'প্রদেয় নিট বেতন')}
-            </span>
-            <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400">
-              <DollarSign className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
-            {formatBDT(totalNet)}
-          </div>
-          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
-            After Overtime & Advance Deductions
-          </p>
-        </Card>
+        <KpiCard
+          titleEn="Net Payable"
+          titleBn="প্রদেয় নিট বেতন"
+          value={totalNet}
+          isCurrency
+          icon={DollarSign}
+          colorVariant="purple"
+          subtitleEn="After Overtime & Advance Deductions"
+          subtitleBn="ওভারটাইম ও অগ্রিম কর্তন সমন্বয়ের পর"
+        />
 
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs text-slate-500 uppercase font-semibold">
-              {tBilingual('Paid Disbursed', 'পরিশোধিত বেতন')}
-            </span>
-            <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-              <CheckCircle2 className="w-4 h-4" />
+        <KpiCard
+          titleEn="Paid Disbursed"
+          titleBn="পরিশোধিত বেতন"
+          value={totalPaid}
+          isCurrency
+          icon={CheckCircle2}
+          colorVariant="emerald"
+          footer={
+            <div className="w-full flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{tBilingual('Remaining Due', 'অবশিষ্ট বকেয়া')}</span>
+              <strong className="text-rose-600 dark:text-rose-400 font-numeric">{formatBDT(totalDue)}</strong>
             </div>
-          </div>
-          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-            {formatBDT(totalPaid)}
-          </div>
-          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
-            Remaining Due: <strong className="text-rose-600 dark:text-rose-400">{formatBDT(totalDue)}</strong>
-          </p>
-        </Card>
+          }
+        />
 
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs text-slate-500 uppercase font-semibold">
-              {tBilingual('Advances Outstanding', 'বকেয়া অগ্রিম স্থিতি')}
-            </span>
-            <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-            {formatBDT(totalAdvanceOutstanding)}
-          </div>
-          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
-            Active staff advance balances
-          </p>
-        </Card>
-      </div>
+        <KpiCard
+          titleEn="Advances Outstanding"
+          titleBn="বকেয়া অগ্রিম স্থিতি"
+          value={totalAdvanceOutstanding}
+          isCurrency
+          icon={Clock}
+          colorVariant="amber"
+          subtitleEn="Active staff advance balances"
+          subtitleBn="কর্মীগণের সক্রিয় অগ্রিম ব্যালেন্স"
+        />
+      </KpiGrid>
 
       {/* Navigation Tabs Bar */}
       <Card className="p-3 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">

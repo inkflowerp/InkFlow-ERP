@@ -47,6 +47,7 @@ import {
   HelpCircle,
   AlertCircle,
   Share2,
+  Users,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -58,6 +59,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
 import { PrintableQrPoster } from '@/components/attendance/printable-qr-poster'
 import { formatBDT, formatDate } from '@/lib/formatters'
@@ -1088,61 +1090,55 @@ function AttendanceContent() {
       {activeTab === 'roster' && (
         <div className="space-y-4">
           {/* Top KPI Metrics Row for Selected Date */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Present', 'উপস্থিত')}
-              </span>
-              <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
-                {presentCount}
-              </div>
-            </Card>
+          <KpiGrid columns={6}>
+            <KpiCard
+              titleEn="Present"
+              titleBn="উপস্থিত"
+              value={presentCount}
+              icon={UserCheck}
+              colorVariant="emerald"
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Late Check-ins', 'দেরিতে প্রবেশ')}
-              </span>
-              <div className="text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5">
-                {lateCount}
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Late Check-ins"
+              titleBn="দেরিতে প্রবেশ"
+              value={lateCount}
+              icon={Clock}
+              colorVariant="amber"
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Absent', 'অনুপস্থিত')}
-              </span>
-              <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-0.5">
-                {absentCount}
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Absent"
+              titleBn="অনুপস্থিত"
+              value={absentCount}
+              icon={AlertCircle}
+              colorVariant="danger"
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('On Leave', 'ছুটিতে')}
-              </span>
-              <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-0.5">
-                {leaveCount}
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="On Leave"
+              titleBn="ছুটিতে"
+              value={leaveCount}
+              icon={Calendar}
+              colorVariant="purple"
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Field Work', 'বাইরের কাজ')}
-              </span>
-              <div className="text-xl font-black text-blue-600 dark:text-blue-400 mt-0.5">
-                {fieldCount}
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Field Work"
+              titleBn="বাইরের কাজ"
+              value={fieldCount}
+              icon={MapPin}
+              colorVariant="blue"
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Potential OT', 'সম্ভাব্য ওভারটাইম')}
-              </span>
-              <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                {Math.round(totalPotentialOtMins / 60 * 10) / 10}h
-              </div>
-            </Card>
-          </div>
+            <KpiCard
+              titleEn="Potential OT"
+              titleBn="সম্ভাব্য ওভারটাইম"
+              value={`${Math.round(totalPotentialOtMins / 60 * 10) / 10}h`}
+              icon={Clock3}
+              colorVariant="indigo"
+            />
+          </KpiGrid>
 
           {/* Search & Filter Bar */}
           <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
@@ -1341,55 +1337,39 @@ function AttendanceContent() {
       {activeTab === 'duty_log' && (
         <div className="space-y-4">
           {/* Duty Log Top Stats Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <div className="flex items-center justify-between">
-                <span className="text-2xs text-slate-500 uppercase font-semibold">
-                  {tBilingual('Total Duty Logs', 'মোট লগ এন্ট্রি')}
-                </span>
-                <History className="w-4 h-4 text-blue-500" />
-              </div>
-              <div className="text-xl font-black text-slate-900 dark:text-white mt-1">
-                {filteredDutyLogs.length}
-              </div>
-            </Card>
+          <KpiGrid columns={4}>
+            <KpiCard
+              titleEn="Total Duty Logs"
+              titleBn="মোট লগ এন্ট্রি"
+              value={filteredDutyLogs.length}
+              icon={History}
+              colorVariant="blue"
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <div className="flex items-center justify-between">
-                <span className="text-2xs text-slate-500 uppercase font-semibold">
-                  {tBilingual('On-Time Check-in Rate', 'সময়মতো আগমন হার')}
-                </span>
-                <CheckCheck className="w-4 h-4 text-emerald-500" />
-              </div>
-              <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                {logOnTimeRate}%
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="On-Time Check-in Rate"
+              titleBn="সময়মতো আগমন হার"
+              value={`${logOnTimeRate}%`}
+              icon={CheckCheck}
+              colorVariant="emerald"
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <div className="flex items-center justify-between">
-                <span className="text-2xs text-slate-500 uppercase font-semibold">
-                  {tBilingual('Total Worked Hours', 'মোট কাজের ঘণ্টা')}
-                </span>
-                <Clock3 className="w-4 h-4 text-purple-500" />
-              </div>
-              <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1">
-                {logTotalHours} hrs
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Total Worked Hours"
+              titleBn="মোট কাজের ঘণ্টা"
+              value={`${logTotalHours} hrs`}
+              icon={Clock3}
+              colorVariant="purple"
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <div className="flex items-center justify-between">
-                <span className="text-2xs text-slate-500 uppercase font-semibold">
-                  {tBilingual('Overtime Logged', 'রেকর্ডকৃত ওভারটাইম')}
-                </span>
-                <Activity className="w-4 h-4 text-amber-500" />
-              </div>
-              <div className="text-xl font-black text-amber-600 dark:text-amber-400 mt-1">
-                {logTotalOtHours} hrs
-              </div>
-            </Card>
-          </div>
+            <KpiCard
+              titleEn="Overtime Logged"
+              titleBn="রেকর্ডকৃত ওভারটাইম"
+              value={`${logTotalOtHours} hrs`}
+              icon={Activity}
+              colorVariant="amber"
+            />
+          </KpiGrid>
 
           {/* Filter Bar */}
           <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
@@ -1847,79 +1827,68 @@ function AttendanceContent() {
           </Card>
 
           {/* Executive KPI Summary Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Workforce', 'মোট কর্মী')}
-              </span>
-              <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                {reportSummaryStats.workforceCount}
-              </div>
-              <div className="text-2xs text-slate-400 font-mono mt-0.5">
-                {reportSummaryStats.totalWorkingDays} work days
-              </div>
-            </Card>
+          <KpiGrid columns={6}>
+            <KpiCard
+              titleEn="Workforce"
+              titleBn="মোট কর্মী"
+              value={reportSummaryStats.workforceCount}
+              icon={Users}
+              colorVariant="blue"
+              subtitleEn={`${reportSummaryStats.totalWorkingDays} work days`}
+              subtitleBn={`${reportSummaryStats.totalWorkingDays} কর্মদিবস`}
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Present Rate', 'উপস্থিতি হার')}
-              </span>
-              <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
-                {reportSummaryStats.presentRate}%
-              </div>
-              <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
-                {reportSummaryStats.presentCount} check-ins
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Present Rate"
+              titleBn="উপস্থিতি হার"
+              value={`${reportSummaryStats.presentRate}%`}
+              icon={UserCheck}
+              colorVariant="emerald"
+              subtitleEn={`${reportSummaryStats.presentCount} check-ins`}
+              subtitleBn={`${reportSummaryStats.presentCount} উপস্থিতি`}
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Late Arrivals', 'বিলম্ব আগমন')}
-              </span>
-              <div className="text-xl font-black text-amber-600 dark:text-amber-400 mt-0.5">
-                {reportSummaryStats.lateCount}
-              </div>
-              <div className="text-2xs text-amber-600 dark:text-amber-400 font-mono mt-0.5">
-                {reportSummaryStats.totalLateMins} mins total
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Late Arrivals"
+              titleBn="বিলম্ব আগমন"
+              value={reportSummaryStats.lateCount}
+              icon={Clock}
+              colorVariant="amber"
+              subtitleEn={`${reportSummaryStats.totalLateMins} mins total`}
+              subtitleBn={`মোট ${reportSummaryStats.totalLateMins} মিনিট`}
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Absent & Leave', 'অনুপস্থিত ও ছুটি')}
-              </span>
-              <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-0.5">
-                {reportSummaryStats.absentCount} / {reportSummaryStats.leaveCount}
-              </div>
-              <div className="text-2xs text-slate-400 font-mono mt-0.5">
-                {reportSummaryStats.absentCount} Abs • {reportSummaryStats.leaveCount} Leaves
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Absent & Leave"
+              titleBn="অনুপস্থিত ও ছুটি"
+              value={`${reportSummaryStats.absentCount} / ${reportSummaryStats.leaveCount}`}
+              icon={AlertCircle}
+              colorVariant="danger"
+              subtitleEn={`${reportSummaryStats.absentCount} Abs • ${reportSummaryStats.leaveCount} Leaves`}
+              subtitleBn={`${reportSummaryStats.absentCount} অনুপস্থিত • ${reportSummaryStats.leaveCount} ছুটি`}
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Total Worked Hrs', 'মোট কাজের ঘণ্টা')}
-              </span>
-              <div className="text-xl font-black text-blue-600 dark:text-blue-400 mt-0.5">
-                {reportSummaryStats.workedHrs}h
-              </div>
-              <div className="text-2xs text-slate-400 font-mono mt-0.5">
-                {(reportSummaryStats.workforceCount > 0 ? Math.round((reportSummaryStats.workedHrs / reportSummaryStats.workforceCount) * 10) / 10 : 0)}h / employee
-              </div>
-            </Card>
+            <KpiCard
+              titleEn="Total Worked Hrs"
+              titleBn="মোট কাজের ঘণ্টা"
+              value={`${reportSummaryStats.workedHrs}h`}
+              icon={Clock3}
+              colorVariant="blue"
+              subtitleEn={`${reportSummaryStats.workforceCount > 0 ? Math.round((reportSummaryStats.workedHrs / reportSummaryStats.workforceCount) * 10) / 10 : 0}h / employee`}
+              subtitleBn={`গড় ${reportSummaryStats.workforceCount > 0 ? Math.round((reportSummaryStats.workedHrs / reportSummaryStats.workforceCount) * 10) / 10 : 0} ঘণ্টা`}
+            />
 
-            <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-              <span className="text-2xs text-slate-500 uppercase font-semibold">
-                {tBilingual('Overtime Pay', 'ওভারটাইম প্রদেয়')}
-              </span>
-              <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-0.5">
-                {formatBDT(reportSummaryStats.estimatedOtPay)}
-              </div>
-              <div className="text-2xs text-purple-600 dark:text-purple-400 font-mono mt-0.5">
-                {reportSummaryStats.otHrs} hrs OT
-              </div>
-            </Card>
-          </div>
+            <KpiCard
+              titleEn="Overtime Pay"
+              titleBn="ওভারটাইম প্রদেয়"
+              value={reportSummaryStats.estimatedOtPay}
+              isCurrency
+              icon={Activity}
+              colorVariant="purple"
+              subtitleEn={`${reportSummaryStats.otHrs} hrs OT`}
+              subtitleBn={`${reportSummaryStats.otHrs} ঘণ্টা ওভারটাইম`}
+            />
+          </KpiGrid>
 
           {/* VIEW MODE 1: EXACT REQUESTED ATTENDANCE REPORT TABLE */}
           {reportViewMode === 'summary' && (

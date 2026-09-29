@@ -34,6 +34,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { cn } from '@/lib/utils'
@@ -639,303 +640,125 @@ export default function BusinessReportsPage() {
         {/* =========================================================================
             ROW 1: 8 KEY PERFORMANCE INDICATORS (2 Rows x 4 Cols on XL)
            ========================================================================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5 2xl:gap-4">
-          {/* 1. Total Revenue / Sales */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-            <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
-              <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
-                <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                  <DollarSign className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span
-                    className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
-                    title="Total Revenue"
-                  >
-                    Total Revenue
-                  </span>
-                  <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
-                    ৳ {totalSales.toLocaleString()}
-                  </div>
-                  <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
-                    {invoicesCount} Invoices
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
-                    salesTrend === null || salesTrend >= 0
-                      ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
-                      : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
-                  )}
-                >
-                  {salesTrend === null || salesTrend >= 0 ? '↑' : '↓'}{' '}
-                  {salesTrend !== null ? Math.abs(salesTrend) : 100}%
-                </span>
-                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
-                  vs last period
-                </span>
-              </div>
-            </div>
-          </div>
+        <KpiGrid columns={4}>
+          <KpiCard
+            titleEn="Total Revenue"
+            titleBn="মোট রাজস্ব"
+            value={totalSales}
+            isCurrency
+            icon={DollarSign}
+            colorVariant="emerald"
+            subtitleEn={`${invoicesCount} Invoices`}
+            subtitleBn={`${invoicesCount}টি চালান`}
+            trend={{
+              value: `${salesTrend !== null ? Math.abs(salesTrend) : 100}%`,
+              labelEn: 'vs last period',
+              labelBn: 'পূর্ববর্তী সময়ের তুলনায়',
+              direction: salesTrend === null || salesTrend >= 0 ? 'up' : 'down',
+            }}
+          />
 
-          {/* 2. Gross Profit */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-            <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
-              <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
-                <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                  <TrendingUp className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span
-                    className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
-                    title="Gross Profit"
-                  >
-                    Gross Profit
-                  </span>
-                  <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
-                    ৳ {grossProfit.toLocaleString()}
-                  </div>
-                  <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
-                    {profitMarginPercent}% Margin
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
-                    profitTrend === null || profitTrend >= 0
-                      ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
-                      : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
-                  )}
-                >
-                  {profitTrend === null || profitTrend >= 0 ? '↑' : '↓'}{' '}
-                  {profitTrend !== null ? Math.abs(profitTrend) : 100}%
-                </span>
-                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
-                  vs last period
-                </span>
-              </div>
-            </div>
-          </div>
+          <KpiCard
+            titleEn="Gross Profit"
+            titleBn="মোট লাভ"
+            value={grossProfit}
+            isCurrency
+            icon={TrendingUp}
+            colorVariant="purple"
+            subtitleEn={`${profitMarginPercent}% Margin`}
+            subtitleBn={`${profitMarginPercent}% মার্জিন`}
+            trend={{
+              value: `${profitTrend !== null ? Math.abs(profitTrend) : 100}%`,
+              labelEn: 'vs last period',
+              labelBn: 'পূর্ববর্তী সময়ের তুলনায়',
+              direction: profitTrend === null || profitTrend >= 0 ? 'up' : 'down',
+            }}
+          />
 
-          {/* 3. Total Production Jobs */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-            <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
-              <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
-                <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                  <ClipboardList className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span
-                    className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
-                    title="Total Production Jobs"
-                  >
-                    Total Jobs
-                  </span>
-                  <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
-                    {totalJobs}
-                  </div>
-                  <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
-                    {uniqueCustomersCount} Customers
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
-                    jobsTrend === null || jobsTrend >= 0
-                      ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
-                      : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
-                  )}
-                >
-                  {jobsTrend === null || jobsTrend >= 0 ? '↑' : '↓'}{' '}
-                  {jobsTrend !== null ? Math.abs(jobsTrend) : 100}%
-                </span>
-                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
-                  vs last period
-                </span>
-              </div>
-            </div>
-          </div>
+          <KpiCard
+            titleEn="Total Jobs"
+            titleBn="মোট কাজ"
+            value={totalJobs}
+            icon={ClipboardList}
+            colorVariant="blue"
+            subtitleEn={`${uniqueCustomersCount} Customers`}
+            subtitleBn={`${uniqueCustomersCount} জন গ্রাহক`}
+            trend={{
+              value: `${jobsTrend !== null ? Math.abs(jobsTrend) : 100}%`,
+              labelEn: 'vs last period',
+              labelBn: 'পূর্ববর্তী সময়ের তুলনায়',
+              direction: jobsTrend === null || jobsTrend >= 0 ? 'up' : 'down',
+            }}
+          />
 
-          {/* 4. Total Expenses */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-            <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
-              <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
-                <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-                  <Receipt className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span
-                    className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
-                    title="Total Expenses"
-                  >
-                    Total Expenses
-                  </span>
-                  <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
-                    ৳ {totalExpenses.toLocaleString()}
-                  </div>
-                  <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
-                    {reportData.summary.expenseTransactionsCount} Transactions
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
-                    expensesTrend === null || expensesTrend <= 0
-                      ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
-                      : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
-                  )}
-                >
-                  {expensesTrend === null || expensesTrend <= 0 ? '↓' : '↑'}{' '}
-                  {expensesTrend !== null ? Math.abs(expensesTrend) : 0}%
-                </span>
-                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
-                  vs last period
-                </span>
-              </div>
-            </div>
-          </div>
+          <KpiCard
+            titleEn="Total Expenses"
+            titleBn="মোট খরচ"
+            value={totalExpenses}
+            isCurrency
+            icon={Receipt}
+            colorVariant="rose"
+            subtitleEn={`${reportData.summary.expenseTransactionsCount} Transactions`}
+            subtitleBn={`${reportData.summary.expenseTransactionsCount}টি লেনদেন`}
+            trend={{
+              value: `${expensesTrend !== null ? Math.abs(expensesTrend) : 0}%`,
+              labelEn: 'vs last period',
+              labelBn: 'পূর্ববর্তী সময়ের তুলনায়',
+              direction: expensesTrend === null || expensesTrend <= 0 ? 'down' : 'up',
+            }}
+          />
 
-          {/* 5. Net Profit */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-            <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
-              <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
-                <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                  <Calculator className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span
-                    className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
-                    title="Net Operating Profit"
-                  >
-                    Net Profit
-                  </span>
-                  <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
-                    ৳ {netProfit.toLocaleString()}
-                  </div>
-                  <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
-                    Operating Bottomline
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span className="inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50">
-                  ↑ {profitMarginPercent}%
-                </span>
-                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
-                  margin
-                </span>
-              </div>
-            </div>
-          </div>
+          <KpiCard
+            titleEn="Net Profit"
+            titleBn="নিট লাভ"
+            value={netProfit}
+            isCurrency
+            icon={Calculator}
+            colorVariant="emerald"
+            subtitleEn="Operating Bottomline"
+            subtitleBn="পরিচালন ফলাফল"
+            badge={`${profitMarginPercent}% margin`}
+            badgeColor="emerald"
+          />
 
-          {/* 6. Production & Direct Costs (COGS) */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-            <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
-              <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
-                <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                  <Layers className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span
-                    className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
-                    title="Direct Production & Material Cost"
-                  >
-                    Production Cost
-                  </span>
-                  <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
-                    ৳ {directCosts.toLocaleString()}
-                  </div>
-                  <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
-                    Material & Floor Cost
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span className="inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-amber-600 bg-amber-50 dark:bg-amber-950/50">
-                  59.6%
-                </span>
-                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
-                  of revenue
-                </span>
-              </div>
-            </div>
-          </div>
+          <KpiCard
+            titleEn="Production Cost"
+            titleBn="উৎপাদন খরচ"
+            value={directCosts}
+            isCurrency
+            icon={Layers}
+            colorVariant="amber"
+            subtitleEn="Material & Floor Cost"
+            subtitleBn="উপাদান ও ফ্লোর খরচ"
+            badge="59.6% rev"
+            badgeColor="amber"
+          />
 
-          {/* 7. Average Order Value (AOV) */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-            <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
-              <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
-                <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
-                  <ShoppingBag className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span
-                    className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
-                    title="Average Order Value"
-                  >
-                    Avg Order Value
-                  </span>
-                  <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
-                    ৳ {averageOrderValue.toLocaleString()}
-                  </div>
-                  <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
-                    Per Invoice Average
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span className="inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-sky-600 bg-sky-50 dark:bg-sky-950/50">
-                  Live
-                </span>
-                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
-                  basket size
-                </span>
-              </div>
-            </div>
-          </div>
+          <KpiCard
+            titleEn="Avg Order Value"
+            titleBn="গড় অর্ডার মূল্য"
+            value={averageOrderValue}
+            isCurrency
+            icon={ShoppingBag}
+            colorVariant="sky"
+            subtitleEn="Per Invoice Average"
+            subtitleBn="প্রতি চালানের গড়"
+            badge="Live"
+            badgeColor="sky"
+          />
 
-          {/* 8. Active Orders & Pipeline */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-            <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
-              <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
-                <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
-                  <Clock className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span
-                    className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate"
-                    title="Active Work Orders in Workflow"
-                  >
-                    Active Work Orders
-                  </span>
-                  <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
-                    {effectiveOrders.length || totalJobs}
-                  </div>
-                  <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
-                    Production Pipeline
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span className="inline-flex items-center gap-0.5 text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full text-violet-600 bg-violet-50 dark:bg-violet-950/50">
-                  Tracked
-                </span>
-                <span className="text-2xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
-                  workflow
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+          <KpiCard
+            titleEn="Active Work Orders"
+            titleBn="চলমান ওয়ার্ক অর্ডার"
+            value={effectiveOrders.length || totalJobs}
+            icon={Clock}
+            colorVariant="violet"
+            subtitleEn="Production Pipeline"
+            subtitleBn="উৎপাদন পাইপলাইন"
+            badge="Tracked"
+            badgeColor="violet"
+          />
+        </KpiGrid>
 
         {/* =========================================================================
             ROW 2: CHARTS (Monthly Sales vs Profit Bar + Sales Distribution Donut)

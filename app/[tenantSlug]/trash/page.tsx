@@ -33,6 +33,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { useDataStore } from '@/hooks/use-data-store'
@@ -370,91 +371,77 @@ function TrashContent() {
       </div>
 
       {/* CATEGORY SUMMARY KPI CARDS */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-        {/* All Items */}
-        <Card
+      <KpiGrid columns={7}>
+        <KpiCard
+          titleEn="All Items"
+          titleBn="সব আইটেম"
+          value={counts.total}
+          icon={Trash2}
+          colorVariant="rose"
+          selected={selectedCategory === 'all'}
           onClick={() => setSelectedCategory('all')}
-          className={cn(
-            'p-3 cursor-pointer transition-all hover:border-slate-400',
-            selectedCategory === 'all' && 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 dark:bg-rose-950/20'
-          )}
-        >
-          <span className="text-2xs font-bold text-slate-500 block">{tBilingual('All Items', 'সব আইটেম')}</span>
-          <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{counts.total}</div>
-        </Card>
+        />
 
-        {/* Quotations */}
-        <Card
+        <KpiCard
+          titleEn="Quotations"
+          titleBn="কোটেশন"
+          value={counts.quotations}
+          icon={FileSpreadsheet}
+          colorVariant="blue"
+          selected={selectedCategory === 'quotations'}
           onClick={() => setSelectedCategory('quotations')}
-          className={cn(
-            'p-3 cursor-pointer transition-all hover:border-blue-400 border-l-4 border-l-blue-500',
-            selectedCategory === 'quotations' && 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20 dark:bg-blue-950/20'
-          )}
-        >
-          <span className="text-2xs font-bold text-blue-700 dark:text-blue-300 block">{tBilingual('Quotations', 'কোটেশন')}</span>
-          <div className="text-xl font-black text-blue-700 dark:text-blue-300 mt-0.5">{counts.quotations}</div>
-        </Card>
+        />
 
-        {/* Invoices */}
-        <Card
+        <KpiCard
+          titleEn="Invoices"
+          titleBn="ইনভয়েস"
+          value={counts.invoices}
+          icon={Receipt}
+          colorVariant="emerald"
+          selected={selectedCategory === 'invoices'}
           onClick={() => setSelectedCategory('invoices')}
-          className={cn(
-            'p-3 cursor-pointer transition-all hover:border-emerald-400 border-l-4 border-l-emerald-500',
-            selectedCategory === 'invoices' && 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20 dark:bg-emerald-950/20'
-          )}
-        >
-          <span className="text-2xs font-bold text-emerald-700 dark:text-emerald-300 block">{tBilingual('Invoices', 'ইনভয়েস')}</span>
-          <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 mt-0.5">{counts.invoices}</div>
-        </Card>
+        />
 
-        {/* Customers */}
-        <Card
+        <KpiCard
+          titleEn="Customers"
+          titleBn="গ্রাহক"
+          value={counts.customers}
+          icon={Users}
+          colorVariant="purple"
+          selected={selectedCategory === 'customers'}
           onClick={() => setSelectedCategory('customers')}
-          className={cn(
-            'p-3 cursor-pointer transition-all hover:border-purple-400 border-l-4 border-l-purple-500',
-            selectedCategory === 'customers' && 'border-purple-500 ring-2 ring-purple-500/20 bg-purple-50/20 dark:bg-purple-950/20'
-          )}
-        >
-          <span className="text-2xs font-bold text-purple-700 dark:text-purple-300 block">{tBilingual('Customers', 'গ্রাহক')}</span>
-          <div className="text-xl font-black text-purple-700 dark:text-purple-300 mt-0.5">{counts.customers}</div>
-        </Card>
+        />
 
-        {/* Products */}
-        <Card
+        <KpiCard
+          titleEn="Products"
+          titleBn="পণ্য"
+          value={counts.products}
+          icon={Package}
+          colorVariant="cyan"
+          selected={selectedCategory === 'products'}
           onClick={() => setSelectedCategory('products')}
-          className={cn(
-            'p-3 cursor-pointer transition-all hover:border-cyan-400 border-l-4 border-l-cyan-500',
-            selectedCategory === 'products' && 'border-cyan-500 ring-2 ring-cyan-500/20 bg-cyan-50/20 dark:bg-cyan-950/20'
-          )}
-        >
-          <span className="text-2xs font-bold text-cyan-700 dark:text-cyan-300 block">{tBilingual('Products', 'পণ্য')}</span>
-          <div className="text-xl font-black text-cyan-700 dark:text-cyan-300 mt-0.5">{counts.products}</div>
-        </Card>
+        />
 
-        {/* Materials */}
-        <Card
+        <KpiCard
+          titleEn="Materials"
+          titleBn="কাঁচামাল"
+          value={counts.materials}
+          icon={Boxes}
+          colorVariant="amber"
+          selected={selectedCategory === 'materials'}
           onClick={() => setSelectedCategory('materials')}
-          className={cn(
-            'p-3 cursor-pointer transition-all hover:border-amber-400 border-l-4 border-l-amber-500',
-            selectedCategory === 'materials' && 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/20 dark:bg-amber-950/20'
-          )}
-        >
-          <span className="text-2xs font-bold text-amber-700 dark:text-amber-300 block">{tBilingual('Materials', 'কাঁচামাল')}</span>
-          <div className="text-xl font-black text-amber-700 dark:text-amber-300 mt-0.5">{counts.materials}</div>
-        </Card>
+        />
 
-        {/* Suppliers */}
-        <Card
+        <KpiCard
+          titleEn="Suppliers"
+          titleBn="সরবরাহকারী"
+          value={counts.suppliers}
+          icon={Truck}
+          colorVariant="indigo"
+          selected={selectedCategory === 'suppliers'}
           onClick={() => setSelectedCategory('suppliers')}
-          className={cn(
-            'p-3 cursor-pointer transition-all hover:border-indigo-400 border-l-4 border-l-indigo-500',
-            selectedCategory === 'suppliers' && 'border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/20 dark:bg-indigo-950/20'
-          )}
-        >
-          <span className="text-2xs font-bold text-indigo-700 dark:text-indigo-300 block">{tBilingual('Suppliers', 'সরবরাহকারী')}</span>
-          <div className="text-xl font-black text-indigo-700 dark:text-indigo-300 mt-0.5">{counts.suppliers}</div>
-        </Card>
-      </div>
+        />
+      </KpiGrid>
 
       {/* FILTER CHIPS & SEARCH */}
       <Card className="p-4 space-y-3">

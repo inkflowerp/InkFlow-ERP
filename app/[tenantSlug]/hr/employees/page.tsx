@@ -90,6 +90,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import type { BranchRow } from '@/types/tenant.types'
@@ -1247,67 +1248,47 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
       />
 
       {/* Top Stat Summary Pills */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              {tBilingual('Total Enrolled', 'মোট নিবন্ধিত')}
-            </span>
-            <div className="p-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 rounded-lg">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{employees.length}</div>
-          <p className="text-2xs text-slate-400 mt-1 truncate">
-            {tBilingual('Registered workforce profiles', 'নিবন্ধিত জনবল প্রোফাইল')}
-          </p>
-        </Card>
+      <KpiGrid columns={4}>
+        <KpiCard
+          titleEn="Total Enrolled"
+          titleBn="মোট নিবন্ধিত"
+          value={employees.length}
+          icon={Users}
+          colorVariant="blue"
+          subtitleEn="Registered workforce profiles"
+          subtitleBn="নিবন্ধিত জনবল প্রোফাইল"
+        />
 
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              {tBilingual('Permanent Staff', 'স্থায়ী কর্মী')}
-            </span>
-            <div className="p-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-lg">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">{permanentCount}</div>
-          <p className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 mt-1 truncate">
-            {tBilingual('Full-time payroll members', 'স্থায়ী চুক্তিবদ্ধ কর্মী')}
-          </p>
-        </Card>
+        <KpiCard
+          titleEn="Permanent Staff"
+          titleBn="স্থায়ী কর্মী"
+          value={permanentCount}
+          icon={ShieldCheck}
+          colorVariant="emerald"
+          subtitleEn="Full-time payroll members"
+          subtitleBn="স্থায়ী চুক্তিবদ্ধ কর্মী"
+        />
 
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              {tBilingual('Daily / Hourly', 'দৈনিক / ঘণ্টাপ্রতি')}
-            </span>
-            <div className="p-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-lg">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-amber-600 dark:text-amber-400">{dailyCount + hourlyCount}</div>
-          <p className="text-2xs text-amber-600/80 dark:text-amber-400/80 mt-1 truncate">
-            {tBilingual('Flexible floor & shift labor', 'চুক্তিভিত্তিক শিফট শ্রমিক')}
-          </p>
-        </Card>
+        <KpiCard
+          titleEn="Daily / Hourly"
+          titleBn="দৈনিক / ঘণ্টাপ্রতি"
+          value={dailyCount + hourlyCount}
+          icon={Clock}
+          colorVariant="amber"
+          subtitleEn="Flexible floor & shift labor"
+          subtitleBn="চুক্তিভিত্তিক শিফট শ্রমিক"
+        />
 
-        <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              {tBilingual('On Leave', 'ছুটিতে')}
-            </span>
-            <div className="p-1.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-lg">
-              <Calendar className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-purple-600 dark:text-purple-400">{onLeaveCount}</div>
-          <p className="text-2xs text-purple-600/80 dark:text-purple-400/80 mt-1 truncate">
-            {tBilingual('Approved leave leaves', 'অনুমোদিত ছুটিতে রয়েছেন')}
-          </p>
-        </Card>
-      </div>
+        <KpiCard
+          titleEn="On Leave"
+          titleBn="ছুটিতে"
+          value={onLeaveCount}
+          icon={Calendar}
+          colorVariant="purple"
+          subtitleEn="Approved leave leaves"
+          subtitleBn="অনুমোদিত ছুটিতে রয়েছেন"
+        />
+      </KpiGrid>
 
       {/* Filter and Search Bar */}
       <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">

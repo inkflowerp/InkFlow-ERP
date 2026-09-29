@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { JobCostingRecord, CostHeads, calculateNegotiationMargin } from '@/types/costing.types'
 import { formatBDT } from '@/lib/formatters'
@@ -851,109 +852,56 @@ export default function JobCostingPage() {
         )}
 
         {/* Executive Profitability Intelligence Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Realized Margin */}
-          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {tBilingual('Average Realized Margin', 'গড় অর্জিত মার্জিন')}
-              </span>
-              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                Target &gt; 25%
-              </span>
-            </div>
-            <div className="flex items-baseline justify-between mt-2">
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
-                {isSalesRoleShielded ? '•••• %' : `${avgMargin.toFixed(1)}%`}
-              </div>
-              <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
-                <TrendingUp className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-2 flex items-center gap-1.5 text-2xs text-emerald-700 dark:text-emerald-400 font-medium">
-              <CheckCircle2 className="w-3 h-3 shrink-0" />
-              <span>Across {completedJobs.length} completed production runs</span>
-            </div>
-          </div>
-
-          {/* Net Production Profit */}
-          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600" />
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {tBilingual('Realized Job Profit', 'মোট অর্জিত লাভ')}
-              </span>
-              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                Audited
-              </span>
-            </div>
-            <div className="flex items-baseline justify-between mt-2">
-              <div className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">
-                {isSalesRoleShielded ? '৳ ••••••' : <CurrencyDisplay amount={totalActualProfit} />}
-              </div>
-              <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
-                <DollarSign className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-2xs text-slate-500 dark:text-slate-400 font-mono">
-              <span>Total Billed:</span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">{formatBDT(totalRevenue)}</span>
-            </div>
-          </div>
-
-          {/* Cost Overruns Alert */}
-          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600" />
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {tBilingual('Budget Overruns', 'বাজেট অতিরিক্ত ব্যয়')}
-              </span>
-              <span className={`text-2xs font-bold px-2 py-0.5 rounded-full border ${
-                overrunJobsCount > 0
-                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
-                  : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
-              }`}>
-                {overrunJobsCount > 0 ? 'Requires Audit' : 'Healthy'}
-              </span>
-            </div>
-            <div className="flex items-baseline justify-between mt-2">
-              <div className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono tracking-tight">
-                {overrunJobsCount} Jobs
-              </div>
-              <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
-                <AlertTriangle className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-2 text-2xs text-amber-600 dark:text-amber-400 font-medium truncate">
-              Transport / overtime exceeded
-            </div>
-          </div>
-
-          {/* Material & Nesting Savings */}
-          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-600" />
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {tBilingual('Material & Yield Savings', 'কাঁচামাল ও নেস্টিং সাশ্রয়')}
-              </span>
-              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                Efficiency
-              </span>
-            </div>
-            <div className="flex items-baseline justify-between mt-2">
-              <div className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono tracking-tight">
-                {isSalesRoleShielded ? '৳ ••••••' : formatBDT(totalSavings)}
-              </div>
-              <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
-                <Sparkles className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-2 text-2xs text-purple-600 dark:text-purple-400 font-medium truncate">
-              Favorable gang-run nesting yield
-            </div>
-          </div>
-        </div>
+        <KpiGrid columns={4}>
+          <KpiCard
+            titleEn="Average Realized Margin"
+            titleBn="গড় অর্জিত মার্জিন"
+            value={isSalesRoleShielded ? '•••• %' : `${avgMargin.toFixed(1)}%`}
+            icon={TrendingUp}
+            colorVariant="emerald"
+            badge="Target > 25%"
+            badgeColor="emerald"
+            subtitleEn={`Across ${completedJobs.length} completed production runs`}
+            subtitleBn={`${completedJobs.length}টি সম্পন্ন কাজের হিসাব`}
+          />
+          <KpiCard
+            titleEn="Realized Job Profit"
+            titleBn="মোট অর্জিত লাভ"
+            value={isSalesRoleShielded ? '••••••' : totalActualProfit}
+            isCurrency={!isSalesRoleShielded}
+            icon={DollarSign}
+            colorVariant="blue"
+            badge="Audited"
+            badgeColor="blue"
+            subtitleEn={`Total Billed: ${formatBDT(totalRevenue)}`}
+            subtitleBn={`মোট বিল: ${formatBDT(totalRevenue)}`}
+          />
+          <KpiCard
+            titleEn="Budget Overruns"
+            titleBn="বাজেট অতিরিক্ত ব্যয়"
+            value={overrunJobsCount}
+            unitEn="Jobs"
+            unitBn="টি কাজ"
+            icon={AlertTriangle}
+            colorVariant={overrunJobsCount > 0 ? 'amber' : 'emerald'}
+            badge={overrunJobsCount > 0 ? 'Requires Audit' : 'Healthy'}
+            badgeColor={overrunJobsCount > 0 ? 'amber' : 'emerald'}
+            subtitleEn="Transport / overtime variance"
+            subtitleBn="পরিবহন ও অতিরিক্ত সময় ব্যত্যয়"
+          />
+          <KpiCard
+            titleEn="Material & Yield Savings"
+            titleBn="কাঁচামাল ও নেস্টিং সাশ্রয়"
+            value={isSalesRoleShielded ? '••••••' : totalSavings}
+            isCurrency={!isSalesRoleShielded}
+            icon={Sparkles}
+            colorVariant="purple"
+            badge="Efficiency"
+            badgeColor="purple"
+            subtitleEn="Favorable gang-run nesting yield"
+            subtitleBn="উপযুক্ত গ্যাং-রান নেস্টিং সাশ্রয়"
+          />
+        </KpiGrid>
 
         {/* Sensitive Cost Notice for Sales Mode */}
         {isSalesRoleShielded && (

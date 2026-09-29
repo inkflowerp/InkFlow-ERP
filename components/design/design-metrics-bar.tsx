@@ -7,8 +7,9 @@ import {
   Clock,
   RotateCcw,
   CheckCircle2,
+  AlertCircle,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { KpiCard, KpiGrid, type KpiColorVariant } from '@/components/shared/kpi-card'
 
 export interface DesignMetrics {
   total: number
@@ -32,89 +33,78 @@ export const DesignMetricsBar = React.memo(function DesignMetricsBar({
   activeFilter = 'all',
   onSelectFilter,
 }: DesignMetricsBarProps) {
-  const cards = [
+  const cards: {
+    id: string
+    titleEn: string
+    titleBn: string
+    count: number
+    icon: React.ComponentType<{ className?: string }>
+    colorVariant: KpiColorVariant
+  }[] = [
     {
       id: 'all',
-      label: 'Total Jobs',
+      titleEn: 'Total Jobs',
+      titleBn: 'মোট কাজ',
       count: metrics.total,
       icon: FileText,
-      iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400',
+      colorVariant: 'slate',
     },
     {
       id: 'new_tasks',
-      label: 'New',
+      titleEn: 'New Tasks',
+      titleBn: 'নতুন কাজ',
       count: metrics.newTasks,
       icon: Edit3,
-      iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/80 dark:text-purple-400',
+      colorVariant: 'blue',
     },
     {
       id: 'design_running',
-      label: 'Designing',
+      titleEn: 'Designing',
+      titleBn: 'ডিজাইন চলমান',
       count: metrics.designRunning,
       icon: Clock,
-      iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/80 dark:text-amber-400',
+      colorVariant: 'indigo',
     },
     {
       id: 'waiting_approval',
-      label: 'Waiting Approval',
+      titleEn: 'Waiting Approval',
+      titleBn: 'অনুমোদনের অপেক্ষায়',
       count: metrics.waitingApproval,
-      icon: Clock,
-      iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/80 dark:text-amber-400',
+      icon: AlertCircle,
+      colorVariant: 'amber',
     },
     {
       id: 'revision',
-      label: 'Revision',
+      titleEn: 'Revision',
+      titleBn: 'সংশোধন প্রয়োজন',
       count: metrics.revision ?? 0,
       icon: RotateCcw,
-      iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/80 dark:text-purple-400',
+      colorVariant: 'purple',
     },
     {
       id: 'completed',
-      label: 'Completed',
+      titleEn: 'Completed',
+      titleBn: 'সম্পন্ন',
       count: metrics.inProduction,
       icon: CheckCircle2,
-      iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400',
+      colorVariant: 'emerald',
     },
   ]
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      {cards.map((card) => {
-        const Icon = card.icon
-        const isActive = activeFilter === card.id
-
-        return (
-          <button
-            key={card.id}
-            type="button"
-            onClick={() => onSelectFilter?.(card.id)}
-            className={cn(
-              'bg-white dark:bg-slate-900 border rounded-2xl p-3.5 sm:p-4 text-left transition-all duration-150 flex items-center gap-3.5 shadow-2xs hover:shadow-xs cursor-pointer',
-              isActive
-                ? 'border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-xs'
-                : 'border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700'
-            )}
-          >
-            <div
-              className={cn(
-                'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform',
-                card.iconBg
-              )}
-            >
-              <Icon className="w-5 h-5 stroke-[2.2]" />
-            </div>
-
-            <div className="min-w-0">
-              <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white leading-none">
-                {card.count}
-              </div>
-              <div className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 truncate">
-                {card.label}
-              </div>
-            </div>
-          </button>
-        )
-      })}
-    </div>
+    <KpiGrid columns={6}>
+      {cards.map((card) => (
+        <KpiCard
+          key={card.id}
+          titleEn={card.titleEn}
+          titleBn={card.titleBn}
+          value={card.count}
+          icon={card.icon}
+          colorVariant={card.colorVariant}
+          selected={activeFilter === card.id}
+          onClick={() => onSelectFilter?.(card.id)}
+        />
+      ))}
+    </KpiGrid>
   )
 })

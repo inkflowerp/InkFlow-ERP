@@ -39,6 +39,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import type { SupplierRecord, SupplierMaterialPrice } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
@@ -369,76 +370,64 @@ export default function SupplierProfilePage() {
       )}
 
       {/* Supplier Balance KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <KpiGrid columns={4}>
         {/* Total Purchases */}
-        <Card className="p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
-          <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-            {tBilingual('Total Purchases from Vendor', 'মোট ক্রয়কৃত মালামাল')}
-          </span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            <CurrencyDisplay amount={supplier.total_purchases_amount || 0} />
-          </div>
-          <span className="text-2xs text-slate-400">Cumulative roll/sheet acquisitions</span>
-        </Card>
+        <KpiCard
+          titleEn="Total Purchases from Vendor"
+          titleBn="মোট ক্রয়কৃত মালামাল"
+          value={supplier.total_purchases_amount || 0}
+          isCurrency
+          icon={Package}
+          colorVariant="blue"
+          subtitleEn="Cumulative roll/sheet acquisitions"
+          subtitleBn="রোল ও শিট ক্রয় ভলিউম"
+        />
 
         {/* Payments Cleared */}
-        <Card className="p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
-          <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-            {tBilingual('Total Payments Cleared', 'মোট পরিশোধিত বিল')}
-          </span>
-          <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">
-            <CurrencyDisplay
-              amount={Math.max(0, (supplier.total_purchases_amount || 0) - (supplier.outstanding_balance || 0))}
-            />
-          </div>
-          <span className="text-2xs text-emerald-600 font-medium">Bank Cheques, RTGS & Cash</span>
-        </Card>
+        <KpiCard
+          titleEn="Total Payments Cleared"
+          titleBn="মোট পরিশোধিত বিল"
+          value={Math.max(0, (supplier.total_purchases_amount || 0) - (supplier.outstanding_balance || 0))}
+          isCurrency
+          icon={CheckCircle2}
+          colorVariant="emerald"
+          subtitleEn="Bank Cheques, RTGS & Cash"
+          subtitleBn="চেক, আরটিজিএস ও ক্যাশ"
+        />
 
         {/* Payable Due */}
-        <Card className={`p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 border-l-4 ${outstandingDue > 0 ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-              {tBilingual('Payable Balance', 'বর্তমান বকেয়া পাওনা')}
-            </span>
-            {outstandingDue > 0 ? (
-              <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 text-2xs font-bold">
-                Pending
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 text-2xs font-bold">
-                Settled
-              </Badge>
-            )}
-          </div>
-          <div className="text-2xl font-black text-amber-700 dark:text-amber-300 mt-1 font-mono">
-            <CurrencyDisplay amount={outstandingDue} />
-          </div>
-          <span className="text-2xs text-slate-400">Terms: {supplier.payment_terms.replace('_', ' ').toUpperCase()}</span>
-        </Card>
+        <KpiCard
+          titleEn="Payable Balance"
+          titleBn="বর্তমান বকেয়া পাওনা"
+          value={outstandingDue}
+          isCurrency
+          icon={CreditCard}
+          colorVariant={outstandingDue > 0 ? 'amber' : 'emerald'}
+          badge={outstandingDue > 0 ? 'Pending' : 'Settled'}
+          badgeColor={outstandingDue > 0 ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800' : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'}
+          subtitle={`Terms: ${supplier.payment_terms.replace('_', ' ').toUpperCase()}`}
+        />
 
         {/* Credit Limit Meter */}
-        <Card className="p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-              {tBilingual('Credit Limit Utilization', 'বাকি সীমা ব্যবহার')}
-            </span>
-            <span className="text-2xs font-mono font-bold text-slate-700 dark:text-slate-300">
-              {creditUsedPct}%
-            </span>
-          </div>
-          <div className="text-xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            <CurrencyDisplay amount={creditLimit} />
-          </div>
+        <KpiCard
+          titleEn="Credit Limit Utilization"
+          titleBn="বাকি সীমা ব্যবহার"
+          value={creditLimit}
+          isCurrency
+          icon={ShieldCheck}
+          colorVariant={creditUsedPct > 90 ? 'danger' : creditUsedPct > 50 ? 'amber' : 'teal'}
+          subtitle={`${creditUsedPct}% limit used`}
+        >
           <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-1.5">
             <div
               className={`h-full transition-all rounded-full ${
                 creditUsedPct > 90 ? 'bg-rose-500' : creditUsedPct > 50 ? 'bg-amber-500' : 'bg-teal-500'
               }`}
-              style={{ width: `${creditUsedPct}%` }}
+              style={{ width: `${Math.min(100, Math.max(0, creditUsedPct))}%` }}
             />
           </div>
-        </Card>
-      </div>
+        </KpiCard>
+      </KpiGrid>
 
       {/* 5 ENTERPRISE DOMAIN TABS */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 overflow-x-auto">

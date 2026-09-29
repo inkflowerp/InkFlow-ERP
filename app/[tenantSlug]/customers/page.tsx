@@ -39,6 +39,7 @@ import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import { PaginationControls } from '@/components/shared/pagination-controls'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import {
@@ -783,68 +784,53 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* Summary KPI Cards - Executive Style with Top Gradient Accent Bars */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Summary KPI Cards */}
+      <KpiGrid columns={4}>
         {/* 1. Total Customers */}
-        <Card className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
-          <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            <span>{tBilingual('Total Customers', 'মোট গ্রাহক')}</span>
-            <Users className="h-4 w-4 text-blue-500 group-hover:scale-110 transition-transform" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
-            {summary.totalCustomers}
-          </div>
-          <p className="text-2xs text-slate-500 dark:text-slate-400 truncate mt-1">
-            {tBilingual('Registered business profiles', 'নিবন্ধিত অ্যাকাউন্ট')}
-          </p>
-        </Card>
+        <KpiCard
+          titleEn="Total Customers"
+          titleBn="মোট গ্রাহক"
+          value={summary.totalCustomers}
+          icon={Users}
+          colorVariant="blue"
+          subtitleEn="Registered business profiles"
+          subtitleBn="নিবন্ধিত অ্যাকাউন্ট"
+        />
 
         {/* 2. Active Customers */}
-        <Card className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-emerald-200/80 dark:border-emerald-900/40 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-800 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-          <div className="flex items-center justify-between text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-            <span>{tBilingual('Active Customers', 'সক্রিয় গ্রাহক')}</span>
-            <CheckCircle2 className="h-4 w-4 text-emerald-500 group-hover:scale-110 transition-transform" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1.5">
-            {summary.activeCustomers}
-          </div>
-          <p className="text-2xs text-emerald-700/80 dark:text-emerald-400/80 truncate mt-1">
-            {tBilingual('Operational accounts', 'চলমান হিসাব')}
-          </p>
-        </Card>
+        <KpiCard
+          titleEn="Active Customers"
+          titleBn="সক্রিয় গ্রাহক"
+          value={summary.activeCustomers}
+          icon={CheckCircle2}
+          colorVariant="emerald"
+          subtitleEn="Operational accounts"
+          subtitleBn="চলমান হিসাব"
+        />
 
         {/* 3. Customers With Due */}
-        <Card className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-amber-200/80 dark:border-amber-900/40 shadow-xs hover:border-amber-300 dark:hover:border-amber-800 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-          <div className="flex items-center justify-between text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-            <span>{tBilingual('Customers With Due', 'বকেয়া বিশিষ্ট গ্রাহক')}</span>
-            <AlertCircle className="h-4 w-4 text-amber-500 group-hover:scale-110 transition-transform" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1.5">
-            {summary.customersWithDue}
-          </div>
-          <p className="text-2xs text-amber-700/80 dark:text-amber-400/80 truncate mt-1">
-            {tBilingual('Outstanding receivables', 'পাওনা বাকি যুক্ত ক্লায়েন্ট')}
-          </p>
-        </Card>
+        <KpiCard
+          titleEn="Customers With Due"
+          titleBn="বকেয়া বিশিষ্ট গ্রাহক"
+          value={summary.customersWithDue}
+          icon={AlertCircle}
+          colorVariant="amber"
+          subtitleEn="Outstanding receivables"
+          subtitleBn="পাওনা বাকি যুক্ত ক্লায়েন্ট"
+        />
 
         {/* 4. Total Outstanding Due */}
-        <Card className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-rose-300/80 dark:border-rose-900/50 shadow-xs hover:border-rose-400 dark:hover:border-rose-800 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-          <div className="flex items-center justify-between text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">
-            <span>{tBilingual('Total Due Balance', 'মোট বকেয়া স্থিতি')}</span>
-            <TrendingUp className="h-4 w-4 text-rose-500 group-hover:scale-110 transition-transform" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1.5 truncate">
-            ৳{summary.totalOutstandingDue.toLocaleString('en-IN')}
-          </div>
-          <p className="text-2xs text-rose-700/80 dark:text-rose-400/80 truncate mt-1">
-            {tBilingual('Receivable across all accounts', 'সর্বমোট আদায়যোগ্য বকেয়া')}
-          </p>
-        </Card>
-      </div>
+        <KpiCard
+          titleEn="Total Due Balance"
+          titleBn="মোট বকেয়া স্থিতি"
+          value={summary.totalOutstandingDue}
+          isCurrency
+          icon={TrendingUp}
+          colorVariant="danger"
+          subtitleEn="Receivable across all accounts"
+          subtitleBn="সর্বমোট আদায়যোগ্য বকেয়া"
+        />
+      </KpiGrid>
 
       {/* Search & Filters Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-xs">

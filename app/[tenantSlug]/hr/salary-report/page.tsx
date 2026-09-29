@@ -38,6 +38,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { formatBDT, formatDate } from '@/lib/formatters'
 import type {
   EmployeeRecord,
@@ -348,47 +349,51 @@ export default function SalaryReportPage() {
       </Card>
 
       {/* Financial Executive Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="p-4 border-l-4 border-l-blue-500 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-2xl">
-          <div className="text-2xs font-semibold uppercase text-slate-500">{tBilingual('Gross Pay Budget', 'মোট বেতন বাজেট')}</div>
-          <div className="text-xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            {formatBDT(totalGross)}
-          </div>
-          <div className="text-2xs text-slate-400 mt-1 font-mono">
-            Includes {formatBDT(totalOtPaid)} overtime
-          </div>
-        </Card>
+      <KpiGrid columns={4}>
+        <KpiCard
+          titleEn="Gross Pay Budget"
+          titleBn="মোট বেতন বাজেট"
+          value={totalGross}
+          isCurrency
+          icon={FileSpreadsheet}
+          colorVariant="blue"
+          subtitleEn={`Includes ${formatBDT(totalOtPaid)} overtime`}
+          subtitleBn={`${formatBDT(totalOtPaid)} ওভারটাইম অন্তর্ভুক্ত`}
+        />
 
-        <Card className="p-4 border-l-4 border-l-purple-500 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-2xl">
-          <div className="text-2xs font-semibold uppercase text-purple-700 dark:text-purple-300">{tBilingual('Net Payable', 'নিট প্রদেয় বেতন')}</div>
-          <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1 font-mono">
-            {formatBDT(totalNet)}
-          </div>
-          <div className="text-2xs text-slate-400 mt-1 font-mono">
-            After {formatBDT(totalAdvancesDeducted)} advances deducted
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Net Payable"
+          titleBn="নিট প্রদেয় বেতন"
+          value={totalNet}
+          isCurrency
+          icon={TrendingUp}
+          colorVariant="purple"
+          subtitleEn={`After ${formatBDT(totalAdvancesDeducted)} advances`}
+          subtitleBn={`${formatBDT(totalAdvancesDeducted)} অগ্রিম কর্তনের পর`}
+        />
 
-        <Card className="p-4 border-l-4 border-l-emerald-500 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-2xl">
-          <div className="text-2xs font-semibold uppercase text-emerald-700 dark:text-emerald-300">{tBilingual('Total Disbursed', 'পরিশোধিত টাকা')}</div>
-          <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
-            {formatBDT(totalPaid)}
-          </div>
-          <div className="text-2xs text-emerald-600/90 dark:text-emerald-400/90 mt-1 font-mono">
-            {totalNet > 0 ? Math.round((totalPaid / totalNet) * 100) : 0}% cleared
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Total Disbursed"
+          titleBn="পরিশোধিত টাকা"
+          value={totalPaid}
+          isCurrency
+          icon={CheckCircle2}
+          colorVariant="emerald"
+          subtitleEn={`${totalNet > 0 ? Math.round((totalPaid / totalNet) * 100) : 0}% cleared`}
+          subtitleBn={`${totalNet > 0 ? Math.round((totalPaid / totalNet) * 100) : 0}% পরিশোধিত`}
+        />
 
-        <Card className="p-4 border-l-4 border-l-rose-500 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-2xl">
-          <div className="text-2xs font-semibold uppercase text-rose-700 dark:text-rose-300">{tBilingual('Pending Dues', 'বকেয়া পাওনা')}</div>
-          <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-1 font-mono">
-            {formatBDT(totalDue)}
-          </div>
-          <div className="text-2xs text-rose-600/90 dark:text-rose-400/90 mt-1 font-mono">
-            {filteredItems.filter((i) => (i.due_amount || 0) > 0).length} employees pending
-          </div>
-        </Card>
-      </div>
+        <KpiCard
+          titleEn="Pending Dues"
+          titleBn="বকেয়া পাওনা"
+          value={totalDue}
+          isCurrency
+          icon={CreditCard}
+          colorVariant="danger"
+          subtitleEn={`${filteredItems.filter((i) => (i.due_amount || 0) > 0).length} employees pending`}
+          subtitleBn={`${filteredItems.filter((i) => (i.due_amount || 0) > 0).length} জন কর্মীর বকেয়া`}
+        />
+      </KpiGrid>
 
       {/* Filter and Search Bar (Non-Print) */}
       <Card className="print:hidden p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-2xl">

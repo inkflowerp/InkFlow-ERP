@@ -38,9 +38,11 @@ import {
   FileSpreadsheet,
   Calendar,
   ShieldAlert,
+  DollarSign,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { exportToCsv } from '@/services/reports.service'
 
 export default function MultiBranchReportingPage() {
@@ -396,40 +398,40 @@ export default function MultiBranchReportingPage() {
 
           {activeTab === 'consolidated' && consolidatedData && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
-                  <span className="text-xs text-slate-400 font-semibold uppercase block">
-                    {tBilingual('Total Revenue', 'মোট বিক্রয়')}
-                  </span>
-                  <div className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">
-                    ৳{consolidatedData.kpis.revenue.toLocaleString('en-IN')}
-                  </div>
-                </div>
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl">
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold uppercase block">
-                    {tBilingual('Gross Profit', 'মোট লাভ')}
-                  </span>
-                  <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                    ৳{consolidatedData.kpis.gross_profit.toLocaleString('en-IN')}
-                  </div>
-                </div>
-                <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-xl">
-                  <span className="text-xs text-rose-600 dark:text-rose-400 font-semibold uppercase block">
-                    {tBilingual('Net Receivables (Due)', 'বাকি পাওনা')}
-                  </span>
-                  <div className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">
-                    ৳{consolidatedData.kpis.receivables.toLocaleString('en-IN')}
-                  </div>
-                </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl">
-                  <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase block">
-                    {tBilingual('Stock Valuation', 'স্টক মূল্যায়ন')}
-                  </span>
-                  <div className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">
-                    ৳{consolidatedData.kpis.inventory_value.toLocaleString('en-IN')}
-                  </div>
-                </div>
-              </div>
+              <KpiGrid columns={4}>
+                <KpiCard
+                  titleEn="Total Revenue"
+                  titleBn="মোট বিক্রয়"
+                  value={consolidatedData.kpis.revenue}
+                  isCurrency
+                  icon={DollarSign}
+                  colorVariant="primary"
+                />
+                <KpiCard
+                  titleEn="Gross Profit"
+                  titleBn="মোট লাভ"
+                  value={consolidatedData.kpis.gross_profit}
+                  isCurrency
+                  icon={TrendingUp}
+                  colorVariant="emerald"
+                />
+                <KpiCard
+                  titleEn="Net Receivables (Due)"
+                  titleBn="বাকি পাওনা"
+                  value={consolidatedData.kpis.receivables}
+                  isCurrency
+                  icon={FileText}
+                  colorVariant="rose"
+                />
+                <KpiCard
+                  titleEn="Stock Valuation"
+                  titleBn="স্টক মূল্যায়ন"
+                  value={consolidatedData.kpis.inventory_value}
+                  isCurrency
+                  icon={Layers}
+                  colorVariant="blue"
+                />
+              </KpiGrid>
 
               {comparisonData && <BranchComparisonView data={comparisonData} />}
             </div>

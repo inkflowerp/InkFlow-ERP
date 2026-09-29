@@ -37,6 +37,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
@@ -359,54 +360,45 @@ export default function TaxPage() {
           </div>
         </div>
 
-        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-1.5">
-            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-2xs font-semibold">
-              <span className="flex items-center gap-1.5">
-                <Building className="w-3.5 h-3.5 text-slate-400" />
-                <span>{tBilingual('1. Gross Taxable Turnover', '১. মোট করযোগ্য বিক্রয়')}</span>
-              </span>
-              <span className="font-mono text-2xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full font-bold">
-                {vatReturnSummary.invoiceCount} {tBilingual('invoices', 'চালান')}
-              </span>
-            </div>
-            <div className="font-black text-slate-900 dark:text-slate-100 text-lg font-mono">
-              {formatBDT(vatReturnSummary.grossTurnover)}
-            </div>
-            <div className="text-2xs text-slate-400">Total B2B & Retail Revenue</div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-800/60 space-y-1.5">
-            <div className="flex items-center justify-between text-blue-700 dark:text-blue-300 text-2xs font-semibold">
-              <span className="flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-blue-600" />
-                <span>{tBilingual('2. Output VAT', '২. প্রদেয় বিক্রয় মূসক')}</span>
-              </span>
-              <Badge variant="outline" className="text-2xs font-mono border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 bg-white dark:bg-slate-900">
-                Mushak 6.3
-              </Badge>
-            </div>
-            <div className="font-black text-blue-600 dark:text-blue-400 text-lg font-mono">
-              +{formatBDT(vatReturnSummary.outputVat)}
-            </div>
-            <div className="text-2xs text-blue-600/80 dark:text-blue-400/80">Collected from buyers</div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-800/60 space-y-1.5">
-            <div className="flex items-center justify-between text-purple-700 dark:text-purple-300 text-2xs font-semibold">
-              <span className="flex items-center gap-1.5">
-                <Scale className="w-3.5 h-3.5 text-purple-600" />
-                <span>{tBilingual('3. Input VAT Rebate', '৩. অনুমোদিত রেয়াত')}</span>
-              </span>
-              <span className="font-mono text-2xs bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-bold">
-                {vatReturnSummary.purchaseCount} {tBilingual('bills', 'বিল')}
-              </span>
-            </div>
-            <div className="font-black text-purple-600 dark:text-purple-400 text-lg font-mono">
-              -{formatBDT(vatReturnSummary.inputVat)}
-            </div>
-            <div className="text-2xs text-purple-600/80 dark:text-purple-400/80">Paid on raw material procurement</div>
-          </div>
+        <div className="p-5">
+          <KpiGrid columns={3}>
+            <KpiCard
+              titleEn="1. Gross Taxable Turnover"
+              titleBn="১. মোট করযোগ্য বিক্রয়"
+              value={vatReturnSummary.grossTurnover}
+              isCurrency={true}
+              icon={Building}
+              colorVariant="slate"
+              badge={`${vatReturnSummary.invoiceCount} ${tBilingual('invoices', 'চালান')}`}
+              badgeColor="slate"
+              subtitleEn="Total B2B & Retail Revenue"
+              subtitleBn="মোট বাণিজ্যিক ও খুচরা রাজস্ব"
+            />
+            <KpiCard
+              titleEn="2. Output VAT"
+              titleBn="২. প্রদেয় বিক্রয় মূসক"
+              value={vatReturnSummary.outputVat}
+              isCurrency={true}
+              icon={FileText}
+              colorVariant="blue"
+              badge="Mushak 6.3"
+              badgeColor="blue"
+              subtitleEn="Collected from buyers"
+              subtitleBn="ক্রেতাদের কাছ থেকে সংগৃহীত"
+            />
+            <KpiCard
+              titleEn="3. Input VAT Rebate"
+              titleBn="৩. অনুমোদিত রেয়াত"
+              value={vatReturnSummary.inputVat}
+              isCurrency={true}
+              icon={Scale}
+              colorVariant="purple"
+              badge={`${vatReturnSummary.purchaseCount} ${tBilingual('bills', 'বিল')}`}
+              badgeColor="purple"
+              subtitleEn="Paid on raw material procurement"
+              subtitleBn="কাঁচামাল ক্রয়ের উপর প্রদেয় ভ্যাট"
+            />
+          </KpiGrid>
         </div>
       </div>
 

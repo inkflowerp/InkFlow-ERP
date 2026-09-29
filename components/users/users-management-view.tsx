@@ -48,6 +48,7 @@ import {
 import { getEmployeesAction } from '@/actions/workforce.actions'
 import type { EmployeeRecord } from '@/types/workforce.types'
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -534,18 +535,18 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
       )}
 
       {/* Security Posture & Quota Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+      <KpiGrid columns={5}>
         {/* Total Users & Plan Quota */}
-        <div className="p-3.5 rounded-2xl border bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>Seat Utilization</span>
-            <Users className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-          </div>
-          <div className="text-lg font-bold text-slate-900 dark:text-white flex items-baseline gap-1.5">
-            <span>{users.length}</span>
-            <span className="text-xs font-normal text-slate-500">/ {currentPlan.max_users} Seats</span>
-          </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+        <KpiCard
+          titleEn="Seat Utilization"
+          titleBn="সিট ব্যবহার"
+          value={`${users.length} / ${currentPlan.max_users}`}
+          unitEn="Seats"
+          unitBn="সিট"
+          icon={Users}
+          colorVariant="sky"
+        >
+          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
             <div
               className={cn(
                 'h-full rounded-full transition-all',
@@ -554,48 +555,52 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               style={{ width: `${Math.min(100, (users.length / (currentPlan.max_users || 1)) * 100)}%` }}
             />
           </div>
-        </div>
+        </KpiCard>
 
         {/* Active Staff */}
-        <div className="p-3.5 rounded-2xl border bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>Active Members</span>
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{securityPosture.activeCount}</div>
-          <div className="text-2xs text-slate-500">{securityPosture.invitedCount} pending invites</div>
-        </div>
+        <KpiCard
+          titleEn="Active Members"
+          titleBn="সক্রিয় সদস্য"
+          value={securityPosture.activeCount}
+          icon={CheckCircle2}
+          colorVariant="emerald"
+          subtitleEn={`${securityPosture.invitedCount} pending invites`}
+          subtitleBn={`${securityPosture.invitedCount}টি পেন্ডিং ইনভাইট`}
+        />
 
         {/* Privileged Accounts */}
-        <div className="p-3.5 rounded-2xl border bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>Super Owners</span>
-            <Crown className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-          </div>
-          <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{securityPosture.privilegedUsersCount}</div>
-          <div className="text-2xs text-slate-500">Protected root clearance</div>
-        </div>
+        <KpiCard
+          titleEn="Super Owners"
+          titleBn="সুপার ওনার"
+          value={securityPosture.privilegedUsersCount}
+          icon={Crown}
+          colorVariant="amber"
+          subtitleEn="Protected root clearance"
+          subtitleBn="রুট এক্সেস সুরক্ষিত"
+        />
 
         {/* Custom Roles */}
-        <div className="p-3.5 rounded-2xl border bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>Role Templates</span>
-            <Sliders className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-          </div>
-          <div className="text-lg font-bold text-slate-900 dark:text-white">{roles.length}</div>
-          <div className="text-2xs text-purple-600 dark:text-purple-400">{securityPosture.customRolesCount} custom created</div>
-        </div>
+        <KpiCard
+          titleEn="Role Templates"
+          titleBn="রোল টেমপ্লেট"
+          value={roles.length}
+          icon={Sliders}
+          colorVariant="purple"
+          subtitleEn={`${securityPosture.customRolesCount} custom created`}
+          subtitleBn={`${securityPosture.customRolesCount}টি কাস্টম রোল`}
+        />
 
         {/* Branches */}
-        <div className="hidden lg:block p-3.5 rounded-2xl border bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>Branch Coverage</span>
-            <Building className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <div className="text-lg font-bold text-slate-900 dark:text-white">{branches.length}</div>
-          <div className="text-2xs text-slate-500">Authorized locations</div>
-        </div>
-      </div>
+        <KpiCard
+          titleEn="Branch Coverage"
+          titleBn="ব্রাঞ্চ কভারেজ"
+          value={branches.length}
+          icon={Building}
+          colorVariant="indigo"
+          subtitleEn="Authorized locations"
+          subtitleBn="অনুমোদিত লোকেশন"
+        />
+      </KpiGrid>
 
       {/* Control Center Navigation Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto scrollbar-thin">

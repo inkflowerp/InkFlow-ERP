@@ -31,6 +31,7 @@ import {
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { PageHeader } from '@/components/shared/page-header'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -543,75 +544,49 @@ export default function AttendanceSettingsPage() {
       )}
 
       {/* KPI Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-indigo-400/50 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              {tBilingual('Total Locations', 'মোট লোকেশন')}
-            </span>
-            <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-              <MapPin className="h-4 w-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-slate-900 dark:text-white font-mono mt-2">
-            {isLoading ? '...' : locations.length}
-          </p>
-          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
-            <span>{tBilingual('Configured Sites', 'নির্ধারিত সাইট')}</span>
-          </div>
-        </div>
+      <KpiGrid columns={4}>
+        <KpiCard
+          titleEn="Total Locations"
+          titleBn="মোট লোকেশন"
+          value={isLoading ? '...' : locations.length}
+          icon={MapPin}
+          colorVariant="slate"
+          subtitleEn="Configured Sites"
+          subtitleBn="নির্ধারিত সাইট"
+        />
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-emerald-400/50 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-              {tBilingual('Active Geofences', 'সক্রিয় জিওফেন্স')}
-            </span>
-            <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-              <Radio className="h-4 w-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-300 font-mono mt-2">
-            {isLoading ? '...' : activeLocationsCount}
-          </p>
-          <div className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 mt-1">
-            <span>{tBilingual('Enforcing GPS Bounds', 'জিপিএস বলয় সক্রিয়')}</span>
-          </div>
-        </div>
+        <KpiCard
+          titleEn="Active Geofences"
+          titleBn="সক্রিয় জিওফেন্স"
+          value={isLoading ? '...' : activeLocationsCount}
+          icon={Radio}
+          colorVariant="emerald"
+          subtitleEn="Enforcing GPS Bounds"
+          subtitleBn="জিপিএস বলয় সক্রিয়"
+        />
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-indigo-400/50 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-              {tBilingual('Rotatable QR Tokens', 'রোটেট কিউআর টোকেন')}
-            </span>
-            <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
-              <QrCode className="h-4 w-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-indigo-600 dark:text-indigo-300 font-mono mt-2">
-            {isLoading ? '...' : activeQrCount}
-          </p>
-          <div className="text-2xs text-indigo-600/80 dark:text-indigo-400/80 mt-1">
-            <span>{tBilingual('Live Cryptographic Terminals', 'লাইভ সিকিউর টার্মিনাল')}</span>
-          </div>
-        </div>
+        <KpiCard
+          titleEn="Rotatable QR Tokens"
+          titleBn="রোটেট কিউআর টোকেন"
+          value={isLoading ? '...' : activeQrCount}
+          icon={QrCode}
+          colorVariant="indigo"
+          subtitleEn="Live Cryptographic Terminals"
+          subtitleBn="লাইভ সিকিউর টার্মিনাল"
+        />
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-amber-400/50 transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-              {tBilingual('Corrections Inbox', 'সংশোধন আবেদন')}
-            </span>
-            <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-              <Clock className="h-4 w-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-amber-600 dark:text-amber-300 font-mono mt-2">
-            {isLoading ? '...' : pendingCorrectionsCount}
-          </p>
-          <div className="text-2xs text-amber-600/80 dark:text-amber-400/80 mt-1">
-            <span>{pendingCorrectionsCount > 0 ? tBilingual('Awaiting Review', 'অনুমোদনের অপেক্ষায়') : tBilingual('All Clear', 'সব অনুমোদিত')}</span>
-          </div>
-        </div>
-      </div>
+        <KpiCard
+          titleEn="Corrections Inbox"
+          titleBn="সংশোধন আবেদন"
+          value={isLoading ? '...' : pendingCorrectionsCount}
+          icon={Clock}
+          colorVariant="amber"
+          subtitleEn={pendingCorrectionsCount > 0 ? 'Awaiting Review' : 'All Clear'}
+          subtitleBn={pendingCorrectionsCount > 0 ? 'অনুমোদনের অপেক্ষায়' : 'সব অনুমোদিত'}
+          badge={pendingCorrectionsCount > 0 ? 'Pending' : 'Clear'}
+          badgeColor={pendingCorrectionsCount > 0 ? 'amber' : 'emerald'}
+        />
+      </KpiGrid>
 
       {/* Navigation Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 pb-px overflow-x-auto scrollbar-none">
