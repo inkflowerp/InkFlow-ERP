@@ -87,15 +87,15 @@ export interface ItemReceiveRow {
   unit_cost: number // Inward purchase rate from PO
   previous_cost: number
   previous_selling_price: number
-  new_selling_price: number
+  new_selling_price: number | string
   target_margin_percent: number
   update_master_pricing: boolean
   quantity_ordered: number
   quantity_received: number
   quantity_remaining: number
-  accepted_quantity: number
-  rejected_quantity: number
-  damaged_quantity: number
+  accepted_quantity: number | string
+  rejected_quantity: number | string
+  damaged_quantity: number | string
   batch_lot_number: string
   roll_width_ft?: number
   roll_length_ft?: number
@@ -354,8 +354,36 @@ export function ReceiveStockModal({
   const { tBilingual } = useI18n()
 
   // Mode selection: 'po' (Purchase Order GRN), 'direct' (Direct Spot Purchase), or 'opening' (Opening Balance)
-  const [mode, setMode] = useState<'po' | 'direct' | 'opening'>('direct')
-  const [selectedPoId, setSelectedPoId] = useState<string>('')
+  const [mode, setMode] = useState<'po' | 'direct' | 'opening'>(purchaseOrder ? 'po' : 'direct')
+  const [selectedPoId, setSelectedPoId] = useState<string>(purchaseOrder?.id || '')
+  const [internalOrders, setInternalOrders] = useState<PurchaseOrderRecord[]>(orders)
+
+  useEffect(() => {
+    if (orders && orders.length > 0) {
+      setInternalOrders(orders)
+    } else if (open) {
+      const stored = PrintERPDataStore.getAll<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, companyId) || []
+      if (stored.length > 0) {
+        setInternalOrders(stored)
+      }
+    }
+  }, [orders, open, companyId])
+
+  const availableOrders = useMemo(() => {
+    const list = [...(internalOrders || [])]
+    if (purchaseOrder && !list.some((o) => o.id === purchaseOrder.id)) {
+      list.unshift(purchaseOrder)
+    }
+    return list
+  }, [internalOrders, purchaseOrder])
+
+  const receivableOrders = useMemo(() => {
+    return availableOrders.filter((o) =>
+      (o.status !== 'received' && o.status !== 'cancelled') ||
+      o.id === selectedPoId ||
+      o.id === purchaseOrder?.id
+    )
+  }, [availableOrders, selectedPoId, purchaseOrder])
 
   // Catalog materials & products state
   const [catalogMaterials, setCatalogMaterials] = useState<MaterialRecord[]>(materials)
@@ -375,6 +403,18 @@ export function ReceiveStockModal({
 
   // Common Header & Logistics
   const [locationId, setLocationId] = useState<string>(locations[0]?.id || '')
+
+  useEffect(() => {
+    if (locations.length > 0 && (!locationId || !locations.some((l) => l.id === locationId))) {
+      const defaultLoc =
+        locations.find((l) => l.location_type === 'raw_material_store' || l.location_type === 'main_store') ||
+        locations[0]
+      if (defaultLoc) setLocationId(defaultLoc.id)
+    } else if (!locationId && locations.length === 0) {
+      setLocationId('main-store')
+    }
+  }, [locations, locationId])
+
   const [receivedDate, setReceivedDate] = useState<string>(() => new Date().toISOString().split('T')[0])
   const [challanNumber, setChallanNumber] = useState('')
   const [supplierDeliveryNote, setSupplierDeliveryNote] = useState('')
@@ -919,7 +959,17 @@ export function ReceiveStockModal({
         ? prevSell
         : (targetMargin < 90 && targetMargin > 0 ? Math.ceil(currentUnitCost / (1 - targetMargin / 100)) : Math.round(currentUnitCost * 1.4))
 
-      const rem = Number(item.quantity_remaining ?? Math.max(0, item.quantity_ordered - item.quantity_received))
+      const qtyOrdered = Number(item.quantity_ordered) || 0
+      const qtyReceived = Number(item.quantity_received) || 0
+      let rem = item.quantity_remaining !== undefined && item.quantity_remaining !== null
+        ? Number(item.quantity_remaining)
+        : Math.max(0, qtyOrdered - qtyReceived)
+      if (isNaN(rem)) {
+        rem = Math.max(0, qtyOrdered - qtyReceived)
+      }
+      if (rem <= 0 && qtyReceived === 0 && qtyOrdered > 0) {
+        rem = qtyOrdered
+      }
 
       let resolvedWidth = Number((item as any).roll_width_ft || (match as any)?.roll_width_ft || 0)
       if (!resolvedWidth) {
@@ -943,13 +993,13 @@ export function ReceiveStockModal({
         new_selling_price: suggestedSell,
         target_margin_percent: targetMargin,
         update_master_pricing: true,
-        quantity_ordered: Number(item.quantity_ordered),
-        quantity_received: Number(item.quantity_received),
+        quantity_ordered: qtyOrdered,
+        quantity_received: qtyReceived,
         quantity_remaining: rem,
         accepted_quantity: rem,
         rejected_quantity: 0,
         damaged_quantity: 0,
-        batch_lot_number: '',
+        batch_lot_number: (item as any).batch_lot_number || '',
         roll_width_ft: resolvedWidth || (match as any)?.roll_width_ft || undefined,
         roll_length_ft: resolvedLength || (match as any)?.roll_length_ft || undefined,
       }
@@ -968,26 +1018,28 @@ export function ReceiveStockModal({
         const defaultLoc =
           locations.find((l) => l.location_type === 'raw_material_store' || l.location_type === 'main_store') ||
           locations[0]
-        setLocationId(defaultLoc.id)
+        if (defaultLoc) setLocationId(defaultLoc.id)
+      } else if (!locationId && locations.length === 0) {
+        setLocationId('main-store')
       }
 
-      const initialPo = purchaseOrder || orders.find((o) => o.id === selectedPoId)
+      const initialPo = purchaseOrder || availableOrders.find((o) => o.id === selectedPoId)
       if (initialPo) {
         setMode('po')
         setSelectedPoId(initialPo.id)
         populatePoRows(initialPo)
-      } else if (orders.length > 0 && mode === 'po' && !selectedPoId) {
+      } else if (availableOrders.length > 0 && mode === 'po' && !selectedPoId) {
         const firstReceivable =
-          orders.find((o) => o.status === 'issued' || o.status === 'partially_received') || orders[0]
+          availableOrders.find((o) => o.status === 'issued' || o.status === 'partially_received') || availableOrders[0]
         if (firstReceivable) {
           setSelectedPoId(firstReceivable.id)
           populatePoRows(firstReceivable)
         }
-      } else {
+      } else if (mode !== 'po') {
         setDirectItems([createInitialDirectRow(selectedMaterialId)])
       }
     }
-  }, [open, purchaseOrder, selectedMaterialId, companyId, unifiedCatalog.length])
+  }, [open, purchaseOrder, selectedMaterialId, companyId])
 
   // Dynamic live sync: update active directItems rows whenever catalog configuration or pricing changes
   useEffect(() => {
@@ -1069,7 +1121,7 @@ export function ReceiveStockModal({
 
   const handlePoChange = (poId: string) => {
     setSelectedPoId(poId)
-    const foundPo = orders.find((o) => o.id === poId)
+    const foundPo = availableOrders.find((o) => o.id === poId)
     if (foundPo) {
       populatePoRows(foundPo)
     } else {
@@ -1108,7 +1160,7 @@ export function ReceiveStockModal({
     setPoReceiveRows((prev) =>
       prev.map((row) => ({
         ...row,
-        accepted_quantity: row.quantity_remaining,
+        accepted_quantity: Number(row.quantity_remaining) || 0,
         rejected_quantity: 0,
         damaged_quantity: 0,
       }))
@@ -1119,9 +1171,9 @@ export function ReceiveStockModal({
     setPoReceiveRows((prev) =>
       prev.map((row) => ({
         ...row,
-        accepted_quantity: 0,
-        rejected_quantity: 0,
-        damaged_quantity: 0,
+        accepted_quantity: '',
+        rejected_quantity: '',
+        damaged_quantity: '',
       }))
     )
   }
@@ -1462,7 +1514,7 @@ export function ReceiveStockModal({
     setDirectItems((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const currentPo = orders.find((o) => o.id === selectedPoId) || purchaseOrder
+  const currentPo = availableOrders.find((o) => o.id === selectedPoId) || purchaseOrder
 
   // Valuation Calculations
   const poTotalAcceptedValuation = useMemo(() => {
@@ -1475,9 +1527,9 @@ export function ReceiveStockModal({
 
   const totalItemsCount = useMemo(() => {
     if (mode === 'po') {
-      return poReceiveRows.filter((r) => r.accepted_quantity > 0).length
+      return poReceiveRows.filter((r) => (Number(r.accepted_quantity) || 0) > 0).length
     }
-    return directItems.filter((r) => r.quantity > 0).length
+    return directItems.filter((r) => (Number(r.quantity) || 0) > 0).length
   }, [mode, poReceiveRows, directItems])
 
   // SUBMIT HANDLER
@@ -1500,16 +1552,26 @@ export function ReceiveStockModal({
       }
 
       const effectivePoId = currentPo?.id || selectedPoId
-      const itemsToReceive = poReceiveRows.filter((r) => r.accepted_quantity > 0 || r.rejected_quantity > 0 || r.damaged_quantity > 0)
+      const itemsToReceive = poReceiveRows
+        .map((r) => ({
+          ...r,
+          accepted_quantity: Number(r.accepted_quantity) || 0,
+          rejected_quantity: Number(r.rejected_quantity) || 0,
+          damaged_quantity: Number(r.damaged_quantity) || 0,
+          unit_cost: Number(r.unit_cost) || 0,
+          new_selling_price: Number(r.new_selling_price) || 0,
+          target_margin_percent: Number(r.target_margin_percent) || 0,
+        }))
+        .filter((r) => r.accepted_quantity > 0 || r.rejected_quantity > 0 || r.damaged_quantity > 0)
 
       if (itemsToReceive.length === 0) {
         setError('Please specify an accepted or inspected quantity for at least one item.')
         return
       }
 
-      // Over-receipt client check
+      // Over-receipt client check: warn if exceeds double remaining balance
       for (const item of itemsToReceive) {
-        if (item.accepted_quantity > item.quantity_remaining) {
+        if (item.quantity_remaining > 0 && item.accepted_quantity > item.quantity_remaining * 2) {
           setError(
             `Accepted quantity (${item.accepted_quantity}) for ${item.material_name} exceeds remaining ordered balance (${item.quantity_remaining}).`
           )
@@ -1746,10 +1808,10 @@ export function ReceiveStockModal({
     setVehicleNumber('')
     setCarrierName('')
     setNotes('')
+    setPoReceiveRows([])
+    setSelectedPoId('')
     setDirectItems([createInitialDirectRow()])
   }
-
-  const receivableOrders = orders.filter((o) => o.status !== 'received' && o.status !== 'cancelled')
 
   return (
     <ModalDialog
@@ -1852,7 +1914,17 @@ export function ReceiveStockModal({
         <div className="grid grid-cols-3 gap-2 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
           <button
             type="button"
-            onClick={() => setMode('po')}
+            onClick={() => {
+              setMode('po')
+              setError(null)
+              if (poReceiveRows.length === 0) {
+                const targetPo = purchaseOrder || availableOrders.find((o) => o.id === selectedPoId) || receivableOrders[0]
+                if (targetPo) {
+                  setSelectedPoId(targetPo.id)
+                  populatePoRows(targetPo)
+                }
+              }
+            }}
             className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
               mode === 'po'
@@ -1908,7 +1980,7 @@ export function ReceiveStockModal({
                 {tBilingual('Target Warehouse / Store', 'গন্তব্য গোডাউন')} <span className="text-rose-500">*</span>
               </Label>
               <select
-                value={locationId}
+                value={locationId || (locations[0]?.id || 'main-store')}
                 onChange={(e) => setLocationId(e.target.value)}
                 className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
                 required
@@ -2117,15 +2189,20 @@ export function ReceiveStockModal({
                         {/* Inspection inputs */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                           <div>
-                            <Label className="text-2xs text-slate-500 mb-0.5 block">Accepted Qty ({row.unit})</Label>
+                            <div className="flex items-center justify-between mb-0.5">
+                              <Label className="text-2xs text-slate-500 block">Accepted Qty ({row.unit})</Label>
+                              {row.quantity_remaining > 0 && Number(row.accepted_quantity || 0) > row.quantity_remaining && (
+                                <span className="text-3xs font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1 rounded">Over-receipt</span>
+                              )}
+                            </div>
                             <Input
                               type="number"
                               step="any"
                               min="0"
-                              max={row.quantity_remaining}
-                              value={row.accepted_quantity}
-                              onChange={(e) => handlePoRowChange(idx, 'accepted_quantity', Number(e.target.value))}
+                              value={row.accepted_quantity ?? ''}
+                              onChange={(e) => handlePoRowChange(idx, 'accepted_quantity', e.target.value)}
                               className="h-8 text-xs tabular-nums font-bold border-emerald-300 dark:border-emerald-700"
+                              placeholder={String(row.quantity_remaining || 0)}
                             />
                           </div>
                           <div>
@@ -2134,8 +2211,8 @@ export function ReceiveStockModal({
                               type="number"
                               step="any"
                               min="0"
-                              value={row.rejected_quantity}
-                              onChange={(e) => handlePoRowChange(idx, 'rejected_quantity', Number(e.target.value))}
+                              value={row.rejected_quantity ?? ''}
+                              onChange={(e) => handlePoRowChange(idx, 'rejected_quantity', e.target.value)}
                               className="h-8 text-xs tabular-nums text-rose-600"
                               placeholder="0"
                             />
@@ -2144,7 +2221,7 @@ export function ReceiveStockModal({
                             <Label className="text-2xs text-slate-500 mb-0.5 block">Batch / Roll Lot #</Label>
                             <Input
                               placeholder="e.g. Lot-108"
-                              value={row.batch_lot_number}
+                              value={row.batch_lot_number || ''}
                               onChange={(e) => handlePoRowChange(idx, 'batch_lot_number', e.target.value)}
                               className="h-8 text-xs tabular-nums"
                             />
@@ -2219,8 +2296,8 @@ export function ReceiveStockModal({
                                   type="number"
                                   step="any"
                                   min="0"
-                                  value={row.new_selling_price}
-                                  onChange={(e) => handlePoRowChange(idx, 'new_selling_price', Number(e.target.value))}
+                                  value={row.new_selling_price ?? ''}
+                                  onChange={(e) => handlePoRowChange(idx, 'new_selling_price', e.target.value)}
                                   className="h-7 text-xs tabular-nums font-bold w-24"
                                 />
                                 <Badge variant="secondary" className="text-2xs px-1.5 py-0 tabular-nums">
@@ -2534,8 +2611,9 @@ export function ReceiveStockModal({
                           type="number"
                           step="any"
                           min="0.01"
-                          value={item.quantity}
-                          onChange={(e) => handleDirectItemChange(idx, 'quantity', Number(e.target.value))}
+                          value={item.quantity === 0 ? '' : item.quantity}
+                          onChange={(e) => handleDirectItemChange(idx, 'quantity', e.target.value === '' ? 0 : Number(e.target.value))}
+                          placeholder="1"
                           className="h-9 text-xs font-bold tabular-nums border-emerald-300 dark:border-emerald-700"
                           required
                         />
@@ -2565,8 +2643,9 @@ export function ReceiveStockModal({
                           type="number"
                           step="any"
                           min="0"
-                          value={item.unit_cost}
-                          onChange={(e) => handleDirectItemChange(idx, 'unit_cost', Number(e.target.value))}
+                          value={item.unit_cost === 0 ? '' : item.unit_cost}
+                          onChange={(e) => handleDirectItemChange(idx, 'unit_cost', e.target.value === '' ? 0 : Number(e.target.value))}
+                          placeholder="0.00"
                           className="h-9 text-xs font-bold tabular-nums bg-white dark:bg-slate-900 border-emerald-300 dark:border-emerald-700"
                           required
                         />

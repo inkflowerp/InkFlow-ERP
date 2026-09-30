@@ -614,11 +614,11 @@ export default function PurchaseOrderDetailPage() {
               <Input
                 id="rcvQty"
                 type="number"
-                min="0.1"
-                step="0.1"
-                max={primaryItem?.quantity_remaining || 100}
-                value={receivingQty}
-                onChange={(e) => setReceivingQty(Number(e.target.value))}
+                min="0.01"
+                step="any"
+                value={receivingQty === 0 ? '' : receivingQty}
+                onChange={(e) => setReceivingQty(e.target.value === '' ? 0 : Number(e.target.value))}
+                placeholder={String(primaryItem?.quantity_remaining || 0)}
                 required
               />
             </div>
