@@ -1965,102 +1965,6 @@ export function ReceiveStockModal({
           </button>
         </div>
 
-        {/* LOGISTICS & WAREHOUSE LOCATION (COMMON BAR - Only for PO Receiving & Opening) */}
-        {mode !== 'direct' && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center gap-2">
-              <Building className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                {tBilingual('Destination Store & Challan Documentation', 'গন্তব্য গোডাউন ও চালান তথ্য')}
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Target Warehouse / Store', 'গন্তব্য গোডাউন')} <span className="text-rose-500">*</span>
-                </Label>
-                <select
-                  value={locationId || (locations[0]?.id || 'main-store')}
-                  onChange={(e) => setLocationId(e.target.value)}
-                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
-                  required
-                >
-                  {locations.length > 0 ? (
-                    locations.map((loc) => (
-                      <option key={loc.id} value={loc.id}>
-                        {loc.location_name} {loc.location_code ? `(${loc.location_code})` : ''}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="main-store">Main Raw Material Store</option>
-                  )}
-                </select>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Intake / Received Date', 'গ্রহণের তারিখ')} <span className="text-rose-500">*</span>
-                </Label>
-                <Input
-                  type="date"
-                  value={receivedDate}
-                  onChange={(e) => setReceivedDate(e.target.value)}
-                  className="text-xs h-9"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Delivery Challan / Gate Pass #', 'চালান / গেট পাস নং')}
-                </Label>
-                <Input
-                  placeholder="e.g. CH-2026-9012"
-                  value={challanNumber}
-                  onChange={(e) => setChallanNumber(e.target.value)}
-                  className="text-xs h-9 tabular-nums"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Supplier Bill / Tax Invoice #', 'সাপ্লায়ার ইনভয়েস নং')}
-                </Label>
-                <Input
-                  placeholder="e.g. INV-8812 / Mushak 6.3"
-                  value={supplierInvoiceNumber}
-                  onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
-                  className="text-xs h-9 tabular-nums"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Transport Vehicle / Truck #', 'গাড়ি / ট্রাক নং')}
-                </Label>
-                <Input
-                  placeholder="e.g. Dhaka Metro-Ta 11-2041"
-                  value={vehicleNumber}
-                  onChange={(e) => setVehicleNumber(e.target.value)}
-                  className="text-xs h-9 tabular-nums"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Transport / Courier Name', 'কুরিয়ার / ট্রান্সপোর্ট')}
-                </Label>
-                <Input
-                  placeholder="e.g. Sundarban Courier / SA Paribahan"
-                  value={carrierName}
-                  onChange={(e) => setCarrierName(e.target.value)}
-                  className="text-xs h-9"
-                />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* ========================================================================= */}
         {/* MODE 1: PO RECEIVING (GRN) */}
@@ -2101,23 +2005,37 @@ export function ReceiveStockModal({
               )}
             </div>
 
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Inward Purchase Order (PO)', 'ক্রয় আদেশ')} <span className="text-rose-500">*</span>
-              </Label>
-              <select
-                value={selectedPoId || currentPo?.id || ''}
-                onChange={(e) => handlePoChange(e.target.value)}
-                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
-                required
-              >
-                <option value="">-- Choose Inward Purchase Order --</option>
-                {receivableOrders.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.po_number} — {o.supplier_name} ({o.status.replace('_', ' ')}) — Grand Total: {formatBDT(o.grand_total)}
-                  </option>
-                ))}
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="sm:col-span-1">
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Intake / Received Date', 'গ্রহণের তারিখ')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="date"
+                  value={receivedDate}
+                  onChange={(e) => setReceivedDate(e.target.value)}
+                  className="w-full text-xs h-10"
+                  required
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Inward Purchase Order (PO)', 'ক্রয় আদেশ')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={selectedPoId || currentPo?.id || ''}
+                  onChange={(e) => handlePoChange(e.target.value)}
+                  className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  required
+                >
+                  <option value="">-- Choose Inward Purchase Order --</option>
+                  {receivableOrders.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.po_number} — {o.supplier_name} ({o.status.replace('_', ' ')}) — Grand Total: {formatBDT(o.grand_total)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* PO Intel Banner */}
@@ -2404,6 +2322,22 @@ export function ReceiveStockModal({
                     className="text-xs h-9"
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Opening Stock Date (Opening Mode only) */}
+            {mode === 'opening' && (
+              <div className="max-w-xs pb-3 border-b border-slate-100 dark:border-slate-800">
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Opening Balance Date', 'প্রারম্ভিক ব্যালেন্সের তারিখ')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="date"
+                  value={receivedDate}
+                  onChange={(e) => setReceivedDate(e.target.value)}
+                  className="text-xs h-9"
+                  required
+                />
               </div>
             )}
 
