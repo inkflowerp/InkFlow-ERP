@@ -1,11 +1,8 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import {
-  Disc,
   Layers,
-  Printer,
-  Cpu,
   User,
   Plus,
   Minus,
@@ -13,12 +10,13 @@ import {
   AlertTriangle,
   Barcode,
   Sparkles,
-  Building,
   Tag,
-  Clock,
-  HelpCircle,
   Package,
   ArrowRight,
+  Trash2,
+  Calendar,
+  Warehouse,
+  FileText,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
@@ -36,7 +34,10 @@ import {
 } from '@/types/inventory.types'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
-import { issueMasterRollsBatchAction } from '@/actions/inventory.actions'
+import {
+  issueMasterRollsBatchAction,
+  issueMultipleMaterialsBatchAction,
+} from '@/actions/inventory.actions'
 import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
@@ -54,20 +55,22 @@ export interface IssueMasterRollModalProps {
   request?: MaterialRequestRecord | null
   requests?: MaterialRequestRecord[]
   rolls?: InventoryRollRecord[]
-  onSuccess?: (result?: IssueMasterRollResult) => void
+  onSuccess?: (result?: IssueMasterRollResult | any) => void
   companyId?: string
 }
 
-const DEFAULT_PRODUCTION_MACHINES = [
-  { id: 'roland', name: 'Roland Eco-Solvent Press (64")' },
-  { id: 'flora', name: 'Flora Large Format Flex Press (10.5ft)' },
-  { id: 'mimaki', name: 'Mimaki UV Flatbed 2513' },
-  { id: 'hp', name: 'HP Latex 570 (64")' },
-  { id: 'laser', name: 'Laser Cutting & Engraving Bay' },
-  { id: 'cnc', name: 'CNC Router Workstation' },
-  { id: 'screen', name: 'Screen Print Table' },
-  { id: 'finishing', name: 'Finishing & Eyelet Workstation' },
-]
+export interface IssueItemRow {
+  id: string
+  materialId: string
+  selectedSizeKey: string
+  widthFt?: number
+  lengthFt?: number
+  quantity: number
+  lotNumber?: string
+  customRollTag?: string
+  notes?: string
+  showTagDetails?: boolean
+}
 
 export function formatUnitPlural(count: number, unit: string): string {
   if (!unit) return ''
@@ -94,6 +97,253 @@ export function formatUnitPlural(count: number, unit: string): string {
   return `${unit}s`
 }
 
+export interface ConfiguredOptionItem {
+  key: string
+  label: string
+  width_ft: number
+  length_ft: number
+  allowance_ft: number
+  purchase_price: number
+  gsm: number
+  finishing: string
+  roll_count: number
+  total_sft: number
+  unit_cost: number
+  stock_display: string
+  option_display: string
+}
+
+function getMaterialConfiguredOptions(
+  material: MaterialRecord | null,
+  rolls: InventoryRollRecord[]
+): ConfiguredOptionItem[] {
+  if (!material) return []
+  const bd = getMaterialWarehouseStockBreakdown(material, rolls)
+  const list: ConfiguredOptionItem[] = []
+
+  const baseCost = Number(
+    material.average_cost ||
+    material.last_purchase_price ||
+    material.cost_per_unit ||
+    0
+  )
+
+  if (bd.is_roll) {
+    if (bd.roll_items && bd.roll_items.length > 0) {
+      for (const item of bd.roll_items) {
+        const w = Number(item.width_ft || 0)
+        const l = Number(item.length_ft || 0)
+        const singleArea = Math.round(w * l * 100) / 100
+        const area = Number(item.total_sft || (singleArea * (item.roll_count || 0)))
+        const price = Number(item.purchase_price ?? baseCost)
+        const stockDisp = `${item.roll_count} ${item.roll_count === 1 ? 'Roll' : 'Rolls'} (${area.toLocaleString()} SFT)`
+        const optDisp = `${w}ft × ${l}ft (${singleArea} SFT/Roll) — Available: ${stockDisp}`
+        list.push({
+          key: item.key || `${w}x${l}|p:${price}|gsm:${item.gsm || 0}|f:${item.finishing || 'none'}`,
+          label: `${w}ft × ${l}ft (${singleArea} SFT/Roll)`,
+          width_ft: w,
+          length_ft: l,
+          allowance_ft: Number(item.allowance_ft ?? 0),
+          purchase_price: price,
+          gsm: Number(item.gsm ?? material.gsm ?? 0),
+          finishing: String(item.finishing ?? material.default_finishing ?? 'none'),
+          roll_count: Number(item.roll_count || 0),
+          total_sft: area,
+          unit_cost: price > 150 ? price : Math.round(price * singleArea * 100) / 100,
+          stock_display: stockDisp,
+          option_display: optDisp,
+        })
+      }
+    } else {
+      const defW = Number(material.roll_width_ft || material.width || 4)
+      const defL = Number(material.standard_roll_length_ft || material.roll_length_ft || material.length || 164)
+      const singleArea = Math.round(defW * defL * 100) / 100
+      const stockRolls = singleArea > 0 ? Math.floor(Number(material.current_stock || 0) / singleArea) : 0
+      const stockDisp = `${stockRolls} Rolls (${Number(material.current_stock || 0).toLocaleString()} SFT)`
+      const optDisp = `${defW}ft × ${defL}ft (${singleArea} SFT/Roll) — Available: ${stockDisp}`
+      list.push({
+        key: `${defW}x${defL}`,
+        label: `${defW}ft × ${defL}ft (${singleArea} SFT/Roll)`,
+        width_ft: defW,
+        length_ft: defL,
+        allowance_ft: 0,
+        purchase_price: baseCost,
+        gsm: Number(material.gsm || 0),
+        finishing: String(material.default_finishing || 'none'),
+        roll_count: stockRolls,
+        total_sft: Number(material.current_stock || 0),
+        unit_cost: baseCost > 150 ? baseCost : Math.round(baseCost * singleArea * 100) / 100,
+        stock_display: stockDisp,
+        option_display: optDisp,
+      })
+    }
+  } else {
+    const unitName = (material.purchase_unit || material.unit || 'pcs').toUpperCase()
+    const stock = Number(material.current_stock || 0)
+    const stockDisp = `${stock.toLocaleString()} ${unitName}`
+    const optDisp = `Standard Unit (${unitName}) — Available: ${stockDisp}`
+    list.push({
+      key: 'standard',
+      label: `Standard ${unitName}`,
+      width_ft: 0,
+      length_ft: 0,
+      allowance_ft: 0,
+      purchase_price: baseCost,
+      gsm: Number(material.gsm || 0),
+      finishing: String(material.default_finishing || 'none'),
+      roll_count: stock,
+      total_sft: stock,
+      unit_cost: baseCost,
+      stock_display: stockDisp,
+      option_display: optDisp,
+    })
+  }
+
+  return list
+}
+
+function computeItemRowMetrics(
+  item: IssueItemRow,
+  material: MaterialRecord | null,
+  effectiveRolls: InventoryRollRecord[]
+) {
+  if (!material) {
+    return {
+      material: null,
+      breakdown: null,
+      options: [],
+      activeOption: null,
+      widthFt: 3,
+      lengthFt: 164,
+      purchaseUnitName: 'Pcs',
+      consumptionUnitName: 'pcs',
+      singleUnitQuantity: 1,
+      unitMeasureDisplay: '1 PCS',
+      totalBatchQuantity: item.quantity,
+      currentStoreStock: 0,
+      availablePurchaseUnits: 0,
+      isStoreShortage: true,
+      projectedStoreBalance: 0,
+      projectedRemainingUnits: 0,
+      isRollMedia: false,
+      generatedRollCode: 'TAG-PENDING',
+    }
+  }
+
+  const breakdown = getMaterialWarehouseStockBreakdown(material, effectiveRolls)
+  const isRollMedia = Boolean(breakdown.is_roll)
+  const rawPurchaseUnit = (
+    breakdown.purchase_unit ||
+    material.purchase_unit ||
+    (material.material_config as any)?.purchase_unit ||
+    'pcs'
+  ).toLowerCase()
+  const purchaseUnitName = formatUnitPlural(1, rawPurchaseUnit)
+  const consumptionUnitName = (
+    breakdown.consumption_unit ||
+    material.unit ||
+    (material as any)?.selling_unit ||
+    'pcs'
+  ).toLowerCase()
+
+  const options = getMaterialConfiguredOptions(material, effectiveRolls)
+  const activeOption = options.find((o) => o.key === item.selectedSizeKey) || options[0] || null
+
+  const widthFt = Number(
+    item.widthFt !== undefined && item.widthFt > 0
+      ? item.widthFt
+      : activeOption?.width_ft || material.roll_width_ft || material.width || 3
+  )
+  const lengthFt = Number(
+    item.lengthFt !== undefined && item.lengthFt > 0
+      ? item.lengthFt
+      : activeOption?.length_ft || material.standard_roll_length_ft || material.roll_length_ft || material.length || 164
+  )
+
+  let singleUnitQuantity = 1
+  let unitMeasureDisplay = `1 ${consumptionUnitName.toUpperCase()}`
+
+  if (isRollMedia) {
+    const area = Math.round(widthFt * lengthFt * 100) / 100
+    singleUnitQuantity = area
+    unitMeasureDisplay = `${widthFt}ft × ${lengthFt}ft (${area.toLocaleString()} SFT)`
+  } else if (['sheet', 'rigid_sheet'].includes(rawPurchaseUnit)) {
+    const sheetW = Number((material as any)?.sheet_width_ft || material.width || 4)
+    const sheetL = Number((material as any)?.sheet_length_ft || material.length || 8)
+    const sheetArea = sheetW * sheetL > 0 ? sheetW * sheetL : 32
+    const isSft = ['sft', 'sqft'].includes(consumptionUnitName)
+    singleUnitQuantity = isSft ? sheetArea : 1
+    unitMeasureDisplay = isSft ? `${sheetW}ft × ${sheetL}ft (${sheetArea} SFT)` : `1 Sheet`
+  } else if (['box', 'pack', 'carton', 'set'].includes(rawPurchaseUnit)) {
+    const packQty = Number(
+      (material as any)?.pack_quantity ||
+      (material.material_config as any)?.pack_quantity ||
+      (material as any)?.conversion_factor ||
+      1
+    )
+    singleUnitQuantity = packQty > 1 ? packQty : 1
+    unitMeasureDisplay = `${singleUnitQuantity.toLocaleString()} ${consumptionUnitName.toUpperCase()}`
+  } else if (['bottle', 'can', 'liter', 'ltr'].includes(rawPurchaseUnit)) {
+    const isMl = consumptionUnitName === 'ml'
+    const vol = Number(
+      (material as any)?.liquid_volume_capacity
+        ? String((material as any).liquid_volume_capacity).replace(/[^0-9.]/g, '')
+        : (material.material_config as any)?.liquid_volume_ml || 1000
+    )
+    singleUnitQuantity = isMl ? (vol > 0 ? vol : 1000) : 1
+    unitMeasureDisplay = isMl ? `${singleUnitQuantity.toLocaleString()} ML` : `1 LTR`
+  }
+
+  const totalBatchQuantity = Math.round(singleUnitQuantity * item.quantity * 100) / 100
+  const currentStoreStock = Number(material.current_stock ?? (material as any)?.stock ?? 0)
+
+  let availablePurchaseUnits = 0
+  if (activeOption && activeOption.roll_count > 0) {
+    availablePurchaseUnits = activeOption.roll_count
+  } else if (breakdown.total_rolls > 0) {
+    availablePurchaseUnits = breakdown.total_rolls
+  } else if (singleUnitQuantity > 0) {
+    availablePurchaseUnits = Math.floor(currentStoreStock / singleUnitQuantity)
+  }
+
+  const isStoreShortage = currentStoreStock < totalBatchQuantity || availablePurchaseUnits < item.quantity
+  const projectedStoreBalance = currentStoreStock - totalBatchQuantity
+  const projectedRemainingUnits = Math.max(0, availablePurchaseUnits - item.quantity)
+
+  // Identifier tag
+  let generatedRollCode = ''
+  if (item.customRollTag?.trim()) {
+    generatedRollCode = item.quantity > 1 ? `${item.customRollTag.trim()}-01` : item.customRollTag.trim()
+  } else {
+    const cleanSku = (material.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+    const lot = item.lotNumber?.trim() || new Date().toISOString().slice(2, 10).replace(/-/g, '')
+    const tagPrefix = isRollMedia ? `ROL-${cleanSku}-${widthFt}FT` : `MAT-${cleanSku}`
+    const tag = `${tagPrefix}-${lot}`
+    generatedRollCode = item.quantity > 1 ? `${tag}-01` : tag
+  }
+
+  return {
+    material,
+    breakdown,
+    options,
+    activeOption,
+    widthFt,
+    lengthFt,
+    purchaseUnitName,
+    consumptionUnitName,
+    singleUnitQuantity,
+    unitMeasureDisplay,
+    totalBatchQuantity,
+    currentStoreStock,
+    availablePurchaseUnits,
+    isStoreShortage,
+    projectedStoreBalance,
+    projectedRemainingUnits,
+    isRollMedia,
+    generatedRollCode,
+  }
+}
+
 export function IssueMasterRollModal({
   open,
   onOpenChange,
@@ -103,17 +353,14 @@ export function IssueMasterRollModal({
   selectedMaterialId,
   initialWidthFt = 3,
   initialLengthFt = 164,
-  initialMachineId = 'roland',
-  initialMachineName,
   request,
-  requests,
   rolls,
   onSuccess,
   companyId,
 }: IssueMasterRollModalProps) {
   const { tBilingual } = useI18n()
 
-  // 1. Show ALL available inventory materials (including fallback discovery from storage & inventory products)
+  // 1. Available materials fallback discovery
   const availableMaterials = useMemo(() => {
     let all: MaterialRecord[] = []
 
@@ -134,7 +381,7 @@ export function IssueMasterRollModal({
       } catch {}
     }
 
-    // Also include any stocked items / products registered in inventory
+    // Include registered stocked inventory products
     try {
       const allProds = companyId
         ? PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || []
@@ -152,7 +399,12 @@ export function IssueMasterRollModal({
             current_stock: Number(p.current_stock ?? p.stock ?? p.opening_stock ?? 0),
             average_cost: Number(p.cost_per_unit ?? p.base_cost ?? p.purchase_price ?? 0),
             last_purchase_price: Number(p.purchase_price ?? p.cost_per_unit ?? p.base_cost ?? 0),
-            is_roll: Boolean(p.is_roll || ['roll', 'flex', 'vinyl', 'banner', 'canvas', 'mesh', 'pvc', 'sticker'].some((c) => String(p.category || '').toLowerCase().includes(c))),
+            is_roll: Boolean(
+              p.is_roll ||
+              ['roll', 'flex', 'vinyl', 'banner', 'canvas', 'mesh', 'pvc', 'sticker'].some((c) =>
+                String(p.category || '').toLowerCase().includes(c)
+              )
+            ),
             roll_width_ft: p.roll_width_ft || p.width || null,
             standard_roll_length_ft: p.standard_roll_length_ft || p.length || 164,
             is_active: p.is_active !== false,
@@ -166,20 +418,7 @@ export function IssueMasterRollModal({
     return all.filter((m) => m && m.is_active !== false && !(m as any).is_deleted)
   }, [materials, companyId])
 
-  // Material Selection
-  const effectiveInitialMatId = initialMaterialId || selectedMaterialId || request?.items?.[0]?.material_id || (request as any)?.material_id
-  const [materialId, setMaterialId] = useState<string>(() => {
-    if (effectiveInitialMatId && availableMaterials.some((m) => m.id === effectiveInitialMatId)) {
-      return effectiveInitialMatId
-    }
-    return availableMaterials[0]?.id || ''
-  })
-
-  const selectedMaterial = useMemo(() => {
-    return availableMaterials.find((m) => m.id === materialId) || materials.find((m) => m.id === materialId) || null
-  }, [availableMaterials, materials, materialId])
-
-  // Effective rolls fallback if rolls prop is not provided
+  // 2. Rolls discovery fallback
   const effectiveRolls = useMemo(() => {
     if (Array.isArray(rolls) && rolls.length > 0) return rolls
     if (companyId) {
@@ -195,7 +434,7 @@ export function IssueMasterRollModal({
     return []
   }, [rolls, companyId])
 
-  // Effective Locations with fallback and auto discovery
+  // 3. Locations fallback
   const effectiveLocations = useMemo(() => {
     let list = Array.isArray(locations) && locations.length > 0 ? [...locations] : []
     if (list.length === 0 && companyId) {
@@ -227,7 +466,8 @@ export function IssueMasterRollModal({
     return list
   }, [locations, companyId])
 
-  // Source Store Location (Auto-selected)
+  // Common Header State
+  const [issueDate, setIssueDate] = useState<string>(() => new Date().toISOString().split('T')[0])
   const [sourceLocationId, setSourceLocationId] = useState<string>(() => {
     const pref = locations.find(
       (l) =>
@@ -239,183 +479,11 @@ export function IssueMasterRollModal({
     )
     return pref ? pref.id : locations[0]?.id || ''
   })
-
-  // Warehouse Stock Breakdown in Purchase Units
-  const warehouseBreakdown = useMemo(() => {
-    return getMaterialWarehouseStockBreakdown(selectedMaterial, effectiveRolls)
-  }, [selectedMaterial, effectiveRolls])
-
-  // Active Available Options for Selected Material (Sizes, Dimensions, Variants)
-  const configuredSizeOptions = useMemo(() => {
-    if (!selectedMaterial) return []
-
-    const list: {
-      key: string
-      label: string
-      width_ft: number
-      length_ft: number
-      allowance_ft: number
-      purchase_price: number
-      gsm: number
-      finishing: string
-      roll_count: number
-      total_sft: number
-      unit_cost: number
-      stock_display: string
-      option_display: string
-      is_custom?: boolean
-    }[] = []
-
-    const baseCost = Number(
-      selectedMaterial.average_cost ||
-      selectedMaterial.last_purchase_price ||
-      selectedMaterial.cost_per_unit ||
-      0
-    )
-
-    if (warehouseBreakdown.is_roll) {
-      if (warehouseBreakdown.roll_items && warehouseBreakdown.roll_items.length > 0) {
-        for (const item of warehouseBreakdown.roll_items) {
-          const w = Number(item.width_ft || 0)
-          const l = Number(item.length_ft || 0)
-          const singleArea = Math.round(w * l * 100) / 100
-          const area = Number(item.total_sft || (singleArea * (item.roll_count || 0)))
-          const itemPrice = Number(item.purchase_price ?? 0)
-          const price = itemPrice > 0 ? itemPrice : baseCost
-          const pricePerRoll = price > 150 ? price : (price > 0 && singleArea > 0 ? Math.round(price * singleArea * 100) / 100 : 0)
-
-          const stockDisp = `${item.roll_count} ${item.roll_count === 1 ? 'Roll' : 'Rolls'} (${area.toLocaleString()} SFT)`
-          const optDisp = `${w}ft × ${l}ft (${singleArea} SFT/Roll) — Available: ${stockDisp}`
-
-          list.push({
-            key: item.key || `${w}x${l}|p:${price}|gsm:${item.gsm || 0}|f:${item.finishing || 'none'}`,
-            label: `${w}ft × ${l}ft (${singleArea} SFT/Roll)`,
-            width_ft: w,
-            length_ft: l,
-            allowance_ft: Number(item.allowance_ft ?? 0),
-            purchase_price: price,
-            gsm: Number(item.gsm ?? selectedMaterial.gsm ?? 0),
-            finishing: String(item.finishing ?? selectedMaterial.default_finishing ?? 'none'),
-            roll_count: Number(item.roll_count || 0),
-            total_sft: area,
-            unit_cost: pricePerRoll,
-            stock_display: stockDisp,
-            option_display: optDisp,
-          })
-        }
-      } else {
-        const defW = Number(selectedMaterial.roll_width_ft || selectedMaterial.width || 4)
-        const defL = Number(selectedMaterial.standard_roll_length_ft || selectedMaterial.roll_length_ft || selectedMaterial.length || 164)
-        const singleArea = Math.round(defW * defL * 100) / 100
-        const stockRolls = singleArea > 0 ? Math.floor(Number(selectedMaterial.current_stock || 0) / singleArea) : 0
-        const pricePerRoll = baseCost > 150 ? baseCost : (baseCost > 0 && singleArea > 0 ? Math.round(baseCost * singleArea * 100) / 100 : 0)
-
-        const stockDisp = `${stockRolls} Rolls (${Number(selectedMaterial.current_stock || 0).toLocaleString()} SFT)`
-        const optDisp = `${defW}ft × ${defL}ft (${singleArea} SFT/Roll) — Available: ${stockDisp}`
-
-        list.push({
-          key: `${defW}x${defL}`,
-          label: `${defW}ft × ${defL}ft (${singleArea} SFT/Roll)`,
-          width_ft: defW,
-          length_ft: defL,
-          allowance_ft: 0,
-          purchase_price: baseCost,
-          gsm: Number(selectedMaterial.gsm || 0),
-          finishing: String(selectedMaterial.default_finishing || 'none'),
-          roll_count: stockRolls,
-          total_sft: Number(selectedMaterial.current_stock || 0),
-          unit_cost: pricePerRoll,
-          stock_display: stockDisp,
-          option_display: optDisp,
-        })
-      }
-    } else {
-      const unitName = (selectedMaterial.purchase_unit || selectedMaterial.unit || 'pcs').toUpperCase()
-      const stock = Number(selectedMaterial.current_stock || 0)
-      const stockDisp = `${stock.toLocaleString()} ${unitName}`
-      const optDisp = `Standard Unit (${unitName}) — Available: ${stockDisp}`
-
-      list.push({
-        key: 'standard',
-        label: `Standard ${unitName}`,
-        width_ft: 0,
-        length_ft: 0,
-        allowance_ft: 0,
-        purchase_price: baseCost,
-        gsm: Number(selectedMaterial.gsm || 0),
-        finishing: String(selectedMaterial.default_finishing || 'none'),
-        roll_count: stock,
-        total_sft: stock,
-        unit_cost: baseCost,
-        stock_display: stockDisp,
-        option_display: optDisp,
-      })
-    }
-
-    return list
-  }, [selectedMaterial, warehouseBreakdown])
-
-  // Active Selected Size & Custom Dimensions State
-  const [selectedSizeKey, setSelectedSizeKey] = useState<string>('')
-  const [customWidthFt, setCustomWidthFt] = useState<number | undefined>(initialWidthFt && initialWidthFt > 0 ? initialWidthFt : undefined)
-  const [customLengthFt, setCustomLengthFt] = useState<number | undefined>(initialLengthFt && initialLengthFt > 0 ? initialLengthFt : undefined)
-
-  const activeSelectedSizeOption = useMemo(() => {
-    return configuredSizeOptions.find((o) => o.key === selectedSizeKey) || configuredSizeOptions[0] || null
-  }, [configuredSizeOptions, selectedSizeKey])
-
-  // Effective dimensions for issue
-  const widthFt = useMemo(() => {
-    if (customWidthFt !== undefined && customWidthFt > 0) {
-      return customWidthFt
-    }
-    if (activeSelectedSizeOption && activeSelectedSizeOption.width_ft > 0) {
-      return activeSelectedSizeOption.width_ft
-    }
-    if (!selectedMaterial) return 3
-    return Number(
-      selectedMaterial.roll_width_ft ||
-        selectedMaterial.width ||
-        (Array.isArray(selectedMaterial.available_widths_ft) && selectedMaterial.available_widths_ft.length === 1
-          ? selectedMaterial.available_widths_ft[0]
-          : 0) ||
-        3
-    )
-  }, [customWidthFt, activeSelectedSizeOption, selectedMaterial])
-
-  const lengthFt = useMemo(() => {
-    if (customLengthFt !== undefined && customLengthFt > 0) {
-      return customLengthFt
-    }
-    if (activeSelectedSizeOption && activeSelectedSizeOption.length_ft > 0) {
-      return activeSelectedSizeOption.length_ft
-    }
-    if (!selectedMaterial) return 164
-    return Number(
-      selectedMaterial.standard_roll_length_ft ||
-        selectedMaterial.roll_length_ft ||
-        selectedMaterial.length ||
-        164
-    )
-  }, [customLengthFt, activeSelectedSizeOption, selectedMaterial])
-
-  // Batch Quantity (Number of purchase units / rolls to issue)
-  const [quantityRolls, setQuantityRolls] = useState<number>(1)
-
-  // Destination & Machine Mounting
-  const [destination, setDestination] = useState<'machine' | 'floor_staging'>(
-    initialMachineId ? 'machine' : 'floor_staging'
-  )
-  const [machineId, setMachineId] = useState<string>(initialMachineId || 'roland')
-
-  // Roll Tag / Lot Number Customization
-  const [lotNumber, setLotNumber] = useState<string>('')
-  const [customRollTag, setCustomRollTag] = useState<string>('')
-  const [showAdvancedTag, setShowAdvancedTag] = useState<boolean>(false)
-
-  // Request by / Operator & Remarks
-  const [notes, setNotes] = useState<string>('')
   const [operatorName, setOperatorName] = useState<string>('Floor Operator')
+  const [notes, setNotes] = useState<string>('')
+
+  // Multi-Item State
+  const [issueItems, setIssueItems] = useState<IssueItemRow[]>([])
 
   // UI Feedback States
   const [loading, setLoading] = useState<boolean>(false)
@@ -423,233 +491,180 @@ export function IssueMasterRollModal({
   const [success, setSuccess] = useState<string | null>(null)
   const [showPrintLabel, setShowPrintLabel] = useState<boolean>(false)
 
-  // Dynamic Machinery list
-  const machineryList = useMemo(() => {
-    if (!companyId) return DEFAULT_PRODUCTION_MACHINES
-    try {
-      const stored = PrintERPDataStore.getAll<any>(STORAGE_KEYS.MACHINERIES, companyId) || []
-      if (stored.length > 0) {
-        return stored.map((m) => ({ id: m.id, name: m.name || m.machinery_name }))
-      }
-    } catch {}
-    return DEFAULT_PRODUCTION_MACHINES
-  }, [companyId])
+  // Initialize or Reset Modal
+  const initModalState = useCallback(() => {
+    const targetMatId =
+      initialMaterialId ||
+      selectedMaterialId ||
+      request?.items?.[0]?.material_id ||
+      (request as any)?.material_id ||
+      availableMaterials[0]?.id ||
+      ''
 
-  // Reset or Sync when modal opens or initial props change
+    const targetMat = availableMaterials.find((m) => m.id === targetMatId) || availableMaterials[0] || null
+    const options = getMaterialConfiguredOptions(targetMat, effectiveRolls)
+    const matchedOpt = options.find((o) =>
+      initialWidthFt && initialLengthFt ? o.width_ft === initialWidthFt && o.length_ft === initialLengthFt : false
+    ) || options[0]
+
+    const reqQty = Number(request?.items?.[0]?.requested_quantity || (request as any)?.requested_quantity || 1)
+
+    setIssueItems([
+      {
+        id: `issue-row-${Date.now()}`,
+        materialId: targetMat?.id || '',
+        selectedSizeKey: matchedOpt?.key || '',
+        widthFt: matchedOpt?.width_ft || initialWidthFt,
+        lengthFt: matchedOpt?.length_ft || initialLengthFt,
+        quantity: reqQty > 0 ? reqQty : 1,
+        lotNumber: '',
+        customRollTag: '',
+        notes: '',
+        showTagDetails: false,
+      },
+    ])
+
+    if (request?.notes) {
+      setNotes(request.notes)
+    } else if (request?.request_number) {
+      setNotes(`Requisition #${request.request_number}`)
+    } else {
+      setNotes('')
+    }
+
+    // Auto-select source location
+    const prefLoc = effectiveLocations.find(
+      (l) =>
+        l.location_type === 'raw_material_store' ||
+        l.location_type === 'main_store' ||
+        (l as any).is_default ||
+        l.location_code?.toUpperCase().includes('RAW') ||
+        l.location_code?.toUpperCase().includes('MAIN')
+    )
+    setSourceLocationId(prefLoc ? prefLoc.id : effectiveLocations[0]?.id || '')
+    setIssueDate(new Date().toISOString().split('T')[0])
+    setError(null)
+    setSuccess(null)
+    setLoading(false)
+  }, [
+    initialMaterialId,
+    selectedMaterialId,
+    initialWidthFt,
+    initialLengthFt,
+    request,
+    availableMaterials,
+    effectiveRolls,
+    effectiveLocations,
+  ])
+
   useEffect(() => {
     if (open) {
-      const targetMatId = initialMaterialId || selectedMaterialId || request?.items?.[0]?.material_id || (request as any)?.material_id
-      if (targetMatId && availableMaterials.some((m) => m.id === targetMatId)) {
-        setMaterialId(targetMatId)
-      } else if (availableMaterials.length > 0 && !availableMaterials.some((m) => m.id === materialId)) {
-        setMaterialId(availableMaterials[0].id)
-      }
-
-      if (initialWidthFt && initialWidthFt > 0) {
-        setCustomWidthFt(initialWidthFt)
-      }
-      if (initialLengthFt && initialLengthFt > 0) {
-        setCustomLengthFt(initialLengthFt)
-      }
-
-      if (request) {
-        const reqQty = Number(request.items?.[0]?.requested_quantity || (request as any)?.requested_quantity || 1)
-        if (reqQty > 0) {
-          setQuantityRolls(reqQty)
-        }
-        if (request.notes) {
-          setNotes(request.notes)
-        } else if (request.request_number) {
-          setNotes(`Requisition #${request.request_number}`)
-        }
-      }
-
-      // Auto-select source location
-      if (!sourceLocationId || !effectiveLocations.some((l) => l.id === sourceLocationId)) {
-        const pref = effectiveLocations.find(
-          (l) =>
-            l.location_type === 'raw_material_store' ||
-            l.location_type === 'main_store' ||
-            (l as any).is_default ||
-            l.location_code?.toUpperCase().includes('RAW') ||
-            l.location_code?.toUpperCase().includes('MAIN')
-        )
-        setSourceLocationId(pref ? pref.id : effectiveLocations[0]?.id || '')
-      }
-
-      if (initialMachineId) {
-        setMachineId(initialMachineId)
-        setDestination('machine')
-      }
-      setError(null)
-      setSuccess(null)
-      setLoading(false)
+      initModalState()
     }
-  }, [open, initialMaterialId, selectedMaterialId, initialMachineId, initialWidthFt, initialLengthFt, request, availableMaterials, effectiveLocations])
+  }, [open, initModalState])
 
-  // Sync selected size key when material changes or configuredSizeOptions update
-  useEffect(() => {
-    if (configuredSizeOptions.length > 0) {
-      const matched = configuredSizeOptions.find((o) =>
-        (customWidthFt && customLengthFt && o.width_ft === customWidthFt && o.length_ft === customLengthFt) ||
-        (initialWidthFt && initialLengthFt && o.width_ft === initialWidthFt && o.length_ft === initialLengthFt)
-      )
-      if (matched) {
-        setSelectedSizeKey(matched.key)
-      } else {
-        setSelectedSizeKey(configuredSizeOptions[0].key)
-        setCustomWidthFt(configuredSizeOptions[0].width_ft)
-        setCustomLengthFt(configuredSizeOptions[0].length_ft)
-      }
-    }
-  }, [materialId, configuredSizeOptions])
+  // Row Management Handlers
+  const handleAddItem = () => {
+    const nextMat = availableMaterials[0]
+    if (!nextMat) return
+    const options = getMaterialConfiguredOptions(nextMat, effectiveRolls)
+    const firstOpt = options[0]
+    setIssueItems((prev) => [
+      ...prev,
+      {
+        id: `issue-row-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        materialId: nextMat.id,
+        selectedSizeKey: firstOpt?.key || '',
+        widthFt: firstOpt?.width_ft,
+        lengthFt: firstOpt?.length_ft,
+        quantity: 1,
+        lotNumber: '',
+        customRollTag: '',
+        notes: '',
+        showTagDetails: false,
+      },
+    ])
+  }
 
-  // Material Physical Form & Unit Classifications
-  const isRollMedia = Boolean(warehouseBreakdown.is_roll)
-  const rawPurchaseUnit = (
-    warehouseBreakdown.purchase_unit ||
-    selectedMaterial?.purchase_unit ||
-    (selectedMaterial?.material_config as any)?.purchase_unit ||
-    'pcs'
-  ).toLowerCase()
+  const handleRemoveItem = (index: number) => {
+    if (issueItems.length <= 1) return
+    setIssueItems((prev) => prev.filter((_, i) => i !== index))
+  }
 
-  const purchaseUnitName = formatUnitPlural(1, rawPurchaseUnit)
-  const consumptionUnitName = (
-    warehouseBreakdown.consumption_unit ||
-    selectedMaterial?.unit ||
-    (selectedMaterial as any)?.selling_unit ||
-    'pcs'
-  ).toLowerCase()
+  const handleUpdateItem = (index: number, patch: Partial<IssueItemRow>) => {
+    setIssueItems((prev) => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], ...patch }
+      return updated
+    })
+  }
 
-  const isRigidSheet =
-    rawPurchaseUnit === 'sheet' ||
-    ['rigid_sheet', 'rigid_sheets', 'acrylic', 'pvc_board', 'foam_board', 'acp'].some((c) =>
-      (selectedMaterial?.category || '').toLowerCase().includes(c)
-    )
+  const handleMaterialChange = (index: number, newMatId: string) => {
+    const newMat = availableMaterials.find((m) => m.id === newMatId) || null
+    const options = getMaterialConfiguredOptions(newMat, effectiveRolls)
+    const firstOpt = options[0]
+    handleUpdateItem(index, {
+      materialId: newMatId,
+      selectedSizeKey: firstOpt?.key || '',
+      widthFt: firstOpt?.width_ft,
+      lengthFt: firstOpt?.length_ft,
+    })
+  }
 
-  const isPackBox = ['box', 'pack', 'carton', 'set'].includes(rawPurchaseUnit)
+  const handleSizeChange = (index: number, sizeKey: string) => {
+    const row = issueItems[index]
+    const mat = availableMaterials.find((m) => m.id === row.materialId) || null
+    const options = getMaterialConfiguredOptions(mat, effectiveRolls)
+    const opt = options.find((o) => o.key === sizeKey)
+    handleUpdateItem(index, {
+      selectedSizeKey: sizeKey,
+      widthFt: opt?.width_ft,
+      lengthFt: opt?.length_ft,
+    })
+  }
 
-  const isFluid =
-    ['bottle', 'can', 'liter', 'ltr'].includes(rawPurchaseUnit) ||
-    ['ink', 'fluid', 'solvent'].some((c) => (selectedMaterial?.category || '').toLowerCase().includes(c))
+  // Pre-calculated metrics for all rows
+  const computedRows = useMemo(() => {
+    return issueItems.map((item) => {
+      const mat = availableMaterials.find((m) => m.id === item.materialId) || null
+      return computeItemRowMetrics(item, mat, effectiveRolls)
+    })
+  }, [issueItems, availableMaterials, effectiveRolls])
 
-  // Single unit quantity / area in consumption units & human-friendly measure string
-  const { singleUnitQuantity, unitMeasureDisplay } = useMemo(() => {
-    if (isRollMedia) {
-      const area = Math.round(widthFt * lengthFt * 100) / 100
-      return {
-        singleUnitQuantity: area,
-        unitMeasureDisplay: `${widthFt}ft × ${lengthFt}ft (${area.toLocaleString()} SFT)`,
-      }
-    }
+  // Global validation: does any row have shortage or invalid qty?
+  const hasShortage = computedRows.some((r) => r.isStoreShortage)
+  const hasInvalidQty = issueItems.some((item) => !item.quantity || item.quantity <= 0)
+  const hasEmptyMaterial = issueItems.some((item) => !item.materialId)
 
-    if (isRigidSheet) {
-      const sheetW = Number((selectedMaterial as any)?.sheet_width_ft || selectedMaterial?.width || 4)
-      const sheetL = Number((selectedMaterial as any)?.sheet_length_ft || selectedMaterial?.length || 8)
-      const sheetArea = sheetW * sheetL > 0 ? sheetW * sheetL : 32
-      const isSft = ['sft', 'sqft'].includes(consumptionUnitName)
-      return {
-        singleUnitQuantity: isSft ? sheetArea : 1,
-        unitMeasureDisplay: isSft ? `${sheetW}ft × ${sheetL}ft (${sheetArea} SFT)` : `1 Sheet`,
-      }
-    }
+  // Overall totals
+  const totalUnitsCount = useMemo(() => {
+    return issueItems.reduce((acc, it) => acc + (Number(it.quantity) || 0), 0)
+  }, [issueItems])
 
-    if (isPackBox) {
-      const packQty = Number(
-        (selectedMaterial as any)?.pack_quantity ||
-          (selectedMaterial?.material_config as any)?.pack_quantity ||
-          (selectedMaterial as any)?.conversion_factor ||
-          (selectedMaterial as any)?.conversion_ratio ||
-          1
-      )
-      const effectiveQty = packQty > 1 ? packQty : 1
-      return {
-        singleUnitQuantity: effectiveQty,
-        unitMeasureDisplay: `${effectiveQty.toLocaleString()} ${consumptionUnitName.toUpperCase()}`,
-      }
-    }
+  const totalAreaSft = useMemo(() => {
+    return computedRows.reduce((acc, r) => acc + (r.isRollMedia ? r.totalBatchQuantity : 0), 0)
+  }, [computedRows])
 
-    if (isFluid) {
-      const isMl = consumptionUnitName === 'ml'
-      const vol = Number(
-        (selectedMaterial as any)?.liquid_volume_capacity
-          ? String((selectedMaterial as any).liquid_volume_capacity).replace(/[^0-9.]/g, '')
-          : (selectedMaterial?.material_config as any)?.liquid_volume_ml || 1000
-      )
-      const effectiveVol = isMl ? (vol > 0 ? vol : 1000) : 1
-      return {
-        singleUnitQuantity: effectiveVol,
-        unitMeasureDisplay: isMl ? `${effectiveVol.toLocaleString()} ML` : `1 LTR`,
-      }
-    }
-
-    return {
-      singleUnitQuantity: 1,
-      unitMeasureDisplay: `1 ${consumptionUnitName.toUpperCase()}`,
-    }
-  }, [isRollMedia, widthFt, lengthFt, isRigidSheet, isPackBox, isFluid, selectedMaterial, consumptionUnitName])
-
-  const totalBatchQuantity = useMemo(() => {
-    return Math.round(singleUnitQuantity * quantityRolls * 100) / 100
-  }, [singleUnitQuantity, quantityRolls])
-
-  // Store Stock Check
-  const currentStoreStock = useMemo(() => {
-    return Number(selectedMaterial?.current_stock ?? (selectedMaterial as any)?.stock ?? 0)
-  }, [selectedMaterial])
-
-  const currentAvailablePurchaseUnits = useMemo(() => {
-    if (activeSelectedSizeOption && activeSelectedSizeOption.roll_count > 0) {
-      return activeSelectedSizeOption.roll_count
-    }
-    if (warehouseBreakdown.total_rolls > 0) {
-      return warehouseBreakdown.total_rolls
-    }
-    if (singleUnitQuantity <= 0) return 0
-    return Math.floor(currentStoreStock / singleUnitQuantity)
-  }, [activeSelectedSizeOption, warehouseBreakdown, currentStoreStock, singleUnitQuantity])
-
-  const projectedRemainingUnits = useMemo(() => {
-    return Math.max(0, currentAvailablePurchaseUnits - quantityRolls)
-  }, [currentAvailablePurchaseUnits, quantityRolls])
-
-  const projectedStoreBalance = useMemo(() => {
-    return currentStoreStock - totalBatchQuantity
-  }, [currentStoreStock, totalBatchQuantity])
-
-  const isStoreShortage =
-    currentStoreStock < totalBatchQuantity || currentAvailablePurchaseUnits < quantityRolls
-
-  // Source Warehouse Name
-  const sourceLocationName = useMemo(() => {
-    return effectiveLocations.find((l) => l.id === sourceLocationId)?.location_name || 'Warehouse Store'
-  }, [effectiveLocations, sourceLocationId])
-
-  // Auto-Generated Identifier Tag
-  const generatedRollCode = useMemo(() => {
-    if (customRollTag.trim()) {
-      return quantityRolls > 1 ? `${customRollTag.trim()}-01` : customRollTag.trim()
-    }
-    const cleanSku = (selectedMaterial?.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
-    const lot = lotNumber.trim() || new Date().toISOString().slice(2, 10).replace(/-/g, '')
-    const tagPrefix = isRollMedia ? `ROL-${cleanSku}-${widthFt}FT` : `MAT-${cleanSku}`
-    const tag = `${tagPrefix}-${lot}`
-    return quantityRolls > 1 ? `${tag}-01` : tag
-  }, [selectedMaterial, isRollMedia, widthFt, lotNumber, customRollTag, quantityRolls])
-
+  // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!materialId) {
-      setError('Please select a valid inventory material from warehouse.')
+
+    if (issueItems.length === 0 || hasEmptyMaterial) {
+      setError('Please ensure each row has a valid material selected.')
       return
     }
-    if (quantityRolls <= 0) {
-      setError('Quantity must be at least 1.')
+
+    if (hasInvalidQty) {
+      setError('Issue quantity must be at least 1 for all items.')
       return
     }
-    if (isStoreShortage || currentStoreStock < totalBatchQuantity) {
+
+    // Identify first shortage row if any
+    const shortageIdx = computedRows.findIndex((r) => r.isStoreShortage)
+    if (shortageIdx !== -1) {
+      const deficient = computedRows[shortageIdx]
       setError(
-        `Insufficient Warehouse Stock: Current available stock is ${currentStoreStock} ${consumptionUnitName.toUpperCase()} (${currentAvailablePurchaseUnits} ${formatUnitPlural(currentAvailablePurchaseUnits, purchaseUnitName)}). Please receive stock into the warehouse before issuing.`
+        `Insufficient Warehouse Stock for "${deficient.material?.name || 'Item'}": Available is ${deficient.availablePurchaseUnits} ${formatUnitPlural(deficient.availablePurchaseUnits, deficient.purchaseUnitName)} (${deficient.currentStoreStock.toLocaleString()} ${deficient.consumptionUnitName.toUpperCase()}). Please adjust quantity.`
       )
       return
     }
@@ -659,69 +674,78 @@ export function IssueMasterRollModal({
     setSuccess(null)
 
     try {
-      const targetMachine = machineryList.find((m) => m.id === machineId)
-      const machineName =
-        destination === 'machine'
-          ? initialMachineName || targetMachine?.name || 'Production Workstation'
-          : null
+      const payloads: IssueMasterRollParams[] = issueItems.map((item, idx) => {
+        const metrics = computedRows[idx]
+        return {
+          material_id: item.materialId,
+          width_ft: Number(metrics.widthFt),
+          length_ft: Number(metrics.lengthFt),
+          quantity_rolls: Number(item.quantity),
+          location_id: sourceLocationId || null,
+          destination: 'floor_staging',
+          machine_id: null,
+          machine_name: null,
+          lot_number: item.lotNumber?.trim() || undefined,
+          roll_code_custom: item.customRollTag?.trim() || undefined,
+          operator_name: operatorName.trim() || 'Floor Operator',
+          request_id: request?.id || null,
+          production_task_id: request?.production_task_id || null,
+          group_key: metrics.activeOption?.key || item.selectedSizeKey || undefined,
+          size_label: metrics.activeOption?.label || undefined,
+          variant_id: (metrics.activeOption as any)?.variant_id || undefined,
+          variant_name: (metrics.activeOption as any)?.variant_name || undefined,
+          notes:
+            item.notes?.trim() ||
+            notes.trim() ||
+            (request?.request_number
+              ? `Issued against Requisition ${request.request_number} to Print Floor`
+              : `Issued ${item.quantity} ${formatUnitPlural(item.quantity, metrics.purchaseUnitName)} to Print Floor`),
+          unit_cost: 0,
+        }
+      })
 
-      const payload: IssueMasterRollParams = {
-        material_id: materialId,
-        width_ft: Number(widthFt),
-        length_ft: Number(lengthFt),
-        quantity_rolls: Number(quantityRolls),
-        location_id: sourceLocationId || null,
-        destination,
-        machine_id: destination === 'machine' ? machineId : null,
-        machine_name: machineName,
-        lot_number: lotNumber.trim() || undefined,
-        roll_code_custom: customRollTag.trim() || undefined,
-        operator_name: operatorName.trim() || 'Floor Operator',
-        request_id: request?.id || null,
-        production_task_id: request?.production_task_id || null,
-        group_key: activeSelectedSizeOption?.key || selectedSizeKey || undefined,
-        size_label: activeSelectedSizeOption?.label || undefined,
-        variant_id: (activeSelectedSizeOption as any)?.variant_id || (activeSelectedSizeOption as any)?.id || undefined,
-        variant_name: (activeSelectedSizeOption as any)?.variant_name || (activeSelectedSizeOption as any)?.name || undefined,
-        notes:
-          notes.trim() ||
-          (request?.request_number
-            ? `Issued against Requisition ${request.request_number} (${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)}) to Print Floor`
-            : `Requisitioned ${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)} for Print Floor`),
-        unit_cost: 0,
-      }
-
-      const res = await issueMasterRollsBatchAction(payload, companyId)
+      const res = await issueMultipleMaterialsBatchAction(payloads, companyId)
 
       if (!res.success || !res.data) {
-        setError(res.error || 'Failed to issue material to floor.')
+        setError(res.error || 'Failed to issue materials to floor.')
         return
       }
 
-      const result = res.data
+      // Dispatch real-time sync broadcast events
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+        window.dispatchEvent(new CustomEvent('printerp_table_synced:stock_ledger'))
+        window.dispatchEvent(new CustomEvent('printerp_table_synced:mounted_rolls'))
+        window.dispatchEvent(new CustomEvent('printerp_table_synced:floor_consumption'))
+      }
+
       setSuccess(
-        `Successfully issued ${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)} (${result.total_area_sft || totalBatchQuantity} ${consumptionUnitName.toUpperCase()}) to Print Floor!`
+        `Successfully issued ${payloads.length} ${payloads.length === 1 ? 'material item' : 'material items'} (${totalUnitsCount} total units) to Print Floor!`
       )
 
       if (onSuccess) {
-        onSuccess(result)
+        onSuccess(res.data.results?.[0] || res.data)
       }
 
       setTimeout(() => {
         onOpenChange(false)
       }, 700)
     } catch (err: any) {
-      setError(err.message || 'Error occurred while issuing material.')
+      setError(err.message || 'Error occurred while issuing materials.')
     } finally {
       setLoading(false)
     }
   }
 
+  const sourceLocationName = useMemo(() => {
+    return effectiveLocations.find((l) => l.id === sourceLocationId)?.location_name || 'Warehouse Store'
+  }, [effectiveLocations, sourceLocationId])
+
   return (
     <ModalDialog
       open={open}
       onOpenChange={onOpenChange}
-      size="2xl"
+      size="3xl"
       hideFooter={true}
       title={
         <div className="flex items-center gap-2.5">
@@ -737,8 +761,8 @@ export function IssueMasterRollModal({
             </div>
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {tBilingual(
-                'Issue materials, rolls, sheets, or supplies directly from warehouse inventory to production floor.',
-                'গুদাম স্টক থেকে সরাসরি ফ্লোরে কাঁচামাল বা মাস্টার রোল বরাদ্দ ও মাউন্ট করুন।'
+                'Issue single or multiple materials, rolls, sheets, or supplies directly from warehouse inventory.',
+                'গুদাম স্টক থেকে সরাসরি ফ্লোরে এক বা একাধিক কাঁচামাল বা মাস্টার রোল বরাদ্দ করুন।'
               )}
             </div>
           </div>
@@ -747,7 +771,7 @@ export function IssueMasterRollModal({
       onSubmit={handleSubmit}
       className="p-0 overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800"
     >
-      <div className="p-4 sm:p-5 space-y-4 text-xs max-h-[calc(85vh-4rem)] overflow-y-auto pr-2">
+      <div className="p-4 sm:p-5 space-y-4 text-xs max-h-[calc(85vh-4.5rem)] overflow-y-auto pr-2">
         {/* Success Alert */}
         {success && (
           <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-200 rounded-xl border border-emerald-300 dark:border-emerald-800 flex items-center gap-3 animate-in fade-in shadow-xs">
@@ -765,66 +789,41 @@ export function IssueMasterRollModal({
         )}
 
         {/* ========================================================= */}
-        {/* FIELD 1: MATERIAL NAME & SOURCE STORE */}
+        {/* COMMON REQUISITION HEADER: DATE, SOURCE LOCATION & OPERATOR */}
         {/* ========================================================= */}
-        <div className="space-y-3.5 p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-          <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
             <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
-              <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              1. {tBilingual('Material Name & Source Location', 'কাঁচামালের নাম ও সোর্স গুদাম')}
+              <Warehouse className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              {tBilingual('Requisition Header & Source Store', 'ইস্যু তথ্য ও সোর্স গুদাম')}
             </span>
-            {selectedMaterial && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  'text-2xs tabular-nums font-bold py-1 px-2.5 shadow-2xs',
-                  currentStoreStock > 0
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-                    : 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300'
-                )}
-              >
-                Stock: {warehouseBreakdown.purchase_unit_display} ({currentStoreStock.toLocaleString()}{' '}
-                {consumptionUnitName.toUpperCase()})
-              </Badge>
-            )}
+            <span className="text-2xs text-slate-500 font-medium">
+              Destination: <strong className="text-slate-700 dark:text-slate-300">Print Floor Staging</strong>
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            {/* Material Name Selector */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            {/* Issue Date */}
             <div>
-              <Label className="text-xs font-semibold mb-1.5 flex items-center justify-between">
-                <span>
-                  {tBilingual('Material Name', 'কাঁচামালের নাম')} (e.g. Black PVC, PVC){' '}
-                  <span className="text-rose-500">*</span>
-                </span>
+              <Label className="text-xs font-semibold mb-1 block flex items-center gap-1">
+                <Calendar className="h-3 w-3 text-slate-500" />
+                <span>{tBilingual('Issue Date', 'ইস্যুর তারিখ')}</span>
+                <span className="text-rose-500">*</span>
               </Label>
-              <select
-                value={materialId}
-                onChange={(e) => {
-                  setMaterialId(e.target.value)
-                  setCustomWidthFt(undefined)
-                  setCustomLengthFt(undefined)
-                }}
-                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs"
+              <Input
+                type="date"
+                value={issueDate}
+                onChange={(e) => setIssueDate(e.target.value)}
+                className="h-9 text-xs"
                 required
-              >
-                <option value="">-- Select Material Name --</option>
-                {availableMaterials.map((m) => {
-                  const bd = getMaterialWarehouseStockBreakdown(m, effectiveRolls)
-                  return (
-                    <option key={m.id} value={m.id}>
-                      {m.name} ({m.sku || 'No SKU'}) • Stock: {bd.purchase_unit_display}
-                    </option>
-                  )
-                })}
-              </select>
+              />
             </div>
 
             {/* Source Warehouse Location */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1">
                 <Label className="text-xs font-semibold block">
-                  {tBilingual('Source Store Location', 'উৎস স্টোর লোকেশন')}
+                  {tBilingual('Source Store Location', 'সোর্স গুদাম')}
                 </Label>
                 <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
                   <Sparkles className="h-3 w-3" /> Auto
@@ -833,348 +832,298 @@ export function IssueMasterRollModal({
               <select
                 value={sourceLocationId}
                 onChange={(e) => setSourceLocationId(e.target.value)}
-                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-blue-500 shadow-2xs"
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-blue-500 shadow-2xs"
               >
                 {effectiveLocations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
-                    {loc.location_name} ({loc.location_code})
+                    {loc.location_name} {loc.location_code ? `(${loc.location_code})` : ''}
                   </option>
                 ))}
               </select>
             </div>
-          </div>
-        </div>
 
-        {/* ========================================================= */}
-        {/* FIELD 2: SELECTED MATERIAL'S AVAILABLE OPTIONS (SIZES/VARIANTS) */}
-        {/* ========================================================= */}
-        {configuredSizeOptions.length > 0 && (
-          <div className="p-4 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/60 space-y-3 shadow-2xs">
-            <div className="flex items-center justify-between flex-wrap gap-1">
-              <Label className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
-                <Disc className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span>
-                  2. {tBilingual("Selected Material's Available Options", 'নির্বাচিত কাঁচামালের উপলব্ধ সাইজ ও অপশন')} (e.g. 2ft x 164ft, 3.25ft x 164ft)
-                </span>
+            {/* Request by / Operator */}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block flex items-center gap-1">
+                <User className="h-3 w-3 text-slate-500" />
+                <span>{tBilingual('Request by / Operator', 'অনুরোধকারী')}</span>
                 <span className="text-rose-500">*</span>
               </Label>
-              <Badge variant="outline" className="text-2xs tabular-nums font-medium border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300 bg-blue-100/50 dark:bg-blue-900/50">
-                {configuredSizeOptions.length} {configuredSizeOptions.length === 1 ? 'Option Available' : 'Options Available'}
-              </Badge>
-            </div>
-
-            <select
-              value={selectedSizeKey}
-              onChange={(e) => {
-                const k = e.target.value
-                setSelectedSizeKey(k)
-                const opt = configuredSizeOptions.find((o) => o.key === k)
-                if (opt) {
-                  setCustomWidthFt(opt.width_ft)
-                  setCustomLengthFt(opt.length_ft)
-                }
-              }}
-              className="w-full h-10 rounded-lg border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-900 px-3 text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs tabular-nums"
-            >
-              {configuredSizeOptions.map((opt) => (
-                <option key={opt.key} value={opt.key}>
-                  {selectedMaterial?.name}: {opt.option_display}
-                </option>
-              ))}
-            </select>
-
-            {/* Quick-Select Chips for Options */}
-            {configuredSizeOptions.length > 1 && (
-              <div className="flex items-center gap-2 flex-wrap pt-0.5">
-                {configuredSizeOptions.map((opt) => {
-                  const isSelected = selectedSizeKey === opt.key
-                  return (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => {
-                        setSelectedSizeKey(opt.key)
-                        setCustomWidthFt(opt.width_ft)
-                        setCustomLengthFt(opt.length_ft)
-                      }}
-                      className={cn(
-                        'px-3 py-1.5 rounded-lg text-xs font-bold tabular-nums transition-all cursor-pointer border shadow-2xs text-left',
-                        isSelected
-                          ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400 shadow-xs'
-                          : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-900/40'
-                      )}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span>{opt.label}</span>
-                        <span className={cn('text-2xs font-normal opacity-90', isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400')}>
-                          • {opt.stock_display}
-                        </span>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* FIELD 3: QUANTITY (UNIT BASED ON SELECTED MATERIAL) */}
-        {/* ========================================================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold block">
-                3. {tBilingual(
-                  `Quantity (${purchaseUnitName})`,
-                  `পরিমাণ (${purchaseUnitName})`
-                )} (e.g. Roll, Bottle, Sheet) <span className="text-rose-500">*</span>
-              </Label>
-              <Badge variant="secondary" className="text-2xs tabular-nums font-bold">
-                {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)}
-                {(purchaseUnitName.toLowerCase() !== consumptionUnitName.toLowerCase() || singleUnitQuantity > 1) &&
-                  ` = ${totalBatchQuantity.toLocaleString()} ${consumptionUnitName.toUpperCase()}`}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setQuantityRolls((q) => Math.max(1, q - 1))}
-                className="h-9 w-9 p-0 cursor-pointer"
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
               <Input
-                type="number"
-                min="1"
-                max="1000"
-                value={quantityRolls}
-                onChange={(e) => setQuantityRolls(Math.max(1, parseInt(e.target.value) || 1))}
-                className="h-9 text-center tabular-nums font-black text-sm"
+                value={operatorName}
+                onChange={(e) => setOperatorName(e.target.value)}
+                placeholder="e.g. Kamal Hossain"
+                className="h-9 text-xs font-medium"
+                required
               />
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setQuantityRolls((q) => q + 1)}
-                className="h-9 w-9 p-0 cursor-pointer"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex items-center gap-1.5 justify-center pt-1 flex-wrap">
-              {[1, 2, 3, 5, 10].map((q) => (
-                <Button
-                  key={q}
-                  type="button"
-                  size="sm"
-                  variant={quantityRolls === q ? 'default' : 'outline'}
-                  onClick={() => setQuantityRolls(q)}
-                  className="h-7 text-2xs px-2.5 font-bold cursor-pointer"
-                >
-                  {q} {formatUnitPlural(q, purchaseUnitName)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Destination & Machine Assignment */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-2xs">
-            <Label className="text-xs font-semibold block">
-              {tBilingual('Workstation Destination & Assignment', 'ফ্লোর গন্তব্য ও মাউন্টিং')}
-            </Label>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant={destination === 'machine' ? 'default' : 'outline'}
-                onClick={() => setDestination('machine')}
-                className="h-9 flex-1 text-xs font-bold gap-1.5 cursor-pointer"
-              >
-                <Cpu className="h-4 w-4" />
-                <span>Mount to Press</span>
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={destination === 'floor_staging' ? 'default' : 'outline'}
-                onClick={() => setDestination('floor_staging')}
-                className="h-9 flex-1 text-xs font-bold gap-1.5 cursor-pointer"
-              >
-                <Building className="h-4 w-4" />
-                <span>Floor Staging</span>
-              </Button>
             </div>
 
-            {destination === 'machine' && (
-              <select
-                value={machineId}
-                onChange={(e) => setMachineId(e.target.value)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold mt-1"
-              >
-                {machineryList.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            )}
+            {/* Remarks / Purpose */}
+            <div>
+              <Label className="text-xs font-semibold mb-1 block flex items-center gap-1">
+                <FileText className="h-3 w-3 text-slate-500" />
+                <span>{tBilingual('Purpose / Job Ref', 'কাজের রেফারেন্স')}</span>
+              </Label>
+              <Input
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="e.g. Job #1042 / Urgent Run"
+                className="h-9 text-xs font-medium"
+              />
+            </div>
           </div>
         </div>
 
         {/* ========================================================= */}
-        {/* FIELD 4 & 5: REQUEST BY / OPERATOR & REMARK */}
+        {/* MULTIPLE ITEMS ISSUE SECTION */}
         {/* ========================================================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <div>
-            <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5 text-slate-500" />
-              <span>4. {tBilingual('Request by / Operator', 'অনুরোধকারী / অপারেটরের নাম')}</span>
-              <span className="text-rose-500">*</span>
-            </Label>
-            <Input
-              value={operatorName}
-              onChange={(e) => setOperatorName(e.target.value)}
-              placeholder="e.g. Kamal Hossain / Floor Operator"
-              className="h-10 text-xs font-medium"
-              required
-            />
-          </div>
-          <div>
-            <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1.5">
-              <HelpCircle className="h-3.5 w-3.5 text-slate-500" />
-              <span>5. {tBilingual('Remark', 'মন্তব্য / রিমার্ক')}</span>
-            </Label>
-            <Input
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Urgent run for Job #1042 / Banner Printing"
-              className="h-10 text-xs font-medium"
-            />
-          </div>
-        </div>
-
-        {/* ========================================================= */}
-        {/* SMART IDENTIFIER TAG & BARCODE TRACKING */}
-        {/* ========================================================= */}
-        <div className="p-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200 dark:border-indigo-900/60 shadow-2xs space-y-2.5">
-          <div className="flex items-center justify-between">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              <span className="font-bold text-xs text-indigo-950 dark:text-indigo-200">
-                {tBilingual('Tracking Identifier Tag', 'ট্র্যাকিং ট্যাগ আইডি')}
+              <span className="font-bold text-xs uppercase text-slate-800 dark:text-slate-200 tracking-wider flex items-center gap-1.5">
+                <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                {tBilingual('Items to Issue', 'ইস্যু করার কাঁচামাল তালিকা')}
               </span>
+              <Badge variant="secondary" className="tabular-nums font-bold text-2xs px-2 py-0.5">
+                {issueItems.length} {issueItems.length === 1 ? 'Item' : 'Items'}
+              </Badge>
             </div>
+
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
-              onClick={() => setShowAdvancedTag(!showAdvancedTag)}
-              className="h-6 text-2xs text-indigo-700 dark:text-indigo-300 font-semibold px-2 cursor-pointer"
+              onClick={handleAddItem}
+              className="h-8 text-xs font-bold gap-1.5 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 cursor-pointer shadow-2xs"
             >
-              {showAdvancedTag ? 'Hide Custom Tag' : 'Customize Tag / Lot'}
+              <Plus className="h-3.5 w-3.5" />
+              <span>{tBilingual('+ Add Another Item', '+ আরেকটি আইটেম যোগ করুন')}</span>
             </Button>
           </div>
 
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <Badge className="bg-indigo-600 text-white tabular-nums text-xs px-3 py-1 font-bold shadow-xs">
-              {generatedRollCode}
-              {quantityRolls > 1 && ` (to ...-${String(quantityRolls).padStart(2, '0')})`}
-            </Badge>
-            <span className="text-2xs text-slate-500 font-medium tabular-nums">
-              Auto-tracked for Factory Floor Consumption
-            </span>
+          {/* List of Issue Items */}
+          <div className="space-y-3">
+            {issueItems.map((item, idx) => {
+              const metrics = computedRows[idx]
+              const hasOptions = metrics.options.length > 0
+
+              return (
+                <div
+                  key={item.id}
+                  className={cn(
+                    'p-3.5 rounded-xl border transition-all shadow-2xs space-y-3 bg-white dark:bg-slate-900',
+                    metrics.isStoreShortage
+                      ? 'border-rose-300 dark:border-rose-900/80 bg-rose-50/20'
+                      : 'border-slate-200 dark:border-slate-800'
+                  )}
+                >
+                  {/* Item Row Header */}
+                  <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="h-6 w-6 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 font-black text-2xs flex items-center justify-center tabular-nums">
+                        #{idx + 1}
+                      </span>
+                      <span className="font-bold text-xs text-slate-800 dark:text-slate-200">
+                        {metrics.material ? metrics.material.name : 'Choose Material'}
+                      </span>
+                      {metrics.material && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'text-2xs tabular-nums font-semibold px-2 py-0.5',
+                            metrics.isStoreShortage
+                              ? 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950 dark:text-rose-300'
+                              : 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                          )}
+                        >
+                          Stock: {metrics.breakdown?.purchase_unit_display || `${metrics.currentStoreStock} ${metrics.consumptionUnitName.toUpperCase()}`}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          handleUpdateItem(idx, { showTagDetails: !item.showTagDetails })
+                        }
+                        className="h-7 text-2xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white px-2 cursor-pointer"
+                      >
+                        <Tag className="h-3 w-3 mr-1" />
+                        {item.showTagDetails ? 'Hide Lot' : 'Tag / Lot'}
+                      </Button>
+
+                      {issueItems.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveItem(idx)}
+                          className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 cursor-pointer rounded-lg"
+                          title="Remove item"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Item Inputs Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+                    {/* Material Selector (5 cols) */}
+                    <div className={cn(hasOptions ? 'sm:col-span-5' : 'sm:col-span-8')}>
+                      <Label className="text-2xs font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                        {tBilingual('Material Name', 'কাঁচামাল')} <span className="text-rose-500">*</span>
+                      </Label>
+                      <select
+                        value={item.materialId}
+                        onChange={(e) => handleMaterialChange(idx, e.target.value)}
+                        className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs"
+                        required
+                      >
+                        <option value="">-- Choose Material --</option>
+                        {availableMaterials.map((m) => {
+                          const bd = getMaterialWarehouseStockBreakdown(m, effectiveRolls)
+                          return (
+                            <option key={m.id} value={m.id}>
+                              {m.name} ({m.sku || 'No SKU'}) • Stock: {bd.purchase_unit_display}
+                            </option>
+                          )
+                        })}
+                      </select>
+                    </div>
+
+                    {/* Size / Option Selector (4 cols if present) */}
+                    {hasOptions && (
+                      <div className="sm:col-span-4">
+                        <Label className="text-2xs font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                          {tBilingual('Available Option / Size', 'উপলব্ধ সাইজ ও অপশন')} <span className="text-rose-500">*</span>
+                        </Label>
+                        <select
+                          value={item.selectedSizeKey || metrics.activeOption?.key || ''}
+                          onChange={(e) => handleSizeChange(idx, e.target.value)}
+                          className="w-full h-9 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/40 dark:bg-blue-950/30 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs tabular-nums"
+                        >
+                          {metrics.options.map((opt) => (
+                            <option key={opt.key} value={opt.key}>
+                              {opt.option_display}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Quantity Selector (3 cols) */}
+                    <div className={cn(hasOptions ? 'sm:col-span-3' : 'sm:col-span-4')}>
+                      <div className="flex items-center justify-between mb-1">
+                        <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400">
+                          {tBilingual(`Qty (${metrics.purchaseUnitName})`, `পরিমাণ (${metrics.purchaseUnitName})`)}{' '}
+                          <span className="text-rose-500">*</span>
+                        </Label>
+                        <span className="text-2xs text-blue-600 dark:text-blue-400 font-bold tabular-nums">
+                          = {metrics.totalBatchQuantity.toLocaleString()} {metrics.consumptionUnitName.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleUpdateItem(idx, { quantity: Math.max(1, item.quantity - 1) })}
+                          className="h-9 w-8 p-0 cursor-pointer shrink-0"
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="1000"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleUpdateItem(idx, { quantity: Math.max(1, parseInt(e.target.value) || 1) })
+                          }
+                          className="h-9 text-center tabular-nums font-black text-xs"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleUpdateItem(idx, { quantity: item.quantity + 1 })}
+                          className="h-9 w-8 p-0 cursor-pointer shrink-0"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stock Shortage Warning for this item */}
+                  {metrics.isStoreShortage && (
+                    <div className="p-2.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 rounded-lg text-rose-800 dark:text-rose-300 text-2xs flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 font-medium">
+                        <AlertTriangle className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                        <span>
+                          Insufficient Warehouse Stock! Available: {metrics.availablePurchaseUnits}{' '}
+                          {formatUnitPlural(metrics.availablePurchaseUnits, metrics.purchaseUnitName)} (
+                          {metrics.currentStoreStock.toLocaleString()} {metrics.consumptionUnitName.toUpperCase()}).
+                        </span>
+                      </div>
+                      <span className="font-bold tabular-nums shrink-0">
+                        Deficit: {Math.abs(metrics.projectedStoreBalance).toLocaleString()} {metrics.consumptionUnitName.toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Expandable Lot / Tag Overrides */}
+                  {item.showTagDetails && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-slate-100 dark:border-slate-800">
+                      <div>
+                        <Label className="text-2xs font-semibold mb-1 block text-slate-500">
+                          Batch / Lot Number (Optional)
+                        </Label>
+                        <Input
+                          placeholder="e.g. LOT-2026-B8"
+                          value={item.lotNumber || ''}
+                          onChange={(e) => handleUpdateItem(idx, { lotNumber: e.target.value })}
+                          className="h-8 text-xs tabular-nums"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-2xs font-semibold mb-1 block text-slate-500">
+                          Custom Roll / Item Tag (Optional)
+                        </Label>
+                        <Input
+                          placeholder="e.g. TAG-CUSTOM-001"
+                          value={item.customRollTag || ''}
+                          onChange={(e) => handleUpdateItem(idx, { customRollTag: e.target.value })}
+                          className="h-8 text-xs tabular-nums"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
 
-          {showAdvancedTag && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-indigo-200 dark:border-indigo-900/60">
-              <div>
-                <Label className="text-2xs font-semibold mb-1 block">Batch / Lot Number</Label>
-                <Input
-                  placeholder="e.g. LOT-2026-B8"
-                  value={lotNumber}
-                  onChange={(e) => setLotNumber(e.target.value)}
-                  className="h-8 text-xs tabular-nums"
-                />
-              </div>
-              <div>
-                <Label className="text-2xs font-semibold mb-1 block">Custom Tag Override</Label>
-                <Input
-                  placeholder="e.g. TAG-CUSTOM-001"
-                  value={customRollTag}
-                  onChange={(e) => setCustomRollTag(e.target.value)}
-                  className="h-8 text-xs tabular-nums"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ========================================================= */}
-        {/* SUMMARY TELEMETRY & WAREHOUSE IMPACT CARDS */}
-        {/* ========================================================= */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-2xs uppercase font-bold text-slate-400 block">Unit Measure</span>
-            <span className="text-sm font-black text-slate-900 dark:text-white tabular-nums truncate block" title={unitMeasureDisplay}>
-              {unitMeasureDisplay}
-            </span>
-            <span className="text-2xs text-slate-500 block">per {purchaseUnitName}</span>
-          </Card>
-
-          <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-2xs uppercase font-bold text-blue-600 dark:text-blue-400 block">
-              Issue Quantity
-            </span>
-            <span className="text-sm font-black text-blue-600 dark:text-blue-400 tabular-nums">
-              {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)}
-            </span>
-            <span className="text-2xs text-slate-500 block">
-              {totalBatchQuantity.toLocaleString()} {consumptionUnitName.toUpperCase()} total
-            </span>
-          </Card>
-
-          <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-2xs uppercase font-bold text-slate-500 dark:text-slate-400 block">
-              Destination
-            </span>
-            <span className="text-sm font-black text-slate-800 dark:text-slate-200 tabular-nums truncate block">
-              {destination === 'machine'
-                ? machineryList.find((m) => m.id === machineId)?.name || 'Machine Press'
-                : 'Floor Staging'}
-            </span>
-            <span className="text-2xs text-slate-500 block">
-              {destination === 'machine' ? 'Mounted to Press' : 'Floor Staging Area'}
-            </span>
-          </Card>
-
-          <Card
-            className={cn(
-              'p-3 border shadow-xs',
-              isStoreShortage
-                ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-300 dark:border-rose-900'
-                : 'bg-white dark:bg-slate-900'
-            )}
-          >
-            <span className="text-2xs uppercase font-bold text-slate-400 block">Projected Store Stock</span>
-            <span
-              className={cn(
-                'text-sm font-black tabular-nums',
-                isStoreShortage ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'
-              )}
+          {/* Add Another Item Button */}
+          <div className="flex justify-center pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddItem}
+              className="text-xs font-bold gap-1.5 border-dashed border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:border-blue-400 dark:hover:border-blue-600 cursor-pointer h-9 px-4"
             >
-              {projectedRemainingUnits} {formatUnitPlural(projectedRemainingUnits, purchaseUnitName)} ({Math.max(0, projectedStoreBalance).toLocaleString()}{' '}
-              {consumptionUnitName.toUpperCase()})
-            </span>
-            <span className="text-2xs text-slate-500 block truncate">
-              {isStoreShortage ? `⚠️ Deficit (${Math.abs(projectedStoreBalance).toLocaleString()} ${consumptionUnitName.toUpperCase()})` : `in ${sourceLocationName}`}
-            </span>
-          </Card>
+              <Plus className="h-4 w-4" />
+              <span>{tBilingual('+ Add Another Material / Roll to Issue', '+ আরেকটি কাঁচামাল / রোল যোগ করুন')}</span>
+            </Button>
+          </div>
         </div>
 
-        {/* Printable Industrial Tag Preview */}
+        {/* Printable Ticket Preview Accordion */}
         <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-2xs">
           <div className="p-3 bg-slate-100 dark:bg-slate-800/80 flex items-center justify-between">
             <span className="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
@@ -1193,54 +1142,55 @@ export function IssueMasterRollModal({
           </div>
 
           {showPrintLabel && (
-            <div className="p-4 bg-slate-50 dark:bg-slate-950/50 flex flex-col items-center animate-in fade-in">
-              <div className="w-full max-w-sm p-4 bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-100 rounded-xl shadow-md space-y-2.5 text-slate-900 dark:text-slate-100">
-                <div className="flex items-center justify-between border-b pb-2">
-                  <div className="font-black text-xs tracking-wider">INKFLOW ERP MATERIAL TICKET</div>
-                  <Badge variant="outline" className="tabular-nums text-2xs font-bold uppercase">
-                    {purchaseUnitName}
-                  </Badge>
-                </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-950/50 flex flex-col items-center animate-in fade-in space-y-3">
+              {computedRows.map((r, i) => (
+                <div
+                  key={i}
+                  className="w-full max-w-sm p-4 bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-100 rounded-xl shadow-md space-y-2 text-slate-900 dark:text-slate-100"
+                >
+                  <div className="flex items-center justify-between border-b pb-1.5">
+                    <div className="font-black text-2xs tracking-wider">INKFLOW MATERIAL TICKET #{i + 1}</div>
+                    <Badge variant="outline" className="tabular-nums text-2xs font-bold uppercase">
+                      {r.purchaseUnitName}
+                    </Badge>
+                  </div>
 
-                <div className="text-center py-1">
-                  <div className="tabular-nums font-black text-base tracking-wider">{generatedRollCode}</div>
-                  <div className="text-xs font-bold text-slate-600 dark:text-slate-400">
-                    {selectedMaterial?.name || 'Raw Material Item'}
+                  <div className="text-center py-1">
+                    <div className="tabular-nums font-black text-sm tracking-wider">{r.generatedRollCode}</div>
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {r.material?.name || 'Raw Material Item'}
+                    </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-2 text-2xs tabular-nums border-t border-b py-2">
-                  <div>
-                    <span className="text-slate-400 block">UNIT MEASURE:</span>
-                    <strong>{unitMeasureDisplay}</strong>
+                  <div className="grid grid-cols-2 gap-1.5 text-2xs tabular-nums border-t border-b py-1.5">
+                    <div>
+                      <span className="text-slate-400 block">MEASURE:</span>
+                      <strong>{r.unitMeasureDisplay}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block">QUANTITY:</span>
+                      <strong>
+                        {issueItems[i]?.quantity} {formatUnitPlural(issueItems[i]?.quantity, r.purchaseUnitName).toUpperCase()}
+                      </strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block">TOTAL VOLUME:</span>
+                      <strong>
+                        {r.totalBatchQuantity.toLocaleString()} {r.consumptionUnitName.toUpperCase()}
+                      </strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block">DESTINATION:</span>
+                      <strong>Floor Staging</strong>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-slate-400 block">QUANTITY:</span>
-                    <strong>
-                      {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName).toUpperCase()}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block">TOTAL STOCK:</span>
-                    <strong>
-                      {totalBatchQuantity.toLocaleString()} {consumptionUnitName.toUpperCase()}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block">DESTINATION:</span>
-                    <strong className="truncate block">
-                      {destination === 'machine'
-                        ? machineryList.find((m) => m.id === machineId)?.name || 'Machine'
-                        : 'Floor Staging'}
-                    </strong>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between text-2xs text-slate-400 pt-1">
-                  <span>DATE: {new Date().toLocaleDateString('en-GB')}</span>
-                  <span>OPERATOR: {operatorName}</span>
+                  <div className="flex items-center justify-between text-2xs text-slate-400 pt-0.5">
+                    <span>DATE: {issueDate}</span>
+                    <span>OPERATOR: {operatorName}</span>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           )}
         </div>
@@ -1248,10 +1198,15 @@ export function IssueMasterRollModal({
 
       {/* FIXED DEDICATED MODAL FOOTER */}
       <div className="px-5 py-3.5 bg-slate-100/90 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2.5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="secondary" className="tabular-nums text-xs font-bold py-1 px-2.5">
-            {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)} ({totalBatchQuantity.toLocaleString()} {consumptionUnitName.toUpperCase()})
+            {issueItems.length} {issueItems.length === 1 ? 'Material' : 'Materials'} ({totalUnitsCount} Units)
           </Badge>
+          {totalAreaSft > 0 && (
+            <Badge variant="outline" className="tabular-nums text-2xs font-semibold py-1 px-2">
+              Total Area: {totalAreaSft.toLocaleString()} SFT
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -1266,18 +1221,18 @@ export function IssueMasterRollModal({
           </Button>
           <Button
             type="submit"
-            disabled={loading || !materialId || isStoreShortage}
+            disabled={loading || issueItems.length === 0 || hasEmptyMaterial || hasShortage || hasInvalidQty}
             className="h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md cursor-pointer gap-2"
           >
             {loading ? (
-              <span>Issuing Material...</span>
+              <span>Issuing Materials...</span>
             ) : (
               <>
                 <Package className="h-4 w-4" />
                 <span>
                   {tBilingual(
-                    `Confirm Issue (${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)})`,
-                    `ইস্যু নিশ্চিত করুন (${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)})`
+                    `Confirm Issue (${issueItems.length} ${issueItems.length === 1 ? 'Item' : 'Items'})`,
+                    `ইস্যু নিশ্চিত করুন (${issueItems.length} টি আইটেম)`
                   )}
                 </span>
                 <ArrowRight className="h-3.5 w-3.5 ml-0.5" />

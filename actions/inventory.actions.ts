@@ -997,6 +997,59 @@ export async function issueMasterRollsBatchAction(
 }
 
 /**
+ * Server Action: Requisition and issue multiple material items in a single batch to print floor
+ */
+export async function issueMultipleMaterialsBatchAction(
+  items: IssueMasterRollParams[],
+  requestedCompanyId?: string
+): Promise<ServerActionResult<{ count: number; total_area_sft: number; results: IssueMasterRollResult[] }>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return { success: false, error: 'At least one material item must be provided for issue.' }
+    }
+
+    const results: IssueMasterRollResult[] = []
+    let totalArea = 0
+
+    for (const item of items) {
+      const res = await InventoryService.issueMasterRollsBatch({
+        ...item,
+        company_id: companyId,
+        branch_id: tenant.branchId || null,
+        operator_name: item.operator_name || tenant.fullName || tenant.userEmail || 'Floor Operator',
+        actor_email: tenant.userEmail,
+      })
+      results.push(res)
+      totalArea += Number(res.total_area_sft || 0)
+    }
+
+    revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/inventory/rolls', 'page')
+    revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/production/floor-consumption', 'page')
+    revalidatePath('/[tenantSlug]/operator', 'page')
+    revalidatePath('/[tenantSlug]/machinery', 'page')
+
+    return {
+      success: true,
+      data: {
+        count: results.length,
+        total_area_sft: totalArea,
+        results,
+      },
+    }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to issue materials batch to floor.' }
+  }
+}
+
+/**
  * Server Action: Get all physical rolls in inventory/floor
  */
 export async function getInventoryRollsAction(
