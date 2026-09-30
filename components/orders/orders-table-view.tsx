@@ -228,6 +228,15 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                   {/* Actions */}
                   <td className="py-3 px-4 align-middle text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href={getTenantNavHref(`/orders/${order.id}`, pathname, tenantSlug)}
+                        className="inline-flex items-center justify-center h-7 px-2 text-2xs font-semibold rounded-md border border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 gap-1"
+                        title={tBilingual('Open Job Flow', 'কাজের ফ্লো দেখুন')}
+                      >
+                        <span>{tBilingual('Job Flow', 'জব ফ্লো')}</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+
                       {/* Direct Print Job Sheet Action */}
                       <Button
                         type="button"

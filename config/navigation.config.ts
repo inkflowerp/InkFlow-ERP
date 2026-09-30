@@ -97,16 +97,16 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
       items: [
         {
           key: 'design',
-          title: 'Design Panel',
-          titleBn: 'ডিজাইন প্যানেল',
+          title: 'Design',
+          titleBn: 'ডিজাইন',
           href: '/design',
           icon: 'Palette',
           permission: { action: 'view', resource: 'design' },
         },
         {
           key: 'production',
-          title: 'Printing Floor',
-          titleBn: 'প্রিন্টিং ফ্লোর',
+          title: 'Production',
+          titleBn: 'প্রোডাকশন',
           href: '/production',
           icon: 'Printer',
           exact: true,
@@ -114,7 +114,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         },
         {
           key: 'operator',
-          title: 'Shop Floor Terminal',
+          title: 'Operator Terminal',
           titleBn: 'অপারেটর টার্মিনাল',
           href: '/operator',
           icon: 'Cpu',
@@ -122,7 +122,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         },
         {
           key: 'finishing',
-          title: 'Finishing & Fabrications',
+          title: 'Finishing & Fabrication',
           titleBn: 'ফিনিশিং ও তৈরি',
           href: '/finishing',
           icon: 'Scissors',
@@ -138,15 +138,15 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         },
         {
           key: 'floor_consumption',
-          title: 'Floor Consumptions',
-          titleBn: 'কাঁচামাল খরচ',
+          title: 'Materials & Consumption',
+          titleBn: 'কাঁচামাল ও খরচ',
           href: '/production/floor-consumption',
           icon: 'Flame',
           permission: { action: 'view', resource: 'production' },
         },
         {
           key: 'machineries',
-          title: 'Machineries & Fleet',
+          title: 'Machines & Equipment',
           titleBn: 'মেশিন ও যন্ত্রপাতি',
           href: '/production/machineries',
           icon: 'Cpu',

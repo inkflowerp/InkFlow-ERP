@@ -6,6 +6,9 @@ import { AuditService } from '@/services/audit.service'
 import { EntitlementService } from '@/services/entitlement.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { SalesOrderRecord, JobOrderRecord } from '@/types/order.types'
+import type { ProductionTaskRecord } from '@/types/production.types'
+import type { DesignJobRecord } from '@/types/design.types'
+import type { DeliveryChallanRecord } from '@/types/logistics.types'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -458,6 +461,178 @@ export async function purgeAllOrdersAction(
     return { success: false, error: error.message || 'Failed to purge orders' }
   }
 }
+
+export interface OrderWithDetailsResult {
+  order: SalesOrderRecord
+  jobs: JobOrderRecord[]
+  tasks: ProductionTaskRecord[]
+  designJobs: DesignJobRecord[]
+  challans: DeliveryChallanRecord[]
+}
+
+/**
+ * Server Action: Authoritatively fetches full order details with child jobs, production tasks, design jobs, and delivery challans
+ */
+export async function getOrderWithDetailsAction(
+  orderIdOrNumber: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<OrderWithDetailsResult>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const { OrderRepository } = await import('@/lib/repositories/order.repository')
+    const { ProductionTaskRepository } = await import('@/lib/repositories/production-task.repository')
+    const { DesignRepository } = await import('@/lib/repositories/design.repository')
+    const { LogisticsRepository } = await import('@/lib/repositories/logistics.repository')
+    const { BillingRepository } = await import('@/lib/repositories/billing.repository')
+
+    let order = await OrderRepository.getOrderById(orderIdOrNumber, companyId)
+    if (!order) {
+      const allOrders = await OrderRepository.getOrders(companyId)
+      order =
+        allOrders.find((o) => o.id === orderIdOrNumber || o.order_number === orderIdOrNumber) ||
+        null
+    }
+
+    if (!order) {
+      const invoices = await BillingRepository.getInvoices(companyId)
+      const inv = invoices.find(
+        (i) =>
+          i.id === orderIdOrNumber ||
+          i.invoice_number === orderIdOrNumber ||
+          i.order_number === orderIdOrNumber ||
+          i.sales_order_id === orderIdOrNumber
+      )
+      if (inv) {
+        order = {
+          id: inv.sales_order_id || inv.id,
+          company_id: inv.company_id || companyId,
+          order_number: inv.order_number || inv.invoice_number.replace('INV-', 'ORD-'),
+          customer_id: inv.customer_id,
+          customer_name: inv.customer_name,
+          customer_phone: inv.customer_phone,
+          customer_address: inv.customer_address,
+          salesperson_name: inv.created_by_name || 'Commercial Manager',
+          order_date: inv.invoice_date || new Date().toISOString().split('T')[0],
+          delivery_date: inv.due_date || new Date().toISOString().split('T')[0],
+          priority: ((inv as any).priority as any) || 'normal',
+          status: inv.status === 'paid' ? 'completed' : 'confirmed',
+          payment_terms: 'cash',
+          subtotal: inv.subtotal || 0,
+          discount_amount: inv.discount_amount || 0,
+          vat_amount: inv.vat_amount || 0,
+          final_price: inv.grand_total || 0,
+          advance_amount: inv.paid_amount || 0,
+          due_amount: inv.due_amount || 0,
+          invoice_id: inv.id,
+          invoice_number: inv.invoice_number,
+          notes: `Origin: Invoice #${inv.invoice_number}`,
+          items: (inv.items || []).map((it: any, idx: number) => ({
+            id: it.id || `oi-${idx}`,
+            item_name: it.item_description || it.description || it.item_name || 'Item',
+            width: it.width || 0,
+            height: it.height || 0,
+            dimension_unit: (it.dimension_unit as any) || 'ft',
+            quantity: it.quantity || 1,
+            unit: it.unit || 'pcs',
+            unit_price: it.unit_price || 0,
+            total_price: it.total_price || 0,
+            material_spec: it.material_spec || 'Standard Media',
+          })),
+          jobs_count: inv.items?.length || 1,
+          created_at: inv.created_at,
+          updated_at: inv.updated_at,
+        } as SalesOrderRecord
+      }
+    }
+
+    if (!order) {
+      return { success: false, error: 'Order not found' }
+    }
+
+    let jobs = await OrderRepository.getJobOrders(companyId, order.id)
+    if (!jobs || jobs.length === 0) {
+      const allJobs = await OrderRepository.getJobOrders(companyId)
+      jobs = allJobs.filter(
+        (j) => j.sales_order_id === order!.id || j.order_number === order!.order_number
+      )
+    }
+
+    if (jobs.length === 0 && order.items && order.items.length > 0) {
+      jobs = order.items.map((it, idx) => ({
+        id: `job-synth-${order!.id}-${idx}`,
+        company_id: companyId,
+        order_id: order!.id,
+        sales_order_id: order!.id,
+        order_number: order!.order_number,
+        job_number: `JOB-${order!.order_number.replace('ORD-', '')}-${idx + 1}`,
+        title: it.item_name,
+        product_name: it.item_name,
+        customer_name: order!.customer_name,
+        production_type: 'large_format',
+        assigned_department: 'wide_format_print',
+        status: order!.status === 'completed' ? 'completed' : 'in_progress',
+        priority: order!.priority || 'normal',
+        workflow_routing:
+          (it as any).workflow_routing || order!.workflow_routing || 'ready_production',
+        size_spec:
+          it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : '',
+        dimensions_spec:
+          it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : undefined,
+        quantity: it.quantity || 1,
+        material_spec: it.material_spec || 'Standard Media',
+        artwork_status: 'approved',
+        deadline: order!.delivery_date || order!.created_at,
+        created_at: order!.created_at,
+        updated_at: order!.updated_at,
+      })) as JobOrderRecord[]
+    }
+
+    const allTasks = await ProductionTaskRepository.getTasks(companyId)
+    const tasks = allTasks.filter(
+      (t) =>
+        t.job_number === order!.order_number ||
+        jobs.some((j) => j.id === t.job_order_id || j.job_number === t.job_number)
+    )
+
+    const allDesignJobs = await DesignRepository.getDesignJobs(companyId)
+    const designJobs = allDesignJobs.filter(
+      (d) =>
+        d.order_number === order!.order_number ||
+        d.order_number === order!.id ||
+        (order!.invoice_id && d.invoice_id === order!.invoice_id) ||
+        (order!.invoice_number && d.invoice_number === order!.invoice_number) ||
+        jobs.some((j) => j.id === d.job_order_id)
+    )
+
+    const allChallans = await LogisticsRepository.getChallans(companyId)
+    const challans = allChallans.filter(
+      (c) =>
+        c.sales_order_id === order!.id ||
+        c.order_number === order!.order_number ||
+        (order!.invoice_id && c.invoice_id === order!.invoice_id) ||
+        (order!.invoice_number && c.invoice_number === order!.invoice_number)
+    )
+
+    return {
+      success: true,
+      data: {
+        order,
+        jobs,
+        tasks,
+        designJobs,
+        challans,
+      },
+    }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch order details' }
+  }
+}
+
 
 
 

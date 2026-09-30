@@ -874,7 +874,7 @@ function MobileOperatorPanelContent() {
                           variant="default"
                           onClick={() => handleResumeTask(task)}
                           disabled={!!actionInProgressTaskId}
-                          className="h-11 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
+                          className="min-h-[48px] h-12 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
                         >
                           <Play className="h-4 w-4 mr-1.5 fill-current" />
                           {tBilingual('Resume', 'চালু করুন')}
@@ -885,7 +885,7 @@ function MobileOperatorPanelContent() {
                           variant="outline"
                           onClick={() => handlePauseTask(task)}
                           disabled={!!actionInProgressTaskId}
-                          className="h-11 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300 cursor-pointer"
+                          className="min-h-[48px] h-12 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300 cursor-pointer"
                         >
                           <Pause className="h-4 w-4 mr-1.5" />
                           {tBilingual('Pause', 'স্থগিত')}
@@ -898,7 +898,7 @@ function MobileOperatorPanelContent() {
                         variant="outline"
                         onClick={() => setSelectedTaskForHold(task)}
                         disabled={!!actionInProgressTaskId}
-                        className="h-11 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300 cursor-pointer"
+                        className="min-h-[48px] h-12 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300 cursor-pointer"
                       >
                         <AlertOctagon className="h-4 w-4 mr-1.5" />
                         {tBilingual('Hold', 'হোল্ড')}
@@ -914,7 +914,7 @@ function MobileOperatorPanelContent() {
                             setBreakdownTitle(`Breakdown during #${task.task_number}`)
                             setBreakdownDesc(`Machine failure on ${task.assigned_machine_name} while processing ${task.task_name}.`)
                           }}
-                          className="h-11 text-xs font-bold border-rose-400 text-rose-700 hover:bg-rose-50 dark:border-rose-800 cursor-pointer"
+                          className="min-h-[48px] h-12 text-xs font-bold border-rose-400 text-rose-700 hover:bg-rose-50 dark:border-rose-800 cursor-pointer"
                         >
                           <Wrench className="h-4 w-4 mr-1.5 text-rose-600" />
                           {tBilingual('Breakdown', 'নষ্ট')}
@@ -927,7 +927,7 @@ function MobileOperatorPanelContent() {
                         variant="default"
                         onClick={() => handleOpenCompleteModal(task)}
                         disabled={!!actionInProgressTaskId}
-                        className="h-11 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                        className="min-h-[48px] h-12 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
                       >
                         <CheckCircle2 className="h-4 w-4 mr-1.5" />
                         {tBilingual('Complete', 'সম্পন্ন')}
@@ -1010,9 +1010,9 @@ function MobileOperatorPanelContent() {
                     variant="default"
                     onClick={() => handleStartTask(task)}
                     disabled={task.is_blocked_by_dependency || !!actionInProgressTaskId}
-                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 font-bold h-9 px-4 shadow-xs cursor-pointer"
+                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 font-bold min-h-[44px] h-11 px-4 shadow-xs cursor-pointer"
                   >
-                    <Play className="h-3.5 w-3.5 fill-current" />
+                    <Play className="h-4 w-4 fill-current" />
                     <span>{tBilingual('Start', 'শুরু')}</span>
                   </Button>
 
@@ -1025,7 +1025,7 @@ function MobileOperatorPanelContent() {
                         setActiveMenuTaskId(activeMenuTaskId === task.id ? null : task.id)
                       }}
                       className={cn(
-                        'h-9 w-9 p-0 rounded-md border-slate-200 dark:border-slate-800 transition-colors cursor-pointer',
+                        'min-h-[44px] h-11 w-11 p-0 rounded-md border-slate-200 dark:border-slate-800 transition-colors cursor-pointer flex items-center justify-center',
                         activeMenuTaskId === task.id
                           ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
                           : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'

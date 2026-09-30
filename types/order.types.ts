@@ -53,24 +53,31 @@ export interface JobOrderRecord {
   company_id: string
   job_number: string
   order_id: string
+  sales_order_id?: string | null
   order_number?: string | null
   order_item_id?: string | null
   product_name: string
   title?: string
-  customer_name: string
+  customer_name?: string
   customer_phone?: string | null
   quantity: number
-  size_spec: string
-  material_spec: string
+  size_spec?: string
+  dimensions_spec?: string | null
+  material_spec?: string
   priority?: OrderPriority | string
   artwork_url?: string | null
-  artwork_status: 'pending' | 'approved' | 'revised' | 'not_required'
-  deadline: string
+  artwork_status?: 'pending' | 'approved' | 'revised' | 'not_required'
+  deadline?: string
   assigned_department: JobDepartment | string
+  department?: JobDepartment | string
+  production_type?: string | null
+  specifications?: Record<string, any> | null
   assigned_employee_name?: string | null
+  assigned_operator_id?: string | null
+  assigned_operator_name?: string | null
   production_instructions?: string | null
   status: JobStatus | string
-  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'custom' | string
+  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'ready_product' | 'custom' | string
   commercial_status?: 'invoice_required' | 'invoice_requested' | 'invoice_created' | 'unpaid' | 'partially_paid' | 'paid' | string
   production_gate_status?: 'blocked_commercial' | 'blocked_design' | 'blocked_approval' | 'ready_for_production' | 'in_production' | 'completed' | string
   invoice_id?: string | null
@@ -120,7 +127,7 @@ export interface SalesOrderRecord {
   priority: OrderPriority
   status: OrderStatus
   payment_terms: PaymentTerm
-  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'custom'
+  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'ready_product' | 'custom'
   commercial_status?: 'invoice_required' | 'invoice_requested' | 'invoice_created' | 'unpaid' | 'partially_paid' | 'paid'
   production_gate_status?: 'blocked_commercial' | 'blocked_design' | 'blocked_approval' | 'ready_for_production' | 'in_production' | 'completed'
   invoice_id?: string | null

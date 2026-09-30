@@ -139,14 +139,14 @@ export default function FloorConsumptionPage() {
     <PanelAccessGuard
       module="production"
       action="view"
-      panelTitle="Floor Consumption & Tracking"
-      panelTitleBn="কারখানা ফ্লোর কনজাম্পশন"
+      panelTitle="Materials & Consumption"
+      panelTitleBn="কাঁচামাল ও খরচ"
     >
       <div className="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto min-h-screen">
       {/* Page Header */}
       <PageHeader
-        titleEn="Factory Floor Consumption & Tracking"
-        titleBn="কারখানা ফ্লোর কনজাম্পশন ও মেটেরিয়াল ট্র্যাকিং"
+        titleEn="Materials & Consumption"
+        titleBn="কাঁচামাল ও ফ্লোর খরচ"
         descriptionEn="Real-time press floor material usage, physical roll off-cut tracking, job-linked substrate consumption & live scrap telemetry"
         descriptionBn="প্রিন্ট ফ্লোর রিয়েল-টাইম মেটেরিয়াল ব্যবহার, রোল কাটিং ট্র্যাকিং, জব ভিত্তিক মেটেরিয়াল কনজাম্পশন ও স্ক্র্যাপ অডিট"
         icon={Flame}

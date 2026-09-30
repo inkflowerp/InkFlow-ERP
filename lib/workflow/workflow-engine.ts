@@ -1,0 +1,526 @@
+/**
+ * PrintERP SaaS - Canonical Order-to-Delivery Workflow Engine
+ *
+ * Centralized, deterministic workflow resolver that evaluates an order and its child jobs,
+ * routing specifications, design approvals, production tasks, and delivery challans
+ * to compute authoritative stage progression, blockers, and next actions.
+ */
+
+import type { SalesOrderRecord, JobOrderRecord } from '../../types/order.types.ts'
+import type { ProductionTaskRecord } from '../../types/production.types.ts'
+import type { DesignJobRecord } from '../../types/design.types.ts'
+import type { DeliveryChallanRecord } from '../../types/logistics.types.ts'
+import { isReadyProduct } from '../units.ts'
+
+export type CanonicalWorkflowStageId =
+  | 'quotation'
+  | 'sales_order'
+  | 'design'
+  | 'approval'
+  | 'production'
+  | 'finishing'
+  | 'delivery'
+  | 'completed'
+
+export interface WorkflowStageItem {
+  id: CanonicalWorkflowStageId
+  labelEn: string
+  labelBn: string
+  status: 'completed' | 'in_progress' | 'blocked' | 'pending' | 'skipped'
+  descriptionEn?: string
+  descriptionBn?: string
+}
+
+export interface ChildJobWorkflowState {
+  jobId: string
+  jobNumber: string
+  productName: string
+  department: string
+  routing: string
+  stage: CanonicalWorkflowStageId
+  stageLabelEn: string
+  stageLabelBn: string
+  status: string
+  isBlocked: boolean
+  blockedReasonEn: string | null
+  blockedReasonBn: string | null
+  nextActionEn: string
+  nextActionBn: string
+  nextActionHref: string
+  tasksCount: number
+  completedTasksCount: number
+  isReadyForDelivery: boolean
+  isDelivered: boolean
+}
+
+export interface OrderWorkflowResolution {
+  orderId: string
+  orderNumber: string
+  customerName: string
+  overallStage: CanonicalWorkflowStageId
+  overallStageLabelEn: string
+  overallStageLabelBn: string
+  orderStatus: string
+  progressPercentage: number
+  isBlocked: boolean
+  blockedReasonEn: string | null
+  blockedReasonBn: string | null
+  nextActionEn: string
+  nextActionBn: string
+  nextActionHref: string
+  isPartiallyDelivered: boolean
+  isFullyDelivered: boolean
+  isFullyPaid: boolean
+  hasPendingDue: boolean
+  stepperStages: WorkflowStageItem[]
+  childJobs: ChildJobWorkflowState[]
+  materialsSummary: {
+    totalItems: number
+    hasDesign: boolean
+    hasPrint: boolean
+    hasFinishing: boolean
+    hasFabrication: boolean
+    hasInstallation: boolean
+  }
+}
+
+/**
+ * Resolves the canonical workflow state for an individual Job Order
+ */
+export function resolveChildJobWorkflow(
+  job: JobOrderRecord,
+  tasks: ProductionTaskRecord[] = [],
+  designJob: DesignJobRecord | null = null,
+  challans: DeliveryChallanRecord[] = [],
+  tenantSlug: string = 'default'
+): ChildJobWorkflowState {
+  const jobTasks = tasks.filter(
+    (t) =>
+      t.job_order_id === job.id ||
+      t.job_number === job.job_number ||
+      t.task_number?.startsWith(`TSK-${job.job_number.replace('JO-', '').replace('JOB-', '')}`)
+  )
+
+  const printTasks = jobTasks.filter((t) => t.task_type === 'printing' || t.department === 'printing')
+  const finishingTasks = jobTasks.filter(
+    (t) =>
+      t.task_type === 'finishing' ||
+      t.task_type === 'lamination' ||
+      t.task_type === 'cutting' ||
+      t.task_type === 'fabrication' ||
+      t.task_type === 'mounting' ||
+      t.department === 'finishing' ||
+      t.department === 'fabrication'
+  )
+
+  const isPrintComplete = printTasks.length > 0 && printTasks.every((t) => t.status === 'completed')
+  const isFinishingComplete =
+    finishingTasks.length === 0 || finishingTasks.every((t) => t.status === 'completed')
+  const allTasksComplete = jobTasks.length > 0 && jobTasks.every((t) => t.status === 'completed')
+
+  // Check delivery challan items
+  let isDelivered = false
+  for (const ch of challans) {
+    if (ch.status === 'delivered') {
+      const match = ch.items?.some(
+        (it) =>
+          it.product_description?.includes(job.title || job.product_name) ||
+          it.remarks?.includes(job.job_number)
+      )
+      if (match) {
+        isDelivered = true
+        break
+      }
+    }
+  }
+
+  const routing = job.workflow_routing || 'ready_production'
+  const isDesignRequired = routing === 'design_required'
+  const isDesignApproved =
+    job.artwork_status === 'approved' ||
+    designJob?.status === 'approved' ||
+    designJob?.is_locked ||
+    routing === 'design_ok' ||
+    routing === 'ready_production'
+
+  // Default state initialization
+  let stage: CanonicalWorkflowStageId = 'production'
+  let stageLabelEn = 'In Production'
+  let stageLabelBn = 'প্রোডাকশন চলছে'
+  let isBlocked = false
+  let blockedReasonEn: string | null = null
+  let blockedReasonBn: string | null = null
+  let nextActionEn = 'Start Production'
+  let nextActionBn = 'প্রোডাকশন শুরু করুন'
+  let nextActionHref = `/${tenantSlug}/production?job=${job.job_number}`
+
+  // 1. Evaluate Delivered
+  if (isDelivered || job.status === 'completed' && allTasksComplete) {
+    stage = isDelivered ? 'completed' : 'delivery'
+    stageLabelEn = isDelivered ? 'Delivered' : 'Ready for Delivery'
+    stageLabelBn = isDelivered ? 'ডেলিভারি সম্পন্ন' : 'ডেলিভারির জন্য প্রস্তুত'
+    nextActionEn = isDelivered ? 'View Delivery Proof' : 'Create Delivery Challan'
+    nextActionBn = isDelivered ? 'ডেলিভারি প্রমাণ দেখুন' : 'ডেলিভারি চালান তৈরি করুন'
+    nextActionHref = `/${tenantSlug}/delivery?job=${job.job_number}`
+  }
+  // 2. Evaluate Ready for Delivery
+  else if (allTasksComplete || (isPrintComplete && isFinishingComplete)) {
+    stage = 'delivery'
+    stageLabelEn = 'Ready for Delivery'
+    stageLabelBn = 'ডেলিভারির জন্য প্রস্তুত'
+    nextActionEn = 'Create Delivery Challan'
+    nextActionBn = 'ডেলিভারি চালান তৈরি করুন'
+    nextActionHref = `/${tenantSlug}/delivery?job=${job.job_number}`
+  }
+  // 3. Evaluate Finishing / Post-Press Stage
+  else if (isPrintComplete && finishingTasks.length > 0 && !isFinishingComplete) {
+    stage = 'finishing'
+    stageLabelEn = 'Finishing & Fabrication'
+    stageLabelBn = 'ফিনিশিং ও তৈরি'
+    const activeFinishing = finishingTasks.find((t) => t.status === 'in_progress')
+    if (activeFinishing) {
+      nextActionEn = 'Complete Finishing'
+      nextActionBn = 'ফিনিশিং সম্পন্ন করুন'
+    } else {
+      nextActionEn = 'Start Finishing'
+      nextActionBn = 'ফিনিশিং শুরু করুন'
+    }
+    nextActionHref = `/${tenantSlug}/finishing?job=${job.job_number}`
+  }
+  // 4. Evaluate Printing / Machine Production Stage
+  else if (isDesignApproved) {
+    stage = 'production'
+    stageLabelEn = 'Production Queue'
+    stageLabelBn = 'প্রোডাকশন কিউ'
+
+    const activeTask = jobTasks.find((t) => t.status === 'in_progress')
+    const onHoldTask = jobTasks.find((t) => t.status === 'on_hold')
+
+    if (onHoldTask) {
+      isBlocked = true
+      blockedReasonEn = onHoldTask.hold_notes || 'Task paused or on hold'
+      blockedReasonBn = 'কাজ স্থগিত বা সাময়িক বিরতিতে আছে'
+      nextActionEn = 'Resume Production'
+      nextActionBn = 'প্রোডাকশন পুনরায় চালু করুন'
+    } else if (activeTask) {
+      stageLabelEn = 'Printing / Manufacturing'
+      stageLabelBn = 'প্রিন্টিং / প্রস্তুতকরণ'
+      nextActionEn = 'Complete Print'
+      nextActionBn = 'প্রিন্ট সম্পন্ন করুন'
+    } else {
+      const unassigned = jobTasks.find((t) => !t.assigned_machine_name && !t.assigned_machine_id)
+      if (unassigned) {
+        nextActionEn = 'Assign Machine & Operator'
+        nextActionBn = 'মেশিন ও অপারেটর বরাদ্দ করুন'
+      } else {
+        nextActionEn = 'Start Production'
+        nextActionBn = 'প্রোডাকশন শুরু করুন'
+      }
+    }
+    nextActionHref = `/${tenantSlug}/production?job=${job.job_number}`
+  }
+  // 5. Evaluate Design & Approval Gate
+  else if (isDesignRequired && !isDesignApproved) {
+    if (designJob?.status === 'customer_approval' || job.artwork_status === 'pending') {
+      stage = 'approval'
+      stageLabelEn = 'Waiting Proof Approval'
+      stageLabelBn = 'প্রুফ অনুমোদন অপেক্ষমাণ'
+      isBlocked = true
+      blockedReasonEn = 'Production blocked: Customer design proof approval required'
+      blockedReasonBn = 'প্রোডাকশন স্থগিত: কাস্টমার আর্টওয়ার্ক অনুমোদন প্রয়োজন'
+      nextActionEn = 'Approve Design Proof'
+      nextActionBn = 'ডিজাইন প্রুফ অনুমোদন করুন'
+      nextActionHref = `/${tenantSlug}/design?job=${job.job_number}`
+    } else {
+      stage = 'design'
+      stageLabelEn = 'Artwork Design'
+      stageLabelBn = 'ডিজাইন তৈরি'
+      isBlocked = true
+      blockedReasonEn = 'Artwork not finished: Designer is preparing files'
+      blockedReasonBn = 'আর্টওয়ার্ক অসম্পূর্ণ: ডিজাইনার ফাইল প্রস্তুত করছেন'
+      nextActionEn = 'Review Design'
+      nextActionBn = 'ডিজাইন দেখুন'
+      nextActionHref = `/${tenantSlug}/design?job=${job.job_number}`
+    }
+  }
+
+  const completedCount = jobTasks.filter((t) => t.status === 'completed').length
+
+  return {
+    jobId: job.id,
+    jobNumber: job.job_number,
+    productName: job.product_name || job.title || 'Custom Print Job',
+    department: job.assigned_department || 'printing',
+    routing,
+    stage,
+    stageLabelEn,
+    stageLabelBn,
+    status: job.status || 'queued',
+    isBlocked,
+    blockedReasonEn,
+    blockedReasonBn,
+    nextActionEn,
+    nextActionBn,
+    nextActionHref,
+    tasksCount: jobTasks.length,
+    completedTasksCount: completedCount,
+    isReadyForDelivery: allTasksComplete && !isDelivered,
+    isDelivered,
+  }
+}
+
+/**
+ * Resolves the master workflow state for an entire Sales Order across all its child jobs
+ */
+export function resolveOrderJobWorkflow(
+  order: SalesOrderRecord,
+  jobs: JobOrderRecord[] = [],
+  tasks: ProductionTaskRecord[] = [],
+  designJobs: DesignJobRecord[] = [],
+  challans: DeliveryChallanRecord[] = [],
+  tenantSlug: string = 'default'
+): OrderWorkflowResolution {
+  const childJobs = jobs.map((j) => {
+    const dj = designJobs.find(
+      (d) =>
+        d.job_order_id === j.id ||
+        (d.order_number && (d.order_number === order.order_number || d.order_number === order.id)) ||
+        d.title === j.title
+    )
+    return resolveChildJobWorkflow(j, tasks, dj || null, challans, tenantSlug)
+  })
+
+  // Detect capability requirements from line items
+  const items = order.items || []
+  let hasDesign = items.some((it: any) => it.design_required || it.workflow_routing === 'design_required')
+  let hasPrint = true
+  let hasFinishing = items.some((it: any) => it.finishing || it.selected_finishing?.length)
+  let hasFabrication = items.some((it: any) => it.item_name?.toLowerCase().includes('sign') || it.item_name?.toLowerCase().includes('acp') || it.item_name?.toLowerCase().includes('acrylic'))
+  let hasInstallation = items.some((it: any) => it.item_name?.toLowerCase().includes('install') || (it as any).delivery_type === 'installation')
+
+  if (order.workflow_routing === 'ready_product' || items.every((it) => isReadyProduct(it))) {
+    hasDesign = false
+    hasPrint = false
+    hasFinishing = false
+  }
+
+  // Financial reconciliation status
+  const due = Number(order.due_amount || 0)
+  const isFullyPaid = due <= 0 || order.status === 'completed'
+  const hasPendingDue = due > 0
+
+  // Delivery status evaluation
+  const relevantChallans = challans.filter(
+    (c) =>
+      c.sales_order_id === order.id ||
+      c.order_number === order.order_number ||
+      c.invoice_id === order.invoice_id ||
+      c.invoice_number === order.invoice_number
+  )
+  const isPartiallyDelivered =
+    relevantChallans.some((c) => c.status === 'partially_delivered') ||
+    (childJobs.length > 1 && childJobs.some((j) => j.isDelivered) && childJobs.some((j) => !j.isDelivered))
+  const isFullyDelivered =
+    (childJobs.length > 0 && childJobs.every((j) => j.isDelivered)) ||
+    (childJobs.length === 0 &&
+      relevantChallans.length > 0 &&
+      relevantChallans.every((c) => c.status === 'delivered'))
+
+  // Determine overall workflow stage
+  let overallStage: CanonicalWorkflowStageId = 'sales_order'
+  let overallStageLabelEn = 'Order Booked'
+  let overallStageLabelBn = 'অর্ডার বুকিং'
+  let isBlocked = false
+  let blockedReasonEn: string | null = null
+  let blockedReasonBn: string | null = null
+  let nextActionEn = 'Open Job Flow'
+  let nextActionBn = 'কাজের ফ্লো দেখুন'
+  let nextActionHref = `/${tenantSlug}/orders/${order.id}`
+
+  if (isFullyDelivered) {
+    overallStage = 'completed'
+    overallStageLabelEn = isFullyPaid ? 'Completed & Settled' : 'Delivered (Payment Due)'
+    overallStageLabelBn = isFullyPaid ? 'সম্পন্ন ও সমাপ্ত' : 'ডেলিভারি সম্পন্ন (বকেয়া বিদ্যমান)'
+    nextActionEn = isFullyPaid ? 'View Invoice Receipt' : 'Collect Due Payment'
+    nextActionBn = isFullyPaid ? 'রশিদ ও চালান দেখুন' : 'বকেয়া বিল গ্রহণ করুন'
+    nextActionHref = `/${tenantSlug}/billing?invoice=${order.invoice_number || ''}`
+  } else if (isPartiallyDelivered) {
+    overallStage = 'delivery'
+    overallStageLabelEn = 'Partially Delivered'
+    overallStageLabelBn = 'আংশিক ডেলিভারি সম্পন্ন'
+    nextActionEn = 'Dispatch Remaining Jobs'
+    nextActionBn = 'অবশিষ্ট কাজ ডেলিভারি দিন'
+    nextActionHref = `/${tenantSlug}/delivery`
+  } else if (childJobs.length > 0 && childJobs.every((j) => j.isReadyForDelivery)) {
+    overallStage = 'delivery'
+    overallStageLabelEn = 'Ready for Delivery'
+    overallStageLabelBn = 'ডেলিভারির জন্য প্রস্তুত'
+    nextActionEn = 'Generate Delivery Challan'
+    nextActionBn = 'ডেলিভারি চালান তৈরি করুন'
+    nextActionHref = `/${tenantSlug}/delivery`
+  } else if (childJobs.some((j) => j.stage === 'approval')) {
+    overallStage = 'approval'
+    overallStageLabelEn = 'Waiting Proof Approval'
+    overallStageLabelBn = 'প্রুফ অনুমোদন অপেক্ষমাণ'
+    isBlocked = true
+    blockedReasonEn = 'Customer design proof approval required'
+    blockedReasonBn = 'কাস্টমারের আর্টওয়ার্ক অনুমোদন প্রয়োজন'
+    nextActionEn = 'Approve Design Proof'
+    nextActionBn = 'ডিজাইন প্রুফ অনুমোদন করুন'
+    nextActionHref = `/${tenantSlug}/design`
+  } else if (childJobs.some((j) => j.stage === 'finishing')) {
+    overallStage = 'finishing'
+    overallStageLabelEn = 'Finishing & Fabrication'
+    overallStageLabelBn = 'ফিনিশিং ও তৈরি'
+    nextActionEn = 'Review Finishing Floor'
+    nextActionBn = 'ফিনিশিং ফ্লোর দেখুন'
+    nextActionHref = `/${tenantSlug}/finishing`
+  } else if (childJobs.some((j) => j.stage === 'production')) {
+    overallStage = 'production'
+    overallStageLabelEn = 'In Production'
+    overallStageLabelBn = 'প্রোডাকশন চলছে'
+    const blockedJob = childJobs.find((j) => j.isBlocked)
+    if (blockedJob) {
+      isBlocked = true
+      blockedReasonEn = blockedJob.blockedReasonEn
+      blockedReasonBn = blockedJob.blockedReasonBn
+    }
+    nextActionEn = 'View Production Floor'
+    nextActionBn = 'প্রোডাকশন ফ্লোর দেখুন'
+    nextActionHref = `/${tenantSlug}/production`
+  } else if (childJobs.some((j) => j.stage === 'design') || hasDesign) {
+    overallStage = 'design'
+    overallStageLabelEn = 'Artwork in Design'
+    overallStageLabelBn = 'ডিজাইন প্রস্তুতকরণ'
+    nextActionEn = 'Open Design'
+    nextActionBn = 'ডিজাইন দেখুন'
+    nextActionHref = `/${tenantSlug}/design`
+  }
+
+  // Calculate overall progress percentage
+  let progressPercentage = 15
+  if (overallStage === 'design') progressPercentage = 30
+  if (overallStage === 'approval') progressPercentage = 45
+  if (overallStage === 'production') progressPercentage = 65
+  if (overallStage === 'finishing') progressPercentage = 80
+  if (overallStage === 'delivery') progressPercentage = 90
+  if (overallStage === 'completed') progressPercentage = 100
+
+  // Build visual stepper stages
+  const stepperStages: WorkflowStageItem[] = [
+    {
+      id: 'quotation',
+      labelEn: 'Quotation',
+      labelBn: 'কোটেশন',
+      status: 'completed',
+    },
+    {
+      id: 'sales_order',
+      labelEn: 'Order Booked',
+      labelBn: 'অর্ডার নিশ্চিত',
+      status: 'completed',
+    },
+    {
+      id: 'design',
+      labelEn: 'Design',
+      labelBn: 'ডিজাইন',
+      status:
+        !hasDesign
+          ? 'skipped'
+          : overallStage === 'design'
+          ? 'in_progress'
+          : ['approval', 'production', 'finishing', 'delivery', 'completed'].includes(overallStage)
+          ? 'completed'
+          : 'pending',
+    },
+    {
+      id: 'approval',
+      labelEn: 'Proof Approval',
+      labelBn: 'প্রুফ অনুমোদন',
+      status:
+        !hasDesign
+          ? 'skipped'
+          : overallStage === 'approval'
+          ? isBlocked
+            ? 'blocked'
+            : 'in_progress'
+          : ['production', 'finishing', 'delivery', 'completed'].includes(overallStage)
+          ? 'completed'
+          : 'pending',
+    },
+    {
+      id: 'production',
+      labelEn: 'Production',
+      labelBn: 'প্রোডাকশন',
+      status:
+        overallStage === 'production'
+          ? isBlocked
+            ? 'blocked'
+            : 'in_progress'
+          : ['finishing', 'delivery', 'completed'].includes(overallStage)
+          ? 'completed'
+          : 'pending',
+    },
+    {
+      id: 'finishing',
+      labelEn: 'Finishing',
+      labelBn: 'ফিনিশিং',
+      status:
+        !hasFinishing && !hasFabrication
+          ? 'skipped'
+          : overallStage === 'finishing'
+          ? 'in_progress'
+          : ['delivery', 'completed'].includes(overallStage)
+          ? 'completed'
+          : 'pending',
+    },
+    {
+      id: 'delivery',
+      labelEn: 'Delivery',
+      labelBn: 'ডেলিভারি',
+      status:
+        overallStage === 'delivery'
+          ? 'in_progress'
+          : overallStage === 'completed'
+          ? 'completed'
+          : 'pending',
+    },
+    {
+      id: 'completed',
+      labelEn: 'Settled',
+      labelBn: 'সম্পূর্ণ সমাপ্ত',
+      status: overallStage === 'completed' && isFullyPaid ? 'completed' : 'pending',
+    },
+  ]
+
+  return {
+    orderId: order.id,
+    orderNumber: order.order_number,
+    customerName: order.customer_name,
+    overallStage,
+    overallStageLabelEn,
+    overallStageLabelBn,
+    orderStatus: order.status,
+    progressPercentage,
+    isBlocked,
+    blockedReasonEn,
+    blockedReasonBn,
+    nextActionEn,
+    nextActionBn,
+    nextActionHref,
+    isPartiallyDelivered,
+    isFullyDelivered,
+    isFullyPaid,
+    hasPendingDue,
+    stepperStages,
+    childJobs,
+    materialsSummary: {
+      totalItems: items.length,
+      hasDesign,
+      hasPrint,
+      hasFinishing,
+      hasFabrication,
+      hasInstallation,
+    },
+  }
+}

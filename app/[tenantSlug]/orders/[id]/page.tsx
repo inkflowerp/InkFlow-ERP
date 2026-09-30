@@ -49,18 +49,10 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
-
-const LIFECYCLE_STAGES = [
-  { id: 'quotation', label: 'Quotation' },
-  { id: 'approval', label: 'Approval' },
-  { id: 'sales_order', label: 'Sales Order' },
-  { id: 'job_order', label: 'Job Orders' },
-  { id: 'production', label: 'Production' },
-  { id: 'finishing', label: 'Finishing' },
-  { id: 'delivery', label: 'Delivery' },
-  { id: 'installation', label: 'Installation' },
-  { id: 'completion', label: 'Completion' },
-]
+import { JobFlowStepper } from '@/components/orders/job-flow-stepper'
+import { ChildJobsBreakdown } from '@/components/orders/child-jobs-breakdown'
+import { resolveOrderJobWorkflow } from '@/lib/workflow/workflow-engine'
+import { getOrderWithDetailsAction, type OrderWithDetailsResult } from '@/actions/order.actions'
 
 function OrderDetailContent() {
   const params = useParams()
@@ -71,20 +63,45 @@ function OrderDetailContent() {
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [isMounted, setIsMounted] = useState(false)
+  const [serverData, setServerData] = useState<OrderWithDetailsResult | null>(null)
+  const [isLoadingServer, setIsLoadingServer] = useState(true)
+
+  const fetchOrderDetails = React.useCallback(async () => {
+    if (!orderId) return
+    setIsLoadingServer(true)
+    try {
+      const res = await getOrderWithDetailsAction(orderId, company?.id || slug)
+      if (res.success && res.data) {
+        setServerData(res.data)
+      }
+    } catch (e) {
+      console.error('Failed to load server order details:', e)
+    } finally {
+      setIsLoadingServer(false)
+    }
+  }, [orderId, company?.id, slug])
+
   useEffect(() => {
     setIsMounted(true)
-  }, [])
+    fetchOrderDetails()
+  }, [fetchOrderDetails])
 
   const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
   const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [])
   const [allJobs] = useDataStore<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, [])
   const [allTimeline] = useDataStore<OrderTimelineEventRecord[]>(STORAGE_KEYS.TIMELINE_EVENTS, [])
 
-  let order = orders.find((o) => o.id === orderId || o.order_number === orderId)
-  if (!order) {
-    const inv = invoices.find((i) => i.id === orderId || i.invoice_number === orderId || i.order_number === orderId || i.sales_order_id === orderId)
+  let localOrder = orders.find((o) => o.id === orderId || o.order_number === orderId)
+  if (!localOrder) {
+    const inv = invoices.find(
+      (i) =>
+        i.id === orderId ||
+        i.invoice_number === orderId ||
+        i.order_number === orderId ||
+        i.sales_order_id === orderId
+    )
     if (inv) {
-      order = {
+      localOrder = {
         id: inv.sales_order_id || inv.id,
         company_id: inv.company_id || company?.id || 'default',
         order_number: inv.order_number || inv.invoice_number.replace('INV-', 'ORD-'),
@@ -94,7 +111,8 @@ function OrderDetailContent() {
         customer_address: inv.customer_address,
         salesperson_name: inv.created_by_name || 'Commercial Manager',
         order_date: inv.invoice_date || new Date().toISOString().split('T')[0],
-        delivery_date: inv.due_date || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+        delivery_date:
+          inv.due_date || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
         priority: (inv.priority as OrderPriority) || 'normal',
         status: inv.status === 'paid' ? 'completed' : 'confirmed',
         payment_terms: 'cash',
@@ -118,11 +136,15 @@ function OrderDetailContent() {
           material_spec: it.material_spec || 'Standard Media',
         })),
         jobs_count: inv.items?.length || 1,
-        workflow_routing: (inv.items && inv.items.some((it: any) => it.workflow_routing === 'design_required' || it.design_required))
-          ? 'design_required'
-          : (inv.items && inv.items.some((it: any) => it.workflow_routing === 'design_ok'))
-          ? 'design_ok'
-          : 'ready_production',
+        workflow_routing:
+          inv.items &&
+          inv.items.some(
+            (it: any) => it.workflow_routing === 'design_required' || it.design_required
+          )
+            ? 'design_required'
+            : inv.items && inv.items.some((it: any) => it.workflow_routing === 'design_ok')
+            ? 'design_ok'
+            : 'ready_production',
         commercial_status: 'invoice_created',
         invoice_id: inv.id,
         invoice_number: inv.invoice_number,
@@ -132,8 +154,34 @@ function OrderDetailContent() {
       }
     }
   }
-  const jobs = allJobs.filter((j) => order && (j.order_id === order.id || j.order_id === orderId || j.order_id === order.order_number || (order.invoice_id && j.invoice_id === order.invoice_id)))
-  const timeline = allTimeline.filter((t) => order && (t.order_id === order.id || t.order_id === orderId || t.order_id === order.order_number))
+
+  const order = serverData?.order || localOrder
+  const localJobs = allJobs.filter(
+    (j) =>
+      order &&
+      (j.order_id === order.id ||
+        j.order_id === orderId ||
+        j.order_id === order.order_number ||
+        j.sales_order_id === order.id ||
+        (order.invoice_id && j.invoice_id === order.invoice_id))
+  )
+  const jobs =
+    serverData?.jobs && serverData.jobs.length > 0 ? serverData.jobs : localJobs
+  const tasks = serverData?.tasks || []
+  const designJobs = serverData?.designJobs || []
+  const challans = serverData?.challans || []
+  const timeline = allTimeline.filter(
+    (t) =>
+      order &&
+      (t.order_id === order.id ||
+        t.order_id === orderId ||
+        t.order_id === order.order_number)
+  )
+
+  const workflow = React.useMemo(() => {
+    if (!order) return null
+    return resolveOrderJobWorkflow(order, jobs, tasks, designJobs, challans, slug)
+  }, [order, jobs, tasks, designJobs, challans, slug])
 
   // Modals
   const [isAddJobOpen, setIsAddJobOpen] = useState(false)
@@ -235,6 +283,17 @@ function OrderDetailContent() {
     }
   }
 
+  if (isLoadingServer && !order) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+        <Briefcase className="h-7 w-7 text-blue-600 animate-pulse" />
+        <p className="text-xs font-semibold text-slate-500">
+          {tBilingual('Loading authoritative order details...', 'অর্ডারের তথ্য লোড হচ্ছে...')}
+        </p>
+      </div>
+    )
+  }
+
   if (!order) {
     return (
       <div className="space-y-6 max-w-7xl">
@@ -243,16 +302,23 @@ function OrderDetailContent() {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Orders & Job Flow
+          {tBilingual('Back to Orders & Job Flow', 'অর্ডার ও কাজের ফ্লো-তে ফিরে যান')}
         </Link>
         <Card className="p-12 text-center border-dashed">
           <FileText className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Sales Order Not Found</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+            {tBilingual('Sales Order Not Found', 'অর্ডার পাওয়া যায়নি')}
+          </h2>
           <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-            The sales order record you are looking for does not exist in your organization.
+            {tBilingual(
+              'The sales order record you are looking for does not exist in your organization.',
+              'আপনার প্রতিষ্ঠানে এই অর্ডারের কোনো তথ্য পাওয়া যায়নি।'
+            )}
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href={getTenantNavHref('/orders', pathname, slug)}>View All Orders</Link>
+            <Link href={getTenantNavHref('/orders', pathname, slug)}>
+              {tBilingual('View All Orders', 'সকল অর্ডার দেখুন')}
+            </Link>
           </Button>
         </Card>
       </div>
@@ -553,196 +619,24 @@ function OrderDetailContent() {
       </div>
 
       {/* =========================================================================
-          ORDER LIFECYCLE TIMELINE (9 STAGES)
-          Quotation -> Approval -> Sales Order -> Job Order -> Production ->
-          Finishing -> Delivery -> Installation -> Completion
+          ORDER-TO-DELIVERY CANONICAL WORKFLOW STEPPER & BLOCKER ALERTS
          ========================================================================= */}
-      <Card className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              9-Stage Order Lifecycle Flow (অর্ডার ও প্রোডাকশন পর্যায়)
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Live tracking from customer commercial agreement through shop floor machines to installation.
-            </p>
-          </div>
-          <span className="text-xs font-bold text-indigo-600">Active Phase: Production</span>
-        </div>
-
-        <div className="overflow-x-auto pb-2">
-          <div className="flex items-center min-w-[750px] justify-between relative">
-            {/* Connecting line */}
-            <div className="absolute top-3.5 left-4 right-4 h-0.5 bg-slate-200 dark:bg-slate-800 -z-0" />
-
-            {LIFECYCLE_STAGES.map((stage, idx) => {
-              const isDone = idx <= 4 // Quotation, Approval, Sales Order, Job Order, Production
-              const isCurrent = idx === 4
-
-              return (
-                <div key={stage.id} className="flex flex-col items-center z-10 text-center px-1">
-                  <div
-                    className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                      isCurrent
-                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-100 dark:ring-indigo-950'
-                        : isDone
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-                    }`}
-                  >
-                    {isDone && !isCurrent ? '✓' : idx + 1}
-                  </div>
-                  <span
-                    className={`text-2xs mt-1.5 font-medium whitespace-nowrap ${
-                      isCurrent
-                        ? 'font-bold text-indigo-600 dark:text-indigo-400'
-                        : isDone
-                        ? 'text-slate-800 dark:text-slate-200'
-                        : 'text-slate-400'
-                    }`}
-                  >
-                    {stage.label}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </Card>
+      {workflow && <JobFlowStepper workflow={workflow} tenantSlug={slug} />}
 
       {/* =========================================================================
-          MULTI-JOB TICKETS SECTION (Core Phase 7 Requirement)
-          Each order splits into discrete jobs across machine departments.
+          MULTI-JOB TICKETS BREAKDOWN SECTION
+          "One customer order becomes one or more jobs, and every job moves through the work stages until delivery."
          ========================================================================= */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Layers className="h-5 w-5 text-indigo-600" />
-              Production Job Orders ({jobs.length} Discrete Machine Tickets)
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Items in this sales order automatically split into dedicated departmental production tickets.
-            </p>
-          </div>
-
-          <Button
-            size="sm"
-            onClick={() => setIsAddJobOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-xs text-white"
-          >
-            <Plus className="mr-1.5 h-3.5 w-3.5" />
-            + New Job Ticket
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {jobs.map((job) => (
-            <Card key={job.id} className="border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center justify-between">
-                  <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400 text-xs">
-                    {job.job_number}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    {job.workflow_routing && (
-                      <Badge variant="outline" className="text-2xs font-semibold">
-                        {job.workflow_routing === 'design_required'
-                          ? '🎨 Design'
-                          : job.workflow_routing === 'design_ok'
-                          ? '⚡ Design OK'
-                          : '🚀 Ready Prod'}
-                      </Badge>
-                    )}
-                    {job.production_gate_status && job.production_gate_status !== 'ready_for_production' && (
-                      <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-2xs font-bold">
-                        {job.production_gate_status === 'blocked_commercial' ? 'Locked (No Invoice)' : 'Design Hold'}
-                      </Badge>
-                    )}
-                    <Badge
-                      variant="outline"
-                      className={`text-2xs font-bold capitalize ${
-                        job.status === 'completed'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                          : job.status === 'in_progress'
-                          ? 'bg-blue-50 text-blue-700 border-blue-300'
-                          : 'bg-amber-50 text-amber-800 border-amber-300'
-                      }`}
-                    >
-                      {job.status.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                </div>
-                <CardTitle className="text-sm font-bold mt-1 text-slate-900 dark:text-white">
-                  {job.product_name}
-                </CardTitle>
-                <div className="text-2xs text-slate-500">
-                  Qty: <strong>{job.quantity}</strong> • Size: <strong>{job.size_spec}</strong>
-                </div>
-              </CardHeader>
-
-              <CardContent className="p-4 space-y-3 text-xs">
-                <div>
-                  <span className="text-slate-400">Department:</span>
-                  <div className="font-semibold text-slate-800 dark:text-slate-200 capitalize mt-0.5">
-                    {job.assigned_department.replace(/_/g, ' ')}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="text-slate-400">Assigned Operator:</span>
-                  <div className="font-medium text-slate-800 dark:text-slate-200 mt-0.5">
-                    {job.assigned_employee_name || 'Unassigned'}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="text-slate-400">Material Substrate:</span>
-                  <div className="text-2xs text-slate-600 dark:text-slate-300 mt-0.5">
-                    {job.material_spec}
-                  </div>
-                </div>
-
-                {job.production_instructions && (
-                  <div className="p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-300">
-                    <strong>Instructions:</strong> {job.production_instructions}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div className="text-2xs text-red-600 font-medium flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {job.deadline}
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setSelectedJobForPrint(job)}
-                      className="h-7 text-2xs px-2"
-                    >
-                      <Printer className="h-3 w-3 mr-1" />
-                      Job Bag
-                    </Button>
-
-                    <select
-                      value={job.status}
-                      onChange={(e) => handleUpdateJobStatus(job.id, e.target.value as JobStatus)}
-                      className="h-7 px-1.5 rounded text-2xs font-semibold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
-                    >
-                      <option value="queued">Queued</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="quality_check">QC Check</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      {workflow && (
+        <ChildJobsBreakdown
+          jobs={jobs}
+          childWorkflows={workflow.childJobs}
+          tenantSlug={slug}
+          onOpenNewJobModal={() => setIsAddJobOpen(true)}
+          onSelectJobForPrint={(job) => setSelectedJobForPrint(job)}
+          onUpdateJobStatus={handleUpdateJobStatus}
+        />
+      )}
 
       {/* MODAL: ADD JOB TICKET */}
       <ModalDialog
