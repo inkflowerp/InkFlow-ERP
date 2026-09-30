@@ -1604,20 +1604,28 @@ export function isOutsourceProduct(p: Partial<ProductRecord> | any): boolean {
   )
 }
 
-export function isServiceProduct(p: Partial<ProductRecord> | null | undefined): boolean {
+export function isServiceProduct(p: Partial<ProductRecord> | any | null | undefined): boolean {
   if (!p) return false
   if (isOutsourceProduct(p)) return false
-  const cat = (p.category || '').toLowerCase()
-  const name = (p.name || '').toLowerCase()
-  const sku = (p.sku || '').toUpperCase()
+  const rawAny = p as any
+  const cat = (p.category || rawAny.category || '').toLowerCase()
+  const name = (p.name || rawAny.product_name || rawAny.item_name || rawAny.service_name || rawAny.item_description || rawAny.description || '').toLowerCase()
+  const sku = (p.sku || rawAny.sku || '').toUpperCase()
+  const mat = (rawAny.material_spec || rawAny.material || rawAny.material_name || '').toLowerCase()
 
   // 1. Explicit Service Flags, Types or Prefixes
   if (
     p.entity_type === 'service' ||
+    rawAny.entity_type === 'service' ||
     p.entity_type === 'finishing' ||
     p.entity_type === 'installation' ||
     p.entity_type === 'additional' ||
     p.is_service === true ||
+    rawAny.is_service === true ||
+    rawAny.item_kind === 'service' ||
+    rawAny.item_kind === 'custom' ||
+    rawAny.item_kind === 'custom_manufacturing' ||
+    Boolean(rawAny.service_name) ||
     p.product_type === 'print_service' ||
     p.product_type === 'service' ||
     p.product_type === 'SERVICE' ||
@@ -1648,8 +1656,11 @@ export function isServiceProduct(p: Partial<ProductRecord> | null | undefined): 
   // 2. Ready Product Check - if explicitly a ready product, not a service
   if (
     p.is_ready_product === true ||
+    rawAny.is_ready_product === true ||
     p.commercial_type === 'ready_product' ||
+    rawAny.commercial_type === 'ready_product' ||
     p.product_type === 'ready_product' ||
+    rawAny.product_type === 'ready_product' ||
     p.product_type === 'finished_product' ||
     (p.product_type as any) === 'finished_good' ||
     p.product_type === 'PRODUCT' ||
@@ -1659,20 +1670,44 @@ export function isServiceProduct(p: Partial<ProductRecord> | null | undefined): 
     return false
   }
 
-  // 3. Service configuration object presence
+  // 3. Raw Material Check - raw materials (e.g. Star Flex Roll) are not services unless explicitly a service
+  const isPureRawStock =
+    sku.startsWith('MAT-') ||
+    sku.startsWith('RM-') ||
+    ['materials', 'roll_media', 'rigid_sheets', 'inks', 'raw_materials'].includes(cat) ||
+    p.entity_type === 'material' ||
+    p.product_type === 'material' ||
+    rawAny.commercial_type === 'material'
+  if (isPureRawStock && !p.is_service && !rawAny.is_service && p.entity_type !== 'service' && rawAny.entity_type !== 'service') {
+    return false
+  }
+
+  // 4. Service configuration object presence
   if (p.service_config && typeof p.service_config === 'object' && Object.keys(p.service_config).length > 0 && (p.entity_type as string) !== 'product' && !p.is_ready_product && (p.product_type as string) !== 'ready_product') {
     return true
   }
 
-  // 4. Service by Name or Category Keywords (Lamination, Printing, Fabrication, Installation, Service, Finishing)
+  // 5. Service by Name or Category Keywords (Lamination, Printing, Fabrication, Installation, Service, Finishing)
   if (
     ['services', 'printing', 'printing_services', 'print_services', 'custom_printing', 'fabrication', 'installation', 'finishing', 'lamination', 'signage'].includes(cat) ||
+    name.includes('print') ||
+    name.includes('banner') ||
+    name.includes('flex') ||
+    name.includes('vinyl') ||
+    name.includes('sticker') ||
+    name.includes('poster') ||
+    name.includes('card') ||
+    name.includes('flyer') ||
+    name.includes('leaflet') ||
+    name.includes('brochure') ||
+    name.includes('sign') ||
+    name.includes('board') ||
     name.includes('lamination') ||
     name.includes('lamication') ||
-    name.includes('printing') ||
     name.includes('fabrication') ||
     name.includes('installation') ||
-    name.includes('service')
+    name.includes('service') ||
+    mat.length > 0
   ) {
     return true
   }
@@ -1730,56 +1765,49 @@ export function isReadyProduct(p: Partial<ProductRecord> | any | null | undefine
     rawAny.item_kind === 'service' ||
     rawAny.item_kind === 'custom' ||
     Boolean(rawAny.design_number) ||
-    Boolean(rawAny.versions)
+    Boolean(rawAny.versions) ||
+    Boolean(rawAny.service_name)
   ) {
     return false
   }
 
   if (isServiceProduct(p)) return false
-  const cat = (p.category || '').toLowerCase()
-  const sku = (p.sku || '').toUpperCase()
+  const cat = (p.category || rawAny.category || '').toLowerCase()
+  const sku = (p.sku || rawAny.sku || '').toUpperCase()
 
-  return Boolean(
-    p.entity_type === 'product' ||
-    (p.entity_type as string) === 'ready_product' ||
+  // 1. Explicit ready product attributes
+  if (
     p.is_ready_product === true ||
+    rawAny.is_ready_product === true ||
     p.product_type === 'ready_product' ||
+    rawAny.product_type === 'ready_product' ||
     p.product_type === 'PRODUCT' ||
     p.product_type === 'finished_product' ||
     (p.product_type as any) === 'finished_good' ||
     p.commercial_type === 'ready_product' ||
+    rawAny.commercial_type === 'ready_product' ||
+    rawAny.item_kind === 'ready_product' ||
+    rawAny.workflow_routing === 'ready_product' ||
     sku.startsWith('RP-') ||
-    ['display_stands', 'frames_hardware', 'signage_accessories', 'acrylic_displays', 'promo_items', 'apparel_blanks', 'ready_products'].includes(cat) ||
-    ((p.unit === 'pcs' ||
-      p.unit === 'piece' ||
-      p.unit === 'set' ||
-      p.unit === 'box' ||
-      p.unit === 'pack' ||
-      p.unit === 'pair' ||
-      p.unit === 'carton' ||
-      p.unit === 'kg' ||
-      p.selling_unit === 'pcs' ||
-      p.selling_unit === 'piece' ||
-      p.selling_unit === 'set' ||
-      p.selling_unit === 'box' ||
-      p.selling_unit === 'pack' ||
-      p.selling_unit === 'pair' ||
-      p.selling_unit === 'carton' ||
-      p.selling_unit === 'kg' ||
-      p.pricing_method === 'per_piece' ||
-      p.pricing_method === 'fixed' ||
-      (p.pricing_method as string) === 'per_item' ||
-      (p.pricing_method as string) === 'per_unit') &&
-      p.entity_type !== 'material' &&
-      p.product_type !== 'material' &&
-      p.commercial_type !== 'material' &&
-      !sku.startsWith('MAT-') &&
-      !sku.startsWith('RM-') &&
-      cat !== 'materials' &&
-      cat !== 'roll_media' &&
-      cat !== 'rigid_sheets' &&
-      cat !== 'inks')
-  )
+    ['display_stands', 'frames_hardware', 'signage_accessories', 'acrylic_displays', 'promo_items', 'apparel_blanks', 'ready_products'].includes(cat)
+  ) {
+    return true
+  }
+
+  // 2. Catalog product record that is explicitly marked as product entity (and not raw material)
+  if (p.entity_type === 'product' || (p.entity_type as string) === 'ready_product') {
+    const isMaterial =
+      p.product_type === 'material' ||
+      rawAny.product_type === 'material' ||
+      p.commercial_type === 'material' ||
+      rawAny.commercial_type === 'material' ||
+      sku.startsWith('MAT-') ||
+      sku.startsWith('RM-') ||
+      ['materials', 'roll_media', 'rigid_sheets', 'inks'].includes(cat)
+    return !isMaterial
+  }
+
+  return false
 }
 
 export function isMaterialProduct(p: Partial<ProductRecord> | null | undefined): boolean {

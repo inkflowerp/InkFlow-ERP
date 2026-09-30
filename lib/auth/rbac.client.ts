@@ -115,7 +115,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     quotations: { view: true },
     orders: { view: true, create: true, edit: true, print: true },
     design: { view: true, create: true, edit: true, send: true, download: true, approve: true, manage: true },
-    invoices: {},
+    invoices: { view: true },
     payments: {},
     production: { view: true },
     machineries: { view: true },
