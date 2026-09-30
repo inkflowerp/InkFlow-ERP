@@ -261,25 +261,6 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
   const deliveryHref = getTenantNavHref(`/delivery`, pathname, tenantSlug)
   const finishingHref = getTenantNavHref(`/finishing`, pathname, tenantSlug)
 
-  // Active task is the task currently running, or the first non-completed task
-  const activeTask =
-    job.activeTask ||
-    job.tasks.find((t) => t.status === 'in_progress' || t.status === 'paused') ||
-    job.tasks.find((t) => t.status !== 'completed' && t.status !== 'cancelled') ||
-    job.tasks[0]
-
-  const isAllTasksCompleted =
-    job.tasks.length > 0 && job.tasks.every((t) => t.status === 'completed')
-
-  const isPrintTask =
-    !activeTask || activeTask.task_type === 'printing' || activeTask.department === 'printing'
-  const isFinishingTask =
-    activeTask?.task_type === 'finishing' || activeTask?.department === 'finishing'
-
-  const isPrintingCompleted = job.tasks.some(
-    (t) => (t.department === 'printing' || t.task_type === 'printing') && t.status === 'completed'
-  )
-
   // Has finishing available check: if finishing is not 'None' and has items
   const hasFinishingAvailable = useMemo(() => {
     const fStr = (job.finishing || '').toLowerCase().trim()
@@ -288,6 +269,48 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
     }
     return true
   }, [job.finishing, job.selectedFinishing])
+
+  // Filter tasks to only include active/applicable floor tasks (omit Finishing & QC when no finishing is selected)
+  const visibleTasks = useMemo(() => {
+    if (hasFinishingAvailable) return job.tasks
+    const filtered = job.tasks.filter((t) => {
+      const isFinishing =
+        t.task_type === 'finishing' ||
+        t.department === 'finishing' ||
+        t.task_name?.toLowerCase().includes('finishing')
+      return !isFinishing
+    })
+    return filtered.length > 0 ? filtered : job.tasks
+  }, [job.tasks, hasFinishingAvailable])
+
+  // Active task is the task currently running, or the first non-completed task (ignoring finishing if not available)
+  const activeTaskCandidate =
+    job.activeTask &&
+    (hasFinishingAvailable ||
+      (job.activeTask.task_type !== 'finishing' &&
+        job.activeTask.department !== 'finishing' &&
+        !job.activeTask.task_name?.toLowerCase().includes('finishing')))
+      ? job.activeTask
+      : null
+
+  const activeTask =
+    activeTaskCandidate ||
+    visibleTasks.find((t) => t.status === 'in_progress' || t.status === 'paused') ||
+    visibleTasks.find((t) => t.status !== 'completed' && t.status !== 'cancelled') ||
+    visibleTasks[0] ||
+    job.tasks[0]
+
+  const isAllTasksCompleted =
+    visibleTasks.length > 0 && visibleTasks.every((t) => t.status === 'completed')
+
+  const isPrintTask =
+    !activeTask || activeTask.task_type === 'printing' || activeTask.department === 'printing'
+  const isFinishingTask =
+    activeTask?.task_type === 'finishing' || activeTask?.department === 'finishing'
+
+  const isPrintingCompleted = visibleTasks.some(
+    (t) => (t.department === 'printing' || t.task_type === 'printing') && t.status === 'completed'
+  )
 
   // Material selection & Wastage states
   const [selectedMaterial, setSelectedMaterial] = useState<string>(
@@ -1068,7 +1091,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   <span>Floor View ➔</span>
                 </Link>
                 <span className="text-2xs tabular-nums text-slate-400">
-                  {job.tasks.length} {isBn ? 'ধাপ' : 'steps'}
+                  {visibleTasks.length} {isBn ? 'ধাপ' : visibleTasks.length === 1 ? 'step' : 'steps'}
                 </span>
               </div>
             </div>
@@ -1236,13 +1259,13 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   : 'Production Stages & Progression:'}
               </span>
               <span className="text-2xs text-slate-400 tabular-nums">
-                {job.tasks.filter((t) => t.status === 'completed').length}/{job.tasks.length}{' '}
+                {visibleTasks.filter((t) => t.status === 'completed').length}/{visibleTasks.length}{' '}
                 {isBn ? 'সম্পন্ন' : 'Done'}
               </span>
             </div>
 
             <div className="space-y-1.5">
-              {job.tasks.map((task, idx) => {
+              {visibleTasks.map((task, idx) => {
                 const isCurrentActive = activeTask?.id === task.id
                 const isDone = task.status === 'completed'
                 const isRunning = task.status === 'in_progress'

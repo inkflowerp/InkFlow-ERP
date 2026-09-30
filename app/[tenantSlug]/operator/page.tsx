@@ -240,30 +240,40 @@ function MobileOperatorPanelContent() {
               created_at: now,
               updated_at: now,
             }
-            const task2: any = {
-              id: crypto.randomUUID(),
-              company_id: effCompany,
-              job_order_id: task1.job_order_id,
-              task_number: taskNum2,
-              task_name: `Finishing & QC: ${dj.title}`,
-              customer_name: dj.customer_name,
-              product_name: dj.product_name || dj.title,
-              job_number: dj.invoice_number || dj.design_number,
-              job_deadline: dj.deadline,
-              task_type: 'finishing',
-              department: 'finishing',
-              sequence_order: 2,
-              quantity: dj.quantity || 1,
-              unit: dj.unit || 'pcs',
-              priority: dj.priority || 'normal',
-              status: 'queued',
-              is_blocked_by_commercial_gate: !hasInvoice,
-              is_blocked_by_design_gate: false,
-              created_at: now,
-              updated_at: now,
-            }
             taskMap.set(task1.id, task1)
-            taskMap.set(task2.id, task2)
+            const hasFinishing = Boolean(
+              (dj.finishing &&
+                dj.finishing.toLowerCase().trim() !== 'none' &&
+                dj.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
+                dj.finishing.trim() !== 'no' &&
+                dj.finishing.trim() !== '') ||
+              (dj.selected_finishing && dj.selected_finishing.length > 0)
+            )
+            if (hasFinishing) {
+              const task2: any = {
+                id: crypto.randomUUID(),
+                company_id: effCompany,
+                job_order_id: task1.job_order_id,
+                task_number: taskNum2,
+                task_name: `Finishing & QC: ${dj.title}`,
+                customer_name: dj.customer_name,
+                product_name: dj.product_name || dj.title,
+                job_number: dj.invoice_number || dj.design_number,
+                job_deadline: dj.deadline,
+                task_type: 'finishing',
+                department: 'finishing',
+                sequence_order: 2,
+                quantity: dj.quantity || 1,
+                unit: dj.unit || 'pcs',
+                priority: dj.priority || 'normal',
+                status: 'queued',
+                is_blocked_by_commercial_gate: !hasInvoice,
+                is_blocked_by_design_gate: false,
+                created_at: now,
+                updated_at: now,
+              }
+              taskMap.set(task2.id, task2)
+            }
             addedAnyLocal = true
           }
         }

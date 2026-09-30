@@ -212,7 +212,11 @@ export default function AdvancedProductionPage() {
                 dj.commercial_status === 'invoice_created'
 
               const hasFinishing = Boolean(
-                (dj.finishing && dj.finishing !== 'None' && dj.finishing !== 'none') ||
+                (dj.finishing &&
+                  dj.finishing.toLowerCase().trim() !== 'none' &&
+                  dj.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
+                  dj.finishing.trim() !== 'no' &&
+                  dj.finishing.trim() !== '') ||
                 (dj.selected_finishing && dj.selected_finishing.length > 0)
               )
 
@@ -744,6 +748,28 @@ export default function AdvancedProductionPage() {
 
     // Sort tasks in each job by sequence order and determine overall job status & active task
     return Array.from(jobMap.values()).map((job) => {
+      // Filter out Finishing & QC task if no finishing was requested for this job
+      const hasFinishingForJob = Boolean(
+        (job.finishing &&
+          job.finishing.toLowerCase().trim() !== 'none' &&
+          job.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
+          job.finishing.trim() !== 'no' &&
+          job.finishing.trim() !== '') ||
+        (job.selectedFinishing && job.selectedFinishing.length > 0)
+      )
+
+      if (!hasFinishingForJob) {
+        const nonFinishingTasks = job.tasks.filter(
+          (t) =>
+            t.department !== 'finishing' &&
+            t.task_type !== 'finishing' &&
+            !t.task_name?.toLowerCase().includes('finishing')
+        )
+        if (nonFinishingTasks.length > 0) {
+          job.tasks = nonFinishingTasks
+        }
+      }
+
       job.tasks.sort((a, b) => (a.sequence_order || 0) - (b.sequence_order || 0))
 
       const matchedPj = localProductionJobs.find(

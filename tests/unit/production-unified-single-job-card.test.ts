@@ -324,4 +324,92 @@ describe('Production Unified Single Job Card Architecture', () => {
     assert.strictEqual(finishingTaskReady.status, 'ready')
     assert.strictEqual(finishingTaskReady.department, 'finishing')
   })
+
+  it('6. If no finishing is selected (e.g. None or empty) -> omit Finishing & QC task stage from unified card', () => {
+    const printTask: ProductionTaskRecord = {
+      id: 'tsk-eco-1',
+      company_id: 'test-co',
+      job_order_id: 'inv-item-010',
+      task_number: 'TSK-010-1',
+      task_name: 'Print: Eco Vinyl Print',
+      task_type: 'printing',
+      department: 'printing',
+      sequence_order: 1,
+      quantity: 1,
+      unit: 'sft',
+      priority: 'normal',
+      status: 'queued',
+      job_number: 'INV-000010',
+      customer_name: 'Shamol',
+      product_name: 'Eco Vinyl Print',
+      dimensions_spec: '10 × 3 sft',
+      required_material: 'Star Flex (320 GSM)',
+      finishing: 'None',
+      add_ons: 'None',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    const lingeringFinishingTask: ProductionTaskRecord = {
+      id: 'tsk-eco-2',
+      company_id: 'test-co',
+      job_order_id: 'inv-item-010',
+      task_number: 'TSK-010-2',
+      task_name: 'Finishing & QC: Eco Vinyl Print',
+      task_type: 'finishing',
+      department: 'finishing',
+      sequence_order: 2,
+      quantity: 1,
+      unit: 'sft',
+      priority: 'normal',
+      status: 'queued',
+      job_number: 'INV-000010',
+      customer_name: 'Shamol',
+      product_name: 'Eco Vinyl Print',
+      finishing: 'None',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    const job = {
+      id: 'inv-item-010',
+      jobNumber: 'INV-000010',
+      title: 'Eco Vinyl Print',
+      finishing: 'None',
+      selectedFinishing: [],
+      tasks: [printTask, lingeringFinishingTask],
+    }
+
+    // Evaluate hasFinishingAvailable (same logic as production-job-card.tsx & production/page.tsx)
+    const fStr = (job.finishing || '').toLowerCase().trim()
+    const hasFinishingAvailable = !(
+      !fStr ||
+      fStr === 'none' ||
+      fStr === 'কোন ফিনিশিং নেই' ||
+      fStr === 'no'
+    ) || Boolean(job.selectedFinishing && job.selectedFinishing.length > 0)
+
+    assert.strictEqual(hasFinishingAvailable, false)
+
+    // Filter tasks for card view
+    const visibleTasks = hasFinishingAvailable
+      ? job.tasks
+      : job.tasks.filter((t) => {
+          const isFinishing =
+            t.task_type === 'finishing' ||
+            t.department === 'finishing' ||
+            t.task_name?.toLowerCase().includes('finishing')
+          return !isFinishing
+        })
+
+    // Assert: Finishing & QC is omitted; only Print is visible
+    assert.strictEqual(visibleTasks.length, 1)
+    assert.strictEqual(visibleTasks[0].task_name, 'Print: Eco Vinyl Print')
+    assert.strictEqual(visibleTasks[0].task_type, 'printing')
+
+    // Progression counter reflects 1 step (0/1 Done instead of 0/2 Done)
+    const completedCount = visibleTasks.filter((t) => t.status === 'completed').length
+    const progressionLabel = `${completedCount}/${visibleTasks.length} Done`
+    assert.strictEqual(progressionLabel, '0/1 Done')
+  })
 })

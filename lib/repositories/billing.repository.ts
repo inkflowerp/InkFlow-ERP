@@ -1632,6 +1632,14 @@ export class BillingRepository {
             if (!hasTasks) {
               const sharedJobOrderId = crypto.randomUUID()
               const finishingStr = item.finishing || (item.selected_finishing?.length ? item.selected_finishing.map((f: any) => f.name).join(', ') : null)
+              const hasFinishing = Boolean(
+                (finishingStr &&
+                  finishingStr.toLowerCase().trim() !== 'none' &&
+                  finishingStr.trim() !== 'কোন ফিনিশিং নেই' &&
+                  finishingStr.trim() !== 'no' &&
+                  finishingStr.trim() !== '') ||
+                (item.selected_finishing && item.selected_finishing.length > 0)
+              )
               const addOnsStr = (item as any).add_ons || (item.selected_add_ons?.length ? item.selected_add_ons.map((a: any) => a.name).join(', ') : null)
               const dimensionsStr = item.dimensions_spec || (item.width && item.height ? `${item.width} × ${item.height} ${item.unit || 'in'}` : null)
               const materialStr = (item as any).material || (item as any).material_spec || 'Star Flex (320 GSM)'
@@ -1665,37 +1673,42 @@ export class BillingRepository {
                 created_at: now,
                 updated_at: now,
               }
-              const task2 = {
-                id: crypto.randomUUID(),
-                company_id: companyId,
-                job_order_id: sharedJobOrderId,
-                task_number: task2Num,
-                task_name: `Finishing & QC: ${item.item_description || (item as any).description || 'Print Item'}`,
-                customer_name: invoice.customer_name,
-                customer_phone: invoice.customer_phone,
-                product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
-                job_number: invoice.invoice_number,
-                job_deadline: invoice.due_date,
-                dimensions_spec: dimensionsStr,
-                required_material: materialStr,
-                finishing: finishingStr,
-                selected_finishing: item.selected_finishing || null,
-                add_ons: addOnsStr,
-                selected_add_ons: item.selected_add_ons || null,
-                task_type: 'finishing',
-                department: 'finishing',
-                sequence_order: 2,
-                quantity: item.quantity || 1,
-                unit: item.unit || 'pcs',
-                priority: 'normal',
-                status: 'queued',
-                is_blocked_by_commercial_gate: false,
-                is_blocked_by_design_gate: false,
-                created_at: now,
-                updated_at: now,
+              if (hasFinishing) {
+                const task2 = {
+                  id: crypto.randomUUID(),
+                  company_id: companyId,
+                  job_order_id: sharedJobOrderId,
+                  task_number: task2Num,
+                  task_name: `Finishing & QC: ${item.item_description || (item as any).description || 'Print Item'}`,
+                  customer_name: invoice.customer_name,
+                  customer_phone: invoice.customer_phone,
+                  product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
+                  job_number: invoice.invoice_number,
+                  job_deadline: invoice.due_date,
+                  dimensions_spec: dimensionsStr,
+                  required_material: materialStr,
+                  finishing: finishingStr,
+                  selected_finishing: item.selected_finishing || null,
+                  add_ons: addOnsStr,
+                  selected_add_ons: item.selected_add_ons || null,
+                  task_type: 'finishing',
+                  department: 'finishing',
+                  sequence_order: 2,
+                  quantity: item.quantity || 1,
+                  unit: item.unit || 'pcs',
+                  priority: 'normal',
+                  status: 'queued',
+                  is_blocked_by_commercial_gate: false,
+                  is_blocked_by_design_gate: false,
+                  created_at: now,
+                  updated_at: now,
+                }
+                prodTasks.unshift(task2, task1)
+                newDbTasks.push(task1, task2)
+              } else {
+                prodTasks.unshift(task1)
+                newDbTasks.push(task1)
               }
-              prodTasks.unshift(task2, task1)
-              newDbTasks.push(task1, task2)
             }
           }
 

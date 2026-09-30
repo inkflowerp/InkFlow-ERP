@@ -1213,29 +1213,41 @@ function DesignDetailContent() {
           created_at: now,
           updated_at: now,
         }
-        const task2 = {
-          id: crypto.randomUUID(),
-          company_id: companyId,
-          job_order_id: (job as any).job_order_id || task1.job_order_id,
-          task_number: taskNum2,
-          task_name: `Finishing & QC: ${job.title}`,
-          customer_name: job.customer_name,
-          product_name: job.title,
-          job_number: job.invoice_number || job.design_number,
-          job_deadline: job.deadline,
-          task_type: 'finishing',
-          department: 'finishing',
-          sequence_order: 2,
-          quantity: job.quantity || 1,
-          unit: job.unit || 'pcs',
-          priority: job.priority || 'normal',
-          status: 'queued',
-          is_blocked_by_commercial_gate: !hasInvoice,
-          is_blocked_by_design_gate: false,
-          created_at: now,
-          updated_at: now,
+        const hasFinishing = Boolean(
+          (job.finishing &&
+            job.finishing.toLowerCase().trim() !== 'none' &&
+            job.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
+            job.finishing.trim() !== 'no' &&
+            job.finishing.trim() !== '') ||
+          ((job as any).selected_finishing && (job as any).selected_finishing.length > 0)
+        )
+        if (hasFinishing) {
+          const task2 = {
+            id: crypto.randomUUID(),
+            company_id: companyId,
+            job_order_id: (job as any).job_order_id || task1.job_order_id,
+            task_number: taskNum2,
+            task_name: `Finishing & QC: ${job.title}`,
+            customer_name: job.customer_name,
+            product_name: job.title,
+            job_number: job.invoice_number || job.design_number,
+            job_deadline: job.deadline,
+            task_type: 'finishing',
+            department: 'finishing',
+            sequence_order: 2,
+            quantity: job.quantity || 1,
+            unit: job.unit || 'pcs',
+            priority: job.priority || 'normal',
+            status: 'queued',
+            is_blocked_by_commercial_gate: !hasInvoice,
+            is_blocked_by_design_gate: false,
+            created_at: now,
+            updated_at: now,
+          }
+          allTasks.unshift(task2, task1)
+        } else {
+          allTasks.unshift(task1)
         }
-        allTasks.unshift(task2, task1)
       }
       PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
     } catch {}
@@ -1337,29 +1349,41 @@ function DesignDetailContent() {
               created_at: now,
               updated_at: now,
             }
-            const task2 = {
-              id: crypto.randomUUID(),
-              company_id: companyId,
-              job_order_id: (job as any).job_order_id || task1.job_order_id,
-              task_number: taskNum2,
-              task_name: `Finishing & QC: ${job.title}`,
-              customer_name: job.customer_name,
-              product_name: job.title,
-              job_number: job.invoice_number || job.design_number,
-              job_deadline: job.deadline,
-              task_type: 'finishing',
-              department: 'finishing',
-              sequence_order: 2,
-              quantity: job.quantity || 1,
-              unit: job.unit || 'pcs',
-              priority: job.priority || 'normal',
-              status: 'queued',
-              is_blocked_by_commercial_gate: !hasInvoice,
-              is_blocked_by_design_gate: false,
-              created_at: now,
-              updated_at: now,
+            const hasFinishing = Boolean(
+              (job.finishing &&
+                job.finishing.toLowerCase().trim() !== 'none' &&
+                job.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
+                job.finishing.trim() !== 'no' &&
+                job.finishing.trim() !== '') ||
+              ((job as any).selected_finishing && (job as any).selected_finishing.length > 0)
+            )
+            if (hasFinishing) {
+              const task2 = {
+                id: crypto.randomUUID(),
+                company_id: companyId,
+                job_order_id: (job as any).job_order_id || task1.job_order_id,
+                task_number: taskNum2,
+                task_name: `Finishing & QC: ${job.title}`,
+                customer_name: job.customer_name,
+                product_name: job.title,
+                job_number: job.invoice_number || job.design_number,
+                job_deadline: job.deadline,
+                task_type: 'finishing',
+                department: 'finishing',
+                sequence_order: 2,
+                quantity: job.quantity || 1,
+                unit: job.unit || 'pcs',
+                priority: job.priority || 'normal',
+                status: 'queued',
+                is_blocked_by_commercial_gate: !hasInvoice,
+                is_blocked_by_design_gate: false,
+                created_at: now,
+                updated_at: now,
+              }
+              allTasks.unshift(task2, task1)
+            } else {
+              allTasks.unshift(task1)
             }
-            allTasks.unshift(task2, task1)
           }
           PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
         } catch {}

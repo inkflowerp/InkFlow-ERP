@@ -1185,7 +1185,20 @@ export class DesignRepository {
         created_at: now,
         updated_at: now,
       }
-      prodTasks.unshift(task2, task1)
+      const hasFinishing = Boolean(
+        (job.finishing &&
+          job.finishing.toLowerCase().trim() !== 'none' &&
+          job.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
+          job.finishing.trim() !== 'no' &&
+          job.finishing.trim() !== '') ||
+        (job.selected_finishing && job.selected_finishing.length > 0)
+      )
+
+      if (hasFinishing) {
+        prodTasks.unshift(task2, task1)
+      } else {
+        prodTasks.unshift(task1)
+      }
       PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, prodTasks)
 
       try {
@@ -1193,18 +1206,22 @@ export class DesignRepository {
         const dbJobOrderId = matchedOrder.id && uuidRegex.test(matchedOrder.id) ? matchedOrder.id : null
         const dbProdJobId = matchedProdJob.id && uuidRegex.test(matchedProdJob.id) ? matchedProdJob.id : null
 
-        await (supabase as any).from('production_tasks').insert([
+        const tasksToInsert: any[] = [
           {
             ...task1,
             job_order_id: dbJobOrderId,
             production_job_id: dbProdJobId,
           },
-          {
+        ]
+        if (hasFinishing) {
+          tasksToInsert.push({
             ...task2,
             job_order_id: dbJobOrderId,
             production_job_id: dbProdJobId,
-          },
-        ])
+          })
+        }
+
+        await (supabase as any).from('production_tasks').insert(tasksToInsert)
       } catch {}
     }
 

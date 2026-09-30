@@ -248,32 +248,44 @@ export class ProductionTaskRepository {
           updated_at: now,
         }
 
-        const task2: any = {
-          id: task2Id,
-          company_id: companyId,
-          job_order_id: jobOrderId,
-          task_number: taskNum2,
-          task_name: `Finishing & QC: ${dj.title}`,
-          task_type: 'finishing',
-          department: 'finishing',
-          sequence_order: 2,
-          quantity: dj.quantity || 1,
-          unit: dj.unit || 'pcs',
-          priority: dj.priority || 'normal',
-          status: 'queued',
-          customer_name: dj.customer_name,
-          product_name: dj.product_name || dj.title,
-          job_number: invoiceNumber || dj.design_number,
-          job_deadline: dj.deadline,
-          is_blocked_by_commercial_gate: !hasInvoice,
-          is_blocked_by_design_gate: false,
-          created_at: now,
-          updated_at: now,
-        }
-
         taskMap.set(task1.id, task1)
-        taskMap.set(task2.id, task2)
-        newTasksToPersist.push(task2, task1)
+        newTasksToPersist.push(task1)
+
+        const hasFinishing = Boolean(
+          (dj.finishing &&
+            dj.finishing.toLowerCase().trim() !== 'none' &&
+            dj.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
+            dj.finishing.trim() !== 'no' &&
+            dj.finishing.trim() !== '') ||
+          (dj.selected_finishing && dj.selected_finishing.length > 0)
+        )
+
+        if (hasFinishing) {
+          const task2: any = {
+            id: task2Id,
+            company_id: companyId,
+            job_order_id: jobOrderId,
+            task_number: taskNum2,
+            task_name: `Finishing & QC: ${dj.title}`,
+            task_type: 'finishing',
+            department: 'finishing',
+            sequence_order: 2,
+            quantity: dj.quantity || 1,
+            unit: dj.unit || 'pcs',
+            priority: dj.priority || 'normal',
+            status: 'queued',
+            customer_name: dj.customer_name,
+            product_name: dj.product_name || dj.title,
+            job_number: invoiceNumber || dj.design_number,
+            job_deadline: dj.deadline,
+            is_blocked_by_commercial_gate: !hasInvoice,
+            is_blocked_by_design_gate: false,
+            created_at: now,
+            updated_at: now,
+          }
+          taskMap.set(task2.id, task2)
+          newTasksToPersist.push(task2)
+        }
       }
     }
 
