@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getTenantRedirectSlug } from '@/lib/auth/tenant-auth'
 
-export default async function GlobalSalaryReportRedirect() {
+export default async function GlobalAdvancesRedirect() {
   const slug = await getTenantRedirectSlug()
-  redirect(`/${slug}/hr/reports`)
+  redirect(`/${slug}/hr/advances`)
 }

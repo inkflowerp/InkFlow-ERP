@@ -1,0 +1,262 @@
+'use client'
+
+import React from 'react'
+import Link from 'next/link'
+import {
+  Wallet,
+  Calendar,
+  Lock,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
+  Plus,
+  FileSpreadsheet,
+} from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import type { PayrollPeriodRecord, PayrollPeriodStatus } from '@/types/workforce.types'
+
+export interface PayrollPeriodTableProps {
+  periods: PayrollPeriodRecord[]
+  isLoading?: boolean
+  tenantSlug: string
+  onOpenGenerateModal: () => void
+}
+
+const LIFECYCLE_STEPS = [
+  { step: 1, label: 'Select Period', labelBn: 'পিরিয়ড নির্বাচন' },
+  { step: 2, label: 'Generate Draft', labelBn: 'ড্রাফট তৈরি' },
+  { step: 3, label: 'Review', labelBn: 'রিভিউ' },
+  { step: 4, label: 'Approve', labelBn: 'অনুমোদন' },
+  { step: 5, label: 'Lock', labelBn: 'লক' },
+  { step: 6, label: 'Pay', labelBn: 'পরিশোধ' },
+  { step: 7, label: 'Complete', labelBn: 'সম্পন্ন' },
+]
+
+export function PayrollPeriodTable({
+  periods,
+  isLoading = false,
+  tenantSlug,
+  onOpenGenerateModal,
+}: PayrollPeriodTableProps) {
+  const getStatusBadge = (status: PayrollPeriodStatus) => {
+    switch (status) {
+      case 'locked':
+        return 'bg-slate-100 text-slate-800 border-slate-300'
+      case 'paid':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      case 'approved':
+        return 'bg-blue-50 text-blue-700 border-blue-200'
+      case 'review':
+        return 'bg-purple-50 text-purple-700 border-purple-200'
+      default:
+        return 'bg-amber-50 text-amber-700 border-amber-200'
+    }
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* Visual Stepper Lifecycle Header */}
+      <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+          <div>
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Payroll Processing Lifecycle
+            </h4>
+            <p className="text-[11px] text-slate-500">
+              Standardized flow preventing accidental skips from draft to paid without review and lock
+            </p>
+          </div>
+
+          <Button
+            size="sm"
+            onClick={onOpenGenerateModal}
+            className="h-8 px-3.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white min-h-[32px] shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1" />
+            <span>Generate New Period</span>
+          </Button>
+        </div>
+
+        {/* Stepper Steps */}
+        <div className="flex items-center gap-1 overflow-x-auto pt-2 pb-1">
+          {LIFECYCLE_STEPS.map((s, idx) => (
+            <React.Fragment key={s.step}>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 shrink-0">
+                <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] flex items-center justify-center">
+                  {s.step}
+                </span>
+                <div className="text-left">
+                  <div className="text-[11px] font-semibold text-slate-800 whitespace-nowrap leading-tight">
+                    {s.label}
+                  </div>
+                  <div className="text-[9px] text-slate-400 whitespace-nowrap">
+                    {s.labelBn}
+                  </div>
+                </div>
+              </div>
+              {idx < LIFECYCLE_STEPS.length - 1 && (
+                <div className="text-slate-300 text-xs shrink-0 px-0.5">→</div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </Card>
+
+      {/* Main Payroll Periods Table */}
+      {isLoading ? (
+        <Card className="bg-white border-slate-200 p-6">
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-lg" />
+            ))}
+          </div>
+        </Card>
+      ) : periods.length === 0 ? (
+        <Card className="bg-white border-slate-200 py-16 px-4 text-center">
+          <div className="max-w-sm mx-auto flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+              <Wallet className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-semibold text-slate-900">No payroll periods created yet</h3>
+            <p className="text-xs text-slate-500 mt-1 mb-5">
+              Draft your first monthly salary sheet based on verified floor attendance and advances.
+            </p>
+            <Button
+              onClick={onOpenGenerateModal}
+              size="sm"
+              className="h-9 px-4 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white min-h-[36px]"
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              <span>Create Payroll Period</span>
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
+                <tr>
+                  <th className="py-3 px-4">Period</th>
+                  <th className="py-3 px-3">Date Range</th>
+                  <th className="py-3 px-3 text-center">Employees</th>
+                  <th className="py-3 px-3 text-right">Gross</th>
+                  <th className="py-3 px-3 text-right">OT</th>
+                  <th className="py-3 px-3 text-right">Deductions</th>
+                  <th className="py-3 px-3 text-right">Net Payable</th>
+                  <th className="py-3 px-3 text-right">Paid</th>
+                  <th className="py-3 px-3 text-right">Due</th>
+                  <th className="py-3 px-3 text-center">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {periods.map((period) => {
+                  const gross = Number(period.total_gross_salary || 0)
+                  const ot = Number(period.total_ot_amount || 0)
+                  const deductions = Number(period.total_other_deductions || 0) + Number(period.total_advances_deducted || 0)
+                  const net = Number(period.total_net_salary || 0)
+                  const paid = Number(period.total_paid_amount || 0)
+                  const due = Number(period.total_due_amount || 0)
+
+                  return (
+                    <tr
+                      key={period.id}
+                      className="hover:bg-slate-50/60 transition-colors group cursor-pointer"
+                    >
+                      {/* Period Name */}
+                      <td className="py-3.5 px-4">
+                        <Link
+                          href={`/${tenantSlug}/hr/payroll/${period.id}`}
+                          className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors block"
+                        >
+                          {period.period_name}
+                        </Link>
+                        {period.locked_at && (
+                          <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-0.5">
+                            <Lock className="w-3 h-3 text-slate-500" />
+                            <span>Locked {new Date(period.locked_at).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Date Range */}
+                      <td className="py-3.5 px-3 font-mono text-slate-600">
+                        {period.start_date} to {period.end_date}
+                      </td>
+
+                      {/* Employees */}
+                      <td className="py-3.5 px-3 text-center font-semibold text-slate-800 tabular-nums">
+                        {period.items?.length || 0}
+                      </td>
+
+                      {/* Gross */}
+                      <td className="py-3.5 px-3 text-right font-medium text-slate-800 tabular-nums">
+                        ৳ {gross.toLocaleString('en-IN')}
+                      </td>
+
+                      {/* OT */}
+                      <td className="py-3.5 px-3 text-right font-medium text-indigo-600 tabular-nums">
+                        ৳ {ot.toLocaleString('en-IN')}
+                      </td>
+
+                      {/* Deductions */}
+                      <td className="py-3.5 px-3 text-right font-medium text-amber-600 tabular-nums">
+                        ৳ {deductions.toLocaleString('en-IN')}
+                      </td>
+
+                      {/* Net */}
+                      <td className="py-3.5 px-3 text-right font-bold text-slate-900 tabular-nums">
+                        ৳ {net.toLocaleString('en-IN')}
+                      </td>
+
+                      {/* Paid */}
+                      <td className="py-3.5 px-3 text-right font-bold text-emerald-600 tabular-nums">
+                        ৳ {paid.toLocaleString('en-IN')}
+                      </td>
+
+                      {/* Due */}
+                      <td className="py-3.5 px-3 text-right font-bold text-rose-600 tabular-nums">
+                        ৳ {due.toLocaleString('en-IN')}
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-3.5 px-3 text-center">
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${getStatusBadge(
+                            period.status
+                          )}`}
+                        >
+                          {period.status}
+                        </Badge>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 text-right">
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2.5 text-xs font-semibold text-blue-600 border-blue-200 hover:bg-blue-50 min-h-[28px]"
+                        >
+                          <Link href={`/${tenantSlug}/hr/payroll/${period.id}`}>
+                            <span>Open Sheet</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                          </Link>
+                        </Button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+    </div>
+  )
+}

@@ -232,12 +232,12 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     }
   })
 
-  it('8. HRM Sub-Modules: Workforce & HRM contains all 5 submodules with verified physical routes', () => {
+  it('8. HRM Sub-Modules: Workforce & HRM contains all 6 submodules with verified physical routes', () => {
     const mgmtSection = navSections.find((s) => s.id === 'management')!
     const hrItem = mgmtSection.items.find((i) => i.key === 'hr')!
     assert.ok(hrItem, 'hr item must exist')
     assert.ok(hrItem.children, 'hr must have children')
-    assert.equal(hrItem.children!.length, 5, 'Must contain all 5 HRM sub-modules')
+    assert.equal(hrItem.children!.length, 6, 'Must contain all 6 HRM sub-modules')
 
     const appDir = path.resolve(process.cwd(), 'app', '[tenantSlug]')
 

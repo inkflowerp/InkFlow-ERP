@@ -45,50 +45,20 @@ export async function recordAttendanceAction(
     const admin = createAdminClient()
 
     // 1. Resolve employee record for this authenticated user
-    // First try matching by user_id or email or name within the company
-    const { data: employees } = await (admin as any)
+    // Strictly match by user_id linked to the authenticated user within the company
+    const { data: employee } = await (admin as any)
       .from('employees')
-      .select('id, name, role, department')
+      .select('id, name, role, department, user_id, status')
       .eq('company_id', tenant.companyId)
+      .eq('user_id', tenant.userId)
       .eq('status', 'active')
-
-    const userFullName = tenant.fullName || 'Staff Member'
-    let employee = (employees || []).find(
-      (e: any) => e.name.toLowerCase() === userFullName.toLowerCase()
-    )
-
-    if (!employee && employees && employees.length > 0) {
-      // If direct match not found, fallback to the first active employee for this member
-      employee = employees[0]
-    }
-
-    // Auto-create employee record for user if missing in company
-    if (!employee) {
-      const { data: newEmp } = await (admin as any)
-        .from('employees')
-        .insert({
-          company_id: tenant.companyId,
-          employee_id_number: `EMP-${Date.now().toString().slice(-4)}`,
-          name: userFullName,
-          mobile: tenant.phone || '+8801700000000',
-          role: tenant.companyRole || 'General Staff',
-          department: 'management',
-          employee_type: 'permanent',
-          salary_type: 'monthly',
-          base_salary: 30000,
-          status: 'active',
-        })
-        .select()
-        .single()
-
-      employee = newEmp
-    }
+      .maybeSingle()
 
     if (!employee) {
       return {
         success: false,
-        code: 'EMPLOYEE_NOT_FOUND',
-        error: 'Unable to resolve employee profile for your user account.',
+        code: 'EMPLOYEE_NOT_LINKED',
+        error: 'Your login account is not linked to any active employee profile. Please contact your HR administrator.',
       }
     }
 
@@ -325,16 +295,13 @@ export async function getEmployeeTodayStatusAction(
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
     const admin = createAdminClient()
-    const { data: employees } = await (admin as any)
+    const { data: employee } = await (admin as any)
       .from('employees')
-      .select('id, name')
+      .select('id, name, user_id')
       .eq('company_id', tenant.companyId)
+      .eq('user_id', tenant.userId)
       .eq('status', 'active')
-
-    const userFullName = tenant.fullName || 'Staff Member'
-    const employee =
-      (employees || []).find((e: any) => e.name.toLowerCase() === userFullName.toLowerCase()) ||
-      employees?.[0]
+      .maybeSingle()
 
     if (!employee) {
       return {
@@ -343,7 +310,7 @@ export async function getEmployeeTodayStatusAction(
           hasCheckedIn: false,
           hasCheckedOut: false,
           todayRecords: [],
-          employeeName: userFullName,
+          employeeName: tenant.fullName || 'Staff Member',
         },
       }
     }
@@ -423,7 +390,7 @@ export async function getEmployeeTodayStatusAction(
         checkInTime,
         checkOutTime,
         todayRecords: records,
-        employeeName: employee.name || userFullName,
+        employeeName: employee.name || tenant.fullName || 'Staff Member',
       },
     }
   } catch (error: any) {
@@ -442,16 +409,13 @@ export async function getEmployeeHistoryAction(
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
     const admin = createAdminClient()
-    const { data: employees } = await (admin as any)
+    const { data: employee } = await (admin as any)
       .from('employees')
-      .select('id, name')
+      .select('id, name, user_id')
       .eq('company_id', tenant.companyId)
+      .eq('user_id', tenant.userId)
       .eq('status', 'active')
-
-    const userFullName = tenant.fullName || 'Staff Member'
-    const employee =
-      (employees || []).find((e: any) => e.name.toLowerCase() === userFullName.toLowerCase()) ||
-      employees?.[0]
+      .maybeSingle()
 
     if (!employee) return { success: true, data: [] }
 
@@ -483,18 +447,15 @@ export async function requestAttendanceCorrectionAction(params: {
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
     const admin = createAdminClient()
-    const { data: employees } = await (admin as any)
+    const { data: employee } = await (admin as any)
       .from('employees')
-      .select('id, name')
+      .select('id, name, user_id')
       .eq('company_id', tenant.companyId)
+      .eq('user_id', tenant.userId)
       .eq('status', 'active')
+      .maybeSingle()
 
-    const userFullName = tenant.fullName || 'Staff Member'
-    const employee =
-      (employees || []).find((e: any) => e.name.toLowerCase() === userFullName.toLowerCase()) ||
-      employees?.[0]
-
-    if (!employee) return { success: false, error: 'Employee record not found.' }
+    if (!employee) return { success: false, error: 'Your login account is not linked to any active employee profile.' }
 
     const correction = await AttendanceService.requestCorrection({
       companyId: tenant.companyId,

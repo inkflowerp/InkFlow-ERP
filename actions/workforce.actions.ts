@@ -10,6 +10,7 @@ import { headers } from 'next/headers'
 import { requireTenantUser, getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { WorkforceService } from '@/services/workforce.service'
 import { WorkforceRepository } from '@/lib/repositories/workforce.repository'
+import { AttendanceService } from '@/services/attendance.service'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import type {
   EmployeeRecord,
@@ -23,6 +24,43 @@ import type {
   PaymentMethod,
   PortalCredentials,
 } from '@/types/workforce.types'
+
+export interface WorkforceOverviewSummary {
+  kpis: {
+    totalEmployees: number
+    presentToday: number
+    absentToday: number
+    lateToday: number
+    payrollDue: number
+    overtimePending: number
+  }
+  todayAttendance: {
+    present: number
+    late: number
+    leave: number
+    absent: number
+    currentlyWorking: number
+    totalActive: number
+  }
+  payrollStatus: {
+    periodName: string
+    grossPayroll: number
+    paid: number
+    pending: number
+    due: number
+  }
+  pendingActions: Array<{
+    id: string
+    type: 'overtime' | 'correction' | 'advance' | 'salary_due'
+    title: string
+    titleBn: string
+    subtitle: string
+    actionLabel: string
+    actionLabelBn: string
+    actionHref: string
+    dateOrTime?: string
+  }>
+}
 
 async function getRequestBaseUrl(): Promise<string> {
   try {
@@ -63,14 +101,154 @@ export async function getWorkforceSummaryAction(
 ): Promise<ServerActionResult<WorkforceSummaryKPIs>> {
   try {
     const tenant = await requireTenantUser(companyIdParam)
-    const emps = await WorkforceRepository.getEmployees(tenant.companyId)
-    if (emps.length === 0) {
-      await WorkforceRepository.seedDefaultEmployees(tenant.companyId)
-    }
     const summary = await WorkforceService.getWorkforceSummary(tenant.companyId)
     return { success: true, data: summary }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch workforce summary.' }
+  }
+}
+
+export async function getWorkforceOverviewSummaryAction(
+  companyIdParam?: string
+): Promise<ServerActionResult<WorkforceOverviewSummary>> {
+  try {
+    const tenant = await requireTenantUser(companyIdParam)
+    const todayStr = new Date().toISOString().split('T')[0]
+
+    const [
+      employees,
+      todaySummaries,
+      pendingOvertime,
+      approvedOvertime,
+      pendingCorrections,
+      advances,
+      payrollPeriods,
+    ] = await Promise.all([
+      WorkforceRepository.getEmployees(tenant.companyId, { status: 'active' }),
+      WorkforceRepository.getDailyAttendanceSummaries(tenant.companyId, { date: todayStr }),
+      WorkforceRepository.getOvertimeRecords(tenant.companyId, { status: 'pending_approval' }),
+      WorkforceRepository.getOvertimeRecords(tenant.companyId, { status: 'approved' }),
+      AttendanceService.getTenantCorrections(tenant.companyId, 'pending').catch(() => []),
+      WorkforceRepository.getSalaryAdvances(tenant.companyId, { isSettled: false }),
+      WorkforceRepository.getPayrollPeriods(tenant.companyId),
+    ])
+
+    const totalActive = employees.length
+    const present = todaySummaries.filter((s) => s.status === 'present' || s.status === 'half_day').length
+    const late = todaySummaries.filter((s) => s.status === 'late' || s.late_minutes > 0).length
+    const leave = todaySummaries.filter((s) => s.status === 'leave').length
+    const currentlyWorking = todaySummaries.filter((s) => s.check_in_time && !s.check_out_time).length
+    const accountedFor = present + late + leave
+    const absent = Math.max(0, totalActive - accountedFor)
+
+    // Current Payroll
+    const latestPeriod = payrollPeriods[0] || null
+    const grossPayroll = latestPeriod
+      ? Number(latestPeriod.total_gross_salary || 0)
+      : employees.reduce((acc, e) => acc + Number(e.base_salary || 0), 0)
+    const paidPayroll = latestPeriod ? Number(latestPeriod.total_paid_amount || 0) : 0
+    const duePayroll = latestPeriod ? Number(latestPeriod.total_due_amount || latestPeriod.total_net_salary || 0) : 0
+    const pendingPayroll = latestPeriod && latestPeriod.status === 'draft' ? Number(latestPeriod.total_net_salary || 0) : 0
+
+    // Overtime pending hours
+    const pendingOtHours =
+      Math.round(
+        pendingOvertime.reduce(
+          (acc, ot) => acc + (ot.duration_hours || (ot.duration_minutes ? ot.duration_minutes / 60 : 0)),
+          0
+        ) * 10
+      ) / 10
+
+    // Build decision-useful pending actions
+    const pendingActions: WorkforceOverviewSummary['pendingActions'] = []
+
+    for (const c of (pendingCorrections || []).slice(0, 3)) {
+      pendingActions.push({
+        id: `corr-${c.id}`,
+        type: 'correction',
+        title: 'Attendance Correction',
+        titleBn: 'হাজিরা সংশোধন',
+        subtitle: `${c.employee_name || 'Staff'} — ${c.attendance_date} (${c.requested_type})`,
+        actionLabel: 'Review',
+        actionLabelBn: 'রিভিউ',
+        actionHref: `/hr/attendance?tab=corrections`,
+        dateOrTime: c.attendance_date,
+      })
+    }
+
+    for (const ot of pendingOvertime.slice(0, 3)) {
+      pendingActions.push({
+        id: `ot-${ot.id}`,
+        type: 'overtime',
+        title: 'Overtime Request',
+        titleBn: 'ওভারটাইম অনুরোধ',
+        subtitle: `${ot.employee_name || 'Staff'} — ${ot.duration_hours}h (${ot.ot_type})`,
+        actionLabel: 'Review',
+        actionLabelBn: 'রিভিউ',
+        actionHref: `/hr/attendance?tab=overtime`,
+        dateOrTime: ot.ot_date,
+      })
+    }
+
+    const pendingAdvList = advances.filter((a) => a.status === 'pending')
+    for (const adv of pendingAdvList.slice(0, 2)) {
+      pendingActions.push({
+        id: `adv-${adv.id}`,
+        type: 'advance',
+        title: 'Advance Approval',
+        titleBn: 'অগ্রিম অনুমোদন',
+        subtitle: `${adv.employee_name || 'Staff'} — ৳${Number(adv.amount).toLocaleString('en-IN')}`,
+        actionLabel: 'Review',
+        actionLabelBn: 'রিভিউ',
+        actionHref: `/hr/advances`,
+        dateOrTime: adv.disbursed_date,
+      })
+    }
+
+    if (duePayroll > 0 && latestPeriod) {
+      pendingActions.push({
+        id: `pay-${latestPeriod.id}`,
+        type: 'salary_due',
+        title: 'Salary Payments Due',
+        titleBn: 'বেতন বকেয়া',
+        subtitle: `${latestPeriod.period_name} — ৳${duePayroll.toLocaleString('en-IN')}`,
+        actionLabel: 'View Payroll',
+        actionLabelBn: 'বেতন দেখুন',
+        actionHref: `/hr/payroll/${latestPeriod.id}`,
+      })
+    }
+
+    return {
+      success: true,
+      data: {
+        kpis: {
+          totalEmployees: totalActive,
+          presentToday: present,
+          absentToday: absent,
+          lateToday: late,
+          payrollDue: duePayroll,
+          overtimePending: pendingOtHours,
+        },
+        todayAttendance: {
+          present,
+          late,
+          leave,
+          absent,
+          currentlyWorking,
+          totalActive,
+        },
+        payrollStatus: {
+          periodName: latestPeriod?.period_name || 'Current Period',
+          grossPayroll,
+          paid: paidPayroll,
+          pending: pendingPayroll,
+          due: duePayroll,
+        },
+        pendingActions,
+      },
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to fetch workforce overview summary.' }
   }
 }
 
@@ -84,18 +262,7 @@ export async function getEmployeesAction(
 ): Promise<ServerActionResult<EmployeeRecord[]>> {
   try {
     const tenant = await requireTenantUser(companyIdParam)
-    let employees = await WorkforceService.getEmployees(tenant.companyId, options)
-
-    // If no employees found, check if tenant has ANY employees overall
-    if (employees.length === 0) {
-      const allEmps = await WorkforceService.getEmployees(tenant.companyId)
-      if (allEmps.length === 0) {
-        // Auto-seed for this tenant
-        await WorkforceRepository.seedDefaultEmployees(tenant.companyId)
-        employees = await WorkforceService.getEmployees(tenant.companyId, options)
-      }
-    }
-
+    const employees = await WorkforceService.getEmployees(tenant.companyId, options)
     return { success: true, data: employees }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch employees.' }
@@ -490,10 +657,7 @@ export async function getPayrollPeriodsAction(
 ): Promise<ServerActionResult<PayrollPeriodRecord[]>> {
   try {
     const tenant = await requireTenantUser(companyIdParam)
-    let periods = await WorkforceService.getPayrollPeriods(tenant.companyId, options)
-    if (periods.length === 0) {
-      periods = await WorkforceRepository.seedDefaultPayrollPeriod(tenant.companyId)
-    }
+    const periods = await WorkforceService.getPayrollPeriods(tenant.companyId, options)
     return { success: true, data: periods }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch payroll periods.' }
@@ -506,11 +670,7 @@ export async function getPayrollPeriodDetailAction(
 ): Promise<ServerActionResult<PayrollPeriodRecord | null>> {
   try {
     const tenant = await requireTenantUser(companyIdParam)
-    let period = await WorkforceService.getPayrollPeriodById(id, tenant.companyId)
-    if (!period) {
-      const periods = await WorkforceRepository.getPayrollPeriods(tenant.companyId)
-      period = periods.find((p) => p.id === id || p.period_name.toLowerCase().includes(id.toLowerCase())) || periods[0] || null
-    }
+    const period = await WorkforceService.getPayrollPeriodById(id, tenant.companyId)
     return { success: true, data: period }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch payroll period.' }
