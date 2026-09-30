@@ -45,15 +45,32 @@ export interface CompanySettings {
 
 import { DataScope } from './rbac.types'
 
+export interface LinkedEmployeeSummary {
+  id: string
+  employee_id_number: string
+  name: string
+  name_bn?: string | null
+  role?: string | null
+  department?: string | null
+  mobile?: string | null
+  email?: string | null
+  status: string
+}
+
 export interface CompanyUserWithProfile extends CompanyUserRow {
   profile?: UserProfileRow | null
   roles?: RoleRow[]
+  role?: RoleRow | null
   branch?: BranchRow | null
   department?: string | null
   responsibilities?: string[]
   overrides?: Record<string, boolean>
   data_scopes?: Record<string, DataScope>
+  data_scope?: DataScope | string
   authorized_branch_ids?: string[]
+  user_branch_access?: any[]
+  linked_employee?: LinkedEmployeeSummary | null
+  last_login_at?: string | null
 }
 
 export interface TenantContextType {

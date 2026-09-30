@@ -1,10 +1,10 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { InventoryRepository } from '../../lib/repositories/inventory.repository'
-import { InventoryService } from '../../services/inventory.service'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store'
-import { getMaterialWarehouseStockBreakdown } from '../../lib/units'
-import type { MaterialRecord } from '../../types/inventory.types'
+import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
+import { InventoryService } from '../../services/inventory.service.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
+import type { MaterialRecord } from '../../types/inventory.types.ts'
 
 describe('Multi-Item Direct Issue to Print Floor', () => {
   const testCompanyId = `test-multi-issue-${Date.now()}`

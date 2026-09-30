@@ -115,7 +115,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     quotations: { view: true },
     orders: { view: true, create: true, edit: true, print: true },
     design: { view: true, create: true, edit: true, send: true, download: true, approve: true, manage: true },
-    invoices: { view: true },
+    invoices: {},
     payments: {},
     production: { view: true },
     machineries: { view: true },
@@ -365,7 +365,7 @@ export interface EffectivePermissionDetail {
 
 export interface UserPermissionContext {
   userId?: string
-  role?: string
+  role?: string | { name?: string; slug?: string; id?: string } | null
   primaryRole?: string
   responsibilities?: string[]
   overrides?: Record<string, boolean>
@@ -391,7 +391,8 @@ export function extractResponsibilities(user: UserPermissionContext | string): R
   }
 
   if (list.length === 0) {
-    const roleSlug = user.primaryRole || user.role || 'general_staff'
+    const rawRole = typeof user.role === 'string' ? user.role : user.role?.slug || user.role?.name
+    const roleSlug = user.primaryRole || rawRole || 'general_staff'
     list.push(normalizeResponsibilitySlug(roleSlug))
   }
 
@@ -784,6 +785,125 @@ export function checkDataScopeAccess(
   }
 
   return evaluateDataScopeInternal(scope, ctx)
+}
+
+/**
+ * Standard practical responsibilities for print & signage businesses (Prompt Sec 32)
+ */
+export const PRACTICAL_RESPONSIBILITIES = [
+  'Sales',
+  'Quotation',
+  'Customer Management',
+  'Design',
+  'Production',
+  'Printing',
+  'Machine Operation',
+  'Finishing',
+  'Fabrication',
+  'Inventory',
+  'Material Request',
+  'Delivery',
+  'Installation',
+  'Accounts',
+  'HR',
+] as const
+
+export type PracticalResponsibility = (typeof PRACTICAL_RESPONSIBILITIES)[number]
+
+/**
+ * Default responsibility presets suggested automatically when choosing a role (Prompt Sec 33)
+ */
+export const RESPONSIBILITY_PRESETS_BY_ROLE: Record<string, string[]> = {
+  business_owner: [
+    'Sales',
+    'Quotation',
+    'Customer Management',
+    'Design',
+    'Production',
+    'Printing',
+    'Machine Operation',
+    'Finishing',
+    'Inventory',
+    'Material Request',
+    'Delivery',
+    'Accounts',
+    'HR',
+  ],
+  owner: [
+    'Sales',
+    'Quotation',
+    'Customer Management',
+    'Design',
+    'Production',
+    'Printing',
+    'Machine Operation',
+    'Finishing',
+    'Inventory',
+    'Material Request',
+    'Delivery',
+    'Accounts',
+    'HR',
+  ],
+  branch_manager: ['Sales', 'Quotation', 'Customer Management', 'Production', 'Delivery', 'Material Request'],
+  manager: ['Sales', 'Quotation', 'Customer Management', 'Production', 'Delivery', 'Material Request'],
+  sales_manager: ['Sales', 'Quotation', 'Customer Management'],
+  sales: ['Sales', 'Quotation', 'Customer Management'],
+  designer: ['Design', 'Approval', 'Revision'],
+  production_manager: ['Production', 'Finishing', 'Machine Operation', 'Material Request'],
+  operator: ['Printing', 'Machine Operation', 'Material Request'],
+  production_operator: ['Printing', 'Machine Operation', 'Material Request'],
+  store_manager: ['Inventory', 'Material Request'],
+  store_keeper: ['Inventory', 'Material Request'],
+  accountant: ['Accounts'],
+  accounts: ['Accounts'],
+  hr: ['HR'],
+  hr_manager: ['HR'],
+  delivery_coordinator: ['Delivery', 'Installation'],
+  general_staff: ['Material Request'],
+}
+
+/**
+ * Returns responsibility presets for any given role slug
+ */
+export function getResponsibilityPresetsForRole(roleSlug: string): string[] {
+  const norm = (roleSlug || '').toLowerCase().trim().replace(/\s+/g, '_')
+  return (
+    RESPONSIBILITY_PRESETS_BY_ROLE[norm] ||
+    RESPONSIBILITY_PRESETS_BY_ROLE[norm.replace('role-', '')] ||
+    ['Material Request']
+  )
+}
+
+/**
+ * Sensible default data scope by role (Prompt Sec 35)
+ */
+export const DEFAULT_ROLE_DATA_SCOPES: Record<string, DataScope> = {
+  business_owner: 'company',
+  owner: 'company',
+  branch_manager: 'branch',
+  manager: 'branch',
+  sales_manager: 'assigned',
+  sales: 'assigned',
+  designer: 'assigned',
+  production_manager: 'assigned',
+  operator: 'assigned',
+  production_operator: 'assigned',
+  store_manager: 'branch',
+  store_keeper: 'branch',
+  accountant: 'company',
+  accounts: 'company',
+  hr: 'company',
+  delivery_coordinator: 'assigned',
+  general_staff: 'assigned',
+}
+
+export function getPracticalDefaultDataScope(roleSlug: string): DataScope {
+  const norm = (roleSlug || '').toLowerCase().trim().replace(/\s+/g, '_')
+  return (
+    DEFAULT_ROLE_DATA_SCOPES[norm] ||
+    DEFAULT_ROLE_DATA_SCOPES[norm.replace('role-', '')] ||
+    'assigned'
+  )
 }
 
 

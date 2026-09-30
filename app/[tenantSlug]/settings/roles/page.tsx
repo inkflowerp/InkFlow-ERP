@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { UsersManagementView } from '@/components/users/users-management-view'
+import { RolesPage } from '@/components/users/roles-page'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 
 export default function RolesMatrixPage() {
@@ -12,7 +12,7 @@ export default function RolesMatrixPage() {
       panelTitle="Roles & Permission Matrix"
       panelTitleBn="অনুমতি সেটিংস ও রোলস"
     >
-      <UsersManagementView hideHeader={false} initialTab="roles" />
+      <RolesPage />
     </PanelAccessGuard>
   )
 }

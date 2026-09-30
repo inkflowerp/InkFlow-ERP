@@ -340,3 +340,161 @@ export async function deleteCustomRoleAction(params: {
   revalidatePath(`/${params.tenantSlug}/settings/roles`)
   return result
 }
+
+export async function listLinkableEmployeesAction(companyId: string) {
+  const tenant = await getCurrentTenant(companyId)
+  if (!tenant) {
+    return { success: false, error: 'Unauthorized: Session required', data: [] }
+  }
+  return await CompanyUsersService.listLinkableEmployees(tenant.companyId)
+}
+
+export async function createUserWithEmployeeAction(params: {
+  companyId: string
+  tenantSlug: string
+  employeeId?: string | null
+  email: string
+  username?: string
+  fullName: string
+  phone?: string
+  roleId: string
+  responsibilities?: string[]
+  branchId?: string | null
+  additionalBranchIds?: string[]
+  dataScopes?: any
+}) {
+  const tenant = await getCurrentTenant(params.companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('users.create') &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, message: 'Unauthorized: Insufficient permissions to create team users.' }
+  }
+
+  // Anti-self-escalation: only business owner can grant company-wide scope or owner role
+  if (tenant.companyRole !== 'business_owner') {
+    const isOwnerRole = params.roleId === 'role-owner' || params.roleId === 'business_owner'
+    if (isOwnerRole) {
+      return { success: false, message: 'Unauthorized: Only Business Owner can grant Owner role.' }
+    }
+  }
+
+  try {
+    await EntitlementService.enforceLimit(tenant.companyId, 'max_users')
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Plan user limit exceeded' }
+  }
+
+  const result = await CompanyUsersService.createUserWithEmployee({
+    ...params,
+    companyId: tenant.companyId,
+    actorName: tenant.fullName || 'Admin',
+  })
+
+  revalidatePath(`/${params.tenantSlug}/settings/users`)
+  return result
+}
+
+export async function linkEmployeeToUserAction(params: {
+  companyUserId: string
+  employeeId: string
+  companyId: string
+  tenantSlug: string
+}) {
+  const tenant = await getCurrentTenant(params.companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, message: 'Unauthorized: Insufficient permissions to link employees.' }
+  }
+
+  const result = await CompanyUsersService.linkEmployeeToUser({
+    ...params,
+    companyId: tenant.companyId,
+    actorName: tenant.fullName || 'Admin',
+  })
+
+  revalidatePath(`/${params.tenantSlug}/settings/users`)
+  return result
+}
+
+export async function unlinkEmployeeFromUserAction(params: {
+  companyUserId: string
+  companyId: string
+  tenantSlug: string
+}) {
+  const tenant = await getCurrentTenant(params.companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, message: 'Unauthorized: Insufficient permissions to unlink employees.' }
+  }
+
+  const result = await CompanyUsersService.unlinkEmployeeFromUser({
+    ...params,
+    companyId: tenant.companyId,
+    actorName: tenant.fullName || 'Admin',
+  })
+
+  revalidatePath(`/${params.tenantSlug}/settings/users`)
+  return result
+}
+
+export async function removeLoginAction(params: {
+  companyUserId: string
+  companyId: string
+  tenantSlug: string
+}) {
+  const tenant = await getCurrentTenant(params.companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, message: 'Unauthorized: Insufficient permissions to remove user login.' }
+  }
+
+  // Anti-self-remove check
+  if (tenant.userId && params.companyUserId === tenant.userId) {
+    return { success: false, message: 'You cannot remove your own active login account.' }
+  }
+
+  const result = await CompanyUsersService.removeLogin({
+    ...params,
+    companyId: tenant.companyId,
+    actorName: tenant.fullName || 'Admin',
+  })
+
+  revalidatePath(`/${params.tenantSlug}/settings/users`)
+  return result
+}
+
+export async function getAccountHealthAction(companyUserId: string, companyId?: string) {
+  const tenant = await getCurrentTenant(companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('users.manage') &&
+      !tenant.permissions.includes('settings.edit'))
+  ) {
+    return { success: false, error: 'Unauthorized: Insufficient permissions.' }
+  }
+
+  return await CompanyUsersService.getAccountHealth(companyUserId, tenant.companyId)
+}
+
+export async function getUserAuditActivityAction(companyUserId: string, companyId?: string) {
+  const tenant = await getCurrentTenant(companyId)
+  if (!tenant) return []
+  return await CompanyUsersService.getUserAuditActivity(companyUserId, tenant.companyId)
+}

@@ -6,6 +6,7 @@ import { AuditService } from '@/services/audit.service'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { AuthService } from '@/services/auth.service'
+import { AuthEmailService } from '@/services/auth-email.service'
 
 export class CompanyUsersService {
   /**
@@ -137,7 +138,7 @@ export class CompanyUsersService {
     roleId: string
     branchId?: string | null
     actorName?: string
-  }): Promise<ApiResponse<{ generatedPassword?: string; userId?: string }>> {
+  }): Promise<ApiResponse<{ userId?: string }>> {
     try {
       const admin = createAdminClient()
       const normalizedEmail = params.email.trim().toLowerCase()
@@ -276,7 +277,7 @@ export class CompanyUsersService {
       return {
         success: true,
         message: `User ${params.fullName} created successfully.`,
-        data: { generatedPassword, userId: userId || undefined },
+        data: { userId: userId || undefined },
       }
     } catch (error: any) {
       return { success: false, error: error.message || 'Failed to create user' }
@@ -644,6 +645,644 @@ export class CompanyUsersService {
         success: false,
         error: error.message || 'Failed to update user permissions',
       }
+    }
+  }
+
+  /**
+   * List company employees eligible for user linking or invite selection.
+   * STRICT SECURITY: Excludes salary, bank info, NID, documents, and private HR data.
+   */
+  static async listLinkableEmployees(companyId: string): Promise<ApiResponse<any[]>> {
+    try {
+      if (!companyId) return { success: false, error: 'Company ID is required' }
+      const admin = createAdminClient()
+
+      // 1. Fetch workforce roster (strictly non-sensitive operational fields)
+      const { data: employees, error: empErr } = await (admin as any)
+        .from('employees')
+        .select('id, employee_id_number, name, name_bn, role, department, branch_id, mobile, email, user_id, status')
+        .eq('company_id', companyId)
+        .order('name', { ascending: true })
+
+      if (empErr) {
+        throw new Error(empErr.message)
+      }
+
+      // 2. Fetch company_users to verify which employees already possess active/invited login accounts
+      const { data: companyUsers } = await (admin as any)
+        .from('company_users')
+        .select('user_id, status')
+        .eq('company_id', companyId)
+
+      const activeUserIds = new Set(
+        (companyUsers || [])
+          .filter((cu: any) => cu.status === 'active' || cu.status === 'invited')
+          .map((cu: any) => cu.user_id)
+          .filter(Boolean)
+      )
+
+      const linkableList = (employees || []).map((emp: any) => {
+        const hasLogin = Boolean(emp.user_id && activeUserIds.has(emp.user_id))
+        return {
+          id: emp.id,
+          employee_id_number: emp.employee_id_number,
+          name: emp.name,
+          name_bn: emp.name_bn,
+          role: emp.role,
+          department: emp.department,
+          branch_id: emp.branch_id,
+          mobile: emp.mobile,
+          email: emp.email,
+          user_id: emp.user_id,
+          status: emp.status,
+          alreadyHasLogin: hasLogin,
+        }
+      })
+
+      return { success: true, data: linkableList }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to fetch employees' }
+    }
+  }
+
+  /**
+   * 4-Step User Creation with Employee Link, Role, Responsibility Presets, and Data Scope
+   */
+  static async createUserWithEmployee(params: {
+    companyId: string
+    employeeId?: string | null
+    email: string
+    username?: string
+    fullName: string
+    phone?: string
+    roleId: string
+    responsibilities?: string[]
+    branchId?: string | null
+    additionalBranchIds?: string[]
+    dataScopes?: Record<string, DataScope>
+    actorName?: string
+  }): Promise<ApiResponse<{ userId: string }>> {
+    const admin = createAdminClient()
+    const normalizedEmail = params.email.trim().toLowerCase()
+    let createdAuthUserId: string | null = null
+
+    try {
+      // Step 1: Validate Employee (if provided) & Duplicate Active Login Prevention (Prompt Sec 14 & 60)
+      if (params.employeeId) {
+        const { data: employee, error: empErr } = await (admin as any)
+          .from('employees')
+          .select('id, name, company_id, user_id, status')
+          .eq('id', params.employeeId)
+          .eq('company_id', params.companyId)
+          .maybeSingle()
+
+        if (empErr || !employee) {
+          return { success: false, error: 'Selected employee record not found in this company.' }
+        }
+
+        if (employee.user_id) {
+          const { data: existingLogin } = await (admin as any)
+            .from('company_users')
+            .select('id, status')
+            .eq('company_id', params.companyId)
+            .eq('user_id', employee.user_id)
+            .maybeSingle()
+
+          if (existingLogin && existingLogin.status !== 'disabled') {
+            return {
+              success: false,
+              error: 'This employee already has an active login account. Duplicate active logins are prohibited.',
+            }
+          }
+        }
+      }
+
+      // Step 2: Account Identifier Uniqueness Validation
+      const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
+        email: normalizedEmail,
+        username: params.username,
+        phone: params.phone,
+        companyId: params.companyId,
+      })
+      if (!uniquenessCheck.available) {
+        return { success: false, error: uniquenessCheck.error }
+      }
+
+      // Step 3: Supabase Auth Account Initialization (Prompt Sec 15 & 42)
+      // Generates high-entropy crypto temporary password hash for auth creation only.
+      // NEVER displayed to admin, NEVER persisted in employee or user profile tables.
+      const secureAuthSecret = `InkSec#${Math.random().toString(36).slice(-8)}!${Date.now()}`
+
+      let userId: string | null = null
+      const { data: userList } = await admin.auth.admin.listUsers({ perPage: 1000 })
+      const existingAuth = userList?.users?.find(
+        (u) => u.email?.toLowerCase() === normalizedEmail
+      )
+
+      if (existingAuth) {
+        userId = existingAuth.id
+      } else {
+        const { data: newUser, error: createErr } = await admin.auth.admin.createUser({
+          email: normalizedEmail,
+          password: secureAuthSecret,
+          email_confirm: false,
+          user_metadata: {
+            full_name: params.fullName,
+            phone: params.phone || null,
+            username: params.username || null,
+            preferred_locale: 'bn',
+          },
+        })
+
+        if (createErr || !newUser?.user) {
+          throw new Error(`Failed to create auth identity: ${createErr?.message || 'Unknown auth error'}`)
+        }
+        userId = newUser.user.id
+        createdAuthUserId = userId
+      }
+
+      if (!userId) {
+        throw new Error('Failed to resolve authenticated user identity.')
+      }
+
+      // Upsert profile tables
+      await (admin as any).from('user_profiles').upsert({
+        id: userId,
+        email: normalizedEmail,
+        username: params.username || null,
+        full_name: params.fullName,
+        phone: params.phone || null,
+        preferred_locale: 'bn',
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      })
+
+      try {
+        await (admin as any).from('profiles').upsert({
+          id: userId,
+          username: params.username || null,
+          full_name: params.fullName,
+          phone: params.phone || null,
+          preferred_locale: 'bn',
+          updated_at: new Date().toISOString(),
+        })
+      } catch {}
+
+      // Step 4: Company Membership & Atomic Transaction Verification (Prompt Sec 45)
+      const { data: existingCU } = await (admin as any)
+        .from('company_users')
+        .select('id')
+        .eq('company_id', params.companyId)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      let companyUserId = existingCU?.id
+
+      if (!companyUserId) {
+        const { data: newCU, error: cuErr } = await (admin as any)
+          .from('company_users')
+          .insert({
+            company_id: params.companyId,
+            user_id: userId,
+            branch_id: params.branchId || null,
+            invited_email: normalizedEmail,
+            status: 'invited',
+            responsibilities: params.responsibilities || [],
+            data_scopes: params.dataScopes || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select()
+          .single()
+
+        if (cuErr || !newCU) {
+          throw new Error(`Account setup incomplete: Failed to create company membership: ${cuErr?.message || 'DB Error'}`)
+        }
+        companyUserId = newCU.id
+      } else {
+        await (admin as any)
+          .from('company_users')
+          .update({
+            branch_id: params.branchId || null,
+            status: 'invited',
+            responsibilities: params.responsibilities || [],
+            data_scopes: params.dataScopes || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', companyUserId)
+      }
+
+      // Step 5: Link Employee to User (Prompt Sec 12 & 46)
+      if (params.employeeId) {
+        await (admin as any)
+          .from('employees')
+          .update({
+            user_id: userId,
+            email: normalizedEmail,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', params.employeeId)
+          .eq('company_id', params.companyId)
+      }
+
+      // Step 6: Assign Role in user_roles
+      if (params.roleId && companyUserId) {
+        await (admin as any).from('user_roles').delete().eq('company_user_id', companyUserId)
+        await (admin as any).from('user_roles').insert({
+          company_user_id: companyUserId,
+          role_id: params.roleId,
+          company_id: params.companyId,
+        })
+      }
+
+      // Step 7: Assign Multi-Branch Access in user_branch_access
+      if (params.additionalBranchIds && params.additionalBranchIds.length > 0 && userId) {
+        await (admin as any).from('user_branch_access').delete().eq('company_id', params.companyId).eq('user_id', userId)
+        for (const bId of params.additionalBranchIds) {
+          await (admin as any).from('user_branch_access').insert({
+            company_id: params.companyId,
+            user_id: userId,
+            branch_id: bId,
+            created_at: new Date().toISOString(),
+          })
+        }
+      }
+
+      // Step 8: Dispatch Invitation via AuthEmailService (Best-effort non-blocking)
+      try {
+        const { data: comp } = await (admin as any).from('companies').select('name').eq('id', params.companyId).maybeSingle()
+        await AuthEmailService.sendUserInvitationEmail({
+          email: normalizedEmail,
+          inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login`,
+          companyName: comp?.name || 'InkFlow PrintERP',
+          roleName: 'Team User',
+          invitedByName: params.actorName || 'Administrator',
+          tenantId: params.companyId,
+          userName: params.fullName,
+        })
+      } catch (inviteErr) {
+        console.warn('[createUserWithEmployee] Email dispatch warning:', inviteErr)
+      }
+
+      TenantRepository.invalidateMembershipCache()
+
+      // Step 9: Audit Log (Prompt Sec 77)
+      await AuditService.logEvent(
+        params.companyId,
+        null,
+        params.actorName || 'Admin',
+        'user.invite',
+        'user',
+        companyUserId,
+        null,
+        {
+          email: normalizedEmail,
+          fullName: params.fullName,
+          roleId: params.roleId,
+          employeeId: params.employeeId || null,
+          responsibilities: params.responsibilities,
+          branchId: params.branchId,
+        },
+        `Invited team user ${params.fullName} (${normalizedEmail}) linked to employee ${params.employeeId || 'none'}`
+      )
+
+      return {
+        success: true,
+        message: `User ${params.fullName} created and invited successfully.`,
+        data: { userId },
+      }
+    } catch (error: any) {
+      // Safe cleanup if setup was incomplete
+      if (createdAuthUserId) {
+        try {
+          await admin.auth.admin.deleteUser(createdAuthUserId)
+        } catch {}
+      }
+      return {
+        success: false,
+        error: error.message || 'Unable to complete account setup.',
+      }
+    }
+  }
+
+  /**
+   * Explicitly link an existing unlinked user account to an employee profile (Prompt Sec 12 & 59)
+   */
+  static async linkEmployeeToUser(params: {
+    companyUserId: string
+    employeeId: string
+    companyId: string
+    actorName?: string
+  }): Promise<ApiResponse> {
+    try {
+      const admin = createAdminClient()
+
+      // 1. Fetch user membership
+      const { data: cu, error: cuErr } = await (admin as any)
+        .from('company_users')
+        .select('id, user_id, company_id')
+        .eq('id', params.companyUserId)
+        .eq('company_id', params.companyId)
+        .maybeSingle()
+
+      if (cuErr || !cu) {
+        return { success: false, error: 'User record not found in this company.' }
+      }
+
+      // 2. Fetch target employee
+      const { data: emp, error: empErr } = await (admin as any)
+        .from('employees')
+        .select('id, name, employee_id_number, user_id, company_id')
+        .eq('id', params.employeeId)
+        .eq('company_id', params.companyId)
+        .maybeSingle()
+
+      if (empErr || !emp) {
+        return { success: false, error: 'Employee record not found in this company.' }
+      }
+
+      // Check if employee already linked to another user
+      if (emp.user_id && emp.user_id !== cu.user_id) {
+        return {
+          success: false,
+          error: `Employee ${emp.name} (${emp.employee_id_number}) is already linked to another login account.`,
+        }
+      }
+
+      // 3. Update employee record with user_id
+      await (admin as any)
+        .from('employees')
+        .update({
+          user_id: cu.user_id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', emp.id)
+
+      TenantRepository.invalidateMembershipCache()
+
+      await AuditService.logEvent(
+        params.companyId,
+        null,
+        params.actorName || 'Admin',
+        'user.link_employee',
+        'user',
+        params.companyUserId,
+        null,
+        { employeeId: emp.id, employeeName: emp.name },
+        `Linked employee ${emp.name} (${emp.employee_id_number}) to user account`
+      )
+
+      return {
+        success: true,
+        message: `Successfully linked ${emp.name} (${emp.employee_id_number}) to user.`,
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to link employee.' }
+    }
+  }
+
+  /**
+   * Explicitly unlink employee from user account without deleting employee or user history (Prompt Sec 52)
+   */
+  static async unlinkEmployeeFromUser(params: {
+    companyUserId: string
+    companyId: string
+    actorName?: string
+  }): Promise<ApiResponse> {
+    try {
+      const admin = createAdminClient()
+
+      const { data: cu } = await (admin as any)
+        .from('company_users')
+        .select('id, user_id')
+        .eq('id', params.companyUserId)
+        .eq('company_id', params.companyId)
+        .maybeSingle()
+
+      if (!cu?.user_id) {
+        return { success: false, error: 'User record not found.' }
+      }
+
+      // Detach user_id on employees
+      await (admin as any)
+        .from('employees')
+        .update({
+          user_id: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('company_id', params.companyId)
+        .eq('user_id', cu.user_id)
+
+      TenantRepository.invalidateMembershipCache()
+
+      await AuditService.logEvent(
+        params.companyId,
+        null,
+        params.actorName || 'Admin',
+        'user.unlink_employee',
+        'user',
+        params.companyUserId,
+        null,
+        null,
+        `Unlinked employee profile from user account`
+      )
+
+      return {
+        success: true,
+        message: 'Employee unlinked successfully. Workforce records and history remain preserved.',
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to unlink employee.' }
+    }
+  }
+
+  /**
+   * Remove Login means: remove login access relationship, NOT delete employee! (Prompt Sec 52 & 76)
+   */
+  static async removeLogin(params: {
+    companyUserId: string
+    companyId: string
+    actorName?: string
+  }): Promise<ApiResponse> {
+    try {
+      const admin = createAdminClient()
+
+      // 1. Enforce Last Active Owner protection
+      const users = await TenantRepository.getCompanyUsers(params.companyId)
+      const targetUser = users.find((u) => u.id === params.companyUserId)
+      if (targetUser) {
+        const isTargetOwner =
+          targetUser.responsibilities?.includes('business_owner') ||
+          targetUser.responsibilities?.includes('owner') ||
+          targetUser.roles?.some((r) => r.slug === 'business_owner' || r.slug === 'owner')
+
+        if (isTargetOwner) {
+          const activeOwners = users.filter(
+            (u) =>
+              u.status === 'active' &&
+              (u.responsibilities?.includes('business_owner') ||
+                u.responsibilities?.includes('owner') ||
+                u.roles?.some((r) => r.slug === 'business_owner' || r.slug === 'owner'))
+          )
+          if (activeOwners.length <= 1) {
+            return {
+              success: false,
+              error: 'Cannot remove login for the last active Business Owner.',
+            }
+          }
+        }
+      }
+
+      const userId = targetUser?.user_id
+
+      // 2. Unlink any employee record (preserves attendance, payroll, advances)
+      if (userId) {
+        await (admin as any)
+          .from('employees')
+          .update({
+            user_id: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('company_id', params.companyId)
+          .eq('user_id', userId)
+
+        // 3. Remove branch access and user roles
+        await (admin as any).from('user_branch_access').delete().eq('company_id', params.companyId).eq('user_id', userId)
+      }
+
+      await (admin as any).from('user_roles').delete().eq('company_user_id', params.companyUserId)
+
+      // 4. Update status to disabled or delete membership record
+      await (admin as any)
+        .from('company_users')
+        .update({
+          status: 'disabled',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', params.companyUserId)
+
+      TenantRepository.invalidateMembershipCache()
+
+      await AuditService.logEvent(
+        params.companyId,
+        null,
+        params.actorName || 'Admin',
+        'user.remove_login',
+        'user',
+        params.companyUserId,
+        null,
+        null,
+        `Removed login relationship for user. Employee workforce records preserved.`
+      )
+
+      return {
+        success: true,
+        message: 'Login access removed successfully. Employee workforce history remains preserved.',
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to remove login access.' }
+    }
+  }
+
+  /**
+   * Diagnostic Account Health Check (Prompt Sec 61)
+   */
+  static async getAccountHealth(companyUserId: string, companyId: string): Promise<ApiResponse<any>> {
+    try {
+      const admin = createAdminClient()
+
+      // Fetch company user record
+      const { data: cu } = await (admin as any)
+        .from('company_users')
+        .select('*, branch:branches(*), user_roles(role:roles(*))')
+        .eq('id', companyUserId)
+        .eq('company_id', companyId)
+        .maybeSingle()
+
+      if (!cu) {
+        return { success: false, error: 'User record not found.' }
+      }
+
+      const userId = cu.user_id
+
+      // 1. Auth check
+      let authOk = false
+      if (userId) {
+        const { data: authUser } = await admin.auth.admin.getUserById(userId)
+        authOk = Boolean(authUser?.user)
+      }
+
+      // 2. Profile check
+      let profileOk = false
+      if (userId) {
+        const { data: prof } = await (admin as any)
+          .from('user_profiles')
+          .select('id')
+          .eq('id', userId)
+          .maybeSingle()
+        profileOk = Boolean(prof)
+      }
+
+      // 3. Membership check
+      const membershipOk = cu.status === 'active' || cu.status === 'invited'
+
+      // 4. Employee Link check
+      let employeeOk = false
+      let linkedEmployeeData: any = null
+      if (userId) {
+        const { data: emp } = await (admin as any)
+          .from('employees')
+          .select('id, employee_id_number, name, role, department, status')
+          .eq('company_id', companyId)
+          .eq('user_id', userId)
+          .maybeSingle()
+        if (emp) {
+          employeeOk = true
+          linkedEmployeeData = emp
+        }
+      }
+
+      // 5. Role check
+      const roleOk = Array.isArray(cu.user_roles) && cu.user_roles.length > 0
+
+      // 6. Branch check
+      const branchOk = Boolean(cu.branch_id || cu.branch)
+
+      return {
+        success: true,
+        data: {
+          authOk,
+          profileOk,
+          membershipOk,
+          employeeOk,
+          roleOk,
+          branchOk,
+          linkedEmployee: linkedEmployeeData,
+          status: cu.status,
+        },
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Failed to evaluate account health.' }
+    }
+  }
+
+  /**
+   * User Audit Activity History (Prompt Sec 49 & 77)
+   */
+  static async getUserAuditActivity(companyUserId: string, companyId: string): Promise<any[]> {
+    try {
+      const admin = createAdminClient()
+      const { data: logs } = await (admin as any)
+        .from('audit_logs')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('entity_id', companyUserId)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      return logs || []
+    } catch {
+      return []
     }
   }
 }

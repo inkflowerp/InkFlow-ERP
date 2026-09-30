@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { UsersManagementView } from '@/components/users/users-management-view'
+import { TeamUsersPage } from '@/components/users/team-users-page'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 
 export default function UsersManagementPage() {
@@ -9,10 +9,10 @@ export default function UsersManagementPage() {
     <PanelAccessGuard
       module="users"
       action="manage"
-      panelTitle="Team Users & Roles Matrix"
-      panelTitleBn="টিম সদস্য ও রোলস ম্যাট্রিক্স"
+      panelTitle="Team Users"
+      panelTitleBn="টিম ব্যবহারকারী ও অ্যাক্সেস"
     >
-      <UsersManagementView hideHeader={false} />
+      <TeamUsersPage />
     </PanelAccessGuard>
   )
 }

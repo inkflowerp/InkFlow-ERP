@@ -111,11 +111,16 @@ export function SettingsNav() {
       icon: Mail,
     },
     {
-      title: 'Users & Permissions',
-      titleBn: 'টিম ও অনুমতি',
+      title: 'Team Users',
+      titleBn: 'টিম ব্যবহারকারী',
       href: '/settings/users',
+      icon: Users,
+    },
+    {
+      title: 'Roles & Permissions',
+      titleBn: 'অনুমতি ও রোলস',
+      href: '/settings/roles',
       icon: ShieldCheck,
-      matchExtra: ['/settings/roles'],
     },
     {
       title: 'Subscription',

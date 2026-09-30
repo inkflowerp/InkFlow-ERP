@@ -60,44 +60,18 @@ export function useMyWorkforce() {
     loadData()
   }, [loadData])
 
-  // 1. Resolve current logged-in employee record
+  // 1. Resolve current logged-in employee record strictly via user_id
   const currentEmployee = useMemo<EmployeeRecord | null>(() => {
     if (!employees || employees.length === 0) return null
 
-    // Match by user_id
-    if (currentUser?.id) {
-      const byUserId = employees.find((e) => e.user_id === currentUser.id)
+    const targetUserId = currentUser?.user_id || currentUser?.id
+    if (targetUserId) {
+      const byUserId = employees.find((e) => e.user_id === targetUserId)
       if (byUserId) return byUserId
     }
 
-    // Match by email
-    const email = currentUser?.profile?.email || (currentUser as any)?.email
-    if (email) {
-      const byEmail = employees.find(
-        (e) => (e.email || '').toLowerCase() === email.toLowerCase()
-      )
-      if (byEmail) return byEmail
-    }
-
-    // Match by phone / mobile
-    const phone = currentUser?.profile?.phone || (currentUser as any)?.phone
-    if (phone) {
-      const cleanPhone = phone.replace(/\D/g, '')
-      const byPhone = employees.find((e) => (e.mobile || '').replace(/\D/g, '').includes(cleanPhone))
-      if (byPhone) return byPhone
-    }
-
-    // Match by name
-    const fullName = currentUser?.profile?.full_name
-    if (fullName) {
-      const byName = employees.find(
-        (e) => (e.name || '').toLowerCase() === fullName.toLowerCase()
-      )
-      if (byName) return byName
-    }
-
-    // Demo/Development fallback: return first active employee
-    return employees.find((e) => e.status === 'active') || employees[0] || null
+    // Strict identity mapping: No heuristic fallback to email, phone, name, or first active employee
+    return null
   }, [employees, currentUser])
 
   const empId = currentEmployee?.id || ''

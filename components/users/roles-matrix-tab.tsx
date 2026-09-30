@@ -145,7 +145,7 @@ const DEFAULT_CLIENT_ROLES: RoleItem[] = [
     permissions: [
       'customers.view', 'quotations.view', 'orders.view', 'orders.create', 'orders.edit', 'orders.print',
       'design.view', 'design.create', 'design.edit', 'design.send', 'design.download', 'design.approve',
-      'invoices.view', 'production.view', 'machineries.view', 'tasks.view', 'notifications.view'
+      'production.view', 'machineries.view', 'tasks.view', 'notifications.view'
     ],
   },
   {

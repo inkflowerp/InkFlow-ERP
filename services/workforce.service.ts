@@ -682,7 +682,6 @@ export class WorkforceService {
       create_login: true,
       email,
       username: cleanUsername,
-      password,
       role: normalizedRole,
       responsibilities: effectiveResponsibilities,
       user_id: userId,
@@ -690,6 +689,7 @@ export class WorkforceService {
       last_invite_sent_at: inviteSentAt || portalCreds.last_invite_sent_at || null,
       invite_link: inviteUrl || portalCreds.invite_link || null,
     }
+    delete (updatedCreds as any).password
 
     const updatedEmployee = await WorkforceRepository.updateEmployee(employee.id, employee.company_id, {
       portal_credentials: updatedCreds,
@@ -742,7 +742,6 @@ export class WorkforceService {
       email: targetEmail,
       username: employee.portal_credentials?.username || targetEmail.split('@')[0],
       role: normalizePortalRole(employee.portal_credentials?.role || employee.role),
-      password: employee.portal_credentials?.password,
       send_invitation: true,
     }
 

@@ -554,6 +554,30 @@ export class TenantRepository {
       } catch {}
     }
 
+    // Fetch linked workforce employee profiles for each user (strictly without salary/financials)
+    const employeeMap = new Map<string, any>()
+    if (userIds.length > 0) {
+      try {
+        const { data: emps } = await (admin as any)
+          .from('employees')
+          .select('id, employee_id_number, name, name_bn, role, department, mobile, email, status, user_id')
+          .eq('company_id', companyId)
+          .in('user_id', userIds)
+        ;(emps || []).forEach((e: any) => employeeMap.set(e.user_id, e))
+      } catch {}
+    }
+
+    // Fetch auth last_sign_in_at for active users
+    const lastLoginMap = new Map<string, string>()
+    try {
+      const { data: authData } = await admin.auth.admin.listUsers({ perPage: 1000 })
+      ;(authData?.users || []).forEach((u) => {
+        if (u.id && u.last_sign_in_at) {
+          lastLoginMap.set(u.id, u.last_sign_in_at)
+        }
+      })
+    } catch {}
+
     return cuList.map((cu: any) => {
       const roles = (cu.user_roles || []).map((ur: any) => ur.role).filter(Boolean)
       const overrides = overrideMap.get(cu.id) || {}
@@ -564,6 +588,8 @@ export class TenantRepository {
       const responsibilities = rawResponsibilities.length > 0 ? rawResponsibilities : ['general_staff']
       const prof = profileMap.get(cu.user_id)
       const authorizedBranches = branchAccessMap.get(cu.user_id) || (cu.branch_id ? [cu.branch_id] : [])
+      const linkedEmployee = employeeMap.get(cu.user_id) || null
+      const lastLoginAt = lastLoginMap.get(cu.user_id) || (prof as any)?.last_login_at || null
 
       const dataScopes: Record<string, DataScope> = cu.data_scopes && typeof cu.data_scopes === 'object' && Object.keys(cu.data_scopes).length > 0
         ? cu.data_scopes
@@ -590,6 +616,8 @@ export class TenantRepository {
         invited_email: cu.invited_email,
         created_at: cu.created_at,
         updated_at: cu.updated_at,
+        linked_employee: linkedEmployee,
+        last_login_at: lastLoginAt,
         profile: prof || {
           id: cu.user_id,
           email: cu.invited_email || '',
