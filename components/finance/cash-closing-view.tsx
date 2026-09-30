@@ -41,10 +41,10 @@ export interface CashClosingViewProps {
 export function CashClosingView({
   cashClosings = [],
   accounts = [],
-  todayOpeningCash = 20000,
-  todayCashReceived = 35000,
-  todayCashExpenses = 8000,
-  todayCashTransfers = 5000,
+  todayOpeningCash = 0,
+  todayCashReceived = 0,
+  todayCashExpenses = 0,
+  todayCashTransfers = 0,
   onSuccessClosing,
   isLoading = false,
 }: CashClosingViewProps) {
@@ -67,7 +67,7 @@ export function CashClosingView({
 
   // Input state
   const [countedCash, setCountedCash] = useState<string>(
-    todayClosing ? String(todayClosing.counted_cash) : '41500'
+    todayClosing ? String(todayClosing.counted_cash) : ''
   )
   const [varianceReason, setVarianceReason] = useState<string>(todayClosing?.variance_reason || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -76,10 +76,10 @@ export function CashClosingView({
 
   // Denominations counter
   const [notes, setNotes] = useState<Record<string, number>>({
-    1000: 30,
-    500: 20,
-    200: 5,
-    100: 5,
+    1000: 0,
+    500: 0,
+    200: 0,
+    100: 0,
     50: 0,
     20: 0,
   })

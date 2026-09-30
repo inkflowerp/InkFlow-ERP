@@ -9,9 +9,28 @@ import { getTenantCompanyId } from '@/lib/auth/tenant-auth'
 import { verifyServerPermission } from '@/lib/auth/rbac.server'
 import type { AccountRecord } from '@/types/finance.types'
 
-export async function getAccountsAction(branchId?: string) {
+async function resolveCompanyId(companyIdOrSlug?: string): Promise<string> {
   try {
-    const companyId = await getTenantCompanyId()
+    return await getTenantCompanyId(companyIdOrSlug)
+  } catch {
+    if (companyIdOrSlug && companyIdOrSlug !== 'default' && companyIdOrSlug !== 'my-company') {
+      return companyIdOrSlug
+    }
+    try {
+      const { headers } = await import('next/headers')
+      const headerStore = await headers()
+      const headerSlug = headerStore.get('x-tenant-slug')
+      if (headerSlug && headerSlug !== 'default' && headerSlug !== 'c-01') {
+        return headerSlug
+      }
+    } catch {}
+    return 'default'
+  }
+}
+
+export async function getAccountsAction(branchId?: string, companyIdOrSlug?: string) {
+  try {
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const accounts = await FinanceService.getAccounts(companyId, branchId)
     return { success: true, data: accounts }
   } catch (err: any) {
@@ -19,9 +38,9 @@ export async function getAccountsAction(branchId?: string) {
   }
 }
 
-export async function createAccountAction(input: Partial<AccountRecord> & { code: string; name: string; account_type: any; account_subtype: any }) {
+export async function createAccountAction(input: Partial<AccountRecord> & { code: string; name: string; account_type: any; account_subtype: any; companyId?: string }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(input.companyId || input.company_id)
     const authCheck = await verifyServerPermission({ companyId, permissionCode: 'accounting.manage' })
     if (!authCheck.allowed) {
       return { success: false, error: authCheck.error || 'Permission denied' }
@@ -44,9 +63,10 @@ export async function recordCustomerPaymentAction(params: {
   paymentMethod: string
   referenceNumber?: string | null
   notes?: string | null
+  companyId?: string
 }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(params.companyId)
     const authCheck = await verifyServerPermission({ companyId, permissionCode: 'payments.create' })
     if (!authCheck.allowed) {
       return { success: false, error: authCheck.error || 'Permission denied' }
@@ -70,9 +90,10 @@ export async function recordSupplierPaymentAction(params: {
   paymentDate?: string
   referenceNumber?: string | null
   notes?: string | null
+  companyId?: string
 }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(params.companyId)
     const authCheck = await verifyServerPermission({ companyId, permissionCode: 'accounting.create' })
     if (!authCheck.allowed) {
       return { success: false, error: authCheck.error || 'Permission denied' }
@@ -100,9 +121,10 @@ export async function recordExpenseAction(params: {
   description: string
   expenseDate?: string
   attachmentUrl?: string | null
+  companyId?: string
 }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(params.companyId)
     const authCheck = await verifyServerPermission({ companyId, permissionCode: 'accounting.create' })
     if (!authCheck.allowed) {
       return { success: false, error: authCheck.error || 'Permission denied' }
@@ -125,9 +147,10 @@ export async function recordTransferAction(params: {
   feeAmount?: number
   transferDate?: string
   notes?: string | null
+  companyId?: string
 }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(params.companyId)
     const authCheck = await verifyServerPermission({ companyId, permissionCode: 'accounting.create' })
     if (!authCheck.allowed) {
       return { success: false, error: authCheck.error || 'Permission denied' }
@@ -150,9 +173,10 @@ export async function recordCustomerRefundAction(params: {
   amount: number
   refundDate?: string
   reason?: string | null
+  companyId?: string
 }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(params.companyId)
     const authCheck = await verifyServerPermission({ companyId, permissionCode: 'accounting.manage' })
     if (!authCheck.allowed) {
       return { success: false, error: authCheck.error || 'Permission denied' }
@@ -173,9 +197,10 @@ export async function recordFinancialAdjustmentAction(params: {
   narration: string
   reason: string
   adjustmentDate?: string
+  companyId?: string
 }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(params.companyId)
     const authCheck = await verifyServerPermission({ companyId, permissionCode: 'accounting.manage' })
     if (!authCheck.allowed) {
       return { success: false, error: authCheck.error || 'Permission denied' }
@@ -196,9 +221,10 @@ export async function submitCashClosingAction(params: {
   closingDate?: string
   countedCash: number
   varianceReason?: string | null
+  companyId?: string
 }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(params.companyId)
     const closing = await FinanceService.submitCashClosing({
       companyId,
       ...params,
@@ -209,9 +235,9 @@ export async function submitCashClosingAction(params: {
   }
 }
 
-export async function getProfitAndLossAction(startDate?: string, endDate?: string, branchId?: string) {
+export async function getProfitAndLossAction(startDate?: string, endDate?: string, branchId?: string, companyIdOrSlug?: string) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const pnl = await FinanceService.getProfitAndLoss(companyId, startDate, endDate, branchId)
     return { success: true, data: pnl }
   } catch (err: any) {
@@ -219,9 +245,9 @@ export async function getProfitAndLossAction(startDate?: string, endDate?: strin
   }
 }
 
-export async function getBalanceSheetAction(asOfDate?: string, branchId?: string) {
+export async function getBalanceSheetAction(asOfDate?: string, branchId?: string, companyIdOrSlug?: string) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const bs = await FinanceService.getBalanceSheet(companyId, asOfDate, branchId)
     return { success: true, data: bs }
   } catch (err: any) {
@@ -229,9 +255,9 @@ export async function getBalanceSheetAction(asOfDate?: string, branchId?: string
   }
 }
 
-export async function getCashFlowAction(startDate?: string, endDate?: string, branchId?: string) {
+export async function getCashFlowAction(startDate?: string, endDate?: string, branchId?: string, companyIdOrSlug?: string) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const cf = await FinanceService.getCashFlow(companyId, startDate, endDate, branchId)
     return { success: true, data: cf }
   } catch (err: any) {
@@ -239,9 +265,9 @@ export async function getCashFlowAction(startDate?: string, endDate?: string, br
   }
 }
 
-export async function getTrialBalanceAction(asOfDate?: string, branchId?: string) {
+export async function getTrialBalanceAction(asOfDate?: string, branchId?: string, companyIdOrSlug?: string) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const tb = await FinanceService.getTrialBalance(companyId, asOfDate, branchId)
     return { success: true, data: tb }
   } catch (err: any) {
@@ -249,9 +275,9 @@ export async function getTrialBalanceAction(asOfDate?: string, branchId?: string
   }
 }
 
-export async function getGeneralLedgerAction(options?: { accountId?: string; startDate?: string; endDate?: string; branchId?: string }) {
+export async function getGeneralLedgerAction(options?: { accountId?: string; startDate?: string; endDate?: string; branchId?: string; companyIdOrSlug?: string }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(options?.companyIdOrSlug)
     const gl = await FinanceService.getGeneralLedger(companyId, options)
     return { success: true, data: gl }
   } catch (err: any) {
@@ -259,9 +285,9 @@ export async function getGeneralLedgerAction(options?: { accountId?: string; sta
   }
 }
 
-export async function getReceivablesAgingAction() {
+export async function getReceivablesAgingAction(companyIdOrSlug?: string) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const aging = await FinanceService.getReceivablesAging(companyId)
     return { success: true, data: aging }
   } catch (err: any) {
@@ -269,9 +295,9 @@ export async function getReceivablesAgingAction() {
   }
 }
 
-export async function getPayablesAgingAction() {
+export async function getPayablesAgingAction(companyIdOrSlug?: string) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const aging = await FinanceService.getPayablesAging(companyId)
     return { success: true, data: aging }
   } catch (err: any) {
@@ -279,9 +305,9 @@ export async function getPayablesAgingAction() {
   }
 }
 
-export async function getJobProfitabilityAction() {
+export async function getJobProfitabilityAction(companyIdOrSlug?: string) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const metrics = await FinanceService.getJobProfitability(companyId)
     return { success: true, data: metrics }
   } catch (err: any) {
@@ -289,9 +315,9 @@ export async function getJobProfitabilityAction() {
   }
 }
 
-export async function getBranchProfitabilityAction(period?: string) {
+export async function getBranchProfitabilityAction(period?: string, companyIdOrSlug?: string) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const metrics = await FinanceService.getBranchProfitability(companyId, period)
     return { success: true, data: metrics }
   } catch (err: any) {
@@ -299,9 +325,9 @@ export async function getBranchProfitabilityAction(period?: string) {
   }
 }
 
-export async function getFinancialDashboardAction(options?: { startDate?: string; endDate?: string; branchId?: string }) {
+export async function getFinancialDashboardAction(options?: { startDate?: string; endDate?: string; branchId?: string; companyIdOrSlug?: string }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(options?.companyIdOrSlug)
     const dashboard = await FinanceService.getFinancialDashboard(companyId, options)
     return { success: true, data: dashboard }
   } catch (err: any) {
@@ -315,9 +341,10 @@ export async function getExpensesAction(options?: {
   category?: string
   employeeId?: string
   branchId?: string
+  companyIdOrSlug?: string
 }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(options?.companyIdOrSlug)
     const report = await FinanceService.getExpenses(companyId, options)
     return { success: true, data: report }
   } catch (err: any) {
@@ -332,9 +359,10 @@ export async function getTransactionsAction(options?: {
   status?: string
   accountId?: string
   branchId?: string
+  companyIdOrSlug?: string
 }) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(options?.companyIdOrSlug)
     const txns = await FinanceService.getTransactions(companyId, options)
     return { success: true, data: txns }
   } catch (err: any) {
@@ -342,9 +370,9 @@ export async function getTransactionsAction(options?: {
   }
 }
 
-export async function getCashClosingsAction(closingDate?: string) {
+export async function getCashClosingsAction(closingDate?: string, companyIdOrSlug?: string) {
   try {
-    const companyId = await getTenantCompanyId()
+    const companyId = await resolveCompanyId(companyIdOrSlug)
     const closings = await FinanceService.getCashClosings(companyId, closingDate)
     return { success: true, data: closings }
   } catch (err: any) {

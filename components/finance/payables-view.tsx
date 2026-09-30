@@ -92,44 +92,7 @@ export function PayablesView({
     }
 
     const list = Array.from(map.values()).sort((a, b) => b.dueAmount - a.dueAmount)
-    if (list.length > 0) return list
-
-    // Canonical baseline figures if fresh printshop database
-    return [
-      {
-        id: 'supp-demo-1',
-        name: 'Meghna Paper & Pulp Mills',
-        phone: '01722334455',
-        totalAmount: 80000,
-        paidAmount: 35000,
-        dueAmount: 45000,
-        billsCount: 2,
-        maxDaysOverdue: 12,
-        latestBill: 'PO-BILL-0089',
-      },
-      {
-        id: 'supp-demo-2',
-        name: 'Toyo Ink Bangladesh Ltd.',
-        phone: '01822334455',
-        totalAmount: 58400,
-        paidAmount: 30000,
-        dueAmount: 28400,
-        billsCount: 1,
-        maxDaysOverdue: 5,
-        latestBill: 'PO-BILL-0091',
-      },
-      {
-        id: 'supp-demo-3',
-        name: 'Star PVC & Media Import',
-        phone: '01922334455',
-        totalAmount: 40000,
-        paidAmount: 15000,
-        dueAmount: 25000,
-        billsCount: 1,
-        maxDaysOverdue: 0,
-        latestBill: 'PO-BILL-0095',
-      },
-    ]
+    return list
   }, [items, suppliers])
 
   // Supplier payments history (from transactions)
@@ -197,25 +160,25 @@ export function PayablesView({
           <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 1</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Purchase Billed</span>
-            <span className="text-xs tabular-nums text-slate-900 dark:text-white font-semibold">৳80,000</span>
+            <span className="text-xs tabular-nums text-slate-900 dark:text-white font-semibold">{totalPurchases > 0 ? formatBDT(totalPurchases) : 'Purchase Bill'}</span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 2</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Paid to Vendor</span>
-            <span className="text-xs tabular-nums text-emerald-600 font-semibold">-৳30,000</span>
+            <span className="text-xs tabular-nums text-emerald-600 font-semibold">{totalPaid > 0 ? `-${formatBDT(totalPaid)}` : 'Payment'}</span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 3</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Outstanding Due</span>
-            <span className="text-xs tabular-nums text-rose-600 font-bold">৳50,000</span>
+            <span className="text-xs tabular-nums text-rose-600 font-bold">{totalPayables > 0 ? formatBDT(totalPayables) : '৳0'}</span>
           </div>
 
           <div className="col-span-2 sm:col-span-1 p-2.5 rounded-xl bg-rose-500/10 dark:bg-rose-950/40 border border-rose-500/30">
             <span className="text-3xs text-rose-600 dark:text-rose-400 font-bold block uppercase">Disbursement</span>
             <span className="text-xs font-bold text-rose-800 dark:text-rose-300 block">Supplier Payout</span>
-            <span className="text-xs tabular-nums text-rose-600 font-black">Cash / Bank / Cheque</span>
+            <span className="text-xs tabular-nums text-rose-600 font-black">{totalPayables === 0 ? 'Settled ✓' : 'Cash / Bank / Cheque'}</span>
           </div>
         </div>
       </div>

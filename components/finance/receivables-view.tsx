@@ -97,55 +97,7 @@ export function ReceivablesView({
     }
 
     const list = Array.from(map.values()).sort((a, b) => b.dueAmount - a.dueAmount)
-    if (list.length > 0) return list
-
-    // Canonical baseline figures if fresh printshop database
-    return [
-      {
-        id: 'cust-demo-1',
-        name: 'Prime Packaging Ltd.',
-        phone: '01711234567',
-        totalAmount: 125000,
-        paidAmount: 40000,
-        dueAmount: 85000,
-        invoicesCount: 2,
-        maxDaysOverdue: 15,
-        latestInvoice: 'INV-00124',
-      },
-      {
-        id: 'cust-demo-2',
-        name: 'Dhaka Offset & Labels',
-        phone: '01811234567',
-        totalAmount: 95400,
-        paidAmount: 30000,
-        dueAmount: 65400,
-        invoicesCount: 3,
-        maxDaysOverdue: 22,
-        latestInvoice: 'INV-00118',
-      },
-      {
-        id: 'cust-demo-3',
-        name: 'Al-Madina Printers',
-        phone: '01911234567',
-        totalAmount: 65200,
-        paidAmount: 20000,
-        dueAmount: 45200,
-        invoicesCount: 1,
-        maxDaysOverdue: 8,
-        latestInvoice: 'INV-00120',
-      },
-      {
-        id: 'cust-demo-4',
-        name: 'Bengal Trade Link',
-        phone: '01611234567',
-        totalAmount: 30000,
-        paidAmount: 10000,
-        dueAmount: 20000,
-        invoicesCount: 1,
-        maxDaysOverdue: 0,
-        latestInvoice: 'INV-00125',
-      },
-    ]
+    return list
   }, [items, customers])
 
   // Payment Collections History (filtered from transactions)
@@ -221,31 +173,31 @@ export function ReceivablesView({
           <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 1</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Invoice</span>
-            <span className="text-xs tabular-nums text-blue-600 font-semibold">৳50,000</span>
+            <span className="text-xs tabular-nums text-blue-600 font-semibold">{totalBilled > 0 ? formatBDT(totalBilled) : 'Billing'}</span>
           </div>
 
           <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 2</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Advance</span>
-            <span className="text-xs tabular-nums text-emerald-600 font-semibold">৳10,000</span>
+            <span className="text-xs tabular-nums text-emerald-600 font-semibold">{totalCollected > 0 ? formatBDT(totalCollected) : 'Deposit'}</span>
           </div>
 
           <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 3</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Net Due</span>
-            <span className="text-xs tabular-nums text-amber-600 font-bold">৳40,000</span>
+            <span className="text-xs tabular-nums text-amber-600 font-bold">{totalReceivables > 0 ? formatBDT(totalReceivables) : '৳0'}</span>
           </div>
 
           <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <span className="text-3xs text-slate-400 font-bold block uppercase">Step 4</span>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Collection</span>
-            <span className="text-xs tabular-nums text-emerald-600 font-bold">+৳40,000</span>
+            <span className="text-xs tabular-nums text-emerald-600 font-bold">{totalCollected > 0 ? `+${formatBDT(totalCollected)}` : 'Collection'}</span>
           </div>
 
           <div className="col-span-2 sm:col-span-1 p-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30">
             <span className="text-3xs text-emerald-600 dark:text-emerald-400 font-bold block uppercase">Settled</span>
             <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 block">Due Balance</span>
-            <span className="text-xs tabular-nums text-emerald-600 font-black">৳0</span>
+            <span className="text-xs tabular-nums text-emerald-600 font-black">{totalReceivables === 0 ? '৳0 ✓' : formatBDT(totalReceivables)}</span>
           </div>
         </div>
       </div>

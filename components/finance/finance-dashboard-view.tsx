@@ -96,55 +96,33 @@ export function FinanceDashboardView({
     rawMfsBalance = metrics!.total_mfs_balance
   }
 
-  // Canonical baseline figures if fresh printshop database
-  const cashBalance = rawCashBalance > 0 ? rawCashBalance : 85400
-  const bankBalance = rawBankBalance > 0 ? rawBankBalance : 320500
-  const mfsBalance = rawMfsBalance > 0 ? rawMfsBalance : 42800
+  // Actual liquid account figures
+  const cashBalance = rawCashBalance
+  const bankBalance = rawBankBalance
+  const mfsBalance = rawMfsBalance
   const totalAvailable = cashBalance + bankBalance + mfsBalance
 
   // Operational metrics
-  const rawReceivables = metrics?.total_receivables ?? receivables?.total_receivable ?? 0
-  const rawPayables = metrics?.total_payables ?? payables?.total_payable ?? 0
-  const totalReceivables = rawReceivables > 0 ? rawReceivables : 215600
-  const totalPayables = rawPayables > 0 ? rawPayables : 98400
+  const totalReceivables = metrics?.total_receivables ?? receivables?.total_receivable ?? 0
+  const totalPayables = metrics?.total_payables ?? payables?.total_payable ?? 0
 
   // Today's numbers
   const todayDate = new Date().toISOString().split('T')[0]
   const todayTrend = metrics?.daily_trends?.find((d) => d.date === todayDate)
-  const rawTodayCollection = todayTrend ? todayTrend.income : (metrics?.total_payments_received ? Math.round(metrics.total_payments_received * 0.12) : 0)
-  const rawTodayExpense = todayTrend ? todayTrend.expense : (metrics?.monthly_expenses ? Math.round(metrics.monthly_expenses * 0.08) : 0)
-  const todayCollection = rawTodayCollection > 0 ? rawTodayCollection : 35000
-  const todayExpense = rawTodayExpense > 0 ? rawTodayExpense : 12500
+  const todayCollection = todayTrend ? todayTrend.income : (metrics?.total_payments_received ? Math.round(metrics.total_payments_received * 0.12) : 0)
+  const todayExpense = todayTrend ? todayTrend.expense : (metrics?.monthly_expenses ? Math.round(metrics.monthly_expenses * 0.08) : 0)
 
   // Top overdue customers
-  const sampleOverdueCustomers = [
-    { rank: 1, id: 'cust-demo-1', name: 'Prime Packaging Ltd.', phone: '01711234567', amount: 85000, daysOverdue: 15, status: '15 days overdue', isOverdue: true },
-    { rank: 2, id: 'cust-demo-2', name: 'Dhaka Offset & Labels', phone: '01811234567', amount: 65400, daysOverdue: 22, status: '22 days overdue', isOverdue: true },
-    { rank: 3, id: 'cust-demo-3', name: 'Al-Madina Printers', phone: '01911234567', amount: 45200, daysOverdue: 8, status: '8 days overdue', isOverdue: true },
-    { rank: 4, id: 'cust-demo-4', name: 'Bengal Trade Link', phone: '01611234567', amount: 20000, daysOverdue: 0, status: 'Due today', isOverdue: false },
-  ]
   const overdueCustomers = (metrics?.top_receivables && metrics.top_receivables.length > 0)
     ? metrics.top_receivables.slice(0, 5)
-    : sampleOverdueCustomers
+    : []
 
   // Top supplier dues
-  const sampleSupplierDues = [
-    { rank: 1, id: 'supp-demo-1', name: 'Meghna Paper & Pulp Mills', phone: '01722334455', amount: 45000, daysOverdue: 12, status: 'Paper board supply', isOverdue: true },
-    { rank: 2, id: 'supp-demo-2', name: 'Toyo Ink Bangladesh Ltd.', phone: '01822334455', amount: 28400, daysOverdue: 5, status: 'Solvent & UV inks', isOverdue: true },
-    { rank: 3, id: 'supp-demo-3', name: 'Star PVC & Media Import', phone: '01922334455', amount: 25000, daysOverdue: 0, status: 'Banner rolls & vinyl', isOverdue: false },
-  ]
   const supplierDues = (metrics?.top_payables && metrics.top_payables.length > 0)
     ? metrics.top_payables.slice(0, 5)
-    : sampleSupplierDues
+    : []
 
   // Unified recent transactions list
-  const sampleTransactions = [
-    { id: 'txn-demo-1', type: 'CUSTOMER_PAYMENT', title: 'INV-00124 (Payment from Prime Packaging)', subtitle: 'Invoice due collection', amount: 15000, isCredit: true, time: '2:30 PM', date: '29 Sep', color: 'emerald' },
-    { id: 'txn-demo-2', type: 'EXPENSE', title: 'DESCO Commercial Electricity Bill', subtitle: 'Factory utility expense', amount: 8500, isCredit: false, time: '11:15 AM', date: '29 Sep', color: 'rose' },
-    { id: 'txn-demo-3', type: 'ACCOUNT_TRANSFER', title: 'Cash Drawer 1 → Islami Bank Account', subtitle: 'End of day bank deposit', amount: 20000, isCredit: false, time: '10:00 AM', date: '29 Sep', color: 'blue' },
-    { id: 'txn-demo-4', type: 'CUSTOMER_PAYMENT', title: 'INV-00120 (Advance from Al-Madina Printers)', subtitle: 'Order advance payment', amount: 20000, isCredit: true, time: 'Yesterday', date: '28 Sep', color: 'emerald' },
-    { id: 'txn-demo-5', type: 'EXPENSE', title: 'Transport & Delivery Vehicle Fuel', subtitle: 'Delivery expense', amount: 4000, isCredit: false, time: 'Yesterday', date: '28 Sep', color: 'rose' },
-  ]
   const txnsList = (metrics?.recent_transactions && metrics.recent_transactions.length > 0)
     ? metrics.recent_transactions.slice(0, 8)
     : recentTransactions.length > 0
@@ -156,10 +134,10 @@ export function FinanceDashboardView({
         amount: Number(t.total_amount || 0),
         isCredit: t.transaction_type === 'CUSTOMER_PAYMENT',
         time: t.transaction_date || 'Today',
-        date: t.transaction_date || '29 Sep',
+        date: t.transaction_date || 'Today',
         color: t.transaction_type === 'CUSTOMER_PAYMENT' ? 'emerald' : t.transaction_type === 'EXPENSE' ? 'rose' : 'blue',
       }))
-    : sampleTransactions
+    : []
 
   return (
     <div className="space-y-6">

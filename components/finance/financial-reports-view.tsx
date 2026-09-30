@@ -79,22 +79,6 @@ export function FinancialReportsView({
       outflow = expensesReport!.total_expenses
     }
 
-    if (inflow === 0 && outflow === 0) {
-      const fallbackCats: [string, number][] = [
-        ['Supplier Purchases & Paper Board', 85000],
-        ['Factory & Shop Rent', 35000],
-        ['Staff Salary & Daily Wages', 28000],
-        ['Electricity & Utilities (DESCO/DPDC)', 22500],
-        ['Machine Maintenance & Printer AMC', 8500],
-        ['Transport & Delivery Vehicle Fuel', 7500],
-      ]
-      return {
-        totalInflow: 385000,
-        totalOutflow: 186500,
-        expenseByCategory: fallbackCats,
-      }
-    }
-
     return {
       totalInflow: inflow,
       totalOutflow: outflow,
@@ -150,47 +134,7 @@ export function FinancialReportsView({
         }
       })
 
-    if (mapped.length > 0) return mapped
-
-    const ob = Number(selectedAccount.opening_balance || 20000)
-    return [
-      {
-        id: 'st-demo-1',
-        date: '2026-09-01',
-        number: 'TXN-OB-001',
-        memo: 'Opening balance brought forward',
-        isInflow: true,
-        amount: ob,
-        runningBalance: ob,
-      },
-      {
-        id: 'st-demo-2',
-        date: '2026-09-12',
-        number: 'TXN-2026-0045',
-        memo: 'Payment received against INV-00115 (Dhaka Offset)',
-        isInflow: true,
-        amount: 35000,
-        runningBalance: ob + 35000,
-      },
-      {
-        id: 'st-demo-3',
-        date: '2026-09-18',
-        number: 'TXN-2026-0062',
-        memo: 'Paper Board payment to Meghna Mills',
-        isInflow: false,
-        amount: 15000,
-        runningBalance: ob + 35000 - 15000,
-      },
-      {
-        id: 'st-demo-4',
-        date: '2026-09-29',
-        number: 'TXN-2026-0124',
-        memo: 'Payment received against INV-00124 (Bengal Pack)',
-        isInflow: true,
-        amount: 15000,
-        runningBalance: ob + 35000 - 15000 + 15000,
-      },
-    ]
+    return mapped
   }, [transactions, selectedAccount])
 
   const handlePrint = () => {

@@ -23,6 +23,7 @@ export interface AddAccountModalProps {
   onClose: () => void
   onSuccess: (newAccount: AccountRecord) => void
   existingAccounts: AccountRecord[]
+  companyId?: string
 }
 
 export function AddAccountModal({
@@ -30,6 +31,7 @@ export function AddAccountModal({
   onClose,
   onSuccess,
   existingAccounts,
+  companyId,
 }: AddAccountModalProps) {
   const { tBilingual } = useI18n()
 
@@ -79,7 +81,8 @@ export function AddAccountModal({
       setIsSubmitting(true)
       const code = generateNewCode(accountType)
 
-      const payload: Partial<AccountRecord> & { code: string; name: string; account_type: any; account_subtype: any } = {
+      const payload: Partial<AccountRecord> & { code: string; name: string; account_type: any; account_subtype: any; companyId?: string } = {
+        companyId: companyId || existingAccounts[0]?.company_id,
         code,
         name: name.trim(),
         name_bn: nameBn.trim() || undefined,

@@ -34,6 +34,7 @@ export interface CollectPaymentModalProps {
   initialInvoiceId?: string
   initialDueAmount?: number
   onSuccess: () => void
+  companyId?: string
 }
 
 export function CollectPaymentModal({
@@ -46,6 +47,7 @@ export function CollectPaymentModal({
   initialInvoiceId,
   initialDueAmount = 0,
   onSuccess,
+  companyId,
 }: CollectPaymentModalProps) {
   const { tBilingual } = useI18n()
 
@@ -116,6 +118,7 @@ export function CollectPaymentModal({
     try {
       setIsSubmitting(true)
       const res = await recordCustomerPaymentAction({
+        companyId: companyId || liquidAccounts[0]?.company_id,
         customerId: selectedCustomerId || 'walk-in',
         customerName: selectedCustomerName || 'Walk-in Customer',
         invoiceId: invoiceId || null,

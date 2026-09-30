@@ -34,7 +34,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { useDataStore } from '@/hooks/use-data-store'
-import { STORAGE_KEYS } from '@/lib/db/data-store'
+import { STORAGE_KEYS, PrintERPDataStore } from '@/lib/db/data-store'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import type { CustomerRecord, SupplierRecord } from '@/types/crm.types'
 import type {
@@ -220,6 +220,8 @@ function AccountingContent() {
     setTimeout(() => setNotification(null), 3500)
   }
 
+  const effCompany = company?.id || (slug !== 'my-company' ? slug : undefined)
+
   const loadAllData = async (customStart?: string, customEnd?: string) => {
     try {
       setIsLoading(true)
@@ -227,16 +229,27 @@ function AccountingContent() {
       const curEnd = customEnd !== undefined ? customEnd : activeRange.endDate
 
       const [accRes, dashRes, arRes, apRes, expRes, txnsRes, closingsRes] = await Promise.all([
-        getAccountsAction().catch(() => ({ success: false, data: [] })),
-        getFinancialDashboardAction({ startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: null })),
-        getReceivablesAgingAction().catch(() => ({ success: false, data: null })),
-        getPayablesAgingAction().catch(() => ({ success: false, data: null })),
-        getExpensesAction({ startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: null })),
-        getTransactionsAction({ startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: [] })),
-        getCashClosingsAction().catch(() => ({ success: false, data: [] })),
+        getAccountsAction(undefined, effCompany).catch(() => ({ success: false, data: [] })),
+        getFinancialDashboardAction({ startDate: curStart, endDate: curEnd, companyIdOrSlug: effCompany }).catch(() => ({ success: false, data: null })),
+        getReceivablesAgingAction(effCompany).catch(() => ({ success: false, data: null })),
+        getPayablesAgingAction(effCompany).catch(() => ({ success: false, data: null })),
+        getExpensesAction({ startDate: curStart, endDate: curEnd, companyIdOrSlug: effCompany }).catch(() => ({ success: false, data: null })),
+        getTransactionsAction({ startDate: curStart, endDate: curEnd, companyIdOrSlug: effCompany }).catch(() => ({ success: false, data: [] })),
+        getCashClosingsAction(undefined, effCompany).catch(() => ({ success: false, data: [] })),
       ])
 
-      if (accRes && accRes.success && Array.isArray(accRes.data)) setAccounts(accRes.data)
+      if (accRes && accRes.success && Array.isArray(accRes.data) && accRes.data.length > 0) {
+        setAccounts(accRes.data)
+      } else {
+        const localAccounts = PrintERPDataStore.get<AccountRecord[]>(STORAGE_KEYS.ACCOUNTS) || []
+        const companyAccounts = localAccounts.filter((a) => !a.company_id || a.company_id === effCompany || a.company_id === 'default')
+        if (companyAccounts.length > 0) {
+          setAccounts(companyAccounts)
+        } else if (accRes && accRes.success && Array.isArray(accRes.data)) {
+          setAccounts(accRes.data)
+        }
+      }
+
       if (dashRes && dashRes.success && dashRes.data) setDashboardMetrics(dashRes.data)
       if (arRes && arRes.success && arRes.data) setReceivables(arRes.data)
       if (apRes && apRes.success && apRes.data) setPayables(apRes.data)
@@ -282,7 +295,7 @@ function AccountingContent() {
 
   // Handlers for Modals
   const handleSpendMoney = async (data: any) => {
-    const res = await recordExpenseAction(data)
+    const res = await recordExpenseAction({ ...data, companyId: effCompany })
     if (res.success) {
       showNotification(tBilingual('Expense recorded successfully', 'খরচ সফলভাবে এন্ট্রি হয়েছে'))
       await loadAllData()
@@ -317,7 +330,7 @@ function AccountingContent() {
   }
 
   const handleTransferMoney = async (data: any) => {
-    const res = await recordTransferAction(data)
+    const res = await recordTransferAction({ ...data, companyId: effCompany })
     if (res.success) {
       showNotification(tBilingual('Transfer completed successfully', 'টাকা ট্রান্সফার সফলভাবে সম্পন্ন হয়েছে'))
       await loadAllData()
@@ -352,7 +365,7 @@ function AccountingContent() {
   }
 
   const handlePaySupplier = async (data: any) => {
-    const res = await recordSupplierPaymentAction(data)
+    const res = await recordSupplierPaymentAction({ ...data, companyId: effCompany })
     if (res.success) {
       showNotification(tBilingual('Supplier payment recorded', 'মহাজন বিল পরিশোধ সফলভাবে সম্পন্ন হয়েছে'))
       await loadAllData()
@@ -387,7 +400,7 @@ function AccountingContent() {
   }
 
   const handleCashClosing = async (data: any) => {
-    const res = await submitCashClosingAction(data)
+    const res = await submitCashClosingAction({ ...data, companyId: effCompany })
     if (res.success) {
       showNotification(tBilingual('Cash closing recorded & locked', 'ক্যাশ ক্লোজিং সম্পন্ন ও লক হয়েছে'))
       await loadAllData()
@@ -770,6 +783,7 @@ function AccountingContent() {
         initialCustomerName={collectTarget.customerName}
         initialDueAmount={collectTarget.dueAmount}
         initialInvoiceId={collectTarget.invoiceId}
+        companyId={effCompany}
         onSuccess={() => {
           showNotification(tBilingual('Payment collection recorded successfully', 'টাকা জমা সফলভাবে এন্ট্রি হয়েছে'))
           const r = getDateRangeForTimeframe(timeframe)
@@ -810,6 +824,7 @@ function AccountingContent() {
         isOpen={isAddAccountModalOpen}
         onClose={() => setIsAddAccountModalOpen(false)}
         existingAccounts={accounts}
+        companyId={effCompany}
         onSuccess={(newAcc) => {
           showNotification(tBilingual('New money account created successfully', 'নতুন হিসাব সফলভাবে তৈরি হয়েছে'))
           const r = getDateRangeForTimeframe(timeframe)

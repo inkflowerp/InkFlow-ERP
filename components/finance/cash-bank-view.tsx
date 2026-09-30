@@ -55,99 +55,11 @@ export function CashBankView({
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStatementAccount, setSelectedStatementAccount] = useState<AccountRecord | null>(null)
 
-  // Liquid accounts only (Cash, Bank, MFS)
-  const defaultLiquidAccounts: AccountRecord[] = useMemo(
-    () => [
-      {
-        id: 'acc-demo-cash-1',
-        company_id: 'default',
-        code: '1010',
-        name: 'Cash in Hand (Counter Drawer 1)',
-        name_bn: 'নগদ ক্যাশ ড্রয়ার ১',
-        account_type: 'ASSET',
-        account_subtype: 'CASH',
-        currency: 'BDT',
-        opening_balance: 20000,
-        current_balance: 85400,
-        is_system: true,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: 'acc-demo-bank-1',
-        company_id: 'default',
-        code: '1020',
-        name: 'Islami Bank Bangladesh (Principal Branch)',
-        name_bn: 'ইসলামী ব্যাংক বাংলাদেশ',
-        account_type: 'ASSET',
-        account_subtype: 'BANK',
-        currency: 'BDT',
-        opening_balance: 150000,
-        current_balance: 320500,
-        is_system: true,
-        is_active: true,
-        metadata: {
-          bank_name: 'Islami Bank Bangladesh',
-          branch_name: 'Principal Branch, Motijheel',
-          account_number_masked: '•••• •••• 4589',
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: 'acc-demo-mfs-1',
-        company_id: 'default',
-        code: '1030',
-        name: 'bKash Merchant Wallet',
-        name_bn: 'বিকাশ মার্চেন্ট ওয়ালেট',
-        account_type: 'ASSET',
-        account_subtype: 'MFS',
-        currency: 'BDT',
-        opening_balance: 10000,
-        current_balance: 32800,
-        is_system: true,
-        is_active: true,
-        metadata: {
-          mfs_provider: 'bkash',
-          mfs_wallet_number: '01711-000000',
-          mfs_account_type: 'merchant',
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: 'acc-demo-mfs-2',
-        company_id: 'default',
-        code: '1031',
-        name: 'Nagad Business Wallet',
-        name_bn: 'নগদ বিজনেস ওয়ালেট',
-        account_type: 'ASSET',
-        account_subtype: 'MFS',
-        currency: 'BDT',
-        opening_balance: 5000,
-        current_balance: 10000,
-        is_system: true,
-        is_active: true,
-        metadata: {
-          mfs_provider: 'nagad',
-          mfs_wallet_number: '01811-000000',
-          mfs_account_type: 'merchant',
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ],
-    []
-  )
-
-  const rawLiquid = useMemo(() => {
+  const liquidAccounts = useMemo(() => {
     return accounts.filter(
       (a) => a.account_subtype === 'CASH' || a.account_subtype === 'BANK' || a.account_subtype === 'MFS'
     )
   }, [accounts])
-
-  const liquidAccounts = rawLiquid.length > 0 ? rawLiquid : defaultLiquidAccounts
 
   // Compute total balances by subtype
   const stats = useMemo(() => {
