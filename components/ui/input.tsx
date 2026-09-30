@@ -24,7 +24,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       />
     )
 
-    if (!icon && !rightElement && !error) {
+    const hasWrapper = Boolean(icon || rightElement || 'error' in props || error)
+
+    if (!hasWrapper) {
       return inputElement
     }
 

@@ -105,6 +105,10 @@ export function ModalDialog({
   const resolvedMaxWidth = maxWidth || (size ? SIZE_MAP[size] : undefined)
   const resolvedStyle = size ? { ...SIZE_STYLE_MAP[size], ...style } : style
 
+  const handleClose = React.useCallback(() => {
+    onOpenChange(false)
+  }, [onOpenChange])
+
   const dialogInner = (
     <>
       {/* FIXED HEADER */}
@@ -128,7 +132,7 @@ export function ModalDialog({
           <Button
             type="button"
             variant="secondary"
-            onClick={() => onOpenChange(false)}
+            onClick={handleClose}
             disabled={isConfirmLoading}
             className="cursor-pointer"
           >
@@ -153,7 +157,7 @@ export function ModalDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange} maxWidth={resolvedMaxWidth} style={resolvedStyle}>
       <DialogContent
-        onClose={() => onOpenChange(false)}
+        onClose={handleClose}
         className={cn('flex flex-col max-h-[90vh] overflow-hidden p-0', resolvedMaxWidth, className)}
         style={resolvedStyle}
       >

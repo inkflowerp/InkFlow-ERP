@@ -26,6 +26,10 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
   const titleId = React.useId()
   const contentRef = React.useRef<HTMLDivElement>(null)
   const previousActiveElement = React.useRef<HTMLElement | null>(null)
+  const onOpenChangeRef = React.useRef(onOpenChange)
+
+  // Keep onOpenChangeRef always up to date without re-triggering effects
+  onOpenChangeRef.current = onOpenChange
 
   React.useEffect(() => {
     setMounted(true)
@@ -34,10 +38,16 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
   React.useEffect(() => {
     if (!open) return
 
-    previousActiveElement.current = document.activeElement as HTMLElement | null
+    // Capture element focused before dialog opened (only if current active element is outside dialog)
+    if (!contentRef.current || !contentRef.current.contains(document.activeElement)) {
+      previousActiveElement.current = document.activeElement as HTMLElement | null
+    }
+
+    const originalOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
     // Focus first form control or interactive element without stealing existing focus
+    // ONLY run once when the modal is opened
     const timer = setTimeout(() => {
       if (contentRef.current) {
         // If an element inside is already focused (e.g. by autoFocus or user click), do not steal focus
@@ -68,7 +78,7 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onOpenChange(false)
+        onOpenChangeRef.current?.(false)
         return
       }
 
@@ -100,22 +110,29 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
     return () => {
       clearTimeout(timer)
       window.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = ''
-      if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
+      document.body.style.overflow = originalOverflow || ''
+      if (
+        previousActiveElement.current &&
+        typeof previousActiveElement.current.focus === 'function' &&
+        document.contains(previousActiveElement.current)
+      ) {
         previousActiveElement.current.focus()
+        previousActiveElement.current = null
       }
     }
-  }, [open, onOpenChange])
+  }, [open])
+
+  const contextValue = React.useMemo(() => ({ titleId, contentRef }), [titleId])
 
   if (!open || !mounted) return null
 
   const modalNode = (
-    <DialogContext.Provider value={{ titleId, contentRef }}>
+    <DialogContext.Provider value={contextValue}>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 xs:p-3 sm:p-4 overflow-y-auto">
         {/* Backdrop: rgba(15,23,42,.45) with no blur */}
         <div
           className="fixed inset-0 bg-slate-900/45 dark:bg-slate-950/65 transition-opacity animate-in fade-in-0"
-          onClick={() => onOpenChange(false)}
+          onClick={() => onOpenChangeRef.current?.(false)}
           aria-hidden="true"
         />
         {/* Content Container */}

@@ -19,7 +19,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       />
     )
 
-    if (!error) {
+    const hasWrapper = Boolean('error' in props || error)
+
+    if (!hasWrapper) {
       return textareaElement
     }
 
