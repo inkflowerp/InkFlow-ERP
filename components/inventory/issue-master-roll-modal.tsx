@@ -9,13 +9,11 @@ import {
   CheckCircle2,
   AlertTriangle,
   Barcode,
-  Sparkles,
   Tag,
   Package,
   ArrowRight,
   Trash2,
   Calendar,
-  Warehouse,
   FileText,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
@@ -789,24 +787,24 @@ export function IssueMasterRollModal({
         )}
 
         {/* ========================================================= */}
-        {/* COMMON REQUISITION HEADER: DATE, SOURCE LOCATION & OPERATOR */}
+        {/* COMMON REQUISITION HEADER: DATE, OPERATOR & PURPOSE */}
         {/* ========================================================= */}
-        <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
+        <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
-              <Warehouse className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              {tBilingual('Requisition Header & Source Store', 'ইস্যু তথ্য ও সোর্স গুদাম')}
+              <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              {tBilingual('Requisition Header', 'ইস্যু তথ্য')}
             </span>
             <span className="text-2xs text-slate-500 font-medium">
               Destination: <strong className="text-slate-700 dark:text-slate-300">Print Floor Staging</strong>
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 items-end">
             {/* Issue Date */}
             <div>
-              <Label className="text-xs font-semibold mb-1 block flex items-center gap-1">
-                <Calendar className="h-3 w-3 text-slate-500" />
+              <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1 h-5 whitespace-nowrap">
+                <Calendar className="h-3.5 w-3.5 text-slate-500" />
                 <span>{tBilingual('Issue Date', 'ইস্যুর তারিখ')}</span>
                 <span className="text-rose-500">*</span>
               </Label>
@@ -814,61 +812,38 @@ export function IssueMasterRollModal({
                 type="date"
                 value={issueDate}
                 onChange={(e) => setIssueDate(e.target.value)}
-                className="h-9 text-xs"
+                className="h-9.5 text-xs bg-white dark:bg-slate-900"
                 required
               />
             </div>
 
-            {/* Source Warehouse Location */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <Label className="text-xs font-semibold block">
-                  {tBilingual('Source Store Location', 'সোর্স গুদাম')}
-                </Label>
-                <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
-                  <Sparkles className="h-3 w-3" /> Auto
-                </span>
-              </div>
-              <select
-                value={sourceLocationId}
-                onChange={(e) => setSourceLocationId(e.target.value)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-blue-500 shadow-2xs"
-              >
-                {effectiveLocations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.location_name} {loc.location_code ? `(${loc.location_code})` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Request by / Operator */}
             <div>
-              <Label className="text-xs font-semibold mb-1 block flex items-center gap-1">
-                <User className="h-3 w-3 text-slate-500" />
+              <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1 h-5 whitespace-nowrap">
+                <User className="h-3.5 w-3.5 text-slate-500" />
                 <span>{tBilingual('Request by / Operator', 'অনুরোধকারী')}</span>
                 <span className="text-rose-500">*</span>
               </Label>
               <Input
                 value={operatorName}
                 onChange={(e) => setOperatorName(e.target.value)}
-                placeholder="e.g. Kamal Hossain"
-                className="h-9 text-xs font-medium"
+                placeholder="e.g. Kamal Hossain / Floor Operator"
+                className="h-9.5 text-xs font-medium bg-white dark:bg-slate-900"
                 required
               />
             </div>
 
             {/* Remarks / Purpose */}
             <div>
-              <Label className="text-xs font-semibold mb-1 block flex items-center gap-1">
-                <FileText className="h-3 w-3 text-slate-500" />
+              <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1 h-5 whitespace-nowrap">
+                <FileText className="h-3.5 w-3.5 text-slate-500" />
                 <span>{tBilingual('Purpose / Job Ref', 'কাজের রেফারেন্স')}</span>
               </Label>
               <Input
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="e.g. Job #1042 / Urgent Run"
-                className="h-9 text-xs font-medium"
+                className="h-9.5 text-xs font-medium bg-white dark:bg-slate-900"
               />
             </div>
           </div>
