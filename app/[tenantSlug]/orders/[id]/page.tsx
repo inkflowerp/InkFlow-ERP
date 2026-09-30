@@ -427,119 +427,209 @@ function OrderDetailContent() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl">
-      {/* Back Link & Header */}
+    <div className="space-y-6 max-w-7xl pb-16">
+      {/* =========================================================================
+          1. HEADER (Section 10 & 11)
+          ORDER #1024 | Customer | Total | Paid | Due | Delivery | Priority | Next Action
+         ========================================================================= */}
       <div>
         <Link
           href={getTenantNavHref('/orders', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Orders & Job Flow
+          {tBilingual('Back to Orders & Jobs', 'অর্ডার ও কাজে ফিরে যান')}
         </Link>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums">
-                {order.order_number}
-              </h1>
-              {getPriorityBadge(order.priority)}
-              <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300">
-                {order.status.replace('_', ' ')}
-              </span>
+        {/* Master Order Header Card */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Order</span>
+                <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums">
+                  #{order.order_number}
+                </h1>
+                {getPriorityBadge(order.priority)}
+                <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300">
+                  {order.status.replace('_', ' ')}
+                </span>
 
-              {/* Workflow Routing Badge */}
-              {order.workflow_routing && (
-                <Badge
-                  variant="outline"
-                  className={`text-xs font-bold ${
-                    order.workflow_routing === 'design_required'
-                      ? 'bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300'
+                {/* Workflow Routing Badge */}
+                {order.workflow_routing && (
+                  <Badge
+                    variant="outline"
+                    className={`text-xs font-bold ${
+                      order.workflow_routing === 'design_required'
+                        ? 'bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300'
+                        : order.workflow_routing === 'design_ok'
+                        ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    }`}
+                  >
+                    {order.workflow_routing === 'design_required'
+                      ? '🎨 Design Required'
                       : order.workflow_routing === 'design_ok'
-                      ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300'
-                  }`}
-                >
-                  {order.workflow_routing === 'design_required'
-                    ? '🎨 Design Required'
-                    : order.workflow_routing === 'design_ok'
-                    ? '⚡ Design OK'
-                    : '🚀 Ready Production'}
-                </Badge>
-              )}
+                      ? '⚡ Design OK'
+                      : '🚀 Ready Production'}
+                  </Badge>
+                )}
 
-              {/* Commercial Invoice Gate Status */}
-              {order.invoice_id || order.commercial_status === 'invoice_created' ? (
-                <Badge className="bg-emerald-600 text-white text-xs font-bold flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Invoice Linked {order.invoice_number ? `(#${order.invoice_number})` : ''}
-                </Badge>
-              ) : order.commercial_status === 'invoice_requested' ? (
-                <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-xs font-bold flex items-center gap-1">
-                  <Clock className="h-3 w-3 text-amber-600" />
-                  Invoice Requested
-                </Badge>
-              ) : (
-                <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs font-bold flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3 text-rose-600" />
-                  Invoice Required
-                </Badge>
-              )}
-            </div>
-            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              Customer: {order.customer_name}
-            </div>
-            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-0.5">
-              <span className="flex items-center gap-1">
-                <Phone className="h-3.5 w-3.5 text-slate-400" />
-                {order.customer_phone}
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                Target Delivery: <strong>{order.delivery_date}</strong>
-              </span>
-              <span>•</span>
-              <span>Sales: {order.salesperson_name}</span>
-            </div>
-          </div>
+                {/* Commercial Invoice Gate Status */}
+                {order.invoice_id || order.commercial_status === 'invoice_created' ? (
+                  <Badge className="bg-emerald-600 text-white text-xs font-bold flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Invoice Linked {order.invoice_number ? `(#${order.invoice_number})` : ''}
+                  </Badge>
+                ) : order.commercial_status === 'invoice_requested' ? (
+                  <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-xs font-bold flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-amber-600" />
+                    Invoice Requested
+                  </Badge>
+                ) : (
+                  <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-xs font-bold flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3 text-rose-600" />
+                    Invoice Required
+                  </Badge>
+                )}
+              </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {(!order.invoice_id && order.commercial_status !== 'invoice_created') && (
+              <div className="text-base font-bold text-slate-800 dark:text-slate-100 flex flex-wrap items-center gap-2">
+                <span>{order.customer_name}</span>
+                {order.customer_phone && (
+                  <span className="text-xs font-normal text-slate-500 inline-flex items-center gap-1">
+                    <Phone className="h-3 w-3 text-slate-400" />
+                    {order.customer_phone}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Actions: Primary & Secondary (>=44px touch targets on mobile) */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() => {
+                  const wfElem = document.getElementById('workflow-section')
+                  if (wfElem) wfElem.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold min-h-[44px] px-4 shadow-sm"
+              >
+                <Layers className="mr-1.5 h-4 w-4" />
+                Open Job Flow
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={() => {
+                  setCollectionAmount(order.due_amount)
+                  setIsPayOpen(true)
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white min-h-[44px] px-3 font-semibold"
+              >
+                <Receipt className="mr-1.5 h-4 w-4" />
+                Record Payment
+              </Button>
+
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setIsInvoiceRequestOpen(true)}
-                className="text-xs border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300"
+                onClick={() => setIsAddJobOpen(true)}
+                className="text-xs min-h-[44px] px-3 font-medium border-slate-300"
               >
-                <Send className="mr-1.5 h-3.5 w-3.5 text-rose-600" />
-                Request Invoice
+                <Plus className="mr-1.5 h-4 w-4 text-blue-600" />
+                Add Job
               </Button>
-            )}
 
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsAddJobOpen(true)}
-              className="text-xs"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5 text-indigo-600" />
-              Add Job Ticket
-            </Button>
-
-            <Button
-              size="sm"
-              onClick={() => {
-                setCollectionAmount(order.due_amount)
-                setIsPayOpen(true)
-              }}
-              className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white"
-            >
-              <Receipt className="mr-1.5 h-3.5 w-3.5" />
-              Record Payment
-            </Button>
+              {(!order.invoice_id && order.commercial_status !== 'invoice_created') && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsInvoiceRequestOpen(true)}
+                  className="text-xs min-h-[44px] px-3 border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300"
+                >
+                  <Send className="mr-1.5 h-3.5 w-3.5 text-rose-600" />
+                  Request Invoice
+                </Button>
+              )}
+            </div>
           </div>
+
+          {/* Quick Metrics & Target Delivery Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg">
+              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Total</span>
+              <span className="text-lg font-black text-slate-900 dark:text-white tabular-nums">
+                <CurrencyDisplay amount={order.final_price} />
+              </span>
+            </div>
+            <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-lg">
+              <span className="text-2xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Paid</span>
+              <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+                <CurrencyDisplay amount={order.advance_amount} />
+              </span>
+            </div>
+            <div className={`p-3 rounded-lg ${order.due_amount > 0 ? 'bg-amber-50/60 dark:bg-amber-950/30' : 'bg-slate-50 dark:bg-slate-800/60'}`}>
+              <span className={`text-2xs font-semibold uppercase tracking-wider block ${order.due_amount > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500'}`}>Due</span>
+              <span className={`text-lg font-black tabular-nums ${order.due_amount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>
+                <CurrencyDisplay amount={order.due_amount} />
+              </span>
+            </div>
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg">
+              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Delivery Due</span>
+              <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1 block">
+                {order.delivery_date || 'Not specified'}
+              </span>
+            </div>
+          </div>
+
+          {/* CURRENT STAGE & NEXT ACTION Ribbon (Section 13 & 14) */}
+          {workflow && (
+            <div className={`p-3.5 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+              workflow.isBlocked
+                ? 'bg-amber-50/80 border-amber-300 dark:bg-amber-950/40 dark:border-amber-800'
+                : 'bg-blue-50/80 border-blue-200 dark:bg-blue-950/40 dark:border-blue-900'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div>
+                  <span className="text-2xs font-bold uppercase tracking-wider text-slate-500 block">CURRENT</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                    {workflow.overallStageLabelEn}
+                  </span>
+                </div>
+                <div className="hidden sm:block text-slate-300 dark:text-slate-700">|</div>
+                <div>
+                  <span className="text-2xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 block">NEXT</span>
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                    {workflow.nextActionEn}
+                  </span>
+                </div>
+              </div>
+
+              {workflow.isBlocked ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/60 px-2.5 py-1 rounded">
+                    BLOCKED: {workflow.blockedReasonEn || 'Hold in effect'}
+                  </span>
+                  {workflow.blockerActionHref && (
+                    <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold min-h-[38px]">
+                      <Link href={workflow.blockerActionHref}>
+                        {workflow.blockerActionLabelEn || 'Resolve Blocker'}
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                workflow.nextActionHref && (
+                  <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold min-h-[38px] self-start sm:self-auto">
+                    <Link href={workflow.nextActionHref}>
+                      {workflow.nextActionEn}
+                    </Link>
+                  </Button>
+                )
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -562,7 +652,7 @@ function OrderDetailContent() {
               <Button
                 size="sm"
                 onClick={() => setIsInvoiceRequestOpen(true)}
-                className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5"
+                className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold min-h-[44px] flex items-center gap-1.5"
               >
                 <Send className="h-3.5 w-3.5" />
                 Send Invoice Request
@@ -572,8 +662,8 @@ function OrderDetailContent() {
                 Invoice Request Dispatched
               </span>
             )}
-            <Link href={`/billing?action=create_invoice&order_id=${order.id}`}>
-              <Button size="sm" variant="outline" className="text-xs">
+            <Link href={`/${slug}/billing?action=create_invoice&order_id=${order.id}`}>
+              <Button size="sm" variant="outline" className="text-xs min-h-[44px]">
                 Create Invoice
               </Button>
             </Link>
@@ -589,54 +679,351 @@ function OrderDetailContent() {
         </div>
       )}
 
-      {/* Financial Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <span className="text-xs font-semibold text-slate-500">Contract Final Price</span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            <CurrencyDisplay amount={order.final_price} />
-          </div>
-          <span className="text-2xs text-slate-400">Terms: {order.payment_terms}</span>
-        </Card>
-
-        <Card className="p-4 border-l-4 border-l-emerald-500">
-          <span className="text-xs font-semibold text-slate-500">Advance Received (পরিশোধিত)</span>
-          <div className="text-2xl font-black text-emerald-600 mt-1">
-            <CurrencyDisplay amount={order.advance_amount} />
-          </div>
-          <span className="text-2xs text-emerald-600 font-medium">
-            {order.final_price > 0 ? Math.round((order.advance_amount / order.final_price) * 100) : 0}% Paid
+      {/* =========================================================================
+          2. WORKFLOW (Section 10 & 12)
+          JobFlowStepper with canonical print stages (✓, ●, ○, —) & Blocker Alerts
+         ========================================================================= */}
+      <section id="workflow-section" className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Layers className="h-4.5 w-4.5 text-blue-600" />
+            <span>Workflow & Stage Progress</span>
+          </h2>
+          <span className="text-xs text-slate-500 font-medium">
+            Status: <strong>{workflow?.derivedOrderStatus || order.status}</strong>
           </span>
-        </Card>
+        </div>
+        {workflow && <JobFlowStepper workflow={workflow} tenantSlug={slug} />}
+      </section>
 
-        <Card className={`p-4 border-l-4 ${order.due_amount > 0 ? 'border-l-red-500' : 'border-l-emerald-500'}`}>
-          <span className="text-xs font-semibold text-slate-500">Remaining Balance (বাকি টাকা)</span>
-          <div className="text-2xl font-black text-red-600 mt-1">
-            <CurrencyDisplay amount={order.due_amount} />
+      {/* =========================================================================
+          3. JOBS (Section 10, 16, 17)
+          ChildJobsBreakdown using unified JobCard component
+         ========================================================================= */}
+      <section id="jobs-section" className="space-y-3">
+        {workflow && (
+          <ChildJobsBreakdown
+            jobs={jobs}
+            childWorkflows={workflow.childJobs}
+            tenantSlug={slug}
+            onOpenNewJobModal={() => setIsAddJobOpen(true)}
+            onSelectJobForPrint={(job) => setSelectedJobForPrint(job)}
+            onUpdateJobStatus={handleUpdateJobStatus}
+          />
+        )}
+      </section>
+
+      {/* =========================================================================
+          4. FINANCE (Section 10 & 37)
+          Financial Reconciliation & Line Items Breakdown
+         ========================================================================= */}
+      <section id="finance-section" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Receipt className="h-4.5 w-4.5 text-emerald-600" />
+            <span>Finance & Line Items</span>
+          </h2>
+          <Button
+            size="sm"
+            onClick={() => {
+              setCollectionAmount(order.due_amount)
+              setIsPayOpen(true)
+            }}
+            className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white min-h-[38px] font-semibold"
+          >
+            <Receipt className="mr-1.5 h-3.5 w-3.5" />
+            Record Payment
+          </Button>
+        </div>
+
+        {/* Financial Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="p-4">
+            <span className="text-xs font-semibold text-slate-500">Contract Final Price</span>
+            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+              <CurrencyDisplay amount={order.final_price} />
+            </div>
+            <span className="text-2xs text-slate-400">Terms: {order.payment_terms || 'cash'}</span>
+          </Card>
+
+          <Card className="p-4 border-l-4 border-l-emerald-500">
+            <span className="text-xs font-semibold text-slate-500">Advance Received (পরিশোধিত)</span>
+            <div className="text-2xl font-black text-emerald-600 mt-1">
+              <CurrencyDisplay amount={order.advance_amount} />
+            </div>
+            <span className="text-2xs text-emerald-600 font-medium">
+              {order.final_price > 0 ? Math.round((order.advance_amount / order.final_price) * 100) : 0}% Paid
+            </span>
+          </Card>
+
+          <Card className={`p-4 border-l-4 ${order.due_amount > 0 ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
+            <span className="text-xs font-semibold text-slate-500">Remaining Balance (বাকি টাকা)</span>
+            <div className={`text-2xl font-black mt-1 ${order.due_amount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+              <CurrencyDisplay amount={order.due_amount} />
+            </div>
+            <span className="text-2xs text-slate-400">Payment is decoupled from delivery completion</span>
+          </Card>
+        </div>
+
+        {/* Line Items: Desktop Table & Mobile Stack Cards (Section 54) */}
+        <Card className="overflow-hidden border border-slate-200 dark:border-slate-800">
+          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+              Order Line Items ({order.items?.length || 0})
+            </h3>
+            <span className="text-xs text-slate-500 font-medium">
+              Commercial Breakdown
+            </span>
           </div>
-          <span className="text-2xs text-slate-400">Collect prior to dispatch</span>
+
+          {/* Desktop Table View (>= 640px) */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-2.5 px-4">#</th>
+                  <th className="py-2.5 px-4">Item & Specifications</th>
+                  <th className="py-2.5 px-4">Dimensions</th>
+                  <th className="py-2.5 px-4">Material</th>
+                  <th className="py-2.5 px-4 text-center">Qty</th>
+                  <th className="py-2.5 px-4 text-right">Unit Price</th>
+                  <th className="py-2.5 px-4 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {(order.items && order.items.length > 0) ? (
+                  order.items.map((it: any, idx: number) => (
+                    <tr key={it.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="py-3 px-4 font-mono text-slate-400">{idx + 1}</td>
+                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                        {it.item_name}
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                        {it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : '—'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                        {it.material_spec || 'Standard Media'}
+                      </td>
+                      <td className="py-3 px-4 text-center font-bold text-slate-900 dark:text-white">
+                        {it.quantity || 1} {it.unit || 'pcs'}
+                      </td>
+                      <td className="py-3 px-4 text-right tabular-nums text-slate-700 dark:text-slate-300">
+                        ৳{Number(it.unit_price || 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white">
+                        ৳{Number(it.total_price || 0).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-slate-400">
+                      No line items recorded for this order.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card Stack View (< 640px) */}
+          <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {(order.items && order.items.length > 0) ? (
+              order.items.map((it: any, idx: number) => (
+                <div key={it.id || idx} className="p-3.5 space-y-1.5">
+                  <div className="flex justify-between items-start">
+                    <span className="font-bold text-xs text-slate-900 dark:text-white">
+                      {idx + 1}. {it.item_name}
+                    </span>
+                    <span className="font-bold text-xs text-slate-900 dark:text-white tabular-nums">
+                      ৳{Number(it.total_price || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-2xs text-slate-500">
+                    <span>Size: {it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : '—'}</span>
+                    <span>•</span>
+                    <span>Qty: {it.quantity || 1} {it.unit || 'pcs'}</span>
+                    <span>•</span>
+                    <span>Material: {it.material_spec || 'Standard'}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-4 text-center text-xs text-slate-400">No line items recorded.</div>
+            )}
+          </div>
         </Card>
-      </div>
+      </section>
 
       {/* =========================================================================
-          ORDER-TO-DELIVERY CANONICAL WORKFLOW STEPPER & BLOCKER ALERTS
+          5. FILES (Section 10 & 22)
+          Artwork Proofs & Versions (V1, V2, V3...) — Never Overwrite Artwork
          ========================================================================= */}
-      {workflow && <JobFlowStepper workflow={workflow} tenantSlug={slug} />}
+      <section id="files-section" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <FileCheck className="h-4.5 w-4.5 text-purple-600" />
+              <span>Artwork & Design Proofs</span>
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Version history is strictly preserved (V1, V2, V3). Files are immutable and never overwritten.
+            </p>
+          </div>
+        </div>
+
+        {designJobs.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {designJobs.map((dj) => (
+              <Card key={dj.id} className="p-4 border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="text-2xs font-bold text-purple-600 dark:text-purple-400">
+                      {dj.design_number}
+                    </span>
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-white">
+                      {dj.title || 'Artwork Proof'}
+                    </h3>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`text-2xs font-bold ${
+                      dj.status === 'approved'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                        : dj.status === 'customer_approval'
+                        ? 'bg-amber-50 text-amber-700 border-amber-300'
+                        : 'bg-slate-50 text-slate-700 border-slate-300'
+                    }`}
+                  >
+                    {dj.status.replace('_', ' ').toUpperCase()}
+                  </Badge>
+                </div>
+
+                {/* Versions List */}
+                {dj.versions && dj.versions.length > 0 ? (
+                  <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    {dj.versions.map((ver) => (
+                      <div key={ver.id} className="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-slate-800/50 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 text-2xs font-bold rounded">
+                            {ver.version_label || `V${ver.version_number}`}
+                          </span>
+                          <span className="text-slate-700 dark:text-slate-300 truncate max-w-[180px]">
+                            {ver.proof_file_name || ver.file_name || 'Artwork Proof File'}
+                          </span>
+                        </div>
+                        {ver.proof_file_url ? (
+                          <a
+                            href={ver.proof_file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1"
+                          >
+                            <span>View</span>
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : (
+                          <span className="text-2xs text-slate-400">No URL</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-2xs text-slate-400 py-1">No versioned proof files uploaded yet.</div>
+                )}
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="p-6 text-center border-dashed">
+            <FileCheck className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+              No design ticket or proof files linked directly.
+            </p>
+            <p className="text-2xs text-slate-400 mt-0.5">
+              Production will proceed using customer-provided artwork or direct print traveler specs.
+            </p>
+          </Card>
+        )}
+      </section>
 
       {/* =========================================================================
-          MULTI-JOB TICKETS BREAKDOWN SECTION
-          "One customer order becomes one or more jobs, and every job moves through the work stages until delivery."
+          6. ACTIVITY (Section 10 & 38)
+          Unified Timeline & Event Log
          ========================================================================= */}
-      {workflow && (
-        <ChildJobsBreakdown
-          jobs={jobs}
-          childWorkflows={workflow.childJobs}
-          tenantSlug={slug}
-          onOpenNewJobModal={() => setIsAddJobOpen(true)}
-          onSelectJobForPrint={(job) => setSelectedJobForPrint(job)}
-          onUpdateJobStatus={handleUpdateJobStatus}
-        />
-      )}
+      <section id="activity-section" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Clock className="h-4.5 w-4.5 text-blue-600" />
+            <span>Activity & Audit Trail</span>
+          </h2>
+          <span className="text-xs text-slate-400">Immutable chronological events</span>
+        </div>
+
+        <Card className="p-5 border border-slate-200 dark:border-slate-800">
+          <div className="space-y-4">
+            {timeline.length > 0 ? (
+              timeline.map((ev, idx) => (
+                <div key={ev.id || idx} className="flex gap-3 relative pb-4 last:pb-0">
+                  {idx < timeline.length - 1 && (
+                    <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800" />
+                  )}
+                  <div className="h-5 w-5 rounded-full bg-blue-100 dark:bg-blue-950/60 border border-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="h-2 w-2 rounded-full bg-blue-600" />
+                  </div>
+                  <div className="space-y-0.5 flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-1">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">{ev.title}</span>
+                      <span className="text-2xs text-slate-400 tabular-nums">{ev.created_at}</span>
+                    </div>
+                    {ev.description && (
+                      <p className="text-xs text-slate-600 dark:text-slate-300">{ev.description}</p>
+                    )}
+                    <span className="text-2xs font-medium text-slate-400 block pt-0.5">
+                      By {ev.actor_name || 'System Operator'}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <div className="h-5 w-5 rounded-full bg-blue-100 dark:bg-blue-950/60 border border-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="h-2 w-2 rounded-full bg-blue-600" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">Order Booked & Confirmed</span>
+                    <p className="text-xs text-slate-500">Order #{order.order_number} initialized for customer {order.customer_name}.</p>
+                    <span className="text-2xs text-slate-400 tabular-nums">{order.created_at || order.order_date}</span>
+                  </div>
+                </div>
+                {order.invoice_number && (
+                  <div className="flex gap-3">
+                    <div className="h-5 w-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="h-2 w-2 rounded-full bg-emerald-600" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">Commercial Invoice Generated</span>
+                      <p className="text-xs text-slate-500">Official invoice #{order.invoice_number} created.</p>
+                    </div>
+                  </div>
+                )}
+                {jobs.length > 0 && (
+                  <div className="flex gap-3">
+                    <div className="h-5 w-5 rounded-full bg-purple-100 dark:bg-purple-950/60 border border-purple-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="h-2 w-2 rounded-full bg-purple-600" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">Production Job Tickets Dispatched</span>
+                      <p className="text-xs text-slate-500">{jobs.length} production job tickets active on machine floor bays.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </Card>
+      </section>
 
       {/* MODAL: ADD JOB TICKET */}
       <ModalDialog

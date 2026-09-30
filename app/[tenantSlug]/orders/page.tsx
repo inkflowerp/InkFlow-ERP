@@ -23,8 +23,16 @@ import { OrderRepository } from '@/lib/repositories/order.repository'
 import { BillingRepository } from '@/lib/repositories/billing.repository'
 import { getOrdersAction, getJobOrdersAction } from '@/actions/order.actions'
 import { getInvoicesAction } from '@/actions/billing.actions'
+import { getProductionTasksAction } from '@/actions/production-planning.actions'
+import { getDesignJobsAction } from '@/actions/design.actions'
+import { getChallansAction } from '@/actions/logistics.actions'
+import { resolveOrderJobWorkflow } from '@/lib/workflow/workflow-engine'
 import type { SalesOrderRecord, JobOrderRecord } from '@/types/order.types'
 import type { InvoiceRecord } from '@/types/billing.types'
+import type { ProductionTaskRecord } from '@/types/production.types'
+import type { DesignJobRecord } from '@/types/design.types'
+import type { DeliveryChallanRecord } from '@/types/logistics.types'
+import { AlertTriangle, AlertOctagon, Clock } from 'lucide-react'
 
 import {
   type OrderStage,
@@ -141,20 +149,27 @@ export default function OrdersPage() {
 
   const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false)
 
-  // 1. Data Loader: Unify Sales Orders, Invoices, and Job Orders
+  // 1. Authoritative Data Loader: Server actions backed by Supabase with workflow resolution
   const loadData = useCallback(async () => {
     try {
-      // 1. Ingest from Server Actions (Supabase backed)
+      // 1. Fetch live authoritative records across workflow pillars
       let serverOrders: SalesOrderRecord[] = []
       let serverJobs: JobOrderRecord[] = []
       let serverInvoices: InvoiceRecord[] = []
+      let serverProdTasks: ProductionTaskRecord[] = []
+      let serverDesignJobs: DesignJobRecord[] = []
+      let serverChallans: DeliveryChallanRecord[] = []
 
       try {
-        const [ordersRes, jobsRes, invoicesRes] = await Promise.allSettled([
+        const [ordersRes, jobsRes, invoicesRes, prodRes, designRes, challansRes] = await Promise.allSettled([
           getOrdersAction(companyId),
           getJobOrdersAction(companyId),
           getInvoicesAction({}, companyId),
+          getProductionTasksAction({}, companyId),
+          getDesignJobsAction(companyId),
+          getChallansAction(companyId),
         ])
+
         if (ordersRes.status === 'fulfilled' && ordersRes.value.success && ordersRes.value.data) {
           serverOrders = ordersRes.value.data
         }
@@ -164,63 +179,72 @@ export default function OrdersPage() {
         if (invoicesRes.status === 'fulfilled' && invoicesRes.value.success && invoicesRes.value.data) {
           serverInvoices = invoicesRes.value.data
         }
+        if (prodRes.status === 'fulfilled' && prodRes.value.success && prodRes.value.data) {
+          serverProdTasks = prodRes.value.data
+        }
+        if (designRes.status === 'fulfilled' && designRes.value.success && designRes.value.data) {
+          serverDesignJobs = designRes.value.data
+        }
+        if (challansRes.status === 'fulfilled' && challansRes.value.success && challansRes.value.data) {
+          serverChallans = challansRes.value.data
+        }
       } catch (e) {
         console.warn('[OrdersPage] Server action fetch fallback:', e)
       }
 
-      // 2. Ingest from PrintERPDataStore & Browser Storage across all partitions
-      const rawOrders: SalesOrderRecord[] = [...serverOrders]
-      const rawJobs: JobOrderRecord[] = [...serverJobs]
-      const rawInvoices: InvoiceRecord[] = [...serverInvoices]
-
-      // Ingest orders across unpartitioned and tenant-partitioned keys
-      const localOrdersGlobal = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
-      const localOrdersTenant = tenantSlug ? PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, tenantSlug) || [] : []
-      const localOrdersCompany = companyId && companyId !== tenantSlug ? PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, companyId) || [] : []
-      rawOrders.push(...localOrdersGlobal, ...localOrdersTenant, ...localOrdersCompany)
-
-      // Ingest job orders across unpartitioned and tenant-partitioned keys
-      const localJobsGlobal = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
-      const localJobsTenant = tenantSlug ? PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, tenantSlug) || [] : []
-      const localJobsCompany = companyId && companyId !== tenantSlug ? PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, companyId) || [] : []
-      rawJobs.push(...localJobsGlobal, ...localJobsTenant, ...localJobsCompany)
-
-      // Ingest invoices across unpartitioned and tenant-partitioned keys
-      const localInvoicesGlobal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-      const localInvoicesTenant = tenantSlug ? PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, tenantSlug) || [] : []
-      const localInvoicesCompany = companyId && companyId !== tenantSlug ? PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, companyId) || [] : []
-      rawInvoices.push(...localInvoicesGlobal, ...localInvoicesTenant, ...localInvoicesCompany)
-
-      // Scan localStorage directly for any uncommitted records across partitions
-      if (typeof window !== 'undefined') {
-        try {
-          for (let i = 0; i < window.localStorage.length; i++) {
-            const k = window.localStorage.key(i)
-            if (!k) continue
-            if (k.includes('order') || k.includes('job') || k.includes('invoice')) {
-              const val = window.localStorage.getItem(k)
-              if (val && val.startsWith('[')) {
-                try {
-                  const parsed = JSON.parse(val)
-                  if (Array.isArray(parsed)) {
-                    parsed.forEach((item) => {
-                      if (item && typeof item === 'object') {
-                        if (item.order_number && (item.items || item.final_price !== undefined || item.subtotal !== undefined)) {
-                          rawOrders.push(item)
-                        } else if (item.job_number) {
-                          rawJobs.push(item)
-                        } else if (item.invoice_number) {
-                          rawInvoices.push(item)
-                        }
-                      }
-                    })
-                  }
-                } catch {}
-              }
-            }
-          }
-        } catch {}
+      // Update local cache partitions as fallback cache ONLY
+      if (serverOrders.length > 0) {
+        PrintERPDataStore.set(STORAGE_KEYS.ORDERS, serverOrders, true, tenantSlug)
       }
+      if (serverJobs.length > 0) {
+        PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, serverJobs, true, tenantSlug)
+      }
+      if (serverInvoices.length > 0) {
+        PrintERPDataStore.set(STORAGE_KEYS.INVOICES, serverInvoices, true, tenantSlug)
+      }
+
+      // Offline fallback: if server returned empty, fallback to cached partition
+      const rawOrders: SalesOrderRecord[] =
+        serverOrders.length > 0
+          ? serverOrders
+          : (PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, tenantSlug) ||
+             PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) ||
+             [])
+
+      const rawJobs: JobOrderRecord[] =
+        serverJobs.length > 0
+          ? serverJobs
+          : (PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, tenantSlug) ||
+             PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) ||
+             [])
+
+      const rawInvoices: InvoiceRecord[] =
+        serverInvoices.length > 0
+          ? serverInvoices
+          : (PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, tenantSlug) ||
+             PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) ||
+             [])
+
+      const rawProdTasks: ProductionTaskRecord[] =
+        serverProdTasks.length > 0
+          ? serverProdTasks
+          : (PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS, tenantSlug) ||
+             PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) ||
+             [])
+
+      const rawDesignJobs: DesignJobRecord[] =
+        serverDesignJobs.length > 0
+          ? serverDesignJobs
+          : (PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, tenantSlug) ||
+             PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) ||
+             [])
+
+      const rawChallans: DeliveryChallanRecord[] =
+        serverChallans.length > 0
+          ? serverChallans
+          : (PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, tenantSlug) ||
+             PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) ||
+             [])
 
       const isMatchingTenant = (itemCompId?: string | null) => {
         if (!itemCompId || itemCompId === 'default' || !companyId || companyId === 'default') return true
@@ -230,199 +254,92 @@ export default function OrdersPage() {
         return c1 === c2 || c1 === s
       }
 
-      const isValidUuid = (id?: string | null): boolean => {
-        return Boolean(id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
-      }
+      const tenantOrders = rawOrders.filter((o) => isMatchingTenant(o.company_id))
+      const tenantJobs = rawJobs.filter((j) => isMatchingTenant(j.company_id))
+      const tenantInvoices = rawInvoices.filter((i) => isMatchingTenant(i.company_id))
+      const tenantProdTasks = rawProdTasks.filter((t) => isMatchingTenant(t.company_id))
+      const tenantDesignJobs = rawDesignJobs.filter((d) => isMatchingTenant(d.company_id))
+      const tenantChallans = rawChallans.filter((c) => isMatchingTenant(c.company_id))
 
-      const getCanonOrderKey = (o: { id?: string; order_number?: string }): string => {
-        if (o.order_number && o.order_number.trim()) {
-          return `ORD_${o.order_number.trim().toUpperCase()}`
-        }
-        return `ID_${o.id || 'unknown'}`
-      }
-
-      const mergeRawOrders = (existing: SalesOrderRecord, incoming: SalesOrderRecord): SalesOrderRecord => {
-        // 1. Prefer database UUID id so server updates and foreign keys work cleanly
-        const id = isValidUuid(existing.id)
-          ? existing.id
-          : isValidUuid(incoming.id)
-          ? incoming.id
-          : (existing.id || incoming.id)
-
-        // 2. Line items: prefer whichever record has real line items with dimensions/specs
-        const existingItems = Array.isArray(existing.items) ? existing.items : []
-        const incomingItems = Array.isArray(incoming.items) ? incoming.items : []
-        let items = existingItems
-        if (incomingItems.length > 0) {
-          if (existingItems.length === 0) {
-            items = incomingItems
-          } else {
-            const incHasSpecs = incomingItems.some(
-              (it: any) => it.width || it.material_spec || (Number(it.quantity) > 0 && (it.dimension_unit || it.dimensions_spec))
-            )
-            const existHasSpecs = existingItems.some(
-              (it: any) => it.width || it.material_spec || (Number(it.quantity) > 0 && (it.dimension_unit || it.dimensions_spec))
-            )
-            if (incHasSpecs && !existHasSpecs) {
-              items = incomingItems
-            } else if (incomingItems.length > existingItems.length) {
-              items = incomingItems
-            }
-          }
-        }
-
-        // 3. Financial amounts: take the non-zero authoritative numbers
-        const finalPrice = Math.max(
-          Number(existing.final_price || existing.subtotal || 0),
-          Number(incoming.final_price || incoming.subtotal || 0)
-        )
-        const advanceAmount = Math.max(
-          Number(existing.advance_amount || 0),
-          Number(incoming.advance_amount || 0)
-        )
-        const dueAmount = Math.max(
-          0,
-          existing.due_amount !== undefined && existing.due_amount !== null && (existing.final_price || existing.subtotal)
-            ? Number(existing.due_amount)
-            : incoming.due_amount !== undefined && incoming.due_amount !== null && (incoming.final_price || incoming.subtotal)
-            ? Number(incoming.due_amount)
-            : finalPrice - advanceAmount
-        )
-
-        // 4. Invoices and references
-        const invoiceId = existing.invoice_id || incoming.invoice_id || null
-        const invoiceNumber = existing.invoice_number || incoming.invoice_number || null
-
-        // 5. Customer information
-        const customerName = existing.customer_name || incoming.customer_name || 'Customer'
-        const customerPhone = existing.customer_phone || incoming.customer_phone || ''
-        const customerAddress = existing.customer_address || incoming.customer_address || ''
-        const customerId = existing.customer_id || incoming.customer_id || undefined
-        const customerType = existing.customer_type || incoming.customer_type || undefined
-
-        // 6. Delivery Date
-        const deliveryDate =
-          existing.delivery_date && existing.delivery_date !== 'N/A' && existing.delivery_date !== ''
-            ? existing.delivery_date
-            : incoming.delivery_date && incoming.delivery_date !== 'N/A'
-            ? incoming.delivery_date
-            : ''
-
-        // 7. Status and stage
-        const status =
-          existing.status && existing.status !== 'draft'
-            ? existing.status
-            : incoming.status || existing.status || 'confirmed'
-
-        const commercialStatus =
-          existing.commercial_status === 'invoice_created' || incoming.commercial_status === 'invoice_created'
-            ? 'invoice_created'
-            : existing.commercial_status || incoming.commercial_status
-
-        const productionGateStatus =
-          existing.production_gate_status === 'ready_for_production' || incoming.production_gate_status === 'ready_for_production'
-            ? 'ready_for_production'
-            : existing.production_gate_status || incoming.production_gate_status
-
-        const priority =
-          existing.priority === 'urgent' || incoming.priority === 'urgent'
-            ? 'urgent'
-            : existing.priority || incoming.priority || 'normal'
-
-        const notes =
-          existing.notes && incoming.notes && existing.notes !== incoming.notes
-            ? `${existing.notes} | ${incoming.notes}`
-            : existing.notes || incoming.notes || undefined
-
-        return {
-          ...incoming,
-          ...existing,
-          id,
-          order_number: existing.order_number || incoming.order_number,
-          customer_id: customerId,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          customer_address: customerAddress,
-          customer_type: customerType,
-          delivery_date: deliveryDate,
-          priority,
-          status,
-          commercial_status: commercialStatus,
-          production_gate_status: productionGateStatus,
-          invoice_id: invoiceId,
-          invoice_number: invoiceNumber,
-          final_price: finalPrice,
-          advance_amount: advanceAmount,
-          due_amount: dueAmount,
-          items,
-          notes,
-        }
-      }
-
-      // Deduplicate & Merge Sales Orders by Canonical Order Number
+      // Deduplicate orders by order_number or id (prefer record with non-empty line items)
       const orderDedupMap = new Map<string, SalesOrderRecord>()
-      rawOrders.filter((o) => isMatchingTenant(o.company_id)).forEach((o) => {
-        const key = getCanonOrderKey(o)
+      tenantOrders.forEach((o) => {
+        const key = o.order_number && o.order_number.trim()
+          ? `ORD_${o.order_number.trim().toUpperCase()}`
+          : `ID_${o.id}`
         if (!orderDedupMap.has(key)) {
           orderDedupMap.set(key, o)
         } else {
-          orderDedupMap.set(key, mergeRawOrders(orderDedupMap.get(key)!, o))
+          const prev = orderDedupMap.get(key)!
+          const prevItems = Array.isArray(prev.items) ? prev.items : []
+          const incomingItems = Array.isArray(o.items) ? o.items : []
+          const items = incomingItems.length > 0 ? incomingItems : prevItems
+          orderDedupMap.set(key, { ...prev, ...o, items })
         }
       })
-      const tenantOrders = Array.from(orderDedupMap.values())
-
-      // Clean local store duplicates if present
-      try {
-        const localCurrent = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
-        const localCanonMap = new Map<string, SalesOrderRecord>()
-        let hadLocalDuplicates = false
-        localCurrent.forEach((lo) => {
-          const k = getCanonOrderKey(lo)
-          if (localCanonMap.has(k)) {
-            hadLocalDuplicates = true
-            localCanonMap.set(k, mergeRawOrders(localCanonMap.get(k)!, lo))
-          } else {
-            localCanonMap.set(k, lo)
-          }
-        })
-        if (hadLocalDuplicates) {
-          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, Array.from(localCanonMap.values()))
-        }
-      } catch {}
-
-      // Deduplicate Job Orders by Canonical Job Number (or ID)
-      const jobDedupMap = new Map<string, JobOrderRecord>()
-      rawJobs.filter((j) => isMatchingTenant(j.company_id)).forEach((j) => {
-        const key = j.job_number && j.job_number.trim() ? `JOB_${j.job_number.trim().toUpperCase()}` : `ID_${j.id}`
-        if (!jobDedupMap.has(key)) {
-          jobDedupMap.set(key, j)
-        } else {
-          const prev = jobDedupMap.get(key)!
-          jobDedupMap.set(key, { ...prev, ...j })
-        }
-      })
-      const tenantJobOrders = Array.from(jobDedupMap.values())
-
-      // Deduplicate Invoices by Canonical Invoice Number (or ID)
-      const invoiceDedupMap = new Map<string, InvoiceRecord>()
-      rawInvoices.filter((i) => isMatchingTenant(i.company_id)).forEach((i) => {
-        const key = i.invoice_number && i.invoice_number.trim() ? `INV_${i.invoice_number.trim().toUpperCase()}` : `ID_${i.id}`
-        if (!invoiceDedupMap.has(key)) {
-          invoiceDedupMap.set(key, i)
-        } else {
-          const prev = invoiceDedupMap.get(key)!
-          invoiceDedupMap.set(key, { ...prev, ...i })
-        }
-      })
-      const tenantInvoices = Array.from(invoiceDedupMap.values())
+      const deduplicatedOrders = Array.from(orderDedupMap.values())
 
       const unifiedMap = new Map<string, UnifiedOrderRecord>()
 
-      // A. Process Sales Orders
-      tenantOrders.forEach((o) => {
-        const canonicalKey = getCanonOrderKey(o)
+      // A. Process Sales Orders (Master Order Container)
+      deduplicatedOrders.forEach((o) => {
+        const orderKey = (o.order_number && o.order_number.trim())
+          ? `ORD_${o.order_number.trim().toUpperCase()}`
+          : `ID_${o.id}`
+
         const orderId = o.id || o.order_number
-        const mappedItems: OrderItemSpec[] = (o.items || []).map((it: any, idx: number) => {
+
+        // Find child jobs belonging to this order
+        const linkedJobs = tenantJobs.filter(
+          (j) =>
+            j.order_id === o.id ||
+            (j.order_number && o.order_number && j.order_number.trim().toUpperCase() === o.order_number.trim().toUpperCase()) ||
+            (j.sales_order_id && (j.sales_order_id === o.id || (o.order_number && j.sales_order_id === o.order_number)))
+        )
+
+        // Find linked invoice
+        const linkedInvoice = tenantInvoices.find(
+          (inv) =>
+            (inv.id && o.invoice_id && inv.id === o.invoice_id) ||
+            (inv.sales_order_id && (inv.sales_order_id === o.id || (o.order_number && inv.sales_order_id === o.order_number))) ||
+            (inv.order_number && o.order_number && inv.order_number.trim().toUpperCase() === o.order_number.trim().toUpperCase()) ||
+            (inv.invoice_number && o.invoice_number && inv.invoice_number.trim().toUpperCase() === o.invoice_number.trim().toUpperCase())
+        )
+
+        // Find linked production tasks
+        const linkedProdTasks = tenantProdTasks.filter((t) =>
+          linkedJobs.some((j) => j.id === t.job_order_id)
+        )
+
+        // Find linked design jobs
+        const linkedDesignJobs = tenantDesignJobs.filter(
+          (d) =>
+            d.order_id === o.id ||
+            d.sales_order_id === o.id ||
+            (d.order_number && o.order_number && d.order_number.trim().toUpperCase() === o.order_number.trim().toUpperCase()) ||
+            linkedJobs.some((j) => j.id && d.job_order_id === j.id)
+        )
+
+        // Find linked delivery challans
+        const linkedChallans = tenantChallans.filter(
+          (c) =>
+            c.sales_order_id === o.id ||
+            (c.order_number && o.order_number && c.order_number.trim().toUpperCase() === o.order_number.trim().toUpperCase()) ||
+            (c.items && c.items.some((it: any) => it.order_id === o.id || (o.order_number && it.order_number === o.order_number)))
+        )
+
+        // Authoritative workflow engine resolution
+        const workflowResolution = resolveOrderJobWorkflow(
+          o,
+          linkedJobs,
+          linkedProdTasks,
+          linkedDesignJobs,
+          linkedChallans,
+          tenantSlug
+        )
+
+        // Map line items
+        let mappedItems: OrderItemSpec[] = (o.items || []).map((it: any, idx: number) => {
           const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
           const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
           const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
@@ -441,183 +358,71 @@ export default function OrdersPage() {
             unit: it.unit || it.dimension_unit || 'pcs',
             unitPrice: it.unit_price,
             totalPrice: it.total_price,
-            materialSpec: it.material_spec || it.material || it.media_type,
+            materialSpec: it.material_spec || it.material || inferMaterialFromItemName(serviceName || itemName),
             finishing: it.finishing || (Array.isArray(it.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f).join(', ') : undefined),
             addOn: it.add_on || it.addOn || it.addon || (Array.isArray(it.selected_add_ons) ? it.selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined),
             itemKind,
             workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
             designRequired: isReady ? false : it.design_required,
-            notes: it.notes,
+            notes: it.notes || it.remarks,
           }
         })
 
-        // Find linked job order if any
-        const linkedJob = tenantJobOrders.find(
-          (j) =>
-            j.order_id === o.id ||
-            j.order_id === o.order_number ||
-            (j as any).sales_order_id === o.id ||
-            (j as any).sales_order_id === o.order_number ||
-            (j.order_number && o.order_number && j.order_number.toUpperCase() === o.order_number.toUpperCase()) ||
-            (j.job_number && o.order_number && j.job_number.replace('JOB-', '').replace(/-[A-Z]$/, '') === o.order_number.replace('ORD-', ''))
-        )
-
-        // Multi-tier items hydration: if order items array is empty, resolve from invoice, job, or notes
-        let finalMappedItems = mappedItems
-        if (finalMappedItems.length === 0) {
-          const matchingInv = tenantInvoices.find(
-            (inv) =>
-              (inv.id && o.invoice_id && inv.id === o.invoice_id) ||
-              (inv.invoice_number && o.invoice_number && inv.invoice_number === o.invoice_number) ||
-              (inv.order_number && o.order_number && inv.order_number.toUpperCase() === o.order_number.toUpperCase()) ||
-              (inv.invoice_number && o.order_number && inv.invoice_number.replace('INV-', 'ORD-').toUpperCase() === o.order_number.toUpperCase()) ||
-              (inv.sales_order_id && (inv.sales_order_id === o.id || inv.sales_order_id === o.order_number))
-          )
-          if (matchingInv && matchingInv.items && matchingInv.items.length > 0) {
-            finalMappedItems = matchingInv.items.map((it: any, idx: number) => {
-              const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
-              const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
-              const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
-              const itemName = it.item_description || it.description || it.item_name || 'Printing Item'
-              const serviceName = it.service_name || it.product_name || itemName
-              return {
-                id: it.id || `item-inv-${orderId}-${idx}`,
-                serviceName,
-                itemName,
-                dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
-                width: it.width,
-                height: it.height,
-                dimensionUnit: it.unit || 'ft',
-                quantity: Number(it.quantity) || 1,
-                unit: it.unit || 'pcs',
-                unitPrice: it.unit_price,
-                totalPrice: it.total_price,
-                materialSpec: it.material_spec || it.material,
-                finishing: it.finishing || (Array.isArray(it.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f).join(', ') : undefined),
-                addOn: it.add_on || it.addOn || it.addon || (Array.isArray(it.selected_add_ons) ? it.selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined),
-                itemKind,
-                workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
-                designRequired: isReady ? false : it.design_required,
-                notes: it.notes || it.remarks,
-              }
-            })
-          }
-        }
-
-        if (finalMappedItems.length === 0 && linkedJob) {
-          finalMappedItems = [{
-            id: linkedJob.id || `job-item-${orderId}`,
-            serviceName: linkedJob.product_name || 'Printing Work',
-            itemName: linkedJob.product_name || 'Printing Item',
-            dimensions: linkedJob.size_spec || undefined,
-            width: undefined,
-            height: undefined,
-            dimensionUnit: undefined,
-            quantity: Number(linkedJob.quantity) || 1,
+        // If no line items on sales order, synthesize from child jobs
+        if (mappedItems.length === 0 && linkedJobs.length > 0) {
+          mappedItems = linkedJobs.map((j, idx) => ({
+            id: j.id || `job-item-${orderId}-${idx}`,
+            serviceName: j.product_name || 'Printing Work',
+            itemName: j.product_name || 'Printing Item',
+            dimensions: j.size_spec || undefined,
+            quantity: Number(j.quantity) || 1,
             unit: 'pcs',
             unitPrice: 0,
             totalPrice: 0,
-            materialSpec: linkedJob.material_spec || undefined,
-            finishing: linkedJob.production_instructions?.match(/Finishing:\s*([^|;]+)/i)?.[1]?.trim() || (linkedJob.production_instructions?.startsWith('Finishing:') ? linkedJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim() : undefined),
-            addOn: linkedJob.production_instructions?.match(/Add-?on:\s*([^|;]+)/i)?.[1]?.trim() || undefined,
+            materialSpec: j.material_spec || undefined,
+            finishing: j.production_instructions?.match(/Finishing:\s*([^|;]+)/i)?.[1]?.trim(),
+            addOn: j.production_instructions?.match(/Add-?on:\s*([^|;]+)/i)?.[1]?.trim(),
             itemKind: 'custom',
-            workflowRouting: (linkedJob.workflow_routing as any) || (linkedJob.artwork_status === 'pending' ? 'design_required' : 'ready_production'),
-            designRequired: linkedJob.artwork_status === 'pending' || linkedJob.workflow_routing === 'design_required',
-            notes: linkedJob.production_instructions || undefined,
-          }]
+            workflowRouting: (j.workflow_routing as any) || 'ready_production',
+            designRequired: j.artwork_status === 'pending' || j.workflow_routing === 'design_required',
+            notes: j.production_instructions || undefined,
+          }))
         }
 
-        if (finalMappedItems.length === 0 && o.notes && o.notes.includes('Work Order:')) {
-          const match = o.notes.match(/Work Order:\s*([^.]+?)(?:\.\s*Routing|$)/i)
-          if (match && match[1]) {
-            const desc = match[1].trim()
-            finalMappedItems = [{
-              id: `parsed-note-${orderId}`,
-              serviceName: desc.replace(/\s*\([^)]*\)\s*×\s*\d+\s*\w+/, '').trim() || desc,
-              itemName: desc.replace(/\s*\([^)]*\)\s*×\s*\d+\s*\w+/, '').trim() || desc,
-              dimensions: desc.match(/\(([^)]+)\)/)?.[1] || undefined,
-              quantity: Number(desc.match(/×\s*(\d+)/)?.[1]) || 1,
-              unit: desc.match(/×\s*\d+\s*([a-zA-Z]+)/)?.[1] || 'pcs',
-              unitPrice: 0,
-              totalPrice: 0,
-              itemKind: 'custom',
-              workflowRouting: (o.workflow_routing as any) || 'ready_production',
-              designRequired: o.workflow_routing === 'design_required',
-            }]
+        // Authoritative financial state: invoice takes precedence if present; no heuristic Math.max
+        let total = Number(o.final_price ?? o.subtotal ?? (o as any).total_amount ?? 0)
+        let advance = Number(o.advance_amount ?? (o as any).paid_amount ?? 0)
+        let due = o.due_amount !== undefined && o.due_amount !== null ? Number(o.due_amount) : Math.max(0, total - advance)
+
+        if (linkedInvoice) {
+          if (linkedInvoice.grand_total !== undefined && linkedInvoice.grand_total !== null) {
+            total = Number(linkedInvoice.grand_total)
           }
-        }
-
-        // Cross-hydrate missing dimensions, materials, finishing, or add-ons on all items
-        const matchingInvForSpecs = tenantInvoices.find(
-          (inv) =>
-            (inv.id && o.invoice_id && inv.id === o.invoice_id) ||
-            (inv.invoice_number && o.invoice_number && inv.invoice_number === o.invoice_number) ||
-            (inv.order_number && o.order_number && inv.order_number.toUpperCase() === o.order_number.toUpperCase()) ||
-            (inv.invoice_number && o.order_number && inv.invoice_number.replace('INV-', 'ORD-').toUpperCase() === o.order_number.toUpperCase()) ||
-            (inv.sales_order_id && (inv.sales_order_id === o.id || inv.sales_order_id === o.order_number))
-        )
-
-        finalMappedItems = finalMappedItems.map((item, idx) => {
-          const invIt = matchingInvForSpecs?.items?.[idx] || matchingInvForSpecs?.items?.[0]
-          const dims =
-            item.dimensions ||
-            invIt?.dimensions_spec ||
-            linkedJob?.size_spec ||
-            (item.width && item.height ? `${item.width} × ${item.height} ${item.dimensionUnit || 'ft'}` : undefined) ||
-            (item.unit?.toLowerCase() === 'sft' && item.quantity ? `${item.quantity} sft` : undefined)
-          const mat =
-            item.materialSpec ||
-            invIt?.material_spec ||
-            (invIt as any)?.material ||
-            linkedJob?.material_spec ||
-            inferMaterialFromItemName(item.serviceName || item.itemName)
-          const finish =
-            item.finishing ||
-            invIt?.finishing ||
-            (Array.isArray((invIt as any)?.selected_finishing) ? (invIt as any).selected_finishing.map((f: any) => f.name || f).join(', ') : undefined) ||
-            linkedJob?.production_instructions?.match(/Finishing:\s*([^|;]+)/i)?.[1]?.trim() ||
-            (linkedJob?.production_instructions?.startsWith('Finishing:') ? linkedJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim() : undefined) ||
-            undefined
-          const addOn =
-            item.addOn ||
-            (invIt as any)?.add_on ||
-            (invIt as any)?.addon ||
-            (Array.isArray((invIt as any)?.selected_add_ons) ? (invIt as any).selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined) ||
-            linkedJob?.production_instructions?.match(/Add-?on:\s*([^|;]+)/i)?.[1]?.trim() ||
-            undefined
-
-          return {
-            ...item,
-            serviceName: item.serviceName || item.itemName || linkedJob?.product_name || invIt?.item_description || undefined,
-            dimensions: dims,
-            materialSpec: mat,
-            finishing: finish,
-            addOn: addOn,
+          if (linkedInvoice.paid_amount !== undefined && linkedInvoice.paid_amount !== null) {
+            advance = Number(linkedInvoice.paid_amount)
           }
-        })
-
-        let calculatedStage: OrderStage = 'new_orders'
-        const ordStatus = String(o.status || '')
-        const allReady = finalMappedItems.length > 0 && finalMappedItems.every((it) => it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product')
-
-        if (ordStatus === 'completed' || ordStatus === 'delivered') {
-          calculatedStage = 'delivered'
-        } else if (allReady) {
-          calculatedStage = 'ready_delivery'
-        } else if (ordStatus === 'ready' || ordStatus === 'ready_for_delivery') {
-          calculatedStage = 'ready_delivery'
-        } else if (ordStatus === 'in_production' || ordStatus === 'production' || (linkedJob && linkedJob.status === 'in_progress')) {
-          calculatedStage = 'in_production'
-        } else if (ordStatus === 'in_design' || ordStatus === 'designing') {
-          calculatedStage = 'in_design'
-        } else if (ordStatus === 'confirmed' || ordStatus === 'draft') {
-          calculatedStage = 'new_orders'
+          due = Math.max(0, total - advance)
         }
 
-        const total = Number(o.final_price || (o as any).total_amount || 0)
-        const advance = Number(o.advance_amount || (o as any).paid_amount || 0)
-        const due = Math.max(0, total - advance)
         const payStatus = due <= 0 ? 'paid' : advance > 0 ? 'partial' : 'unpaid'
+
+        // Canonical stage mapping
+        let calculatedStage: OrderStage = 'new_orders'
+        if (workflowResolution.derivedOrderStatus === 'Delivered' || (o.status as string) === 'delivered' || (o.status as string) === 'completed') {
+          calculatedStage = 'delivered'
+        } else if (workflowResolution.derivedOrderStatus === 'Ready' || (o.status as string) === 'ready' || o.status === 'ready_for_delivery') {
+          calculatedStage = 'ready_delivery'
+        } else if (workflowResolution.overallStage === 'delivery') {
+          calculatedStage = 'delivery'
+        } else if (workflowResolution.overallStage === 'finishing') {
+          calculatedStage = 'finishing'
+        } else if (workflowResolution.overallStage === 'production' || o.status === 'in_production') {
+          calculatedStage = 'in_production'
+        } else if (workflowResolution.overallStage === 'approval') {
+          calculatedStage = 'approval'
+        } else if (workflowResolution.overallStage === 'design' || (o.status as string) === 'in_design') {
+          calculatedStage = 'in_design'
+        }
 
         const isWalk =
           o.customer_name?.toLowerCase().includes('walk') ||
@@ -627,13 +432,13 @@ export default function OrdersPage() {
         const originVal: any =
           (o as any).quotation_id || (o as any).quotation_number ? 'quotation' : 'sales_order'
 
-        unifiedMap.set(canonicalKey, {
+        unifiedMap.set(orderKey, {
           id: o.id,
           orderNumber: o.order_number,
-          jobNumber: linkedJob?.job_number,
-          jobOrderId: linkedJob?.id,
-          invoiceId: o.invoice_id || undefined,
-          invoiceNumber: o.invoice_number || undefined,
+          jobNumber: linkedJobs[0]?.job_number,
+          jobOrderId: linkedJobs[0]?.id,
+          invoiceId: linkedInvoice?.id || o.invoice_id || undefined,
+          invoiceNumber: linkedInvoice?.invoice_number || o.invoice_number || undefined,
           origin: originVal,
           customerId: o.customer_id || undefined,
           customerName: o.customer_name,
@@ -641,14 +446,14 @@ export default function OrdersPage() {
           customerAddress: o.customer_address || (o as any).address || undefined,
           customerType: o.customer_type || (o as any).customer_category || undefined,
           isWalkIn: isWalk,
-          items: finalMappedItems,
-          itemsCount: finalMappedItems.reduce((acc, it) => acc + it.quantity, 0),
+          items: mappedItems,
+          itemsCount: mappedItems.reduce((acc, it) => acc + it.quantity, 0),
           priority: o.priority || 'normal',
           orderDate: o.order_date || o.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
           deliveryDate: o.delivery_date || '',
           createdAt: o.created_at || new Date().toISOString(),
           stage: calculatedStage,
-          currentStatus: deriveOrderLiveStatus(o, calculatedStage, linkedJob),
+          currentStatus: deriveOrderLiveStatus(o, calculatedStage, linkedJobs[0]),
           paymentStatus: payStatus,
           totalAmount: total,
           advanceAmount: advance,
@@ -656,12 +461,14 @@ export default function OrdersPage() {
           salespersonName: o.salesperson_name,
           notes: o.notes || undefined,
           rawOrder: o,
-          rawJob: linkedJob,
+          rawJob: linkedJobs[0],
+          rawInvoice: linkedInvoice,
+          workflowResolution,
         })
       })
 
-      // B. Process Standalone Job Orders (if not already mapped)
-      tenantJobOrders.forEach((j) => {
+      // B. Process Standalone Job Orders (if not covered by existing sales order)
+      tenantJobs.forEach((j) => {
         const jobOrderNumber = j.order_number?.trim().toUpperCase() || j.job_number?.replace('JOB-', 'ORD-').replace(/-[A-Z]$/, '').trim().toUpperCase()
         const isMapped = Array.from(unifiedMap.values()).some(
           (u) =>
@@ -678,10 +485,39 @@ export default function OrdersPage() {
           const synthKey = `ORD_${synthOrderNumber.trim().toUpperCase()}`
           if (unifiedMap.has(synthKey)) return
 
+          const linkedProdTasks = tenantProdTasks.filter((t) => j.id && t.job_order_id === j.id)
+          const linkedDesignJobs = tenantDesignJobs.filter(
+            (d) => (j.id && d.job_order_id === j.id) || (j.order_id && d.order_id === j.order_id)
+          )
+
+          const synthOrder: SalesOrderRecord = {
+            id: j.order_id || j.id,
+            company_id: j.company_id,
+            order_number: synthOrderNumber,
+            customer_name: j.customer_name || 'Production Job Client',
+            status: (j.status as any) || 'confirmed',
+            created_at: j.created_at || new Date().toISOString(),
+            items: [],
+            due_amount: 0,
+            final_price: 0,
+          } as unknown as SalesOrderRecord
+
+          const workflowResolution = resolveOrderJobWorkflow(
+            synthOrder,
+            [j],
+            linkedProdTasks,
+            linkedDesignJobs,
+            [],
+            tenantSlug
+          )
+
           let jobStage: OrderStage = 'new_orders'
-          if (j.status === 'completed') jobStage = 'ready_delivery'
-          else if (j.status === 'in_progress') jobStage = 'in_production'
-          else if (j.artwork_status === 'pending' || j.workflow_routing === 'design_required') jobStage = 'in_design'
+          if (workflowResolution.derivedOrderStatus === 'Delivered' || (j.status as string) === 'completed') jobStage = 'delivered'
+          else if (workflowResolution.derivedOrderStatus === 'Ready' || (j.status as string) === 'ready') jobStage = 'ready_delivery'
+          else if (workflowResolution.overallStage === 'finishing') jobStage = 'finishing'
+          else if (workflowResolution.overallStage === 'production' || j.status === 'in_progress') jobStage = 'in_production'
+          else if (workflowResolution.overallStage === 'approval') jobStage = 'approval'
+          else if (workflowResolution.overallStage === 'design' || j.artwork_status === 'pending') jobStage = 'in_design'
 
           unifiedMap.set(synthKey, {
             id: j.id,
@@ -722,6 +558,7 @@ export default function OrdersPage() {
             dueAmount: 0,
             notes: j.production_instructions || undefined,
             rawJob: j,
+            workflowResolution,
           })
         }
       })
@@ -739,11 +576,15 @@ export default function OrdersPage() {
         )
 
         if (existing) {
-          // Enrich with Invoice Reference & Live Payment Balance
+          // Authoritative invoice finance enrichment (no Math.max heuristics)
           existing.invoiceId = inv.id
           existing.invoiceNumber = inv.invoice_number
-          existing.totalAmount = Math.max(Number(inv.grand_total || 0), existing.totalAmount)
-          existing.advanceAmount = Math.max(Number(inv.paid_amount || 0), existing.advanceAmount)
+          if (inv.grand_total !== undefined && inv.grand_total !== null) {
+            existing.totalAmount = Number(inv.grand_total)
+          }
+          if (inv.paid_amount !== undefined && inv.paid_amount !== null) {
+            existing.advanceAmount = Number(inv.paid_amount)
+          }
           existing.dueAmount = Math.max(0, existing.totalAmount - existing.advanceAmount)
           existing.paymentStatus = existing.dueAmount <= 0 ? 'paid' : existing.advanceAmount > 0 ? 'partial' : 'unpaid'
           existing.rawInvoice = inv
@@ -786,43 +627,15 @@ export default function OrdersPage() {
             const ord = unifiedMap.get(synthKey)!
             ord.invoiceId = inv.id
             ord.invoiceNumber = inv.invoice_number
-            ord.totalAmount = Math.max(Number(inv.grand_total || 0), ord.totalAmount)
-            ord.advanceAmount = Math.max(Number(inv.paid_amount || 0), ord.advanceAmount)
+            if (inv.grand_total !== undefined && inv.grand_total !== null) {
+              ord.totalAmount = Number(inv.grand_total)
+            }
+            if (inv.paid_amount !== undefined && inv.paid_amount !== null) {
+              ord.advanceAmount = Number(inv.paid_amount)
+            }
             ord.dueAmount = Math.max(0, ord.totalAmount - ord.advanceAmount)
             ord.paymentStatus = ord.dueAmount <= 0 ? 'paid' : ord.advanceAmount > 0 ? 'partial' : 'unpaid'
-            if (ord.items.length === 0 && inv.items && inv.items.length > 0) {
-              const invMapped: OrderItemSpec[] = inv.items.map((it: any, idx: number) => {
-                const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
-                const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
-                const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
-                const itName = it.item_description || it.description || it.item_name || 'Printing Item'
-                return {
-                  id: it.id || `inv-item-${inv.id}-${idx}`,
-                  serviceName: it.service_name || it.product_name || itName,
-                  itemName: itName,
-                  dimensions:
-                    it.dimensions_spec ||
-                    (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined) ||
-                    ((it.unit || '').toLowerCase() === 'sft' && it.quantity ? `${it.quantity} sft` : undefined),
-                  width: it.width,
-                  height: it.height,
-                  dimensionUnit: it.unit || 'ft',
-                  quantity: Number(it.quantity) || 1,
-                  unit: it.unit || 'pcs',
-                  unitPrice: it.unit_price,
-                  totalPrice: it.total_price,
-                  materialSpec: it.material_spec || it.material || inferMaterialFromItemName(itName),
-                  finishing: it.finishing || (Array.isArray(it.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f).join(', ') : undefined),
-                  addOn: it.add_on || it.addOn || it.addon || (Array.isArray(it.selected_add_ons) ? it.selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined),
-                  itemKind,
-                  workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
-                  designRequired: isReady ? false : it.design_required,
-                  notes: it.notes || it.remarks,
-                }
-              })
-              ord.items = invMapped
-              ord.itemsCount = invMapped.reduce((acc, it) => acc + it.quantity, 0)
-            }
+            ord.rawInvoice = inv
             return
           }
 
@@ -858,19 +671,37 @@ export default function OrdersPage() {
             }
           })
 
-          const total = Number(inv.grand_total || (inv as any).total_amount || 0)
-          const advance = Number(inv.paid_amount || 0)
+          const total = Number(inv.grand_total ?? (inv as any).total_amount ?? 0)
+          const advance = Number(inv.paid_amount ?? 0)
           const due = Math.max(0, total - advance)
           const payStatus = due <= 0 ? 'paid' : advance > 0 ? 'partial' : 'unpaid'
 
+          const synthOrderFromInv: SalesOrderRecord = {
+            id: inv.sales_order_id || inv.id,
+            company_id: inv.company_id,
+            order_number: synthOrderNumber,
+            customer_name: inv.customer_name || 'Client',
+            status: 'confirmed',
+            created_at: inv.created_at || new Date().toISOString(),
+            items: [],
+            due_amount: due,
+            final_price: total,
+          } as unknown as SalesOrderRecord
+
+          const workflowResolution = resolveOrderJobWorkflow(
+            synthOrderFromInv,
+            [],
+            [],
+            [],
+            [],
+            tenantSlug
+          )
+
           let calculatedStage: OrderStage = 'new_orders'
-          const allReady = mappedItems.length > 0 && mappedItems.every((it) => it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product')
           const isDelivered = (inv as any).delivery_status === 'delivered' || (inv as any).status === 'delivered'
 
           if (isDelivered) {
             calculatedStage = 'delivered'
-          } else if (allReady) {
-            calculatedStage = 'ready_delivery'
           } else {
             const hasDesignReq = mappedItems.some((it) => it.workflowRouting === 'design_required')
             calculatedStage = hasDesignReq ? 'in_design' : 'in_production'
@@ -906,6 +737,7 @@ export default function OrdersPage() {
             salespersonName: inv.created_by_name || 'Counter Desk',
             notes: inv.notes || undefined,
             rawInvoice: inv,
+            workflowResolution,
           })
         }
       })
@@ -980,37 +812,62 @@ export default function OrdersPage() {
   }, [loadData])
 
   // 2. Metrics KPI Calculations
-  const metrics: OrderMetrics = useMemo(() => {
+  const metrics = useMemo(() => {
     const todayStr = new Date().toISOString().split('T')[0]
     let total = orders.length
     let newOrders = 0
     let inDesign = 0
+    let inApproval = 0
     let inProduction = 0
+    let inFinishing = 0
     let readyDelivery = 0
+    let outDelivery = 0
     let delivered = 0
     let dueToday = 0
     let totalDueAmount = 0
+    let blockedCount = 0
+    let overdueCount = 0
+    let paymentDueCount = 0
+    let needsAttentionCount = 0
 
     orders.forEach((o) => {
-      if (o.stage === 'new_orders') newOrders++
-      else if (o.stage === 'in_design') inDesign++
-      else if (o.stage === 'in_production') inProduction++
-      else if (o.stage === 'ready_delivery') readyDelivery++
-      else if (o.stage === 'delivered') delivered++
+      const isBlocked = o.workflowResolution?.isBlocked || o.workflowResolution?.childJobs.some((j) => j.isBlocked)
+      const isApproval = o.workflowResolution?.overallStage === 'approval' || o.stage === 'approval'
+      const isNeedsAttention = isBlocked || isApproval
 
+      if (isBlocked) blockedCount++
+      if (isNeedsAttention) needsAttentionCount++
+      if (o.dueAmount > 0) paymentDueCount++
       if (o.deliveryDate?.includes(todayStr)) dueToday++
+      if (o.deliveryDate && o.deliveryDate < todayStr && o.stage !== 'delivered' && o.workflowResolution?.derivedOrderStatus !== 'Delivered') overdueCount++
       totalDueAmount += o.dueAmount || 0
+
+      if (o.stage === 'delivered' || o.workflowResolution?.derivedOrderStatus === 'Delivered') delivered++
+      else if (o.stage === 'ready' || o.stage === 'ready_delivery' || o.workflowResolution?.derivedOrderStatus === 'Ready') readyDelivery++
+      else if (o.stage === 'delivery' || o.workflowResolution?.overallStage === 'delivery') outDelivery++
+      else if (o.stage === 'finishing' || o.workflowResolution?.overallStage === 'finishing') inFinishing++
+      else if (o.stage === 'in_production' || o.stage === 'production' || o.workflowResolution?.overallStage === 'production') inProduction++
+      else if (isApproval) inApproval++
+      else if (o.stage === 'in_design' || o.stage === 'design' || o.workflowResolution?.overallStage === 'design') inDesign++
+      else newOrders++
     })
 
     return {
       total,
       newOrders,
       inDesign,
+      inApproval,
       inProduction,
+      inFinishing,
       readyDelivery,
+      outDelivery,
       delivered,
       dueToday,
       totalDueAmount,
+      blockedCount,
+      overdueCount,
+      paymentDueCount,
+      needsAttentionCount,
     }
   }, [orders])
 
@@ -1021,20 +878,42 @@ export default function OrdersPage() {
 
     return orders.filter((order) => {
       // Stage Filter
-      if (activeStage !== 'all' && order.stage !== activeStage) return false
+      if (activeStage === 'needs_attention') {
+        const isBlocked = order.workflowResolution?.isBlocked || order.workflowResolution?.childJobs.some((j) => j.isBlocked)
+        const isApproval = order.workflowResolution?.overallStage === 'approval' || order.stage === 'approval'
+        if (!isBlocked && !isApproval) return false
+      } else if (activeStage === 'design') {
+        if (order.stage !== 'in_design' && order.stage !== 'design' && order.workflowResolution?.overallStage !== 'design') return false
+      } else if (activeStage === 'approval') {
+        if (order.stage !== 'approval' && order.workflowResolution?.overallStage !== 'approval') return false
+      } else if (activeStage === 'production') {
+        if (order.stage !== 'in_production' && order.stage !== 'production' && order.workflowResolution?.overallStage !== 'production') return false
+      } else if (activeStage === 'finishing') {
+        if (order.stage !== 'finishing' && order.workflowResolution?.overallStage !== 'finishing') return false
+      } else if (activeStage === 'ready') {
+        if (order.stage !== 'ready_delivery' && order.stage !== 'ready' && order.workflowResolution?.derivedOrderStatus !== 'Ready') return false
+      } else if (activeStage === 'delivery') {
+        if (order.stage !== 'delivery' && order.workflowResolution?.overallStage !== 'delivery') return false
+      } else if (activeStage === 'delivered') {
+        if (order.stage !== 'delivered' && order.workflowResolution?.overallStage !== 'completed' && order.workflowResolution?.derivedOrderStatus !== 'Delivered') return false
+      } else if (activeStage !== 'all') {
+        if (order.stage !== activeStage) return false
+      }
 
       // Quick Chips Filter
-      if (filters.quickFilter === 'urgent') {
+      if (filters.quickFilter === 'due_today') {
+        if (!order.deliveryDate?.includes(todayStr)) return false
+      } else if (filters.quickFilter === 'blocked') {
+        const isBlocked = order.workflowResolution?.isBlocked || order.workflowResolution?.childJobs.some((j) => j.isBlocked)
+        if (!isBlocked) return false
+      } else if (filters.quickFilter === 'overdue') {
+        if (!order.deliveryDate || order.deliveryDate >= todayStr || order.stage === 'delivered' || order.workflowResolution?.derivedOrderStatus === 'Delivered') return false
+      } else if (filters.quickFilter === 'payment_due' || filters.quickFilter === 'unpaid_due') {
+        if (order.dueAmount <= 0) return false
+      } else if (filters.quickFilter === 'urgent') {
         if (order.priority !== 'urgent' && order.priority !== 'very_urgent') return false
       } else if (filters.quickFilter === 'walk_in') {
         if (!order.isWalkIn) return false
-      } else if (filters.quickFilter === 'due_today') {
-        if (!order.deliveryDate?.includes(todayStr)) return false
-      } else if (filters.quickFilter === 'unpaid_due') {
-        if (order.dueAmount <= 0) return false
-      } else if (filters.quickFilter === 'has_design') {
-        const hasDesign = order.items.some((it) => it.workflowRouting === 'design_required')
-        if (!hasDesign) return false
       }
 
       // Priority Dropdown Filter
@@ -1042,14 +921,21 @@ export default function OrdersPage() {
         return false
       }
 
-      // Search Query
+      // Search Query across Order #, Job #, Customer, Phone, Invoice #, Item, Operator, Machine
       if (query) {
         const matchCust = order.customerName?.toLowerCase().includes(query)
         const matchPhone = order.customerPhone?.toLowerCase().includes(query)
         const matchOrd = order.orderNumber?.toLowerCase().includes(query)
+        const matchJob =
+          order.jobNumber?.toLowerCase().includes(query) ||
+          order.workflowResolution?.childJobs.some((j) => j.jobNumber?.toLowerCase().includes(query))
         const matchInv = order.invoiceNumber?.toLowerCase().includes(query)
-        const matchItem = order.items.some((it) => it.itemName.toLowerCase().includes(query))
-        if (!matchCust && !matchPhone && !matchOrd && !matchInv && !matchItem) return false
+        const matchItem = order.items.some(
+          (it) => it.itemName.toLowerCase().includes(query) || it.serviceName?.toLowerCase().includes(query)
+        )
+        const matchOp = order.workflowResolution?.childJobs.some((j) => j.assignedOperator?.toLowerCase().includes(query))
+        const matchMachine = order.workflowResolution?.childJobs.some((j) => j.assignedMachine?.toLowerCase().includes(query))
+        if (!matchCust && !matchPhone && !matchOrd && !matchJob && !matchInv && !matchItem && !matchOp && !matchMachine) return false
       }
 
       return true
@@ -1195,20 +1081,23 @@ export default function OrdersPage() {
   }, [])
 
   const stagesConfig: Array<{ id: OrderStage; label: string; count: number; icon: any }> = [
-    { id: 'all', label: tBilingual('All Orders', 'সব অর্ডার'), count: metrics.total, icon: Layers },
-    { id: 'new_orders', label: tBilingual('1. New Orders', '১. নতুন অর্ডার'), count: metrics.newOrders, icon: Sparkles },
-    { id: 'in_design', label: tBilingual('2. Design & Proof', '২. ডিজাইন ও চেক'), count: metrics.inDesign, icon: Sparkles },
-    { id: 'in_production', label: tBilingual('3. Machine Floor', '৩. মেশিন প্রোডাকশন'), count: metrics.inProduction, icon: Printer },
-    { id: 'ready_delivery', label: tBilingual('4. Ready for Delivery', '৪. ডেলিভারি রেডি'), count: metrics.readyDelivery, icon: Truck },
-    { id: 'delivered', label: tBilingual('5. Delivery Completed', '৫. ডেলিভারি সম্পন্ন'), count: metrics.delivered, icon: PackageCheck },
+    { id: 'all', label: tBilingual('All', 'সব'), count: metrics.total, icon: Layers },
+    { id: 'needs_attention', label: tBilingual('Needs Attention', 'দৃষ্টি আকর্ষণ'), count: metrics.needsAttentionCount, icon: AlertTriangle },
+    { id: 'design', label: tBilingual('Design', 'ডিজাইন'), count: metrics.inDesign, icon: Sparkles },
+    { id: 'approval', label: tBilingual('Approval', 'অনুমোদন'), count: metrics.inApproval, icon: CheckCircle2 },
+    { id: 'production', label: tBilingual('Production', 'প্রোডাকশন'), count: metrics.inProduction, icon: Printer },
+    { id: 'finishing', label: tBilingual('Finishing', 'ফিনিশিং'), count: metrics.inFinishing, icon: Briefcase },
+    { id: 'ready', label: tBilingual('Ready', 'রেডি'), count: metrics.readyDelivery, icon: PackageCheck },
+    { id: 'delivery', label: tBilingual('Delivery', 'ডেলিভারি'), count: metrics.outDelivery, icon: Truck },
+    { id: 'delivered', label: tBilingual('Delivered', 'সম্পন্ন'), count: metrics.delivered, icon: CheckCircle2 },
   ]
 
   return (
     <PanelAccessGuard
       module="orders"
       action="view"
-      panelTitle="Orders & Job Flow"
-      panelTitleBn="কাজের অর্ডার"
+      panelTitle="Orders & Jobs"
+      panelTitleBn="অর্ডার ও জব"
     >
       <div className="space-y-4 pb-12">
       {/* Toast Notification */}
@@ -1237,10 +1126,10 @@ export default function OrdersPage() {
           1. HEADER: Standardized PageHeader matching Quotations & Billing
          ========================================================================= */}
       <PageHeader
-        titleEn="Orders & Job Flow"
-        titleBn="অর্ডার ও জব ফ্লো হাব"
-        descriptionEn="Track commercial sales orders, intake routing, job tickets, and delivery progress."
-        descriptionBn="প্রেস অর্ডার বুকিং, অগ্রিম ও বাকি ট্র্যাকিং, ৩-মুখী ফ্লো ও কারখানা ডেলিভারি ব্যবস্থাপনা।"
+        titleEn="Orders & Jobs"
+        titleBn="অর্ডার ও জব"
+        descriptionEn="Master workflow hub: intake, child jobs, production, and delivery tracking."
+        descriptionBn="মাস্টার ওয়ার্কফ্লো হাব: অর্ডার গ্রহণ, চাইল্ড জব, প্রোডাকশন ও ডেলিভারি ট্র্যাকিং।"
         icon={Briefcase}
         actions={
           <>
@@ -1262,11 +1151,69 @@ export default function OrdersPage() {
               className="gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              <span>{tBilingual('New Order Booking', 'নতুন অর্ডার বুকিং')}</span>
+              <span>{tBilingual('+ New Work', '+ নতুন কাজ')}</span>
             </Button>
           </>
         }
       />
+
+      {/* Owner Dashboard Needs Attention Summary Banner (Section 50) */}
+      {metrics.needsAttentionCount > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <span>{tBilingual('NEEDS ATTENTION', 'দৃষ্টি আকর্ষণ')}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {metrics.inApproval > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveStage('approval')
+                  setFilters((f) => ({ ...f, quickFilter: 'all' }))
+                }}
+                className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 font-medium hover:bg-amber-100/50 transition-colors cursor-pointer"
+              >
+                {metrics.inApproval} {tBilingual('jobs waiting approval', 'অনুমোদনের অপেক্ষায়')}
+              </button>
+            )}
+            {metrics.blockedCount > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilters((f) => ({ ...f, quickFilter: 'blocked' }))
+                }}
+                className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-red-300 dark:border-red-700/60 text-red-700 dark:text-red-300 font-medium hover:bg-red-50 transition-colors cursor-pointer"
+              >
+                {metrics.blockedCount} {tBilingual('blocked jobs', 'স্থগিত কাজ')}
+              </button>
+            )}
+            {metrics.readyDelivery > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveStage('ready')
+                  setFilters((f) => ({ ...f, quickFilter: 'all' }))
+                }}
+                className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-300 font-medium hover:bg-emerald-50 transition-colors cursor-pointer"
+              >
+                {metrics.readyDelivery} {tBilingual('delivery ready', 'ডেলিভারি প্রস্তুত')}
+              </button>
+            )}
+            {metrics.paymentDueCount > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilters((f) => ({ ...f, quickFilter: 'payment_due' }))
+                }}
+                className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700/60 text-blue-800 dark:text-blue-300 font-medium hover:bg-blue-50 transition-colors cursor-pointer"
+              >
+                {metrics.paymentDueCount} {tBilingual('customer dues', 'গ্রাহকের বকেয়া')}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Top Metrics KPI Bar */}
       <OrdersMetricsBar

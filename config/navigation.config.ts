@@ -22,7 +22,7 @@ export interface NavItem {
 }
 
 export interface NavSection {
-  id: 'today' | 'work' | 'management' | 'settings'
+  id: 'today' | 'work' | 'resources' | 'specialized' | 'management' | 'settings'
   title: string
   titleBn: string
   items: NavItem[]
@@ -81,8 +81,8 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         },
         {
           key: 'orders',
-          title: 'Orders & Job Flow',
-          titleBn: 'কাজের অর্ডার',
+          title: 'Orders & Jobs',
+          titleBn: 'কাজের অর্ডার ও জব',
           href: '/orders',
           icon: 'ShoppingBag',
           permission: { action: 'view', resource: 'orders' },
@@ -92,8 +92,8 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
     },
     {
       id: 'work',
-      title: '',
-      titleBn: '',
+      title: 'Work',
+      titleBn: 'কাজ',
       items: [
         {
           key: 'design',
@@ -113,14 +113,6 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           permission: { action: 'view', resource: 'production' },
         },
         {
-          key: 'operator',
-          title: 'Operator Terminal',
-          titleBn: 'অপারেটর টার্মিনাল',
-          href: '/operator',
-          icon: 'Cpu',
-          permission: { action: 'view', resource: 'production' },
-        },
-        {
           key: 'finishing',
           title: 'Finishing & Fabrication',
           titleBn: 'ফিনিশিং ও তৈরি',
@@ -130,12 +122,20 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         },
         {
           key: 'delivery',
-          title: 'Delivery & Challan',
-          titleBn: 'ডেলিভারি ও চালান',
+          title: 'Delivery',
+          titleBn: 'ডেলিভারি',
           href: '/delivery',
           icon: 'Truck',
           permission: { action: 'view', resource: 'delivery' },
+          hasDividerBelow: true,
         },
+      ],
+    },
+    {
+      id: 'resources',
+      title: 'Resources',
+      titleBn: 'রিসোর্স',
+      items: [
         {
           key: 'floor_consumption',
           title: 'Materials & Consumption',
@@ -151,6 +151,22 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           href: '/production/machineries',
           icon: 'Cpu',
           permission: { action: 'view', resource: 'machineries' },
+          hasDividerBelow: true,
+        },
+      ],
+    },
+    {
+      id: 'specialized',
+      title: 'Specialized',
+      titleBn: 'টার্মিনাল',
+      items: [
+        {
+          key: 'operator',
+          title: 'Operator Terminal',
+          titleBn: 'অপারেটর টার্মিনাল',
+          href: '/operator',
+          icon: 'Cpu',
+          permission: { action: 'view', resource: 'production' },
           hasDividerBelow: true,
         },
       ],

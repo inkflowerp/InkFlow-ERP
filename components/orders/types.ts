@@ -3,11 +3,18 @@ import type { InvoiceRecord } from '@/types/billing.types'
 
 export type OrderStage =
   | 'all'
+  | 'needs_attention'
+  | 'design'
+  | 'approval'
+  | 'production'
+  | 'finishing'
+  | 'ready'
+  | 'delivery'
+  | 'delivered'
   | 'new_orders'
   | 'in_design'
   | 'in_production'
   | 'ready_delivery'
-  | 'delivered'
 
 export interface OrderItemSpec {
   id: string
@@ -429,6 +436,7 @@ export interface UnifiedOrderRecord {
   rawOrder?: SalesOrderRecord
   rawInvoice?: InvoiceRecord
   rawJob?: JobOrderRecord
+  workflowResolution?: import('@/lib/workflow/workflow-engine').OrderWorkflowResolution
 }
 
 export type OrderWhatsAppTemplateKey =

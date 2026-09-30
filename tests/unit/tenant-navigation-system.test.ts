@@ -14,10 +14,10 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
   const sampleSlug = 'inkflow-demo'
   const navSections = getNavigationConfig(sampleSlug)
 
-  it('1. Navigation configuration has exactly 4 streamlined business hierarchy sections', () => {
-    assert.equal(navSections.length, 4, 'Must have exactly 4 sections: TODAY, WORK, MANAGEMENT, SETTINGS')
+  it('1. Navigation configuration has streamlined business hierarchy sections', () => {
+    assert.equal(navSections.length, 6, 'Must have 6 sections: TODAY, WORK, RESOURCES, SPECIALIZED, MANAGEMENT, SETTINGS')
     const sectionIds = navSections.map((s) => s.id)
-    assert.deepEqual(sectionIds, ['today', 'work', 'management', 'settings'])
+    assert.deepEqual(sectionIds, ['today', 'work', 'resources', 'specialized', 'management', 'settings'])
 
     // Section 1: Commercial & Sales
     const todaySection = navSections.find((s) => s.id === 'today')!
@@ -25,19 +25,31 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     const todayItems = todaySection.items.map((i) => i.key)
     assert.deepEqual(todayItems, ['new-work', 'dashboard', 'quotations', 'billing', 'customers', 'orders'])
 
-    // Section 2: Factory & Floor
+    // Section 2: Factory & Floor (Work)
     const workSection = navSections.find((s) => s.id === 'work')!
     assert.ok(workSection, 'Work section must exist')
     const workItems = workSection.items.map((i) => i.key)
-    assert.deepEqual(workItems, ['design', 'production', 'operator', 'finishing', 'delivery', 'floor_consumption', 'machineries'])
+    assert.deepEqual(workItems, ['design', 'production', 'finishing', 'delivery'])
 
-    // Section 3: Materials & Finance
+    // Section 3: Resources
+    const resourcesSection = navSections.find((s) => s.id === 'resources')!
+    assert.ok(resourcesSection, 'Resources section must exist')
+    const resourceItems = resourcesSection.items.map((i) => i.key)
+    assert.deepEqual(resourceItems, ['floor_consumption', 'machineries'])
+
+    // Section 4: Specialized
+    const specializedSection = navSections.find((s) => s.id === 'specialized')!
+    assert.ok(specializedSection, 'Specialized section must exist')
+    const specializedItems = specializedSection.items.map((i) => i.key)
+    assert.deepEqual(specializedItems, ['operator'])
+
+    // Section 5: Materials & Finance (Management)
     const mgmtSection = navSections.find((s) => s.id === 'management')!
     assert.ok(mgmtSection, 'Management section must exist')
     const mgmtItems = mgmtSection.items.map((i) => i.key)
     assert.deepEqual(mgmtItems, ['inventory', 'products', 'pricing', 'suppliers', 'accounting', 'costing', 'tax', 'reports', 'hr'])
 
-    // Section 4: System & Settings
+    // Section 6: System & Settings
     const settingsSection = navSections.find((s) => s.id === 'settings')!
     assert.ok(settingsSection, 'Settings section must exist')
     const settingsItems = settingsSection.items.map((i) => i.key)
@@ -45,7 +57,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
 
     // Divider boundaries
     const dividerItems = navSections.flatMap((s) => s.items).filter((i) => i.hasDividerBelow).map((i) => i.key)
-    assert.deepEqual(dividerItems, ['dashboard', 'orders', 'machineries', 'suppliers', 'reports', 'hr', 'company_settings'])
+    assert.deepEqual(dividerItems, ['dashboard', 'orders', 'delivery', 'machineries', 'operator', 'suppliers', 'reports', 'hr', 'company_settings'])
   })
 
   it('2. Every navigation section and item has complete English and Bengali titles', () => {

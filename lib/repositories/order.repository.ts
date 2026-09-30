@@ -566,6 +566,33 @@ export class OrderRepository {
     return localJob
   }
 
+  static async updateJobOrderStatus(
+    id: string,
+    status: string,
+    companyId: string,
+    extraUpdates?: Partial<JobOrderRecord>
+  ): Promise<boolean> {
+    const payload: any = {
+      status,
+      ...extraUpdates,
+      updated_at: new Date().toISOString(),
+    }
+    try {
+      const supabase = await createClient()
+      const { error } = await (supabase as any)
+        .from('job_orders')
+        .update(payload)
+        .eq('id', id)
+        .eq('company_id', companyId)
+      if (!error) return true
+    } catch {}
+
+    const all = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const updated = all.map((j) => (j.id === id ? { ...j, ...payload } : j))
+    PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, updated)
+    return true
+  }
+
   static async purgeAllOrders(companyId: string): Promise<boolean> {
     try {
       const supabase = await createClient()

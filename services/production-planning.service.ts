@@ -486,8 +486,24 @@ export class ProductionPlanningService {
       extraUpdates.assigned_operator_name = operatorName
     }
 
-    // If machine is assigned, set machine status to in_use
+    // If machine is assigned, verify no conflicting running task on this machine (Section 29)
     if (task.assigned_machine_id) {
+      const activeRunningTasks = await ProductionTaskRepository.getTasks(companyId, {
+        assigned_machine_id: task.assigned_machine_id,
+        status: 'in_progress',
+      })
+      const otherRunning = activeRunningTasks.filter((t) => t.id !== task.id)
+      if (otherRunning.length > 0) {
+        let machineName = task.assigned_machine_name || 'Machine'
+        try {
+          const m = await MachineryRepository.getMachineryById(task.assigned_machine_id, companyId)
+          if (m?.name) machineName = m.name
+        } catch (_) {}
+        throw new Error(
+          `Machine conflict: ${machineName} is currently running Task #${otherRunning[0].task_number || otherRunning[0].id}. Parallel execution is not permitted on this machine.`
+        )
+      }
+
       try {
         await MachineryRepository.updateStatus(task.assigned_machine_id, companyId, 'in_use')
       } catch (err: any) {
@@ -765,6 +781,14 @@ export class ProductionPlanningService {
           }, companyId)
         }
 
+        // Update Job Order to ready for delivery (Section 21 & 34)
+        try {
+          const { OrderRepository } = await import('../lib/repositories/order.repository.ts')
+          if (task.job_order_id) {
+            await OrderRepository.updateJobOrderStatus(task.job_order_id, 'ready', companyId)
+          }
+        } catch (_) {}
+
         // Update Sales Order to ready_delivery
         const allOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
         const matchedOrder = allOrders.find(
@@ -850,6 +874,15 @@ export class ProductionPlanningService {
   ): Promise<ProductionTaskRecord[]> {
     if (!companyId) throw new Error('Company ID is required')
     if (!input.job_order_id) throw new Error('Job Order ID is required')
+
+    // SECTION 20 IDEMPOTENCY GATE:
+    // If production tasks already exist for this job_order_id, return them immediately without creating duplicates.
+    const existingTasks = await ProductionTaskRepository.getTasks(companyId, {
+      job_order_id: input.job_order_id,
+    })
+    if (existingTasks && existingTasks.length > 0) {
+      return existingTasks.sort((a, b) => a.sequence_order - b.sequence_order)
+    }
 
     const createdTasks: ProductionTaskRecord[] = []
     let sequenceOrder = 1

@@ -377,5 +377,142 @@ describe('Canonical Order-to-Delivery Workflow Engine Tests', () => {
     const designStep = resolution.stepperStages.find((s) => s.id === 'design')!
     assert.equal(designStep.status, 'skipped')
   })
+
+  it('8. Human Stage & Blocker Direct Action: Approval and Material blockers expose direct action links', () => {
+    const unapprovedJob: JobOrderRecord = {
+      ...mockJobs[0],
+      artwork_status: 'pending',
+      workflow_routing: 'design_required',
+    }
+
+    const resolution = resolveChildJobWorkflow(
+      unapprovedJob,
+      [],
+      {
+        id: 'dsn-1',
+        company_id: 'comp-101',
+        title: 'PVC Banner',
+        status: 'customer_approval',
+        created_at: '2026-10-01T10:00:00Z',
+      },
+      [],
+      'print-shop'
+    )
+
+    assert.equal(resolution.humanStage, 'Waiting for Approval')
+    assert.equal(resolution.isBlocked, true)
+    assert.equal(resolution.blockerActionLabelEn, 'Open Approval')
+    assert.equal(resolution.blockerActionHref, '/print-shop/design?job=JOB-2026-0001-1')
+    assert.equal(resolution.nextActionEn, 'Approve Design Proof')
+  })
+
+  it('9. Derived Order Status: 1 Delivered, 1 Finishing, 1 In Production resolves to In Progress (not Delivered)', () => {
+    const jobA: JobOrderRecord = {
+      ...mockJobs[0],
+      id: 'j-a',
+      job_number: 'JOB-A',
+      title: 'Banner',
+      product_name: 'Banner',
+    }
+    const jobB: JobOrderRecord = {
+      ...mockJobs[1],
+      id: 'j-b',
+      job_number: 'JOB-B',
+      title: 'ACP Sign',
+      product_name: 'ACP Sign',
+      assigned_department: 'fabrication',
+    }
+    const jobC: JobOrderRecord = {
+      ...mockJobs[0],
+      id: 'j-c',
+      job_number: 'JOB-C',
+      title: 'Business Card',
+      product_name: 'Business Card',
+      artwork_status: 'approved',
+    }
+
+    // Job A is delivered
+    const challanA: DeliveryChallanRecord = {
+      id: 'ch-a',
+      company_id: 'comp-101',
+      challan_number: 'DC-01',
+      sales_order_id: mockOrder.id,
+      order_number: mockOrder.order_number,
+      status: 'delivered',
+      recipient_name: 'Receiver',
+      items: [
+        {
+          id: 'ci-1',
+          challan_id: 'ch-a',
+          product_description: 'Banner',
+          quantity: 2,
+          remarks: 'JOB-A',
+        },
+      ],
+      created_at: '2026-10-01T10:00:00Z',
+    }
+
+    // Job B is in finishing / fabrication
+    const taskB: ProductionTaskRecord[] = [
+      {
+        id: 't-b1',
+        company_id: 'comp-101',
+        job_order_id: 'j-b',
+        job_number: 'JOB-B',
+        task_name: 'Print Face',
+        task_type: 'printing',
+        status: 'completed',
+        created_at: '2026-10-01T10:00:00Z',
+      },
+      {
+        id: 't-b2',
+        company_id: 'comp-101',
+        job_order_id: 'j-b',
+        job_number: 'JOB-B',
+        task_name: 'Fabricate 3D Letter',
+        task_type: 'fabrication',
+        status: 'in_progress',
+        created_at: '2026-10-01T10:00:00Z',
+      },
+    ]
+
+    // Job C is in printing
+    const taskC: ProductionTaskRecord[] = [
+      {
+        id: 't-c1',
+        company_id: 'comp-101',
+        job_order_id: 'j-c',
+        job_number: 'JOB-C',
+        task_name: 'Offset Print Card',
+        task_type: 'printing',
+        status: 'in_progress',
+        created_at: '2026-10-01T10:00:00Z',
+      },
+    ]
+
+    const resolution = resolveOrderJobWorkflow(
+      mockOrder,
+      [jobA, jobB, jobC],
+      [...taskB, ...taskC],
+      [],
+      [challanA],
+      'print-shop'
+    )
+
+    // Order status must be Partially Delivered or In Progress, NEVER Delivered
+    assert.equal(resolution.derivedOrderStatus, 'Partially Delivered')
+    assert.equal(resolution.isFullyDelivered, false)
+    assert.equal(resolution.isPartiallyDelivered, true)
+
+    // Jobs summary mini-checklist must have 3 items
+    assert.equal(resolution.jobsSummary.total, 3)
+    assert.equal(resolution.jobsSummary.delivered, 1)
+    assert.equal(resolution.jobsSummary.miniList[0].statusIcon, '✓')
+    assert.equal(resolution.jobsSummary.miniList[0].title, 'Banner')
+    assert.equal(resolution.jobsSummary.miniList[1].statusIcon, '●')
+    assert.equal(resolution.jobsSummary.miniList[1].title, 'ACP Sign')
+    assert.equal(resolution.jobsSummary.miniList[2].statusIcon, '●')
+    assert.equal(resolution.jobsSummary.miniList[2].title, 'Business Card')
+  })
 })
 

@@ -14,12 +14,14 @@ import {
   Layers,
   RefreshCw,
   Wallet,
+  AlertTriangle,
+  AlertOctagon,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 
 export interface OrderFilterState {
   searchQuery: string
-  quickFilter: 'all' | 'urgent' | 'walk_in' | 'due_today' | 'unpaid_due' | 'has_design'
+  quickFilter: 'all' | 'due_today' | 'blocked' | 'overdue' | 'payment_due' | 'urgent' | 'walk_in' | 'unpaid_due'
   selectedPriority: string
   viewMode: 'cards' | 'table'
 }
@@ -40,26 +42,26 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
   const { tBilingual } = useI18n()
 
   const filterChips = [
-    { id: 'all', label: tBilingual('All Orders', 'সব অর্ডার'), icon: Layers },
-    { id: 'urgent', label: tBilingual('Urgent', 'অতি জরুরী'), icon: Zap },
-    { id: 'walk_in', label: tBilingual('Walk-in', 'দোকানে বসা'), icon: UserCheck },
-    { id: 'due_today', label: tBilingual('Today Delivery', 'আজকের ডেলিভারি'), icon: Calendar },
-    { id: 'unpaid_due', label: tBilingual('Due Orders', 'বকেয়া বাকি'), icon: Wallet },
-    { id: 'has_design', label: tBilingual('Design Required', 'ডিজাইন আবশ্যক'), icon: Sparkles },
+    { id: 'all', label: tBilingual('All', 'সব'), icon: Layers },
+    { id: 'due_today', label: tBilingual('Due Today', 'আজকের ডেলিভারি'), icon: Calendar },
+    { id: 'blocked', label: tBilingual('Blocked', 'স্থগিত'), icon: AlertTriangle },
+    { id: 'overdue', label: tBilingual('Overdue', 'বিলম্বিত'), icon: AlertOctagon },
+    { id: 'payment_due', label: tBilingual('Payment Due', 'বকেয়া বাকি'), icon: Wallet },
+    { id: 'urgent', label: tBilingual('Urgent', 'জরুরী'), icon: Zap },
   ] as const
 
   return (
     <div className="bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs space-y-3">
       <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Search Input */}
+        {/* Search Input: Order #, Job #, Customer, Phone, Invoice #, Product, Operator, Machine */}
         <div className="relative w-full md:flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
           <Input
             value={filters.searchQuery}
             onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
             placeholder={tBilingual(
-              'Search customer, mobile, order #, invoice # or item...',
-              'কাস্টমার, মোবাইল, অর্ডার #, ইনভয়েস # বা কাজের নাম...'
+              'Search order #, job #, customer, phone, invoice #, product, operator, machine...',
+              'অর্ডার #, জব #, কাস্টমার, ফোন, ইনভয়েস #, পণ্য, অপারেটর, মেশিন খুঁজুন...'
             )}
             className="pl-9 text-xs bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 rounded-xl h-8 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 shadow-none focus-visible:ring-0"
           />

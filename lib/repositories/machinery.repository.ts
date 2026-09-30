@@ -334,7 +334,6 @@ export class MachineryRepository {
   static async createMachinery(
     input: CreateMachineryInput & { company_id: string }
   ): Promise<MachineryRecord> {
-    const supabase = await createClient()
     const payload = {
       company_id: input.company_id,
       branch_id: input.branch_id || null,

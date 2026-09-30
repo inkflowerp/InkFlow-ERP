@@ -17,13 +17,13 @@ describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
     PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, [])
   })
 
-  it('1. Navigation config contains Orders & Job Flow with bilingual titles', () => {
+  it('1. Navigation config contains Orders & Jobs with bilingual titles', () => {
     const navSections = getNavigationConfig('acme-press')
     const allItems = navSections.flatMap((s) => s.items)
     const ordersItem = allItems.find((item) => item.key === 'orders')
     assert.ok(ordersItem, 'Orders item must exist in navigation config')
-    assert.strictEqual(ordersItem.title, 'Orders & Job Flow')
-    assert.strictEqual(ordersItem.titleBn, 'কাজের অর্ডার')
+    assert.strictEqual(ordersItem.title, 'Orders & Jobs')
+    assert.strictEqual(ordersItem.titleBn, 'কাজের অর্ডার ও জব')
     assert.strictEqual(ordersItem.href, '/orders')
   })
 
