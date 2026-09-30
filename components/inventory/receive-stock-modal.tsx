@@ -1965,100 +1965,102 @@ export function ReceiveStockModal({
           </button>
         </div>
 
-        {/* LOGISTICS & WAREHOUSE LOCATION (COMMON BAR) */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-          <div className="flex items-center gap-2">
-            <Building className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              {tBilingual('Destination Store & Challan Documentation', 'গন্তব্য গোডাউন ও চালান তথ্য')}
-            </h3>
+        {/* LOGISTICS & WAREHOUSE LOCATION (COMMON BAR - Only for PO Receiving & Opening) */}
+        {mode !== 'direct' && (
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <Building className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {tBilingual('Destination Store & Challan Documentation', 'গন্তব্য গোডাউন ও চালান তথ্য')}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Target Warehouse / Store', 'গন্তব্য গোডাউন')} <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={locationId || (locations[0]?.id || 'main-store')}
+                  onChange={(e) => setLocationId(e.target.value)}
+                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  required
+                >
+                  {locations.length > 0 ? (
+                    locations.map((loc) => (
+                      <option key={loc.id} value={loc.id}>
+                        {loc.location_name} {loc.location_code ? `(${loc.location_code})` : ''}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="main-store">Main Raw Material Store</option>
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Intake / Received Date', 'গ্রহণের তারিখ')} <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="date"
+                  value={receivedDate}
+                  onChange={(e) => setReceivedDate(e.target.value)}
+                  className="text-xs h-9"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Delivery Challan / Gate Pass #', 'চালান / গেট পাস নং')}
+                </Label>
+                <Input
+                  placeholder="e.g. CH-2026-9012"
+                  value={challanNumber}
+                  onChange={(e) => setChallanNumber(e.target.value)}
+                  className="text-xs h-9 tabular-nums"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Supplier Bill / Tax Invoice #', 'সাপ্লায়ার ইনভয়েস নং')}
+                </Label>
+                <Input
+                  placeholder="e.g. INV-8812 / Mushak 6.3"
+                  value={supplierInvoiceNumber}
+                  onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
+                  className="text-xs h-9 tabular-nums"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Transport Vehicle / Truck #', 'গাড়ি / ট্রাক নং')}
+                </Label>
+                <Input
+                  placeholder="e.g. Dhaka Metro-Ta 11-2041"
+                  value={vehicleNumber}
+                  onChange={(e) => setVehicleNumber(e.target.value)}
+                  className="text-xs h-9 tabular-nums"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Transport / Courier Name', 'কুরিয়ার / ট্রান্সপোর্ট')}
+                </Label>
+                <Input
+                  placeholder="e.g. Sundarban Courier / SA Paribahan"
+                  value={carrierName}
+                  onChange={(e) => setCarrierName(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+            </div>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Target Warehouse / Store', 'গন্তব্য গোডাউন')} <span className="text-rose-500">*</span>
-              </Label>
-              <select
-                value={locationId || (locations[0]?.id || 'main-store')}
-                onChange={(e) => setLocationId(e.target.value)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
-                required
-              >
-                {locations.length > 0 ? (
-                  locations.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.location_name} {loc.location_code ? `(${loc.location_code})` : ''}
-                    </option>
-                  ))
-                ) : (
-                  <option value="main-store">Main Raw Material Store</option>
-                )}
-              </select>
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Intake / Received Date', 'গ্রহণের তারিখ')} <span className="text-rose-500">*</span>
-              </Label>
-              <Input
-                type="date"
-                value={receivedDate}
-                onChange={(e) => setReceivedDate(e.target.value)}
-                className="text-xs h-9"
-                required
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Delivery Challan / Gate Pass #', 'চালান / গেট পাস নং')}
-              </Label>
-              <Input
-                placeholder="e.g. CH-2026-9012"
-                value={challanNumber}
-                onChange={(e) => setChallanNumber(e.target.value)}
-                className="text-xs h-9 tabular-nums"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Supplier Bill / Tax Invoice #', 'সাপ্লায়ার ইনভয়েস নং')}
-              </Label>
-              <Input
-                placeholder="e.g. INV-8812 / Mushak 6.3"
-                value={supplierInvoiceNumber}
-                onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
-                className="text-xs h-9 tabular-nums"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Transport Vehicle / Truck #', 'গাড়ি / ট্রাক নং')}
-              </Label>
-              <Input
-                placeholder="e.g. Dhaka Metro-Ta 11-2041"
-                value={vehicleNumber}
-                onChange={(e) => setVehicleNumber(e.target.value)}
-                className="text-xs h-9 tabular-nums"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Transport / Courier Name', 'কুরিয়ার / ট্রান্সপোর্ট')}
-              </Label>
-              <Input
-                placeholder="e.g. Sundarban Courier / SA Paribahan"
-                value={carrierName}
-                onChange={(e) => setCarrierName(e.target.value)}
-                className="text-xs h-9"
-              />
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* ========================================================================= */}
         {/* MODE 1: PO RECEIVING (GRN) */}
@@ -2359,9 +2361,21 @@ export function ReceiveStockModal({
               </Button>
             </div>
 
-            {/* Vendor Selector (Only for Direct Receipt) */}
+            {/* Direct Intake Date & Vendor Bar (Direct Mode only) */}
             {mode === 'direct' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    {tBilingual('Intake / Received Date', 'গ্রহণের তারিখ')} <span className="text-rose-500">*</span>
+                  </Label>
+                  <Input
+                    type="date"
+                    value={receivedDate}
+                    onChange={(e) => setReceivedDate(e.target.value)}
+                    className="text-xs h-9"
+                    required
+                  />
+                </div>
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
                     {tBilingual('Supplier / Mill Vendor', 'সাপ্লায়ার নির্বাচন')}
@@ -2415,67 +2429,15 @@ export function ReceiveStockModal({
                     key={item.id}
                     className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 space-y-3.5 text-xs shadow-xs"
                   >
-                    {/* Item Header with Inherited Physical Form & Purchase Unit Badges */}
+                    {/* Item Header (Clean, top badges removed) */}
                     <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 dark:border-slate-800/80 pb-2">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
                         <span className="h-5 w-5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 tabular-nums font-bold flex items-center justify-center text-2xs">
                           #{idx + 1}
                         </span>
                         <span className="font-bold text-slate-900 dark:text-white">
-                          {item.material_name || 'Select Item'}
+                          {item.material_name || tBilingual('Item', 'আইটেম')}
                         </span>
-                        <Badge variant="outline" className="tabular-nums text-2xs px-1.5 py-0 bg-white dark:bg-slate-900">
-                          {item.sku || 'SKU'}
-                        </Badge>
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            'text-2xs px-1.5 py-0 font-medium',
-                            item.item_type === 'product'
-                              ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
-                              : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          )}
-                        >
-                          {item.item_type === 'product' ? 'Commercial Master' : 'Registered Material Master'}
-                        </Badge>
-
-                        {/* Inherited Physical Form / Classification Badge */}
-                        {(() => {
-                          const badgeInfo = getPhysicalFormBadge(item.physical_form)
-                          const BadgeIcon = badgeInfo.icon
-                          return (
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                'text-2xs px-2 py-0 font-bold flex items-center gap-1 border',
-                                badgeInfo.badgeStyle
-                              )}
-                              title="Inherited from Material Master Physical Classification"
-                            >
-                              <BadgeIcon className="h-3 w-3" />
-                              <span>Form: {badgeInfo.label}</span>
-                            </Badge>
-                          )
-                        })()}
-
-                        {/* Inherited Purchase Unit Badge */}
-                        <Badge
-                          variant="outline"
-                          className="text-2xs px-2 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700 tabular-nums font-bold uppercase"
-                          title="Inherited from Material Master Purchasing Unit"
-                        >
-                          Purchase Unit: {item.unit || item.master_purchase_unit || 'pcs'}
-                        </Badge>
-
-                        {/* Current Active Size Pill */}
-                        {(item.size_spec || (item.physical_form === 'roll' && item.roll_width_ft) || (item.physical_form === 'sheet' && item.sheet_size)) && (
-                          <Badge
-                            variant="outline"
-                            className="text-2xs px-2 py-0 bg-indigo-50/80 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 font-semibold"
-                          >
-                            📏 {item.size_spec || (item.physical_form === 'roll' ? `${item.roll_width_ft || 5}ft Roll (${rollArea} sft)` : item.sheet_size)}
-                          </Badge>
-                        )}
                       </div>
 
                       {directItems.length > 1 && (
@@ -2568,37 +2530,6 @@ export function ReceiveStockModal({
                       </div>
                     </div>
 
-                    {/* Active Configured Sizing Quick-Pills */}
-                    {item.configured_sizes && item.configured_sizes.length > 1 && (
-                      <div className="p-2 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 flex items-center gap-1.5 flex-wrap">
-                        <span className="text-2xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1 mr-1">
-                          <Disc className="h-3 w-3 text-indigo-600" />
-                          Configured Sizes:
-                        </span>
-                        {item.configured_sizes.map((sz) => {
-                          const isSelected = item.selected_size_id === sz.id
-                          let pillPrice = ''
-                          if (sz.default_supplier_price && sz.default_supplier_price > 0) {
-                            pillPrice = ` (৳${sz.default_supplier_price.toLocaleString()})`
-                          }
-                          return (
-                            <button
-                              key={sz.id}
-                              type="button"
-                              onClick={() => handleSelectConfiguredSize(idx, sz.id)}
-                              className={cn(
-                                'text-2xs py-0.5 px-2.5 rounded-md tabular-nums transition-all cursor-pointer border',
-                                isSelected
-                                  ? 'bg-indigo-600 text-white font-bold border-indigo-700 shadow-xs'
-                                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
-                              )}
-                            >
-                              {sz.label}{pillPrice}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )}
 
                     {/* Quantity & Unit Pricing Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
