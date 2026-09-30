@@ -131,6 +131,7 @@ describe('3-Way Workflow Routing & Symmetrical ID Sequence Tests', () => {
           item_kind: 'custom_manufacturing',
           workflow_routing: 'design_ok',
           design_required: false,
+          finishing: 'Embossing & Die-Cut',
         } as any,
       ],
     })

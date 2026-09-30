@@ -339,7 +339,7 @@ export function AddAccountModal({
             {tBilingual('Opening Balance (৳ BDT)', 'প্রারম্ভিক ব্যালেন্স (৳)')}
           </Label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">৳</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">৳</span>
             <Input
               type="number"
               min="0"

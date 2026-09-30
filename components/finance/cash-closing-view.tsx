@@ -75,20 +75,20 @@ export function CashClosingView({
   const [useDenominations, setUseDenominations] = useState(false)
 
   // Denominations counter
-  const [notes, setNotes] = useState<Record<string, number>>({
-    1000: 0,
-    500: 0,
-    200: 0,
-    100: 0,
-    50: 0,
-    20: 0,
+  const [notes, setNotes] = useState<Record<string, string>>({
+    1000: '',
+    500: '',
+    200: '',
+    100: '',
+    50: '',
+    20: '',
   })
 
-  const handleDenominationChange = (denom: number, count: number) => {
-    const updated = { ...notes, [denom]: Math.max(0, count) }
+  const handleDenominationChange = (denom: number, rawVal: string) => {
+    const updated = { ...notes, [denom]: rawVal }
     setNotes(updated)
-    const sum = Object.entries(updated).reduce((s, [d, c]) => s + Number(d) * Number(c), 0)
-    setCountedCash(String(sum))
+    const sum = Object.entries(updated).reduce((s, [d, c]) => s + Number(d) * (parseInt(String(c), 10) || 0), 0)
+    setCountedCash(sum > 0 ? String(sum) : '')
   }
 
   const actualCounted = parseFloat(countedCash) || 0
@@ -328,19 +328,20 @@ export function CashClosingView({
                       <Input
                         type="number"
                         min="0"
-                        value={notes[denom] || 0}
-                        onChange={(e) => handleDenominationChange(denom, parseInt(e.target.value, 10) || 0)}
+                        value={notes[denom] ?? ''}
+                        onChange={(e) => handleDenominationChange(denom, e.target.value)}
+                        placeholder="0"
                         className="h-7 w-20 text-xs text-center tabular-nums rounded-lg"
                       />
                       <span className="tabular-nums text-slate-800 dark:text-slate-200 w-20 text-right font-semibold">
-                        ৳{((notes[denom] || 0) * denom).toLocaleString()}
+                        ৳{((parseInt(notes[denom] || '0', 10) || 0) * denom).toLocaleString()}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="relative mb-3">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">৳</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold pointer-events-none">৳</span>
                   <Input
                     type="number"
                     value={countedCash}

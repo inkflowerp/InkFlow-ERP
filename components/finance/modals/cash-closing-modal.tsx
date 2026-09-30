@@ -151,7 +151,7 @@ export function CashClosingModal({
               <span>{tBilingual('Physical Cash Counted in Drawer', 'ড্রয়ারে গুনে পাওয়া নগদ টাকা')} *</span>
             </Label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg pointer-events-none">
                 ৳
               </span>
               <Input

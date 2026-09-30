@@ -857,7 +857,7 @@ export function SpendMoneyModal({
                 {tBilingual('Amount to Pay', 'পরিশোধের পরিমাণ')} <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg pointer-events-none">
                   ৳
                 </span>
                 <Input

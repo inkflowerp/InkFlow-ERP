@@ -1185,12 +1185,16 @@ export class DesignRepository {
         created_at: now,
         updated_at: now,
       }
+      const resolvedFinishing =
+        job.finishing ||
+        (matchingInv?.items?.find((it: any) => it.id === job.invoice_item_id || it.item_name === job.product_name || it.item_description === job.title || job.title?.includes(it.item_name || it.item_description))?.finishing) ||
+        null
       const hasFinishing = Boolean(
-        (job.finishing &&
-          job.finishing.toLowerCase().trim() !== 'none' &&
-          job.finishing.trim() !== 'কোন ফিনিশিং নেই' &&
-          job.finishing.trim() !== 'no' &&
-          job.finishing.trim() !== '') ||
+        (resolvedFinishing &&
+          resolvedFinishing.toLowerCase().trim() !== 'none' &&
+          resolvedFinishing.trim() !== 'কোন ফিনিশিং নেই' &&
+          resolvedFinishing.trim() !== 'no' &&
+          resolvedFinishing.trim() !== '') ||
         (job.selected_finishing && job.selected_finishing.length > 0)
       )
 

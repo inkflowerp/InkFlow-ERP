@@ -303,7 +303,7 @@ export function InvoiceRequestsPanel({
         {/* Search Bar */}
         <div className="p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}

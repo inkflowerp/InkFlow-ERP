@@ -37,11 +37,26 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
     previousActiveElement.current = document.activeElement as HTMLElement | null
     document.body.style.overflow = 'hidden'
 
-    // Focus first interactive element or the container
+    // Focus first form control or interactive element without stealing existing focus
     const timer = setTimeout(() => {
       if (contentRef.current) {
+        // If an element inside is already focused (e.g. by autoFocus or user click), do not steal focus
+        if (contentRef.current.contains(document.activeElement) && document.activeElement !== contentRef.current) {
+          return
+        }
+
+        // Prioritize actual form controls first (input, select, textarea)
+        const formControls = contentRef.current.querySelectorAll<HTMLElement>(
+          'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])'
+        )
+        if (formControls.length > 0) {
+          formControls[0].focus()
+          return
+        }
+
+        // Otherwise focus first non-close interactive element or the container
         const focusable = contentRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]):not([aria-label="Close dialog"]), [href], [tabindex]:not([tabindex="-1"])'
         )
         if (focusable.length > 0) {
           focusable[0].focus()

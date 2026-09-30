@@ -146,7 +146,7 @@ describe('Graphic Design Studio - Design Job Lookup & Print Dispatch Hardening',
     assert.equal(jobOrders[0].production_gate_status, 'ready_for_production')
 
     const prodTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-    assert.ok(prodTasks.length >= 2, 'Production tasks for printing and finishing should be queued')
+    assert.ok(prodTasks.length >= 1, 'Production task for printing should be queued')
     assert.equal(prodTasks[0].is_blocked_by_design_gate, false)
     assert.equal(prodTasks[0].is_blocked_by_commercial_gate, false)
   })

@@ -232,7 +232,7 @@ export function PaySupplierVoucherModal({
           </div>
 
           <div className="relative">
-            <span className="absolute left-3.5 top-2.5 text-base font-bold text-slate-400">৳</span>
+            <span className="absolute left-3.5 top-2.5 text-base font-bold text-slate-400 pointer-events-none">৳</span>
             <Input
               type="number"
               step="1"

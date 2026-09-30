@@ -813,7 +813,7 @@ export function UserPermissionsDrawer({
                 {/* Search Bar & Category Filter */}
                 <div className="space-y-2">
                   <div className="relative">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
                     <Input
                       placeholder="Search module (e.g. Customers, Invoices, Production)..."
                       value={searchQuery}

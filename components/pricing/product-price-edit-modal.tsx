@@ -197,7 +197,7 @@ export function ProductPriceEditModal({
                 {tBilingual('Standard Retail Price', 'খুচরা মূল্য')} <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">৳</span>
+                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400 pointer-events-none">৳</span>
                 <Input
                   type="number"
                   step="0.01"
@@ -215,7 +215,7 @@ export function ProductPriceEditModal({
                 {tBilingual('Base Material / BOM Cost', 'মেটেরিয়াল বা ক্রয় খরচ')}
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">৳</span>
+                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400 pointer-events-none">৳</span>
                 <Input
                   type="number"
                   step="0.01"
@@ -232,7 +232,7 @@ export function ProductPriceEditModal({
                 {tBilingual('Floor Price / Minimum Safe Rate', 'সর্বনিম্ন নিরাপদ দর')}
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">৳</span>
+                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400 pointer-events-none">৳</span>
                 <Input
                   type="number"
                   step="0.01"
@@ -343,7 +343,7 @@ export function ProductPriceEditModal({
                   </div>
 
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">৳</span>
+                    <span className="absolute left-3 top-2 text-xs font-bold text-slate-400 pointer-events-none">৳</span>
                     <Input
                       type="number"
                       step="0.01"

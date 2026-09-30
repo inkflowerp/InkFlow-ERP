@@ -912,7 +912,7 @@ export function NewCustomerModal({
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">Custom Rate:</span>
                         <div className="relative w-32">
-                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">৳</span>
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">৳</span>
                           <Input
                             type="number"
                             step="0.01"
