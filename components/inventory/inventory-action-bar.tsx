@@ -3,7 +3,6 @@
 import React from 'react'
 import {
   Plus,
-  ArrowRightLeft,
   Scissors,
   RotateCcw,
   ShoppingBag,
@@ -21,7 +20,7 @@ export interface InventoryActionBarProps {
   onReceiveStock: () => void
   onFloorIssue: () => void
   onLogConsumption?: () => void
-  onTransfer: () => void
+  onTransfer?: () => void
   onAdjustment: () => void
   onNewPurchase: () => void
   onRefresh: () => void
@@ -32,7 +31,6 @@ export function InventoryActionBar({
   onReceiveStock,
   onFloorIssue,
   onLogConsumption,
-  onTransfer,
   onAdjustment,
   onNewPurchase,
   onRefresh,
@@ -80,18 +78,6 @@ export function InventoryActionBar({
             <span>{isBn ? 'কনজাম্পশন হিসাব' : 'Log Consumption'}</span>
           </Button>
         )}
-
-        {/* Store Transfer */}
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onTransfer}
-          className="text-xs h-9 px-3 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer gap-1.5 font-semibold"
-          title="Transfer stock between locations or branch stores"
-        >
-          <ArrowRightLeft className="h-3.5 w-3.5 text-slate-500" />
-          <span>{isBn ? 'স্টোর ট্রান্সফার' : 'Transfer'}</span>
-        </Button>
 
         {/* Stock Audit / Adjustment */}
         <Button

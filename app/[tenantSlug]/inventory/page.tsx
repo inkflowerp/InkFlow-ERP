@@ -102,7 +102,6 @@ import { ReceiveStockModal } from '@/components/inventory/receive-stock-modal'
 import { MaterialRequestModal } from '@/components/inventory/material-request-modal'
 import { IssueMasterRollModal } from '@/components/inventory/issue-master-roll-modal'
 import { LogConsumptionModal } from '@/components/inventory/log-consumption-modal'
-import { StockTransferModal } from '@/components/inventory/stock-transfer-modal'
 import { StockAdjustmentModal } from '@/components/inventory/stock-adjustment-modal'
 import { NewLocationModal } from '@/components/inventory/new-location-modal'
 import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
@@ -303,7 +302,6 @@ function UnifiedInventoryContent() {
   const [rollViewMode, setRollViewMode] = useState<'grouped' | 'serialized'>('grouped')
   const [expandedGroupKeys, setExpandedGroupKeys] = useState<Set<string>>(new Set())
   const [isConsumptionOpen, setIsConsumptionOpen] = useState(false)
-  const [isTransferOpen, setIsTransferOpen] = useState(false)
   const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false)
   const [isNewLocationOpen, setIsNewLocationOpen] = useState(false)
 
@@ -1433,7 +1431,6 @@ function UnifiedInventoryContent() {
             setSelectedRequestForIssue(null)
             setIsFloorIssueOpen(true)
           }}
-          onTransfer={() => setIsTransferOpen(true)}
           onAdjustment={() => setIsAdjustmentOpen(true)}
           onNewPurchase={() => setIsNewPurchaseOpen(true)}
           onRefresh={() => loadAllData()}
@@ -3336,22 +3333,6 @@ function UnifiedInventoryContent() {
           companyId={companyId}
         />
 
-        <StockTransferModal
-          open={isTransferOpen}
-          onOpenChange={(open) => {
-            setIsTransferOpen(open)
-            if (!open) setSelectedMaterialForAction(null)
-          }}
-          materials={materials}
-          locations={locations}
-          rolls={rolls}
-          selectedMaterialId={selectedMaterialForAction?.id}
-          onSuccess={() => {
-            showNotification('Stock transferred between locations successfully.')
-            loadAllData()
-          }}
-          companyId={companyId}
-        />
 
         <StockAdjustmentModal
           open={isAdjustmentOpen}
