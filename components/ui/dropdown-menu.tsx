@@ -1,36 +1,54 @@
 'use client'
 
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
 
 interface DropdownMenuContextValue {
   open: boolean
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
+  triggerRef: React.RefObject<HTMLDivElement | null>
+  contentRef: React.RefObject<HTMLDivElement | null>
 }
 
 const DropdownMenuContext = React.createContext<DropdownMenuContextValue | null>(null)
 
 export function DropdownMenu({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false)
-  const menuRef = React.useRef<HTMLDivElement>(null)
+  const triggerRef = React.useRef<HTMLDivElement>(null)
+  const contentRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      const isInsideTrigger = triggerRef.current?.contains(target)
+      const isInsideContent = contentRef.current?.contains(target)
+
+      if (!isInsideTrigger && !isInsideContent) {
         setOpen(false)
       }
     }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+
     if (open) {
       document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
     }
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
     }
   }, [open])
 
   return (
-    <DropdownMenuContext.Provider value={{ open, setOpen }}>
-      <div ref={menuRef} className="relative inline-block text-left">
+    <DropdownMenuContext.Provider value={{ open, setOpen, triggerRef, contentRef }}>
+      <div ref={triggerRef} className="relative inline-block text-left">
         {children}
       </div>
     </DropdownMenuContext.Provider>
@@ -53,8 +71,14 @@ export function DropdownMenuTrigger({
   }
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<any>, {
-      onClick: handleClick,
+    const childElement = children as React.ReactElement<any>
+    return React.cloneElement(childElement, {
+      onClick: (e: React.MouseEvent) => {
+        if (childElement.props.onClick) {
+          childElement.props.onClick(e)
+        }
+        handleClick(e)
+      },
     })
   }
 
@@ -63,6 +87,13 @@ export function DropdownMenuTrigger({
       {children}
     </button>
   )
+}
+
+interface Coords {
+  top?: number
+  bottom?: number
+  left?: number
+  right?: number
 }
 
 export function DropdownMenuContent({
@@ -75,25 +106,91 @@ export function DropdownMenuContent({
   children: React.ReactNode
 }) {
   const ctx = React.useContext(DropdownMenuContext)
-  if (!ctx || !ctx.open) return null
+  const [mounted, setMounted] = React.useState(false)
+  const [coords, setCoords] = React.useState<Coords>({})
 
-  const alignClass =
-    align === 'start'
-      ? 'left-0'
-      : align === 'center'
-      ? 'left-1/2 -translate-x-1/2'
-      : 'right-0'
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
-  return (
+  const calculatePosition = React.useCallback(() => {
+    if (!ctx?.triggerRef.current) return
+
+    const rect = ctx.triggerRef.current.getBoundingClientRect()
+    const windowHeight = window.innerHeight
+    const windowWidth = window.innerWidth
+
+    // Auto-close if trigger element scrolled outside viewport
+    if (rect.bottom < 0 || rect.top > windowHeight) {
+      ctx.setOpen(false)
+      return
+    }
+
+    const estimatedHeight = 220
+    const spaceBelow = windowHeight - rect.bottom
+    const spaceAbove = rect.top
+    const openUp = spaceBelow < estimatedHeight && spaceAbove > spaceBelow
+
+    const nextCoords: Coords = {}
+
+    if (openUp) {
+      nextCoords.bottom = Math.max(8, windowHeight - rect.top + 4)
+    } else {
+      nextCoords.top = Math.max(8, rect.bottom + 4)
+    }
+
+    if (align === 'start') {
+      nextCoords.left = Math.max(8, Math.min(rect.left, windowWidth - 180))
+    } else if (align === 'center') {
+      nextCoords.left = Math.max(8, rect.left + rect.width / 2)
+    } else {
+      // align === 'end'
+      nextCoords.right = Math.max(8, windowWidth - rect.right)
+    }
+
+    setCoords(nextCoords)
+  }, [align, ctx])
+
+  React.useEffect(() => {
+    if (!ctx?.open) return
+
+    calculatePosition()
+
+    const handleScrollOrResize = () => {
+      calculatePosition()
+    }
+
+    window.addEventListener('scroll', handleScrollOrResize, true)
+    window.addEventListener('resize', handleScrollOrResize)
+
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true)
+      window.removeEventListener('resize', handleScrollOrResize)
+    }
+  }, [ctx?.open, calculatePosition])
+
+  if (!mounted || !ctx || !ctx.open || typeof document === 'undefined') return null
+
+  return createPortal(
     <div
+      ref={ctx.contentRef}
+      style={{
+        position: 'fixed',
+        top: coords.top !== undefined ? `${coords.top}px` : undefined,
+        bottom: coords.bottom !== undefined ? `${coords.bottom}px` : undefined,
+        left: coords.left !== undefined ? `${coords.left}px` : undefined,
+        right: coords.right !== undefined ? `${coords.right}px` : undefined,
+        transform: align === 'center' ? 'translateX(-50%)' : undefined,
+        zIndex: 99999,
+      }}
       className={cn(
-        'absolute z-50 mt-1 min-w-[10rem] overflow-hidden rounded-xl border border-slate-200 bg-white p-1 text-slate-900 shadow-lg animate-in fade-in-0 zoom-in-95',
-        alignClass,
+        'min-w-[10rem] max-h-[min(360px,calc(100vh-24px))] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 text-slate-900 shadow-xl animate-in fade-in-0 zoom-in-95',
         className
       )}
     >
       {children}
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -117,10 +214,17 @@ export function DropdownMenuItem({
   }
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<any>, {
-      onClick: handleClick,
+    const childElement = children as React.ReactElement<any>
+    return React.cloneElement(childElement, {
+      onClick: (e: React.MouseEvent) => {
+        if (childElement.props.onClick) {
+          childElement.props.onClick(e)
+        }
+        handleClick(e)
+      },
       className: cn(
-        'flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none transition-colors hover:bg-slate-100 hover:text-slate-900',
+        'flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none transition-colors hover:bg-slate-100 hover:text-slate-900 text-left',
+        childElement.props.className,
         className
       ),
     })
