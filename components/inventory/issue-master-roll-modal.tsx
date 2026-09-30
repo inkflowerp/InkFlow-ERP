@@ -744,7 +744,6 @@ export function IssueMasterRollModal({
       open={open}
       onOpenChange={onOpenChange}
       size="3xl"
-      hideFooter={true}
       title={
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
@@ -768,8 +767,56 @@ export function IssueMasterRollModal({
       }
       onSubmit={handleSubmit}
       className="p-0 overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800"
+      bodyClassName="p-4 sm:p-5 space-y-4 text-xs"
+      footer={
+        <div className="w-full flex items-center justify-between flex-wrap gap-2.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="secondary" className="tabular-nums text-xs font-bold py-1 px-2.5">
+              {issueItems.length} {issueItems.length === 1 ? 'Material' : 'Materials'} ({totalUnitsCount} Units)
+            </Badge>
+            {totalAreaSft > 0 && (
+              <Badge variant="outline" className="tabular-nums text-2xs font-semibold py-1 px-2">
+                Total Area: {totalAreaSft.toLocaleString()} SFT
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+              className="h-9 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading || issueItems.length === 0 || hasEmptyMaterial || hasShortage || hasInvalidQty}
+              className="h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md cursor-pointer gap-2"
+            >
+              {loading ? (
+                <span>Issuing Materials...</span>
+              ) : (
+                <>
+                  <Package className="h-4 w-4" />
+                  <span>
+                    {tBilingual(
+                      `Confirm Issue (${issueItems.length} ${issueItems.length === 1 ? 'Item' : 'Items'})`,
+                      `ইস্যু নিশ্চিত করুন (${issueItems.length} টি আইটেম)`
+                    )}
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      }
+      footerClassName="px-5 py-3.5 bg-slate-100/90 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800"
     >
-      <div className="p-4 sm:p-5 space-y-4 text-xs max-h-[calc(85vh-4.5rem)] overflow-y-auto pr-2">
+      <div className="space-y-4 text-xs">
         {/* Success Alert */}
         {success && (
           <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-200 rounded-xl border border-emerald-300 dark:border-emerald-800 flex items-center gap-3 animate-in fade-in shadow-xs">
@@ -1168,52 +1215,6 @@ export function IssueMasterRollModal({
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      {/* FIXED DEDICATED MODAL FOOTER */}
-      <div className="px-5 py-3.5 bg-slate-100/90 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2.5">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="secondary" className="tabular-nums text-xs font-bold py-1 px-2.5">
-            {issueItems.length} {issueItems.length === 1 ? 'Material' : 'Materials'} ({totalUnitsCount} Units)
-          </Badge>
-          {totalAreaSft > 0 && (
-            <Badge variant="outline" className="tabular-nums text-2xs font-semibold py-1 px-2">
-              Total Area: {totalAreaSft.toLocaleString()} SFT
-            </Badge>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={loading}
-            className="h-9 px-4 text-xs font-semibold cursor-pointer"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={loading || issueItems.length === 0 || hasEmptyMaterial || hasShortage || hasInvalidQty}
-            className="h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md cursor-pointer gap-2"
-          >
-            {loading ? (
-              <span>Issuing Materials...</span>
-            ) : (
-              <>
-                <Package className="h-4 w-4" />
-                <span>
-                  {tBilingual(
-                    `Confirm Issue (${issueItems.length} ${issueItems.length === 1 ? 'Item' : 'Items'})`,
-                    `ইস্যু নিশ্চিত করুন (${issueItems.length} টি আইটেম)`
-                  )}
-                </span>
-                <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
-              </>
-            )}
-          </Button>
         </div>
       </div>
     </ModalDialog>
