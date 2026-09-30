@@ -480,18 +480,10 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
             },
             {
               key: 'settings_users',
-              title: 'Team Users',
-              titleBn: 'টিম সদস্য',
+              title: 'Team Users & Roles',
+              titleBn: 'টিম সদস্য ও রোলস',
               href: '/settings/users',
               icon: 'Users',
-              permission: { action: 'manage', resource: 'users' },
-            },
-            {
-              key: 'settings_roles',
-              title: 'Roles & Matrix',
-              titleBn: 'অনুমতি সেটিংস',
-              href: '/settings/roles',
-              icon: 'ShieldCheck',
               permission: { action: 'manage', resource: 'users' },
             },
             {

@@ -9,8 +9,8 @@ export default function UsersManagementPage() {
     <PanelAccessGuard
       module="users"
       action="manage"
-      panelTitle="Team Users & Staff Access"
-      panelTitleBn="টিম সদস্য ও প্রবেশাধিকার"
+      panelTitle="Team Users & Roles Matrix"
+      panelTitleBn="টিম সদস্য ও রোলস ম্যাট্রিক্স"
     >
       <UsersManagementView hideHeader={false} />
     </PanelAccessGuard>
