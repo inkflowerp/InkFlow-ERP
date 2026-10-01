@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { resetPasswordAction } from '@/actions/auth.actions'
+import { createClient } from '@/lib/supabase/client'
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState('')
@@ -20,6 +21,36 @@ function ResetPasswordForm() {
   const [isSuccess, setIsSuccess] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  React.useEffect(() => {
+    async function exchangeRecoveryToken() {
+      try {
+        const supabase = createClient()
+        // 1. Check for PKCE code in query params
+        const code = searchParams.get('code')
+        if (code) {
+          await supabase.auth.exchangeCodeForSession(code)
+          return
+        }
+
+        // 2. Check for hash parameters in window location
+        if (typeof window !== 'undefined' && window.location.hash) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1))
+          const accessToken = hashParams.get('access_token')
+          const refreshToken = hashParams.get('refresh_token')
+          if (accessToken && refreshToken) {
+            await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            })
+          }
+        }
+      } catch {
+        // Non-blocking fallback
+      }
+    }
+    exchangeRecoveryToken()
+  }, [searchParams])
 
   const passwordRules = [
     { label: 'At least 8 characters', met: password.length >= 8 },
@@ -41,14 +72,23 @@ function ResetPasswordForm() {
     setError(null)
 
     try {
+      // First attempt update using browser Supabase client
+      const supabase = createClient()
+      const { error: clientErr } = await supabase.auth.updateUser({ password })
+      if (!clientErr) {
+        setIsSuccess(true)
+        return
+      }
+
+      // Fallback to Server Action
       const res = await resetPasswordAction(password)
       if (res.success) {
         setIsSuccess(true)
       } else {
-        setError(res.error || 'Failed to reset password. The link may have expired.')
+        setError(res.error || clientErr?.message || 'Failed to reset password. The link may have expired.')
       }
     } catch (err: any) {
-      setError('Unable to connect. Check your connection and try again.')
+      setError(err?.message || 'Unable to connect. Check your connection and try again.')
     } finally {
       setIsLoading(false)
     }

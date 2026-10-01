@@ -1,13 +1,13 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-import { BillingService } from '@/services/billing.service'
-import { AuditService } from '@/services/audit.service'
-import { CustomerRepository } from '@/lib/repositories/customer.repository'
-import { ProductRepository } from '@/lib/repositories/product.repository'
-import { CrmService } from '@/services/crm.service'
-import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import {
+import { revalidatePath } from 'next/cache.js'
+import { BillingService } from '../services/billing.service.ts'
+import { AuditService } from '../services/audit.service.ts'
+import { CustomerRepository } from '../lib/repositories/customer.repository.ts'
+import { ProductRepository } from '../lib/repositories/product.repository.ts'
+import { CrmService } from '../services/crm.service.ts'
+import { getCurrentTenant } from '../lib/auth/tenant-auth.ts'
+import type {
   InvoiceRecord,
   PaymentRecord,
   FinancialWriteOffRecord,
@@ -20,8 +20,9 @@ import {
   MultiInvoicePaymentInput,
   CreditLimitWarningInfo,
   CreateInvoiceItemInput,
-} from '@/types/billing.types'
-import { CustomerRecord, ResolvedProductRate } from '@/types/crm.types'
+} from '../types/billing.types.ts'
+import type { CustomerRecord, ResolvedProductRate } from '../types/crm.types.ts'
+import { InvoiceCreateSchema, PaymentRecordSchema } from '../lib/security/input-validation.ts'
 
 export type { CreateInvoiceItemInput }
 
@@ -78,6 +79,7 @@ export interface CreateInvoicePayload {
   sales_order_id?: string
   job_order_id?: string
   credit_override_reason?: string
+  idempotency_key?: string
   items: CreateInvoiceItemInput[]
 }
 
@@ -266,9 +268,28 @@ export async function createInvoiceAction(
       const w = Number(it.width) || 0
       const h = Number(it.height) || 0
 
+      const isReady = it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product'
       let lineTotal = 0
-      if (w > 0 && h > 0 && (it.unit === 'sft' || it.unit === 'sqft' || it.unit === 'sqin')) {
-        const area = it.unit === 'sqin' ? (w * h) / 144 : w * h
+      let area = 0
+      const isAreaBased =
+        !isReady &&
+        w > 0 &&
+        h > 0 &&
+        (it.unit === 'sft' ||
+          it.unit === 'sqft' ||
+          it.unit === 'sqin' ||
+          it.dimension_unit === 'ft' ||
+          it.dimension_unit === 'inch' ||
+          it.dimension_unit === 'm')
+
+      if (isAreaBased) {
+        if (it.dimension_unit === 'inch' || it.unit === 'sqin') {
+          area = (w * h) / 144
+        } else if (it.dimension_unit === 'm') {
+          area = w * h * 10.7639
+        } else {
+          area = w * h
+        }
         lineTotal = Math.round(area * qty * rate)
       } else {
         lineTotal = Math.round(qty * rate)
@@ -276,13 +297,12 @@ export async function createInvoiceAction(
 
       calculatedSubtotal += lineTotal
 
-      const dimensionStr = it.dimensions_spec || (w > 0 && h > 0 ? `${w} × ${h} ${it.unit || 'inch'}` : null)
+      const dimensionStr = it.dimensions_spec || (w > 0 && h > 0 ? `${w} × ${h} ${it.dimension_unit || it.unit || 'inch'}` : null)
       const specParts: string[] = []
       if (it.finishing && it.finishing !== 'None') specParts.push(`Finishing: ${it.finishing}`)
       if (it.add_on && it.add_on !== 'None') specParts.push(`Add-on: ${it.add_on}`)
       const finishingStr = specParts.length > 0 ? ` (${specParts.join(', ')})` : ''
 
-      const isReady = it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product'
       const routing =
         it.workflow_routing ||
         (isReady
@@ -332,6 +352,25 @@ export async function createInvoiceAction(
     const grandTotal = subtotalAfterDiscount + vatAmt
     const advanceAmt = Math.min(grandTotal, Math.max(0, Number(payload.advance_amount) || 0))
     const dueAmount = Math.max(0, grandTotal - advanceAmt)
+
+    // Strict Input Validation
+    const validationResult = InvoiceCreateSchema.safeParse({
+      customer_id: resolvedCustomerId || 'unregistered',
+      due_date: payload.due_date || new Date().toISOString().split('T')[0],
+      subtotal: calculatedSubtotal,
+      vat_percentage: vatPct,
+      discount_amount: discountAmt,
+      items: (payload.items || []).map((it) => ({
+        description: it.item_name || (it as any).description || 'Printing Item',
+        quantity: Number(it.quantity) || 0,
+        unit_price: Number(it.unit_price) || 0,
+      })),
+    })
+
+    if (!validationResult.success) {
+      const issueMsg = validationResult.error.issues[0]?.message || 'Invalid invoice data'
+      return { success: false, error: `Validation failed: ${issueMsg}` }
+    }
 
     // 3. Persist Invoice in PostgreSQL
     const createdInvoice = await BillingService.createInvoice({
@@ -577,6 +616,22 @@ export async function recordMultiInvoicePaymentAction(
 
     if (!payload.amount || payload.amount <= 0) {
       return { success: false, error: 'Payment amount must be greater than 0.' }
+    }
+
+    // Strict Input Validation
+    const paymentValidation = PaymentRecordSchema.safeParse({
+      customer_id: payload.customerId || 'unregistered',
+      amount: Number(payload.amount) || 0,
+      payment_method: payload.paymentMethod || 'cash',
+      payment_date: payload.paymentDate || new Date().toISOString().split('T')[0],
+      receipt_number: (payload as any).receiptNumber || (payload as any).receipt_number || 'REC-AUTO',
+      notes: payload.notes || undefined,
+      received_by_name: tenant.fullName || payload.receivedByName || 'Cashier',
+    })
+
+    if (!paymentValidation.success) {
+      const issueMsg = paymentValidation.error.issues[0]?.message || 'Invalid payment data'
+      return { success: false, error: `Validation failed: ${issueMsg}` }
     }
 
     const payment = await BillingService.recordMultiInvoicePayment({

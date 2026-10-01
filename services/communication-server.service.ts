@@ -11,6 +11,7 @@ import type {
 } from '../types/communication.types.ts'
 import { EmailGatewayService } from './email-gateway.service.ts'
 import { GatewayService } from './gateway.service.ts'
+import { CommunicationRouter } from './communication-router.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 export class CommunicationService {
@@ -120,15 +121,25 @@ export class CommunicationService {
       results.sms = smsRes.success
     }
 
-    // 3. WhatsApp Dispatch
+    // 3. WhatsApp Dispatch (Tenant OpenWA Gateway with automatic SMS failover)
     if (channels.includes('whatsapp') && recipientPhone) {
-      const waRes = await GatewayService.sendTestMessage({
-        category: 'whatsapp',
-        recipient: recipientPhone,
-        recipientName,
-        message: textContent,
+      const waRes = await CommunicationRouter.sendTenantWhatsApp({
+        companyId,
+        recipientPhone,
+        messageText: textContent,
       })
       results.whatsapp = waRes.success
+
+      // If WhatsApp failed or disconnected and SMS was not already dispatched, trigger automatic fail-safe to SMS
+      if (!waRes.success && !channels.includes('sms')) {
+        const fallbackSms = await GatewayService.sendTestMessage({
+          category: 'sms',
+          recipient: recipientPhone,
+          recipientName,
+          message: textContent,
+        })
+        results.sms = fallbackSms.success
+      }
     }
 
     // 4. Telegram Dispatch

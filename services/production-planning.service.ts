@@ -619,7 +619,9 @@ export class ProductionPlanningService {
             offcut_remnant: (completionData as any)?.offcut_remnant,
           })
         }
-      } catch (_) {}
+      } catch (rollErr: any) {
+        console.error(`[ProductionPlanningService] Roll consumption failed for task ${task.task_number} (${task.id}):`, rollErr?.message || rollErr)
+      }
     } else if (!targetRollId && consumedQty > 0) {
       // 1b. Direct Master Material Stock Deduction (Sheet/Plate/Acrylic/Ink/Standard Substrate)
       try {
@@ -655,7 +657,9 @@ export class ProductionPlanningService {
             performed_by_name: task.assigned_operator_name || 'Operator',
           })
         }
-      } catch (_) {}
+      } catch (stockErr: any) {
+        console.error(`[ProductionPlanningService] Stock adjustment failed for task ${task.task_number} (${task.id}):`, stockErr?.message || stockErr)
+      }
     }
 
     // 2. Scrap & Wastage Recording
@@ -686,7 +690,9 @@ export class ProductionPlanningService {
             operator_name: (completionData as any)?.operator_name || task.assigned_operator_name || 'Operator',
           })
         }
-      } catch (_) {}
+      } catch (wastageErr: any) {
+        console.error(`[ProductionPlanningService] Wastage recording failed for task ${task.task_number} (${task.id}):`, wastageErr?.message || wastageErr)
+      }
     }
 
     // 3. Machine Production Meter Increment
@@ -704,7 +710,9 @@ export class ProductionPlanningService {
             total_operating_hours: (Number(machine.total_operating_hours) || 0) + hoursIncrement,
           })
         }
-      } catch (_) {}
+      } catch (machineryErr: any) {
+        console.error(`[ProductionPlanningService] Machine meter update failed for machine ${task.assigned_machine_id} (task ${task.task_number}):`, machineryErr?.message || machineryErr)
+      }
 
       try {
         const activeOnMachine = await ProductionTaskRepository.getTasks(companyId, {

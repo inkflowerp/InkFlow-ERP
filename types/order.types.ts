@@ -140,6 +140,7 @@ export interface SalesOrderRecord {
   advance_amount: number
   due_amount: number
   notes?: string | null
+  idempotency_key?: string | null
   items: SalesOrderItemRecord[]
   jobs?: JobOrderRecord[]
   jobs_count?: number

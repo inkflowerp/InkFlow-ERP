@@ -1,6 +1,6 @@
 export type SmsProviderType = 'bulksmsbd' | 'ssl_wireless' | 'alpha' | 'mim' | 'mock'
 
-export type WhatsAppProviderType = 'meta_cloud_api' | 'twilio_whatsapp' | 'mock'
+export type WhatsAppProviderType = 'openwa' | 'meta_cloud_api' | 'twilio_whatsapp' | 'mock'
 
 export type EmailProviderType = 'gmail' | 'smtp' | 'resend' | 'sendgrid' | 'ses' | 'custom' | 'mock'
 
@@ -283,4 +283,147 @@ export interface WhatsAppProvider {
   providerName: WhatsAppProviderType
   sendMessage(to: string, message: string): Promise<{ success: boolean; messageId?: string; error?: string }>
   sendDocument(to: string, docUrl: string, caption: string): Promise<{ success: boolean; messageId?: string; error?: string }>
+}
+
+export type WhatsAppConnectionStatus =
+  | 'pending'
+  | 'qr_ready'
+  | 'connecting'
+  | 'connected'
+  | 'disconnected'
+  | 'logged_out'
+  | 'error'
+  | 'disabled'
+
+export interface TenantWhatsAppConnectionRecord {
+  id: string
+  tenant_id: string
+  provider: 'openwa' | string
+  openwa_session_id: string
+  openwa_session_uuid?: string | null
+  phone_number?: string | null
+  phone_country_code?: string | null
+  display_name?: string | null
+  status: WhatsAppConnectionStatus
+  engine: string
+  connected_at?: string | null
+  disconnected_at?: string | null
+  last_seen_at?: string | null
+  last_error?: string | null
+  webhook_status?: string | null
+  webhook_secret?: string | null
+  daily_send_limit: number
+  send_delay_seconds: number
+  qr_code_raw?: string | null
+  qr_code_updated_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface WhatsAppContactRecord {
+  id: string
+  tenant_id: string
+  phone_number: string
+  display_name: string
+  customer_id?: string | null
+  employee_id?: string | null
+  contact_type: 'customer' | 'employee' | 'other' | 'unknown'
+  avatar_url?: string | null
+  is_opted_in: boolean
+  last_message_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface WhatsAppChatRecord {
+  id: string
+  tenant_id: string
+  contact_id: string
+  chat_jid: string
+  unread_count: number
+  last_message_preview?: string | null
+  last_message_timestamp?: string | null
+  is_archived: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type WhatsAppMessageDirection = 'inbound' | 'outbound'
+export type WhatsAppMessageStatus = 'queued' | 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
+
+export interface WhatsAppMessageRecord {
+  id: string
+  tenant_id: string
+  chat_id?: string | null
+  contact_id?: string | null
+  direction: WhatsAppMessageDirection
+  openwa_message_id?: string | null
+  sender_phone?: string | null
+  recipient_phone: string
+  message_type: 'text' | 'image' | 'document' | 'template' | 'location'
+  body?: string | null
+  media_url?: string | null
+  media_mime_type?: string | null
+  media_filename?: string | null
+  status: WhatsAppMessageStatus
+  sent_by_user_id?: string | null
+  error_message?: string | null
+  sent_at?: string | null
+  delivered_at?: string | null
+  read_at?: string | null
+  created_at: string
+}
+
+export interface CommunicationJobRecord {
+  id: string
+  tenant_id: string
+  event_type: string
+  channel: 'whatsapp' | 'sms' | 'email' | 'in_app'
+  recipient_phone?: string | null
+  recipient_email?: string | null
+  recipient_user_id?: string | null
+  recipient_customer_id?: string | null
+  template_key?: string | null
+  payload: Record<string, any>
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
+  attempts: number
+  max_attempts: number
+  next_retry_at?: string | null
+  last_error?: string | null
+  idempotency_key?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface OtpRequestRecord {
+  id: string
+  tenant_id: string
+  phone_number: string
+  purpose: 'login' | 'verify_phone' | 'password_reset' | 'transaction_approval'
+  otp_code: string
+  primary_channel: 'whatsapp' | 'sms'
+  channel_used: 'whatsapp' | 'sms'
+  is_verified: boolean
+  verified_at?: string | null
+  expires_at: string
+  attempts: number
+  ip_address?: string | null
+  user_agent?: string | null
+  created_at: string
+}
+
+export interface NotificationPreferenceRecord {
+  id: string
+  tenant_id: string
+  event_type: string
+  whatsapp_enabled: boolean
+  sms_enabled: boolean
+  email_enabled: boolean
+  in_app_enabled: boolean
+  whatsapp_template?: string | null
+  sms_template?: string | null
+  email_template?: string | null
+  recipient_roles: string[]
+  created_at: string
+  updated_at: string
 }

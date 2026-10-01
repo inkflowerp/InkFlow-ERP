@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
-import { TrashService } from '@/services/trash.service'
-import { TRASH_RETENTION_DAYS } from '@/types/trash.types'
+import { NextResponse } from 'next/server.js'
+import { TrashService } from '../../../../services/trash.service.ts'
+import { TRASH_RETENTION_DAYS } from '../../../../types/trash.types.ts'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,8 +13,8 @@ export async function GET(request: Request) {
     const authHeader = request.headers.get('authorization')
     const cronSecret = process.env.CRON_SECRET
 
-    // If CRON_SECRET is configured in environment, enforce Bearer token verification
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    // Enforce fail-closed Bearer token verification
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized cron request' }, { status: 401 })
     }
 

@@ -50,7 +50,12 @@ describe('Business Reports Calculation Engine', () => {
   })
 
   it('correctly aggregates real invoice and order metrics', () => {
-    const nowStr = new Date().toISOString()
+    const now = new Date()
+    const yyyy = now.getFullYear()
+    const mm = String(now.getMonth() + 1).padStart(2, '0')
+    const dd = String(now.getDate()).padStart(2, '0')
+    const todayDate = `${yyyy}-${mm}-${dd}`
+    const nowStr = `${todayDate}T12:00:00`
     const mockInvoices: InvoiceRecord[] = [
       {
         id: 'inv-1',

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server.js";
 import React from "react";
 import { generatePdfBytes } from "@/lib/pdf/pdf-generator";
 import { InvoicePdfDocument } from "@/components/pdf/documents/invoice-pdf-document";
@@ -9,6 +9,8 @@ import { BillingService } from "@/services/billing.service";
 import { QuotationService } from "@/services/quotation.service";
 import { LogisticsService } from "@/services/logistics.service";
 import { TenantRepository } from "@/lib/repositories/tenant.repository";
+import { getCurrentTenant } from "@/lib/auth/tenant-auth";
+import { getCurrentPlatformUser } from "@/lib/auth/platform-auth";
 
 export async function GET(
   request: NextRequest,
@@ -18,10 +20,35 @@ export async function GET(
     const { type } = await context.params;
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
-    const companyId = searchParams.get("companyId") || "c-01";
+    const companyId = searchParams.get("companyId");
 
     if (!id) {
       return new NextResponse("Document ID parameter is required", { status: 400 });
+    }
+
+    if (!companyId) {
+      return new NextResponse("Company ID parameter is required", { status: 400 });
+    }
+
+    // Fail-Closed Authentication & Tenant Authorization Guard
+    const [tenant, platformUser] = await Promise.all([
+      getCurrentTenant(companyId),
+      getCurrentPlatformUser(),
+    ]);
+
+    const isAuthorizedTenant =
+      tenant &&
+      (tenant.companyId === companyId ||
+        tenant.companySlug === companyId.toLowerCase().trim());
+    const isAuthorizedPlatform = Boolean(platformUser && platformUser.is_active);
+
+    if (!isAuthorizedTenant && !isAuthorizedPlatform) {
+      return new NextResponse("Unauthorized: Valid authenticated session required to access documents", {
+        status: 401,
+        headers: {
+          "Cache-Control": "private, no-cache, no-store, must-revalidate",
+        },
+      });
     }
 
     let tenantCompany = null;
@@ -95,7 +122,9 @@ export async function GET(
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `inline; filename="${filename}"`,
-        "Cache-Control": "public, max-age=60, s-maxage=60",
+        "Cache-Control": "private, no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
       },
     });
   } catch (error: any) {

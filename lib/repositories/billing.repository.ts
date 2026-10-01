@@ -57,6 +57,11 @@ export function getFinancialPersistenceMode(): FinancialPersistenceMode {
     return 'test'
   }
   if (!isSupabaseConfigured()) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'FAIL CLOSED: Supabase database configuration is missing in production environment. Refusing to fallback to in-memory test store.'
+      )
+    }
     return 'test'
   }
   return 'production'
@@ -144,36 +149,20 @@ export class BillingRepository {
           return String(data)
         }
 
-        // If RPC is unavailable, use atomic sequence query with padding
+        // Try admin client RPC if standard client had permission or RLS issues
         const admin = createAdminClient()
-        const { data: seq } = await (admin as any)
-          .from('document_sequences')
-          .select('*')
-          .eq('company_id', effectiveCompanyId)
-          .eq('doc_type', docType)
-          .maybeSingle()
-
-        const prefixMap: Record<string, string> = {
-          invoice: 'INV',
-          quotation: 'QUO',
-          order: 'ORD',
-          challan: 'CHL',
-          payment: 'PAY',
-          purchase: 'PUR',
-        }
-        const prefix = seq?.prefix || prefixMap[docType] || 'DOC'
-        const nextVal = (seq?.current_val ? Number(seq.current_val) : 0) + 1
-
-        await (admin as any).from('document_sequences').upsert({
-          company_id: effectiveCompanyId,
-          doc_type: docType,
-          prefix,
-          current_val: nextVal,
-          padding: 6,
-          updated_at: new Date().toISOString(),
+        const { data: adminData, error: adminErr } = await (admin as any).rpc('get_next_document_number', {
+          p_company_id: effectiveCompanyId,
+          p_doc_type: docType,
         })
 
-        return `${prefix}-${String(nextVal).padStart(6, '0')}`
+        if (!adminErr && adminData) {
+          return String(adminData)
+        }
+
+        if (mode === 'production') {
+          throw new Error(`Database sequence generator failed for ${docType}: ${adminErr?.message || error?.message || 'RPC unavailable'}`)
+        }
       } catch (err: any) {
         if (mode === 'production') {
           throw new Error(`Database sequence generator failed for ${docType}: ${err.message || 'Supabase unreachable'}`)
@@ -468,11 +457,7 @@ export class BillingRepository {
 
     let invoiceNumber = invoice.invoice_number
     if (!invoiceNumber) {
-      if (invoice.order_number && invoice.order_number.startsWith('ORD-')) {
-        invoiceNumber = invoice.order_number.replace('ORD-', 'INV-')
-      } else {
-        invoiceNumber = await this.getNextDocumentNumber(effectiveCompanyId, 'invoice')
-      }
+      invoiceNumber = await this.getNextDocumentNumber(effectiveCompanyId, 'invoice')
     }
 
     const invoiceId = invoice.id
@@ -618,7 +603,130 @@ export class BillingRepository {
         }
       }
 
-      // Try inserting payload
+      // 1. Attempt Atomic PostgreSQL RPC creation (single-transaction atomicity)
+      if (isEffectiveUuid) {
+        try {
+          const itemsPayloadForRpc = (invoice.items || []).map((it: any) => ({
+            product_id: it.product_id ? (mode === 'production' && !isValidUUID(it.product_id) ? null : it.product_id) : null,
+            item_description: it.item_description || it.description || it.item_name || 'Printing Item',
+            dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'inch'}` : null),
+            quantity: Number(it.quantity) || 1,
+            unit: it.unit || 'pcs',
+            unit_price: Number(it.unit_price) || 0,
+            vat_percentage: Number(it.vat_percentage) || 0,
+            total_price: Number(it.total_price) || (Number(it.quantity) * Number(it.unit_price)),
+          }))
+
+          let { data: rpcRes, error: rpcErr } = await (supabase as any).rpc('create_invoice_atomic', {
+            p_company_id: effectiveCompanyId,
+            p_branch_id: validBranchId,
+            p_customer_id: validCustomerId,
+            p_customer_name: payload.customer_name,
+            p_customer_phone: payload.customer_phone,
+            p_customer_email: payload.customer_email,
+            p_customer_address: payload.customer_address,
+            p_customer_bin: payload.customer_bin,
+            p_customer_tin: payload.customer_tin,
+            p_customer_company: payload.customer_company,
+            p_customer_type: payload.customer_type,
+            p_invoice_type: payload.invoice_type,
+            p_invoice_date: payload.invoice_date,
+            p_due_date: payload.due_date,
+            p_quotation_id: validQuotationId,
+            p_sales_order_id: validSalesOrderId,
+            p_job_order_id: validJobOrderId,
+            p_order_number: payload.order_number,
+            p_reference_no: payload.reference_no,
+            p_subtotal: subtotal,
+            p_discount_amount: discountAmt,
+            p_vat_percentage: vatPct,
+            p_vat_amount: vatAmt,
+            p_grand_total: grandTotal,
+            p_paid_amount: paidAmount,
+            p_due_amount: dueAmount,
+            p_advance_percentage: Number(payload.advance_percentage) || 0,
+            p_advance_amount: Number(payload.advance_amount) || 0,
+            p_due_on_delivery: payload.due_on_delivery,
+            p_payment_method: (invoice as any).payment_method || 'cash',
+            p_payment_method_note: (invoice as any).payment_method_note,
+            p_mushak_version: payload.mushak_version,
+            p_language_mode: payload.language_mode || 'bn',
+            p_delivery_date: payload.delivery_date,
+            p_delivery_location: payload.delivery_location,
+            p_delivery_method: payload.delivery_method,
+            p_installation_required: payload.installation_required,
+            p_notes: payload.notes,
+            p_terms_and_conditions: payload.terms_and_conditions,
+            p_created_by_name: payload.created_by_name,
+            p_idempotency_key: payload.idempotency_key,
+            p_actor_user_id: validSalespersonId,
+            p_items: itemsPayloadForRpc,
+          })
+
+          if (rpcErr && (rpcErr.code === '42501' || rpcErr.message?.includes('row-level security'))) {
+            const admin = createAdminClient()
+            const adminRpc = await (admin as any).rpc('create_invoice_atomic', {
+              p_company_id: effectiveCompanyId,
+              p_branch_id: validBranchId,
+              p_customer_id: validCustomerId,
+              p_customer_name: payload.customer_name,
+              p_customer_phone: payload.customer_phone,
+              p_customer_email: payload.customer_email,
+              p_customer_address: payload.customer_address,
+              p_customer_bin: payload.customer_bin,
+              p_customer_tin: payload.customer_tin,
+              p_customer_company: payload.customer_company,
+              p_customer_type: payload.customer_type,
+              p_invoice_type: payload.invoice_type,
+              p_invoice_date: payload.invoice_date,
+              p_due_date: payload.due_date,
+              p_quotation_id: validQuotationId,
+              p_sales_order_id: validSalesOrderId,
+              p_job_order_id: validJobOrderId,
+              p_order_number: payload.order_number,
+              p_reference_no: payload.reference_no,
+              p_subtotal: subtotal,
+              p_discount_amount: discountAmt,
+              p_vat_percentage: vatPct,
+              p_vat_amount: vatAmt,
+              p_grand_total: grandTotal,
+              p_paid_amount: paidAmount,
+              p_due_amount: dueAmount,
+              p_advance_percentage: Number(payload.advance_percentage) || 0,
+              p_advance_amount: Number(payload.advance_amount) || 0,
+              p_due_on_delivery: payload.due_on_delivery,
+              p_payment_method: (invoice as any).payment_method || 'cash',
+              p_payment_method_note: (invoice as any).payment_method_note,
+              p_mushak_version: payload.mushak_version,
+              p_language_mode: payload.language_mode || 'bn',
+              p_delivery_date: payload.delivery_date,
+              p_delivery_location: payload.delivery_location,
+              p_delivery_method: payload.delivery_method,
+              p_installation_required: payload.installation_required,
+              p_notes: payload.notes,
+              p_terms_and_conditions: payload.terms_and_conditions,
+              p_created_by_name: payload.created_by_name,
+              p_idempotency_key: payload.idempotency_key,
+              p_actor_user_id: validSalespersonId,
+              p_items: itemsPayloadForRpc,
+            })
+            rpcRes = adminRpc.data
+            rpcErr = adminRpc.error
+          }
+
+          if (!rpcErr && rpcRes && rpcRes.success && rpcRes.invoice_id) {
+            const retrieved = await this.getInvoiceById(rpcRes.invoice_id, effectiveCompanyId)
+            if (retrieved) {
+              try {
+                await this.syncCommercialWorkflowOnInvoiceCreated(retrieved, effectiveCompanyId)
+              } catch {}
+              return retrieved
+            }
+          }
+        } catch {}
+      }
+
+      // 2. Direct fallback insertion if RPC not deployed yet
       let insertResult = await (supabase as any)
         .from('invoices')
         .insert(payload)
@@ -742,6 +850,69 @@ export class BillingRepository {
           }
         }
 
+        // Record payment and allocation for advance payments
+        if (paidAmount > 0) {
+          try {
+            const payNumber = await this.getNextDocumentNumber(effectiveCompanyId, 'payment')
+            let payRes = await (supabase as any)
+              .from('payments')
+              .insert({
+                company_id: effectiveCompanyId,
+                branch_id: validBranchId,
+                receipt_number: payNumber,
+                customer_id: validCustomerId,
+                customer_name: payload.customer_name,
+                payment_date: payload.invoice_date || getTodayDateString(),
+                payment_type: 'advance_payment',
+                payment_method: (invoice as any).payment_method || 'cash',
+                amount: paidAmount,
+                unallocated_amount: 0,
+                notes: (invoice as any).payment_method_note || `Advance payment on invoice ${data.invoice_number}`,
+                received_by_name: payload.created_by_name || 'Cashier',
+                idempotency_key: payload.idempotency_key ? `${payload.idempotency_key}_pay` : null,
+                actor_user_id: validSalespersonId,
+                created_at: new Date().toISOString(),
+              })
+              .select('id')
+              .single()
+
+            if (payRes.error && (payRes.error.code === '42501' || payRes.error.message?.includes('row-level security'))) {
+              const admin = createAdminClient()
+              payRes = await (admin as any)
+                .from('payments')
+                .insert({
+                  company_id: effectiveCompanyId,
+                  branch_id: validBranchId,
+                  receipt_number: payNumber,
+                  customer_id: validCustomerId,
+                  customer_name: payload.customer_name,
+                  payment_date: payload.invoice_date || getTodayDateString(),
+                  payment_type: 'advance_payment',
+                  payment_method: (invoice as any).payment_method || 'cash',
+                  amount: paidAmount,
+                  unallocated_amount: 0,
+                  notes: (invoice as any).payment_method_note || `Advance payment on invoice ${data.invoice_number}`,
+                  received_by_name: payload.created_by_name || 'Cashier',
+                  idempotency_key: payload.idempotency_key ? `${payload.idempotency_key}_pay` : null,
+                  actor_user_id: validSalespersonId,
+                  created_at: new Date().toISOString(),
+                })
+                .select('id')
+                .single()
+            }
+
+            if (payRes.data?.id) {
+              const allocClient = createAdminClient() || supabase
+              await (allocClient as any).from('payment_allocations').insert({
+                payment_id: payRes.data.id,
+                invoice_id: data.id,
+                allocated_amount: paidAmount,
+                created_at: new Date().toISOString(),
+              })
+            }
+          } catch {}
+        }
+
         // Update customer total due balance in PostgreSQL if customer is linked
         if (validCustomerId) {
           try {
@@ -753,7 +924,7 @@ export class BillingRepository {
           } catch {
             const { data: cust } = await (supabase as any)
               .from('customers')
-              .select('total_due_balance, total_invoiced_amount')
+              .select('total_due_balance, total_invoiced_amount, total_paid_amount')
               .eq('id', validCustomerId)
               .maybeSingle()
             if (cust) {
@@ -762,6 +933,7 @@ export class BillingRepository {
                 .update({
                   total_due_balance: (Number(cust.total_due_balance) || 0) + dueAmount,
                   total_invoiced_amount: (Number(cust.total_invoiced_amount) || 0) + grandTotal,
+                  total_paid_amount: (Number(cust.total_paid_amount) || 0) + paidAmount,
                   updated_at: new Date().toISOString(),
                 })
                 .eq('id', validCustomerId)

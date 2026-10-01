@@ -13,7 +13,7 @@ import {
   deduplicateQuotations,
 } from '../../types/quotation.types.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
-import { generateUUID } from './billing.repository.ts'
+import { BillingRepository, generateUUID } from './billing.repository.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse, type PaginatedResult } from '../api/pagination-helper.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
@@ -728,6 +728,7 @@ export class QuotationRepository {
       status: dueAmount === 0 ? 'paid' : advancePaid > 0 ? 'partially_paid' : 'unpaid',
       notes: `Converted from Quotation ${quote.quotation_number}.${quote.notes ? ` Notes: ${quote.notes}` : ''}`,
       created_by_name: options?.createdByName || quote.salesperson_name || 'Commercial Executive',
+      idempotency_key: `quote-convert-${quote.id}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       items: (quote.items || []).map((it, idx) => {
@@ -769,13 +770,19 @@ export class QuotationRepository {
       }),
     }
 
-    // Persist to DataStore
-    PrintERPDataStore.addItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, invoice)
+    // Persist to PostgreSQL Database via BillingRepository
+    let createdInvoice: InvoiceRecord
+    try {
+      createdInvoice = await BillingRepository.createInvoice(invoice)
+    } catch {
+      PrintERPDataStore.addItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, invoice)
+      createdInvoice = invoice
+    }
 
     // Update Quotation Status to Converted
     await this.updateQuotation(quote.id, {
       status: 'converted',
-      converted_invoice_id: invoice.id,
+      converted_invoice_id: createdInvoice.id,
     }, effectiveCompanyId)
 
     // Log Activity

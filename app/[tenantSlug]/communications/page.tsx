@@ -182,14 +182,32 @@ export default function CommunicationsHubPage() {
         icon={MessageSquare}
         iconColor="text-blue-600"
         actions={
-          <Button
-            size="sm"
-            onClick={() => setIsSendOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text"
-          >
-            <Send className="mr-1.5 h-3.5 w-3.5" />
-            {tBilingual('Send Quick Notification', 'দ্রুত বার্তা পাঠান')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link href={`/${slug}/communications/inbox`}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs gap-1.5 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+              >
+                <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
+                WhatsApp Inbox
+              </Button>
+            </Link>
+            <Link href={`/${slug}/settings/whatsapp`}>
+              <Button size="sm" variant="outline" className="text-xs gap-1.5">
+                <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+                Gateway Settings
+              </Button>
+            </Link>
+            <Button
+              size="sm"
+              onClick={() => setIsSendOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text"
+            >
+              <Send className="mr-1.5 h-3.5 w-3.5" />
+              {tBilingual('Send Quick Notification', 'দ্রুত বার্তা পাঠান')}
+            </Button>
+          </div>
         }
       />
 

@@ -236,6 +236,11 @@ export function getDateRangeForPeriod(
 export function isDateInRange(dateStr?: string | null, start?: Date, end?: Date): boolean {
   if (!dateStr || !start || !end) return false
   try {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      const [y, m, day] = dateStr.split('-').map(Number)
+      const d = new Date(y, m - 1, day, 12, 0, 0)
+      return d >= start && d <= end
+    }
     const d = new Date(dateStr)
     return d >= start && d <= end
   } catch {

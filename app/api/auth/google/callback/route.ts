@@ -8,6 +8,7 @@ import {
 } from '@/lib/auth/google-auth'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
+import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -95,6 +96,9 @@ export async function GET(request: Request) {
       ? destinationUrl
       : `${origin}${destinationUrl}`
 
+    const requestHost = request.headers.get('x-forwarded-host') || request.headers.get('host') || undefined
+    const cookieOpts = getAuthCookieOptions(requestHost)
+
     const redirectResponse = NextResponse.redirect(destination)
     redirectResponse.cookies.set(
       TENANT_SESSION_COOKIE,
@@ -103,9 +107,56 @@ export async function GET(request: Request) {
         path: '/',
         maxAge: 60 * 60 * 24 * 7,
         sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        secure: cookieOpts.secure,
+        domain: cookieOpts.domain,
       }
     )
+
+    // 6. Establish authoritative Supabase SSR Auth session cookies
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+    const supabaseAnonKey =
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.SUPABASE_PUBLISHABLE_KEY ||
+      process.env.SUPABASE_ANON_KEY
+
+    if (supabaseUrl && supabaseAnonKey) {
+      try {
+        const { createAdminClient } = await import('@/lib/supabase/admin')
+        const { createServerClient } = await import('@supabase/ssr')
+        const admin = createAdminClient()
+        const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
+          type: 'magiclink',
+          email: identity.email.trim().toLowerCase(),
+        })
+
+        if (!linkErr && linkData?.properties?.hashed_token) {
+          const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+            cookieOptions: cookieOpts.domain ? { domain: cookieOpts.domain } : undefined,
+            cookies: {
+              getAll() {
+                return []
+              },
+              setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value, options }) => {
+                  redirectResponse.cookies.set(name, value, {
+                    ...options,
+                    domain: cookieOpts.domain,
+                  })
+                })
+              },
+            },
+          })
+
+          await supabase.auth.verifyOtp({
+            token_hash: linkData.properties.hashed_token,
+            type: 'email',
+          })
+        }
+      } catch (ssrErr) {
+        console.warn('[Google OAuth Callback] Supabase SSR session cookie synchronization note:', ssrErr)
+      }
+    }
 
     return redirectResponse
   } catch (err: any) {

@@ -292,6 +292,7 @@ export interface MultiInvoicePaymentInput {
   amount: number
   paymentMethod: PaymentMethod
   paymentDate?: string
+  receiptNumber?: string | null
   bankName?: string | null
   chequeNumber?: string | null
   chequeDate?: string | null

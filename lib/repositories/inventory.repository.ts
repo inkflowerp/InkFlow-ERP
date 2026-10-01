@@ -1304,6 +1304,7 @@ export class InventoryRepository {
         p_unit_cost: params.unit_cost || 0,
         p_reference_type: params.reference_type || null,
         p_reference_id: params.reference_id || null,
+        p_task_id: params.production_task_id || null,
         p_production_task_id: params.production_task_id || null,
         p_notes: params.notes || null,
         p_performed_by_id: params.performed_by_id || null,

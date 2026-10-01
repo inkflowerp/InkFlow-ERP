@@ -30,19 +30,24 @@ class PaymentRegistry {
         username: process.env.BKASH_USERNAME || '',
         password: process.env.BKASH_PASSWORD || '',
         isSandbox: process.env.NODE_ENV !== 'production',
+        baseUrl: process.env.BKASH_BASE_URL,
       })
     )
     this.register(
       new SslCommerzPaymentAdapter({
         storeId: process.env.SSLCOMMERZ_STORE_ID || '',
         storePassword: process.env.SSLCOMMERZ_STORE_PASSWORD || '',
-        isSandbox: process.env.NODE_ENV !== 'production',
+        isSandbox:
+          process.env.SSLCOMMERZ_IS_SANDBOX !== undefined
+            ? process.env.SSLCOMMERZ_IS_SANDBOX === 'true'
+            : process.env.NODE_ENV !== 'production',
       })
     )
     this.register(
       new NagadPaymentAdapter({
         merchantId: process.env.NAGAD_MERCHANT_ID || '',
-        merchantPrivateKey: process.env.NAGAD_MERCHANT_PRIVATE_KEY || '',
+        merchantPrivateKey:
+          process.env.NAGAD_MERCHANT_PRIVATE_KEY || process.env.NAGAD_PRIVATE_KEY || '',
         nagadPublicKey: process.env.NAGAD_PUBLIC_KEY || '',
         isSandbox: process.env.NODE_ENV !== 'production',
       })

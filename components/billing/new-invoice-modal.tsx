@@ -645,6 +645,7 @@ export function NewInvoiceModal({
   const [termsAndConditions, setTermsAndConditions] = useState('')
   const [quotationId, setQuotationId] = useState<string | undefined>(preselectedQuotationId)
   const [salesOrderId, setSalesOrderId] = useState<string | undefined>(preselectedSalesOrderId)
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`))
 
 
   // Credit Limit Override
@@ -762,6 +763,7 @@ export function NewInvoiceModal({
   // Auto-fill when preselected customer ID, sales order ID, or request details are provided
   useEffect(() => {
     if (open) {
+      setIdempotencyKey(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`)
       if (preselectedCustomerType) {
         setCustomerType(preselectedCustomerType)
       }
@@ -1536,6 +1538,7 @@ export function NewInvoiceModal({
       quotation_id: quotationId,
       sales_order_id: salesOrderId,
       credit_override_reason: isCreditLimitExceeded ? creditOverrideReason || 'Authorized credit limit override' : undefined,
+      idempotency_key: idempotencyKey,
       items: payloadItems,
     }
 
@@ -1549,6 +1552,7 @@ export function NewInvoiceModal({
       }
 
       setSavedInvoice(result.data)
+      setIdempotencyKey(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `inv-idemp-${Date.now()}`)
       try {
         const allInvs = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
         const filtered = allInvs.filter((i) => i.id !== result.data!.id)

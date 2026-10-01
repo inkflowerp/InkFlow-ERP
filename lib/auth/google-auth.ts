@@ -134,12 +134,21 @@ export function getGoogleAuthClientConfig(requestOrigin?: string): GoogleAuthCli
  * Derives a secure HMAC secret for state signing
  */
 function getGoogleAuthStateSecret(): string {
-  return (
+  const secret =
     process.env.ENCRYPTION_SECRET ||
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.STORAGE_SIGNING_SALT ||
-    'inkflow_google_auth_state_hmac_signing_key_2026'
-  )
+    process.env.STORAGE_SIGNING_SALT
+
+  if (!secret) {
+    if (isTestEnvironment()) {
+      return 'test_google_auth_state_hmac_signing_key_for_unit_tests'
+    }
+    throw new Error(
+      'FAIL CLOSED: ENCRYPTION_SECRET or SUPABASE_SERVICE_ROLE_KEY is required for Google OAuth state HMAC signing.'
+    )
+  }
+
+  return secret
 }
 
 /**
@@ -402,14 +411,36 @@ export async function authenticateGoogleUser(
     // 1. Find or provision Supabase Auth user record
     if (!isTestEnvironment()) {
       try {
-        const { data: userList } = await admin.auth.admin.listUsers()
-        const existing = userList?.users?.find((u) => u.email?.toLowerCase() === normalizedEmail)
+        let existingUser: { id: string; email_confirmed?: boolean } | null = null
 
-        if (existing) {
-          userId = existing.id
+        // Primary lookup: direct query on public.user_profiles (1:1 with auth.users, indexed by email)
+        const { data: profile } = await (admin as any)
+          .from('user_profiles')
+          .select('id, email')
+          .ilike('email', normalizedEmail)
+          .maybeSingle()
+
+        if (profile?.id) {
+          existingUser = { id: profile.id, email_confirmed: true }
+        } else {
+          // Fallback: check first page of auth.users
+          const { data: userList } = await admin.auth.admin.listUsers({ page: 1, perPage: 100 })
+          const matched = userList?.users?.find((u) => u.email?.toLowerCase() === normalizedEmail)
+          if (matched) {
+            existingUser = {
+              id: matched.id,
+              email_confirmed: Boolean(matched.email_confirmed_at || matched.confirmed_at),
+            }
+          }
+        }
+
+        if (existingUser) {
+          userId = existingUser.id
           // Ensure email_confirmed is true since Google verified it
-          if (!existing.email_confirmed_at && !existing.confirmed_at) {
-            await admin.auth.admin.updateUserById(userId, { email_confirm: true })
+          if (!existingUser.email_confirmed) {
+            try {
+              await admin.auth.admin.updateUserById(userId, { email_confirm: true })
+            } catch {}
           }
         } else {
           // Create new confirmed Supabase user
@@ -425,14 +456,28 @@ export async function authenticateGoogleUser(
           })
 
           if (createErr || !created.user) {
-            return {
-              success: false,
-              error: `Failed to provision user account: ${createErr?.message || 'Database error'}`,
+            // Handle case where user already exists in auth.users
+            if (createErr?.message?.toLowerCase().includes('already') || (createErr as any)?.status === 422) {
+              const { data: retryProf } = await (admin as any)
+                .from('user_profiles')
+                .select('id')
+                .ilike('email', normalizedEmail)
+                .maybeSingle()
+              if (retryProf?.id) {
+                userId = retryProf.id
+              }
             }
-          }
 
-          userId = created.user.id
-          isNewUser = true
+            if (!userId) {
+              return {
+                success: false,
+                error: `Failed to provision user account: ${createErr?.message || 'Database error'}`,
+              }
+            }
+          } else {
+            userId = created.user.id
+            isNewUser = true
+          }
         }
       } catch (e: any) {
         console.error('[GoogleAuth] Supabase auth user lookup/create error:', e)
@@ -544,7 +589,7 @@ export async function authenticateGoogleUser(
         responsibilities: companyUser.responsibilities || [primaryRole],
         permissions: effectivePermissions,
         loginTime: new Date().toISOString(),
-        token: `google-auth-${userId}`,
+        token: `sess_${userId}_${Date.now()}`,
       }
 
       // Track successful login audit event
@@ -600,7 +645,7 @@ export async function authenticateGoogleUser(
       responsibilities: ['business_owner'],
       permissions: ownerPermissions,
       loginTime: new Date().toISOString(),
-      token: `google-auth-${userId}`,
+      token: `sess_${userId}_${Date.now()}`,
     }
 
     return {

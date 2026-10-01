@@ -124,12 +124,22 @@ export function getGoogleOAuthDiagnostics(): GoogleOAuthDiagnostics {
  * Derives a secure HMAC secret for state verification
  */
 function getOAuthStateSecret(): string {
-  return (
+  const secret =
     process.env.ENCRYPTION_SECRET ||
     process.env.SUPABASE_SECRET_KEY ||
-    process.env.APP_SECRET ||
-    'printerp_gmail_oauth_state_hmac_signing_key_2026'
-  )
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.APP_SECRET
+
+  if (!secret) {
+    if (isTestEnvironment()) {
+      return 'test_gmail_oauth_state_hmac_signing_key_for_unit_tests'
+    }
+    throw new Error(
+      'FAIL CLOSED: ENCRYPTION_SECRET or server secret key is required for Gmail OAuth state HMAC signing.'
+    )
+  }
+
+  return secret
 }
 
 /**

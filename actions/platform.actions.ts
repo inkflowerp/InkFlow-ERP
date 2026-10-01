@@ -927,8 +927,14 @@ export async function updatePlatformUserAction(
 ) {
   try {
     const platformUser = await getCurrentPlatformUser()
-    if (!platformUser || (platformUser.role !== 'platform_owner' && platformUser.role !== 'platform_admin')) {
-      return { success: false, error: 'Unauthorized: Only platform owners can manage platform users.' }
+    const callerRole = platformUser?.role
+    if (!platformUser || (callerRole !== 'platform_owner' && callerRole !== 'platform_admin')) {
+      return { success: false, error: 'Unauthorized: Only platform owners and administrators can manage platform users.' }
+    }
+
+    // Security Constraint: Only platform_owner can assign or modify administrative roles
+    if (updates.role && callerRole !== 'platform_owner') {
+      return { success: false, error: 'Unauthorized: Only the Platform Owner can assign or modify administrative roles.' }
     }
 
     const result = await PlatformService.updatePlatformUser(userId, updates)
@@ -1009,8 +1015,10 @@ export async function updatePlatformOwnerProfileAction(
 ): Promise<ApiResponse<PlatformAdminUser>> {
   try {
     const platformUser = await getCurrentPlatformUser()
-    const targetId = platformUser ? (platformUser.id || platformUser.user_id || platformUser.email) : undefined
-    const result = await PlatformService.updatePlatformOwnerProfile(updates, targetId)
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Active platform administrator session required.' }
+    }
+    const result = await PlatformService.updatePlatformOwnerProfile(updates, platformUser.id)
     if (result.success) {
       revalidatePath('/platform/profile')
       revalidatePath('/platform', 'layout')
@@ -1028,12 +1036,15 @@ export async function changePlatformOwnerPasswordAction(
 ) {
   try {
     const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Active platform administrator session required.' }
+    }
     const result = await PlatformService.changePlatformOwnerPassword(
       currentPassword,
       newPassword,
       revokeOtherSessions,
-      platformUser?.user_id,
-      platformUser?.id
+      platformUser.user_id,
+      platformUser.id
     )
     if (result.success) {
       revalidatePath('/platform/profile')
@@ -1045,10 +1056,13 @@ export async function changePlatformOwnerPasswordAction(
   }
 }
 
-export async function togglePlatformOwnerMFAAction(enable: boolean) {
+export async function togglePlatformOwnerMFAAction(enable: boolean, verificationCode?: string, secret?: string) {
   try {
     const platformUser = await getCurrentPlatformUser()
-    const result = await PlatformService.togglePlatformOwnerMFA(enable, platformUser?.id)
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Active platform administrator session required.' }
+    }
+    const result = await PlatformService.togglePlatformOwnerMFA(enable, platformUser.id, verificationCode, secret)
     if (result.success) {
       revalidatePath('/platform/profile')
       revalidatePath('/platform/security')
@@ -1059,12 +1073,32 @@ export async function togglePlatformOwnerMFAAction(enable: boolean) {
   }
 }
 
+export async function generatePlatformMfaSecretAction(): Promise<{ success: boolean; secret?: string; error?: string }> {
+  try {
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Active platform administrator session required.' }
+    }
+    const { generateTotpSecret } = await import('@/lib/auth/totp')
+    const secret = generateTotpSecret(20)
+    return { success: true, secret }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to generate MFA secret' }
+  }
+}
+
 export async function revokePlatformSessionAction(sessionId: string) {
   try {
-    const result = await PlatformService.revokePlatformSession(sessionId)
+    const platformUser = await getCurrentPlatformUser()
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Active platform administrator session required.' }
+    }
+    const isOwner = platformUser.role === 'platform_owner'
+    const result = await PlatformService.revokePlatformSession(sessionId, platformUser.id, isOwner)
     if (result.success) {
       revalidatePath('/platform/security')
       revalidatePath('/platform/profile')
+      revalidatePath('/platform/sessions')
     }
     return result
   } catch (err: any) {
@@ -1075,7 +1109,10 @@ export async function revokePlatformSessionAction(sessionId: string) {
 export async function revokeAllOtherPlatformSessionsAction(exceptSessionId?: string) {
   try {
     const platformUser = await getCurrentPlatformUser()
-    const result = await PlatformService.revokeAllOtherPlatformSessions(platformUser?.id, exceptSessionId)
+    if (!platformUser) {
+      return { success: false, error: 'Unauthorized: Active platform administrator session required.' }
+    }
+    const result = await PlatformService.revokeAllOtherPlatformSessions(platformUser.id, exceptSessionId)
     if (result.success) {
       revalidatePath('/platform/security')
       revalidatePath('/platform/sessions')

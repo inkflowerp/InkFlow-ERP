@@ -5,7 +5,7 @@ import type {
   SalesOrderItemRecord,
   OrderTimelineEventRecord,
 } from '../../types/order.types.ts'
-import { BillingRepository } from './billing.repository.ts'
+import { BillingRepository, getFinancialPersistenceMode } from './billing.repository.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse } from '../api/pagination-helper.ts'
 import type { PaginatedResult } from '../api/pagination-helper.ts'
@@ -187,6 +187,31 @@ export class OrderRepository {
     final_price: number
     salesperson_name: string
   }): Promise<SalesOrderRecord> {
+    // 0. Idempotency Check: if idempotency_key is provided, prevent duplicate order creation
+    if (order.idempotency_key) {
+      const allLocal = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+      const localExisting = allLocal.find(
+        (o) => o.company_id === order.company_id && (o as any).idempotency_key === order.idempotency_key
+      )
+      if (localExisting) {
+        return localExisting
+      }
+
+      try {
+        const supabase = await createClient()
+        const { data: dbExisting } = await (supabase as any)
+          .from('sales_orders')
+          .select('*, items:sales_order_items(*)')
+          .eq('company_id', order.company_id)
+          .ilike('notes', `%[idempotency_key: ${order.idempotency_key}]%`)
+          .maybeSingle()
+
+        if (dbExisting) {
+          return dbExisting as unknown as SalesOrderRecord
+        }
+      } catch {}
+    }
+
     let orderNumber = order.order_number
     if (!orderNumber) {
       if (order.invoice_number && order.invoice_number.startsWith('INV-')) {
@@ -209,6 +234,13 @@ export class OrderRepository {
         : !order.invoice_id
         ? 'blocked_commercial'
         : 'blocked_design')
+
+    let notes = order.notes || null
+    if (order.idempotency_key) {
+      notes = notes
+        ? `${notes}\n[idempotency_key: ${order.idempotency_key}]`
+        : `[idempotency_key: ${order.idempotency_key}]`
+    }
 
     const payload: any = {
       company_id: order.company_id,
@@ -235,13 +267,15 @@ export class OrderRepository {
       final_price: finalPrice,
       advance_amount: advancePaid,
       due_amount: balanceDue,
-      notes: order.notes || null,
+      notes,
+      idempotency_key: order.idempotency_key || null,
     }
 
     if (order.id) {
       payload.id = order.id
     }
 
+    const mode = getFinancialPersistenceMode()
     try {
       const supabase = await createClient()
 
@@ -265,6 +299,12 @@ export class OrderRepository {
         .insert(payload)
         .select()
         .single()
+
+      if (error) {
+        if (mode === 'production') {
+          throw new Error(`Database order creation failed: ${error.message}`)
+        }
+      }
 
       if (!error && data) {
         if (order.items && order.items.length > 0) {
@@ -303,7 +343,15 @@ export class OrderRepository {
         const retrieved = await this.getOrderById(String(data.id), order.company_id)
         if (retrieved) return retrieved
       }
-    } catch {}
+    } catch (err: any) {
+      if (mode === 'production') {
+        throw new Error(`Database order creation failed: ${err.message}`)
+      }
+    }
+
+    if (mode === 'production') {
+      throw new Error('Database order creation failed: No database record returned in production mode')
+    }
 
     // Fallback store
     const localOrder: SalesOrderRecord = {

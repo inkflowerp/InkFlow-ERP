@@ -7,6 +7,7 @@ import { TENANT_SESSION_COOKIE, TenantSessionData, TenantRole, resolveTenantRole
 import { PrimaryRole, MODULE_ACTION_SPECS } from '@/types/rbac.types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
+import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -163,7 +164,7 @@ export async function GET(request: Request) {
         responsibilities: companyUser.responsibilities || [primaryRole],
         permissions: effectivePermissions,
         loginTime: new Date().toISOString(),
-        token: authData.session?.access_token || `auth-${user.id}`,
+        token: `sess_${user.id}_${Date.now()}`,
       }
 
       // Track successful login audit event
@@ -205,12 +206,14 @@ export async function GET(request: Request) {
         destination = getTenantLink(company.slug, cleanNext)
       }
 
+      const cookieOpts = getAuthCookieOptions(request.headers.get('x-forwarded-host') || request.headers.get('host') || origin)
       const redirectResponse = NextResponse.redirect(destination)
       redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(sessionData)), {
         path: '/',
         maxAge: 60 * 60 * 24 * 7,
         sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        secure: cookieOpts.secure,
+        domain: cookieOpts.domain,
       })
 
       return redirectResponse
@@ -240,15 +243,17 @@ export async function GET(request: Request) {
       responsibilities: ['business_owner'],
       permissions: ownerPermissions,
       loginTime: new Date().toISOString(),
-      token: authData.session?.access_token || `auth-${user.id}`,
+      token: `sess_${user.id}_${Date.now()}`,
     }
 
+    const cookieOpts = getAuthCookieOptions(request.headers.get('x-forwarded-host') || request.headers.get('host') || origin)
     const redirectResponse = NextResponse.redirect(`${origin}/onboarding`)
     redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(initialSession)), {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: cookieOpts.secure,
+      domain: cookieOpts.domain,
     })
 
     return redirectResponse

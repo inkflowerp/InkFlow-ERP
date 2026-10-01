@@ -174,7 +174,11 @@ export default function PlatformSupportPage() {
       if (res.success && 'redirectUrl' in res && res.redirectUrl) {
         setShowInitiateModal(false)
         showToast(`Support session initialized for ${selectedCompany.name}`)
-        router.push(res.redirectUrl)
+        if (res.redirectUrl.startsWith('http://') || res.redirectUrl.startsWith('https://')) {
+          window.location.href = res.redirectUrl
+        } else {
+          router.push(res.redirectUrl)
+        }
       } else if (!res.success && 'error' in res) {
         setActionError(res.error || 'Failed to start support session.')
       }

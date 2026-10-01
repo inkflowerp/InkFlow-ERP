@@ -58,6 +58,7 @@ export type PermissionModule =
   | 'pricing'
   | 'users'
   | 'hr'
+  | 'whatsapp'
 
 export type DataScope =
   | 'own'
@@ -276,6 +277,14 @@ export const MODULE_ACTION_SPECS: Record<PermissionModule, ModuleActionSpec> = {
     labelBn: 'কর্মী ও বেতন',
     description: 'Attendance, shifts, overtime, salary advances, payroll sheets, and payment disbursement',
     actions: ['view', 'create', 'edit', 'approve', 'manage'],
+    defaultScope: 'company',
+  },
+  whatsapp: {
+    module: 'whatsapp',
+    label: 'WhatsApp Gateway & Communications',
+    labelBn: 'হোয়াটসঅ্যাপ ও যোগাযোগ',
+    description: 'WhatsApp inbox, connection linking, customer/employee messaging, and OTP dispatch',
+    actions: ['view', 'send', 'manage', 'export'],
     defaultScope: 'company',
   },
 }

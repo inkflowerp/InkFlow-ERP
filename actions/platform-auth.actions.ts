@@ -17,6 +17,8 @@ import { createClient as createSupabaseServerClient } from '@/lib/supabase/serve
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 import { classifyLoginIdentifier } from '@/lib/auth/identifier-helper'
+import { verifyTotpCode } from '@/lib/auth/totp'
+import { isTestEnvironment } from '@/lib/security/runtime-env'
 
 export interface PlatformLoginResult {
   success: boolean
@@ -198,14 +200,28 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
         }
       }
 
-      // Verify MFA token format (6 digits)
-      const isValidMfa = /^\d{6}$/.test(mfaCode)
+      // Verify authentic RFC 6238 TOTP token against admin secret
+      const configuredSecret =
+        (adminRecord as any).totp_secret ||
+        (adminRecord as any).preferences?.totp_secret ||
+        process.env.PLATFORM_MFA_DEFAULT_SECRET
+      const isTest = isTestEnvironment()
+      const totpSecret = configuredSecret || (isTest ? 'JBSWY3DPEHPK3PXP' : null)
+
+      if (!totpSecret) {
+        return {
+          success: false,
+          error: 'MFA is enabled on this administrator account but no authentic TOTP secret is configured. Please contact the platform security administrator.',
+        }
+      }
+
+      const isValidMfa = verifyTotpCode(mfaCode, totpSecret)
       if (!isValidMfa) {
         return {
           success: false,
           requiresMfa: true,
           mfaRequired: true,
-          error: 'Invalid verification code. Enter a 6-digit numeric token.',
+          error: 'Invalid MFA verification code. Please check your authenticator app and try again.',
         }
       }
     }

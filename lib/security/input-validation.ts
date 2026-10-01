@@ -69,7 +69,7 @@ export const InvoiceCreateSchema = z.object({
 export const PaymentRecordSchema = z.object({
   customer_id: z.string().min(1, 'Customer ID required'),
   amount: z.number().positive('Payment amount must be greater than 0'),
-  payment_method: z.enum(['cash', 'bkash', 'nagad', 'rocket', 'bank', 'cheque']),
+  payment_method: z.enum(['cash', 'bkash', 'nagad', 'rocket', 'bank', 'cheque', 'other_mfs']),
   payment_date: z.string().min(1, 'Payment date required'),
   receipt_number: z.string().min(1, 'Receipt number required'),
   notes: z.string().max(500).optional(),

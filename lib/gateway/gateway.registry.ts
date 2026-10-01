@@ -15,6 +15,7 @@ import { createEmailProvider } from '../email/provider.factory.ts'
 import { createSmsProvider } from '../sms/provider.factory.ts'
 import { createPaymentProvider } from '../payments/provider.factory.ts'
 import { MetaWhatsAppAdapter } from '../whatsapp/adapters/meta-whatsapp.adapter.ts'
+import { OpenWAAdapter } from '../whatsapp/adapters/openwa.adapter.ts'
 import { TelegramBotAdapter } from '../telegram/adapters/telegram-bot.adapter.ts'
 
 export interface ProviderInstanceOptions {
@@ -106,6 +107,29 @@ export class GatewayRegistry {
         }
 
         case 'whatsapp': {
+          if (provider === 'openwa') {
+            const waAdapter = new OpenWAAdapter({
+              baseUrl: publicConfig.base_url,
+              apiKey: credentials.api_key || credentials.password,
+              webhookSecret: credentials.webhook_secret,
+              defaultSessionId: publicConfig.session_id,
+            })
+            const res = await waAdapter.testConnection(publicConfig.session_id)
+            return {
+              success: res.success,
+              status: res.success ? 'connected' : 'error',
+              latency_ms: res.latency_ms,
+              message: res.message,
+              diagnostics: {
+                sessionId: res.sessionId,
+                status: res.status,
+                phone: res.phone,
+                pushName: res.pushName,
+              },
+              error: res.error,
+            }
+          }
+
           const waAdapter = new MetaWhatsAppAdapter({
             accessToken: credentials.access_token || credentials.api_token || credentials.password || '',
             phoneNumberId: publicConfig.phone_number_id || credentials.phone_number_id || '',
@@ -246,6 +270,32 @@ export class GatewayRegistry {
         }
 
         case 'whatsapp': {
+          if (provider === 'openwa') {
+            const waAdapter = new OpenWAAdapter({
+              baseUrl: publicConfig.base_url,
+              apiKey: credentials.api_key || credentials.password,
+              webhookSecret: credentials.webhook_secret,
+              defaultSessionId: publicConfig.session_id,
+            })
+
+            const res = await waAdapter.sendTextMessage(
+              {
+                to: payload.recipient,
+                text: payload.message,
+              },
+              publicConfig.session_id
+            )
+
+            return {
+              success: res.success,
+              providerMessageId: res.messageId,
+              timestamp: res.timestamp,
+              latency_ms: res.latency_ms,
+              rawResponse: res.rawResponse,
+              error: res.error,
+            }
+          }
+
           const waAdapter = new MetaWhatsAppAdapter({
             accessToken: credentials.access_token || credentials.api_token || credentials.password || '',
             phoneNumberId: publicConfig.phone_number_id || credentials.phone_number_id || '',

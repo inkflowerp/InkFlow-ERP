@@ -51,7 +51,16 @@ function ResetPasswordForm() {
           setIsSuccess(true)
           setTimeout(() => router.push('/login'), 2000)
         } else {
-          setError(res.error || 'Failed to update password.')
+          const rawError = res.error || ''
+          if (rawError.toLowerCase().includes('session') || rawError.toLowerCase().includes('missing')) {
+            setError(
+              locale === 'bn'
+                ? 'পাসওয়ার্ড রিসেট সেশন পাওয়া যায়নি বা মেয়াদ শেষ হয়ে গেছে। দয়া করে নতুন রিকোয়েস্ট পাঠান।'
+                : 'Your password reset authorization has expired or is invalid. Please request a new reset link.'
+            )
+          } else {
+            setError(res.error || 'Failed to update password.')
+          }
         }
       }
     } catch (err: any) {
@@ -96,6 +105,20 @@ function ResetPasswordForm() {
       ) : (
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-3.5">
+            {!tokenParam && !emailParam && (
+              <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>
+                  {locale === 'bn'
+                    ? 'আপনার কাছে কি ভেরিফিকেশন কোড বা লিংক আছে? নতুন রিসেট লিংক পেতে '
+                    : 'Need a reset link? Visit the '}
+                  <Link href="/forgot-password" className="underline font-bold hover:text-amber-700 dark:hover:text-amber-300">
+                    {locale === 'bn' ? 'পাসওয়ার্ড ভুলে গেছেন পেজ' : 'Forgot Password page'}
+                  </Link>
+                  {locale === 'bn' ? ' ভিজিট করুন।' : ' to request one.'}
+                </span>
+              </div>
+            )}
             {error && (
               <div className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/50 dark:text-red-300 border border-red-200 dark:border-red-900">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />

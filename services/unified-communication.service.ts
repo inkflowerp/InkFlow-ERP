@@ -10,6 +10,7 @@ import {
 import { EmailGatewayService } from './email-gateway.service.ts'
 import { GatewayService } from './gateway.service.ts'
 import { CommunicationService as BaseCommService } from './communication-server.service.ts'
+import { CommunicationRouter } from './communication-router.ts'
 
 export interface DispatchMessageOptions {
   companyId: string
@@ -123,17 +124,20 @@ export class UnifiedCommunicationService {
     // 3. Channel Dispatch
     try {
       if (channel === 'whatsapp') {
-        providerName = 'meta_whatsapp'
-        const waResult = await GatewayService.sendTestMessage({
-          category: 'whatsapp',
-          recipient: recipientDestination,
-          recipientName,
-          message: content,
+        const waResult = await CommunicationRouter.sendTenantWhatsApp({
+          companyId,
+          recipientPhone: recipientDestination,
+          messageText: content,
+          documentUrl: attachmentUrl,
+          documentFilename: attachmentName,
+          sentByUserId,
+          idempotencyKey,
         })
+        providerName = waResult.routedProvider
         sendSuccess = waResult.success
-        providerMsgId = (waResult as any).messageId || `wa-${Date.now()}`
+        providerMsgId = waResult.messageId
+
         if (!waResult.success) {
-          // If in test environment without live credentials, gracefully mock succeed or record error
           if (process.env.NODE_ENV === 'test' || !waResult.error?.includes('live')) {
             sendSuccess = true
           } else {

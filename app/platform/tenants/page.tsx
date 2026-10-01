@@ -500,7 +500,11 @@ export default function PlatformTenantsPage() {
     if (res.success && 'redirectUrl' in res) {
       showNotification('Temporary support access granted. Redirecting to tenant workspace...')
       setSupportModalCompany(null)
-      router.push(res.redirectUrl)
+      if (res.redirectUrl.startsWith('http://') || res.redirectUrl.startsWith('https://')) {
+        window.location.href = res.redirectUrl
+      } else {
+        router.push(res.redirectUrl)
+      }
     } else if (!res.success && 'error' in res) {
       showNotification(res.error)
     }

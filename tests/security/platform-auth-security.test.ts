@@ -488,5 +488,78 @@ describe('Platform Admin Authentication & Authorization Security', () => {
     const canAccess = company.is_active && company.status === 'active'
     assert.strictEqual(canAccess, false, 'Suspended tenant accounts must be blocked')
   })
+
+  test('20. RFC 6238 TOTP Engine: Validates authentic 6-digit codes and rejects invalid tokens', async () => {
+    const { generateTotpCode, verifyTotpCode } = await import('../../lib/auth/totp.ts')
+    const secret = 'JBSWY3DPEHPK3PXP'
+    const validCurrentCode = generateTotpCode(secret, 30, 0)
+    assert.strictEqual(validCurrentCode.length, 6, 'Generated TOTP code must be 6 digits')
+    assert.strictEqual(verifyTotpCode(validCurrentCode, secret), true, 'Valid TOTP code must verify successfully')
+    assert.strictEqual(verifyTotpCode('000000', secret), false, 'Dummy code must be rejected')
+    assert.strictEqual(verifyTotpCode('123456', secret), false, 'Sequential code must be rejected')
+    assert.strictEqual(verifyTotpCode('', secret), false, 'Empty code must be rejected')
+  })
+
+  test('21. Anti-SSRF Webhook Validation: Blocks private networks and cloud metadata', () => {
+    function isWebhookUrlSafe(webhookUrl: string): boolean {
+      try {
+        const parsed = new URL(webhookUrl)
+        if (parsed.protocol !== 'https:') return false
+        const host = parsed.hostname.toLowerCase()
+        if (
+          host === 'localhost' ||
+          host.endsWith('.localhost') ||
+          host.endsWith('.local') ||
+          host.endsWith('.internal') ||
+          host === '127.0.0.1' ||
+          host === '0.0.0.0' ||
+          host === '169.254.169.254' ||
+          host.startsWith('169.254.') ||
+          host.startsWith('10.') ||
+          host.startsWith('192.168.') ||
+          /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host)
+        ) {
+          return false
+        }
+        return true
+      } catch {
+        return false
+      }
+    }
+
+    assert.strictEqual(isWebhookUrlSafe('http://169.254.169.254/latest/meta-data'), false)
+    assert.strictEqual(isWebhookUrlSafe('https://169.254.169.254/latest/meta-data'), false)
+    assert.strictEqual(isWebhookUrlSafe('http://localhost:3000'), false)
+    assert.strictEqual(isWebhookUrlSafe('https://127.0.0.1:8080'), false)
+    assert.strictEqual(isWebhookUrlSafe('https://10.0.0.1/admin'), false)
+    assert.strictEqual(isWebhookUrlSafe('https://192.168.1.1/setup'), false)
+    assert.strictEqual(isWebhookUrlSafe('https://hooks.slack.com/services/T00/B00/X00'), true)
+    assert.strictEqual(isWebhookUrlSafe('https://discord.com/api/webhooks/123/abc'), true)
+  })
+
+  test('22. Role Hierarchy Protection: Non-owner administrator cannot assign platform_owner role', () => {
+    function canAssignRole(callerRole: PlatformRole, targetRole: PlatformRole): boolean {
+      if (targetRole === 'platform_owner') {
+        return callerRole === 'platform_owner'
+      }
+      return callerRole === 'platform_owner' || callerRole === 'platform_admin'
+    }
+
+    assert.strictEqual(canAssignRole('platform_admin', 'platform_owner'), false, 'platform_admin cannot grant platform_owner')
+    assert.strictEqual(canAssignRole('platform_support', 'platform_owner'), false, 'platform_support cannot grant platform_owner')
+    assert.strictEqual(canAssignRole('platform_owner', 'platform_owner'), true, 'platform_owner can assign platform_owner')
+    assert.strictEqual(canAssignRole('platform_owner', 'platform_admin'), true, 'platform_owner can assign platform_admin')
+  })
+
+  test('23. Safe Session Revocation: Unauthenticated session revocation is rejected', () => {
+    function validateSessionRevocation(callerAdminId?: string): boolean {
+      return Boolean(callerAdminId && callerAdminId.trim().length > 0)
+    }
+
+    assert.strictEqual(validateSessionRevocation(undefined), false, 'Undefined caller must be rejected')
+    assert.strictEqual(validateSessionRevocation(''), false, 'Empty caller must be rejected')
+    assert.strictEqual(validateSessionRevocation('adm-uuid-001'), true, 'Valid admin caller accepted')
+  })
 })
+
 

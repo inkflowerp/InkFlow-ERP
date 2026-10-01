@@ -14,13 +14,19 @@ export type PlatformRole =
 export interface PlatformUserRecord {
   id: string
   user_id: string
+  userId?: string
+  adminId?: string
   email: string
   full_name: string
+  fullName?: string
   role: PlatformRole
+  platformRole?: PlatformRole
   phone?: string
   avatar_url?: string
+  avatarUrl?: string
   is_active: boolean
   mfa_enabled?: boolean
+  mfaEnabled?: boolean
   preferences?: {
     language?: string
     timezone?: string
@@ -34,9 +40,12 @@ export interface PlatformUserRecord {
 export interface AuthenticatedPlatformContext {
   userId: string
   adminId: string
+  id?: string
+  user_id?: string
   email: string
   fullName: string
   platformRole: PlatformRole
+  role?: PlatformRole
   responsibilities: string[]
   permissions: string[]
   isActive: boolean

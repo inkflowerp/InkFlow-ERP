@@ -1,14 +1,14 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-import { OrderService } from '@/services/order.service'
-import { AuditService } from '@/services/audit.service'
-import { EntitlementService } from '@/services/entitlement.service'
-import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { SalesOrderRecord, JobOrderRecord } from '@/types/order.types'
-import type { ProductionTaskRecord } from '@/types/production.types'
-import type { DesignJobRecord } from '@/types/design.types'
-import type { DeliveryChallanRecord } from '@/types/logistics.types'
+import { revalidatePath } from 'next/cache.js'
+import { OrderService } from '../services/order.service.ts'
+import { AuditService } from '../services/audit.service.ts'
+import { EntitlementService } from '../services/entitlement.service.ts'
+import { getCurrentTenant } from '../lib/auth/tenant-auth.ts'
+import type { SalesOrderRecord, JobOrderRecord } from '../types/order.types.ts'
+import type { ProductionTaskRecord } from '../types/production.types.ts'
+import type { DesignJobRecord } from '../types/design.types.ts'
+import type { DeliveryChallanRecord } from '../types/logistics.types.ts'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -36,6 +36,7 @@ export async function createSalesOrderAction(
     final_price: number
     advance_amount?: number
     notes?: string
+    idempotency_key?: string
     items: Array<{
       item_name: string
       quantity: number

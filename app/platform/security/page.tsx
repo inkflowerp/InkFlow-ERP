@@ -42,6 +42,7 @@ import { formatDate, formatTime, formatDateTime } from '@/lib/formatters'
 import {
   changePlatformOwnerPasswordAction,
   togglePlatformOwnerMFAAction,
+  generatePlatformMfaSecretAction,
   revokePlatformSessionAction,
   revokeAllOtherPlatformSessionsAction,
 } from '@/actions/platform.actions'
@@ -67,6 +68,7 @@ export default function PlatformSecurityPage() {
   const [mfaModalOpen, setMfaModalOpen] = useState(false)
   const [mfaActionType, setMfaActionType] = useState<'enable' | 'disable'>('enable')
   const [totpCode, setTotpCode] = useState('')
+  const [totpSecretKey, setTotpSecretKey] = useState('')
   const [isUpdatingMfa, setIsUpdatingMfa] = useState(false)
   const [mfaError, setMfaError] = useState<string | null>(null)
   const [copiedSecret, setCopiedSecret] = useState(false)
@@ -78,7 +80,22 @@ export default function PlatformSecurityPage() {
   // Login History Filter
   const [loginFilter, setLoginFilter] = useState<'all' | 'successful' | 'failed'>('all')
 
-  const totpSecretKey = 'JBSWY3DPEHPK3PXP'
+  const openMfaModal = async (type: 'enable' | 'disable') => {
+    setMfaActionType(type)
+    setMfaError(null)
+    setTotpCode('')
+    setMfaModalOpen(true)
+    if (type === 'enable') {
+      try {
+        const res = await generatePlatformMfaSecretAction()
+        if (res.success && res.secret) {
+          setTotpSecretKey(res.secret)
+        }
+      } catch {
+        // Fallback
+      }
+    }
+  }
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setNotification({ type, message })
@@ -210,7 +227,7 @@ export default function PlatformSecurityPage() {
     }
 
     try {
-      const res = await togglePlatformOwnerMFAAction(enable)
+      const res = await togglePlatformOwnerMFAAction(enable, totpCode.trim(), enable ? totpSecretKey : undefined)
       if (res.success) {
         showToast(
           'success',
@@ -680,10 +697,7 @@ export default function PlatformSecurityPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    setMfaActionType('enable')
-                    setMfaModalOpen(true)
-                  }}
+                  onClick={() => openMfaModal('enable')}
                   className="w-full sm:flex-1 text-xs font-bold border-slate-700 hover:bg-slate-800 text-slate-200 h-10 min-h-[44px]"
                 >
                   <QrCode className="h-3.5 w-3.5 mr-1.5 text-cyan-400" />
@@ -692,10 +706,7 @@ export default function PlatformSecurityPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    setMfaActionType('disable')
-                    setMfaModalOpen(true)
-                  }}
+                  onClick={() => openMfaModal('disable')}
                   className="w-full sm:w-auto text-xs font-bold border-red-900/60 bg-red-950/20 text-red-400 hover:bg-red-950/60 h-10 min-h-[44px]"
                 >
                   Disable MFA
@@ -704,10 +715,7 @@ export default function PlatformSecurityPage() {
             ) : (
               <Button
                 type="button"
-                onClick={() => {
-                  setMfaActionType('enable')
-                  setMfaModalOpen(true)
-                }}
+                onClick={() => openMfaModal('enable')}
                 className="w-full text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white h-10 min-h-[44px]"
               >
                 <QrCode className="h-3.5 w-3.5 mr-1.5" />

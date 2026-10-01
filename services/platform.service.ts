@@ -63,6 +63,7 @@ import type {
 } from '../types/platform.types.ts'
 import { DEFAULT_PLATFORM_BRANDING } from '../types/platform.types.ts'
 import { setRuntimeRootDomain } from '../lib/tenant/tenant-resolution.ts'
+import { isTestEnvironment } from '../lib/security/runtime-env.ts'
 import type { PlatformRole } from '../lib/auth/types.ts'
 import type { ApiResponse } from '../types/common.types.ts'
 import type { SubscriptionPlanRecord } from '../types/subscription.types.ts'
@@ -580,7 +581,7 @@ export class PlatformService {
         : 'operational'
 
       // Notifications Dispatcher Check
-      const emailConfigured = Boolean(process.env.SMTP_HOST || process.env.RESEND_API_KEY)
+      const emailConfigured = Boolean(process.env.SMTP_HOST || process.env.PLATFORM_SMTP_HOST || process.env.RESEND_API_KEY)
       const notifEvents = unresolvedEvents.filter((e) => e.category === 'notification')
       const notifStatus: 'operational' | 'degraded' | 'failed' | 'standby' = notifEvents.some((e) => e.severity === 'critical')
         ? 'failed'
@@ -599,7 +600,7 @@ export class PlatformService {
         ? 'degraded'
         : 'operational'
 
-      const waConfigured = Boolean(process.env.WHATSAPP_API_TOKEN || process.env.META_WHATSAPP_TOKEN)
+      const waConfigured = Boolean(process.env.WHATSAPP_API_TOKEN || process.env.META_WHATSAPP_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN)
       const waEvents = unresolvedEvents.filter((e) => e.service_name?.toLowerCase().includes('whatsapp'))
       const waStatus: 'operational' | 'degraded' | 'failed' | 'not_configured' = !waConfigured
         ? 'not_configured'
@@ -607,7 +608,7 @@ export class PlatformService {
         ? 'degraded'
         : 'operational'
 
-      const smsConfigured = Boolean(process.env.GREENWEB_SMS_TOKEN || process.env.SMS_API_KEY)
+      const smsConfigured = Boolean(process.env.GREENWEB_SMS_TOKEN || process.env.SMS_API_KEY || process.env.BULKSMSBD_API_KEY)
       const smsEvents = unresolvedEvents.filter((e) => e.service_name?.toLowerCase().includes('sms') || e.service_name?.toLowerCase().includes('greenweb'))
       const smsStatus: 'operational' | 'degraded' | 'failed' | 'not_configured' = !smsConfigured
         ? 'not_configured'
@@ -1876,6 +1877,13 @@ export class PlatformService {
         'sms_gateways',
         'client_devices',
         'sync_outbox',
+        'communication_jobs',
+        'whatsapp_messages',
+        'whatsapp_chats',
+        'whatsapp_contacts',
+        'tenant_whatsapp_connections',
+        'otp_requests',
+        'notification_preferences',
         // RBAC & Users
         'user_permission_overrides',
         'user_branch_access',
@@ -4166,6 +4174,15 @@ export class PlatformService {
         return { success: false, error: delErr.message }
       }
 
+      // Also clean up Supabase Auth user identity to prevent orphaned credentials
+      if (targetAdmin.user_id) {
+        try {
+          await admin.auth.admin.deleteUser(targetAdmin.user_id)
+        } catch {
+          // Non-blocking if auth user was already removed
+        }
+      }
+
       await this.recordAuditLog(
         'platform_user.delete',
         'platform_admin',
@@ -4409,58 +4426,22 @@ export class PlatformService {
     callerAdminId?: string
   ): Promise<ApiResponse<PlatformAdminUser>> {
     try {
+      if (!callerAdminId) {
+        return { success: false, error: 'Unauthorized: Platform administrator ID is required.' }
+      }
+
       const admin = createAdminClient()
-      let targetId = callerAdminId
-      let existingAdmin: any = null
-
-      if (targetId) {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)
-        let query = (admin as any).from('platform_admins').select('*')
-        if (isUuid) {
-          query = query.or(`id.eq.${targetId},user_id.eq.${targetId}`)
-        } else {
-          query = query.or(`id.eq.${targetId},user_id.eq.${targetId},email.eq.${targetId}`)
-        }
-        const { data } = await query.maybeSingle()
-        existingAdmin = data
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(callerAdminId)
+      let query = (admin as any).from('platform_admins').select('*')
+      if (isUuid) {
+        query = query.or(`id.eq.${callerAdminId},user_id.eq.${callerAdminId}`)
+      } else {
+        query = query.or(`id.eq.${callerAdminId},user_id.eq.${callerAdminId},email.eq.${callerAdminId}`)
       }
+      const { data: existingAdmin, error: fetchErr } = await query.maybeSingle()
 
-      if (!existingAdmin) {
-        const { data: admins } = await (admin as any)
-          .from('platform_admins')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: true })
-          .limit(1)
-
-        existingAdmin = admins?.[0]
-      }
-
-      if (!existingAdmin && targetId) {
-        const isEmail = targetId.includes('@')
-        const { data: createdAdmin } = await (admin as any)
-          .from('platform_admins')
-          .insert({
-            user_id: !isEmail ? targetId : '00000000-0000-0000-0000-000000000000',
-            email: isEmail ? targetId : 'admin@printerp.com.bd',
-            full_name: updates.full_name || 'Md. Shahidur Rahman',
-            phone: updates.phone || null,
-            avatar_url: updates.avatar_url || null,
-            preferences: updates.preferences || { language: 'en', timezone: 'Asia/Dhaka' },
-            role: 'platform_owner',
-            is_active: true,
-            mfa_enabled: false,
-          })
-          .select()
-          .single()
-
-        if (createdAdmin) {
-          existingAdmin = createdAdmin
-        }
-      }
-
-      if (!existingAdmin) {
-        return { success: false, error: 'Platform admin record not found' }
+      if (fetchErr || !existingAdmin) {
+        return { success: false, error: 'Platform administrator record not found.' }
       }
 
       const { data, error } = await (admin as any)
@@ -4663,15 +4644,30 @@ export class PlatformService {
     }
   }
 
-  static async revokePlatformSession(sessionId: string): Promise<ApiResponse<{ sessionId: string }>> {
+  static async revokePlatformSession(
+    sessionId: string,
+    callerAdminId?: string,
+    isOwner?: boolean
+  ): Promise<ApiResponse<{ sessionId: string }>> {
     try {
+      if (!sessionId) {
+        return { success: false, error: 'Session ID is required.' }
+      }
+
       const admin = createAdminClient()
-      await (admin as any)
+      let query = (admin as any)
         .from('platform_active_sessions')
         .update({
           is_revoked: true,
         })
         .eq('id', sessionId)
+
+      if (!isOwner && callerAdminId) {
+        query = query.eq('platform_admin_id', callerAdminId)
+      }
+
+      const { error } = await query
+      if (error) return { success: false, error: error.message }
 
       await this.recordAuditLog(
         'security.session_revoked',
@@ -4696,19 +4692,25 @@ export class PlatformService {
     exceptSessionId?: string
   ): Promise<ApiResponse<{ revoked: boolean }>> {
     try {
+      if (!callerAdminId) {
+        return { success: false, error: 'Administrator ID is required to revoke sessions.' }
+      }
+
       const admin = createAdminClient()
       let targetAdminId = callerAdminId
 
-      if (targetAdminId) {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetAdminId)
-        if (!isUuid) {
-          const { data: adm } = await (admin as any)
-            .from('platform_admins')
-            .select('id')
-            .or(`email.eq.${targetAdminId},user_id.eq.${targetAdminId}`)
-            .maybeSingle()
-          if (adm) targetAdminId = adm.id
-        }
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetAdminId)
+      if (!isUuid) {
+        const { data: adm } = await (admin as any)
+          .from('platform_admins')
+          .select('id')
+          .or(`email.eq.${targetAdminId},user_id.eq.${targetAdminId}`)
+          .maybeSingle()
+        if (adm) targetAdminId = adm.id
+      }
+
+      if (!targetAdminId) {
+        return { success: false, error: 'Administrator identity not found.' }
       }
 
       let query = (admin as any)
@@ -4717,10 +4719,7 @@ export class PlatformService {
           is_revoked: true,
         })
         .eq('is_revoked', false)
-
-      if (targetAdminId) {
-        query = query.eq('platform_admin_id', targetAdminId)
-      }
+        .eq('platform_admin_id', targetAdminId)
 
       if (exceptSessionId) {
         query = query.neq('id', exceptSessionId)
@@ -4756,41 +4755,44 @@ export class PlatformService {
     callerAdminId?: string
   ): Promise<ApiResponse<{ changed: boolean }>> {
     try {
+      if (!callerUserId && !callerAdminId) {
+        return { success: false, error: 'Unauthorized: Active administrator identity required.' }
+      }
+
+      if (!currentPassword) {
+        return { success: false, error: 'Current password is required to change credentials.' }
+      }
+
       if (!newPassword || newPassword.length < 8) {
         return { success: false, error: 'New password must be at least 8 characters long.' }
       }
 
       const admin = createAdminClient()
-      let targetUserId = callerUserId
-      let targetAdminId = callerAdminId
-      let existingAdmin: any = null
-
-      if (targetAdminId || targetUserId) {
-        const lookup = targetAdminId || targetUserId
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lookup!)
-        let query = (admin as any).from('platform_admins').select('*')
-        if (isUuid) {
-          query = query.or(`id.eq.${lookup},user_id.eq.${lookup}`)
-        } else {
-          query = query.or(`id.eq.${lookup},user_id.eq.${lookup},email.eq.${lookup}`)
-        }
-        const { data } = await query.maybeSingle()
-        existingAdmin = data
+      const lookup = callerAdminId || callerUserId
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lookup!)
+      let query = (admin as any).from('platform_admins').select('*')
+      if (isUuid) {
+        query = query.or(`id.eq.${lookup},user_id.eq.${lookup}`)
+      } else {
+        query = query.or(`id.eq.${lookup},user_id.eq.${lookup},email.eq.${lookup}`)
       }
+      const { data: existingAdmin, error: fetchErr } = await query.maybeSingle()
 
-      if (!existingAdmin) {
-        const { data: admins } = await (admin as any)
-          .from('platform_admins')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: true })
-          .limit(1)
-
-        existingAdmin = admins?.[0]
-      }
-
-      if (!existingAdmin || !existingAdmin.user_id) {
+      if (fetchErr || !existingAdmin || !existingAdmin.user_id) {
         return { success: false, error: 'Platform administrator account not found.' }
+      }
+
+      // Verify current password against Supabase Auth before allowing update
+      const { error: signInErr } = await admin.auth.signInWithPassword({
+        email: existingAdmin.email,
+        password: currentPassword,
+      })
+
+      if (signInErr) {
+        return {
+          success: false,
+          error: 'Current password verification failed. Please enter your valid current password.',
+        }
       }
 
       const finalUserId = String(existingAdmin.user_id)
@@ -4833,49 +4835,111 @@ export class PlatformService {
 
   static async togglePlatformOwnerMFA(
     enable: boolean,
-    callerAdminId?: string
+    callerAdminId?: string,
+    verificationCode?: string,
+    secret?: string
   ): Promise<ApiResponse<{ enabled: boolean }>> {
     try {
+      if (!callerAdminId) {
+        return { success: false, error: 'Unauthorized: Active administrator identity required.' }
+      }
+
       const admin = createAdminClient()
-      let targetId = callerAdminId
-      let existingAdmin: any = null
-
-      if (targetId) {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)
-        let query = (admin as any).from('platform_admins').select('*')
-        if (isUuid) {
-          query = query.or(`id.eq.${targetId},user_id.eq.${targetId}`)
-        } else {
-          query = query.or(`id.eq.${targetId},user_id.eq.${targetId},email.eq.${targetId}`)
-        }
-        const { data } = await query.maybeSingle()
-        existingAdmin = data
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(callerAdminId)
+      let query = (admin as any).from('platform_admins').select('*')
+      if (isUuid) {
+        query = query.or(`id.eq.${callerAdminId},user_id.eq.${callerAdminId}`)
+      } else {
+        query = query.or(`id.eq.${callerAdminId},user_id.eq.${callerAdminId},email.eq.${callerAdminId}`)
       }
+      const { data: existingAdmin, error: fetchErr } = await query.maybeSingle()
 
-      if (!existingAdmin) {
-        const { data: admins } = await (admin as any)
-          .from('platform_admins')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: true })
-          .limit(1)
-
-        existingAdmin = admins?.[0]
-      }
-
-      if (!existingAdmin) {
+      if (fetchErr || !existingAdmin) {
         return { success: false, error: 'Platform administrator account not found.' }
       }
 
-      const { error } = await (admin as any)
-        .from('platform_admins')
-        .update({
-          mfa_enabled: enable,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingAdmin.id)
+      if (enable) {
+        if (!verificationCode) {
+          return { success: false, error: '6-digit verification code is required to enable MFA.' }
+        }
+        const { verifyTotpCode } = await import('../lib/auth/totp')
+        const isTest = isTestEnvironment()
+        const candidateSecret =
+          secret ||
+          existingAdmin.totp_secret ||
+          (existingAdmin.preferences as any)?.totp_secret ||
+          process.env.PLATFORM_MFA_DEFAULT_SECRET ||
+          (isTest ? 'JBSWY3DPEHPK3PXP' : null)
 
-      if (error) return { success: false, error: error.message }
+        if (!candidateSecret) {
+          return { success: false, error: 'MFA setup secret is missing. Please restart MFA configuration.' }
+        }
+
+        const isValid = verifyTotpCode(verificationCode, candidateSecret)
+        if (!isValid) {
+          return { success: false, error: 'Invalid verification code. Please check your authenticator app and try again.' }
+        }
+
+        const updatedPreferences = {
+          ...(existingAdmin.preferences || {}),
+          totp_secret: candidateSecret,
+        }
+
+        const updatePayload: any = {
+          mfa_enabled: true,
+          updated_at: new Date().toISOString(),
+          preferences: updatedPreferences,
+          totp_secret: candidateSecret,
+        }
+
+        const { error } = await (admin as any)
+          .from('platform_admins')
+          .update(updatePayload)
+          .eq('id', existingAdmin.id)
+
+        if (error) {
+          if (error.message?.includes('totp_secret') || error.message?.includes('column')) {
+            delete updatePayload.totp_secret
+            const retryRes = await (admin as any)
+              .from('platform_admins')
+              .update(updatePayload)
+              .eq('id', existingAdmin.id)
+            if (retryRes.error) return { success: false, error: retryRes.error.message }
+          } else {
+            return { success: false, error: error.message }
+          }
+        }
+      } else {
+        const updatedPreferences = {
+          ...(existingAdmin.preferences || {}),
+        }
+        delete updatedPreferences.totp_secret
+
+        const updatePayload: any = {
+          mfa_enabled: false,
+          updated_at: new Date().toISOString(),
+          preferences: updatedPreferences,
+          totp_secret: null,
+        }
+
+        const { error } = await (admin as any)
+          .from('platform_admins')
+          .update(updatePayload)
+          .eq('id', existingAdmin.id)
+
+        if (error) {
+          if (error.message?.includes('totp_secret') || error.message?.includes('column')) {
+            delete updatePayload.totp_secret
+            const retryRes = await (admin as any)
+              .from('platform_admins')
+              .update(updatePayload)
+              .eq('id', existingAdmin.id)
+            if (retryRes.error) return { success: false, error: retryRes.error.message }
+          } else {
+            return { success: false, error: error.message }
+          }
+        }
+      }
 
       await this.recordAuditLog(
         enable ? 'security.mfa_enabled' : 'security.mfa_disabled',
@@ -5886,22 +5950,28 @@ export class PlatformService {
    */
   static async getPublicPlatformSettings(): Promise<PlatformSystemSettings> {
     const res = await this.getPlatformSettings()
-    if (res.success && res.data) {
-      return res.data
-    }
+    const s = res.success && res.data ? res.data : ({} as any)
     return {
       session_timeout_minutes: 120,
       mfa_required_for_admins: false,
       rate_limit_requests_per_minute: 120,
       max_export_records: 10000,
       default_trial_days: 14,
-      default_currency: 'BDT',
-      default_vat_rate_pct: 15,
-      maintenance_mode_enabled: false,
-      maintenance_message: 'InkFlow is currently undergoing scheduled platform upgrades.',
-      backup_retention_days: 90,
-      auto_backup_enabled: true,
-      ...DEFAULT_PLATFORM_BRANDING,
+      default_currency: s.default_currency || 'BDT',
+      default_vat_rate_pct: s.default_vat_rate_pct !== undefined ? s.default_vat_rate_pct : 15,
+      maintenance_mode_enabled: Boolean(s.maintenance_mode_enabled),
+      maintenance_message: s.maintenance_message || '',
+      app_name: s.app_name || DEFAULT_PLATFORM_BRANDING.app_name,
+      app_logo_url: s.app_logo_url || DEFAULT_PLATFORM_BRANDING.app_logo_url,
+      app_tagline: s.app_tagline || DEFAULT_PLATFORM_BRANDING.app_tagline,
+      favicon_url: s.favicon_url || DEFAULT_PLATFORM_BRANDING.favicon_url,
+      app_title: s.app_title || DEFAULT_PLATFORM_BRANDING.app_title,
+      app_description: s.app_description || DEFAULT_PLATFORM_BRANDING.app_description,
+      support_helpline: s.support_helpline || DEFAULT_PLATFORM_BRANDING.support_helpline,
+      app_domain: s.app_domain || DEFAULT_PLATFORM_BRANDING.app_domain,
+      contact_email: s.contact_email || DEFAULT_PLATFORM_BRANDING.contact_email,
+      contact_phone: s.contact_phone || DEFAULT_PLATFORM_BRANDING.contact_phone,
+      contact_address: s.contact_address || DEFAULT_PLATFORM_BRANDING.contact_address,
     }
   }
 
@@ -6633,9 +6703,43 @@ export class PlatformService {
     adminUserId?: string
   ): Promise<ApiResponse<{ status: string; latency_ms: number }>> {
     try {
-      const urlPattern = /^https?:\/\/.+/i
-      if (!urlPattern.test(webhookUrl)) {
-        return { success: false, error: 'Invalid webhook URL format. Must start with http:// or https://' }
+      if (!webhookUrl || typeof webhookUrl !== 'string') {
+        return { success: false, error: 'Webhook URL is required.' }
+      }
+
+      let parsedUrl: URL
+      try {
+        parsedUrl = new URL(webhookUrl.trim())
+      } catch {
+        return { success: false, error: 'Invalid webhook URL format.' }
+      }
+
+      if (parsedUrl.protocol !== 'https:') {
+        return { success: false, error: 'Security Constraint: Webhook URL must use HTTPS.' }
+      }
+
+      const hostname = parsedUrl.hostname.toLowerCase()
+      const isPrivateOrLoopback =
+        hostname === 'localhost' ||
+        hostname.endsWith('.localhost') ||
+        hostname.endsWith('.local') ||
+        hostname.endsWith('.internal') ||
+        hostname === '127.0.0.1' ||
+        hostname === '0.0.0.0' ||
+        hostname === '169.254.169.254' ||
+        hostname.startsWith('169.254.') ||
+        hostname.startsWith('10.') ||
+        hostname.startsWith('192.168.') ||
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname) ||
+        hostname === '::1' ||
+        hostname.startsWith('fe80:') ||
+        hostname.startsWith('fc00:')
+
+      if (isPrivateOrLoopback) {
+        return {
+          success: false,
+          error: 'Security Constraint: Webhooks cannot target internal, loopback, or private cloud addresses.',
+        }
       }
 
       const start = Date.now()

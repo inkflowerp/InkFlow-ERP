@@ -6,6 +6,10 @@
     {
       "path": "/api/cron/trash-cleanup",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/communication-worker",
+      "schedule": "* * * * *"
     }
   ],
   "headers": [

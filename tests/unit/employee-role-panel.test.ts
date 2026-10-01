@@ -157,8 +157,8 @@ describe('Employee Role & Permission-Based User Panel Tests', () => {
       assert.equal(canUser(designerCtx, 'view', 'orders'), true, 'Designer can view orders')
       assert.equal(canUser(designerCtx, 'create', 'orders'), true, 'Designer can initiate prepress work order')
 
-      // View-only invoice access for specs, but no billing creation or payments
-      assert.equal(canUser(designerCtx, 'view', 'invoices'), true, 'Designer can view invoice specs')
+      // Financial isolation: Designer CANNOT view or create invoices
+      assert.equal(canUser(designerCtx, 'view', 'invoices'), false, 'Designer CANNOT view invoices')
       assert.equal(canUser(designerCtx, 'create', 'invoices'), false, 'Designer CANNOT create invoices')
       assert.equal(canUser(designerCtx, 'view', 'payments'), false, 'Designer CANNOT view payment transactions')
       assert.equal(canUser(designerCtx, 'view', 'hr'), false, 'Designer CANNOT view HR/payroll')

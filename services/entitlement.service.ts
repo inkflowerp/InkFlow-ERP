@@ -212,7 +212,28 @@ export class EntitlementService {
       }
     }
 
+    // Global platform kill-switch: check if platform feature flag is explicitly disabled
+    if (!this.isPlatformFeatureFlagEnabled(feature)) {
+      return false
+    }
+
     return checkFeatureAccess(plan.code, feature, [plan], subscription.custom_limits_override)
+  }
+
+  /**
+   * Evaluates if a platform-level feature flag is active or has been disabled via kill-switch
+   */
+  static isPlatformFeatureFlagEnabled(featureKey: string): boolean {
+    try {
+      const stored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS)
+      if (Array.isArray(stored)) {
+        const match = stored.find((f) => f.key === featureKey)
+        if (match && match.is_enabled === false) {
+          return false
+        }
+      }
+    } catch {}
+    return true
   }
 
   /**

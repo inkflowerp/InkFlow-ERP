@@ -18,7 +18,7 @@ export type GatewayEnvironment = 'sandbox' | 'live'
 export type EmailProviderType = 'smtp' | 'resend' | 'sendgrid' | 'ses'
 export type SmsProviderType = 'greenweb' | 'bulksmsbd' | 'ssl_wireless' | 'twilio'
 export type PaymentProviderType = 'bkash' | 'sslcommerz' | 'nagad' | 'uddoktapay' | 'stripe'
-export type WhatsAppProviderType = 'meta_whatsapp'
+export type WhatsAppProviderType = 'openwa' | 'meta_whatsapp'
 export type TelegramProviderType = 'telegram_bot'
 
 export type AnyProviderType =

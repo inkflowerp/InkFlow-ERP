@@ -7,8 +7,8 @@ import {
   SalesOrderRecord,
   JobOrderRecord,
   OrderTimelineEventRecord,
-} from '@/types/order.types'
-import { OrderRepository } from '@/lib/repositories/order.repository'
+} from '../types/order.types.ts'
+import { OrderRepository } from '../lib/repositories/order.repository.ts'
 
 export class OrderService {
   static async getOrders(companyId: string): Promise<SalesOrderRecord[]> {

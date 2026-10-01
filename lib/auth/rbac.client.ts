@@ -85,6 +85,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     pricing: { view: true },
     users: { view: true },
     hr: { view: true, create: true, edit: true },
+    whatsapp: { view: true, send: true, manage: true },
   },
 
   sales_manager: {
@@ -108,6 +109,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     pricing: { view: true, create: true, edit: true, manage: true },
     users: { view: true },
     hr: {},
+    whatsapp: { view: true, send: true },
   },
 
   designer: {
@@ -131,6 +133,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     pricing: { view: true },
     users: {},
     hr: {},
+    whatsapp: {},
   },
 
   production_manager: {
@@ -154,6 +157,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     pricing: { view: true },
     users: { view: true },
     hr: { view: true },
+    whatsapp: { view: true, send: true },
   },
 
   operator: {
@@ -177,6 +181,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     pricing: {},
     users: {},
     hr: {},
+    whatsapp: {},
   },
 
   store_manager: {
@@ -200,6 +205,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     pricing: { view: true },
     users: {},
     hr: {},
+    whatsapp: {},
   },
 
   accountant: {
@@ -223,6 +229,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     pricing: { view: true },
     users: {},
     hr: { view: true, create: true, edit: true, approve: true },
+    whatsapp: { view: true, send: true },
   },
 
   delivery_coordinator: {
@@ -246,6 +253,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     pricing: {},
     users: {},
     hr: {},
+    whatsapp: { view: true, send: true },
   },
 
   general_staff: {
@@ -269,6 +277,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     pricing: {},
     users: {},
     hr: {},
+    whatsapp: {},
   },
 }
 

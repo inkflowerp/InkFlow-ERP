@@ -628,7 +628,7 @@ export class AuthService {
           responsibilities: ['business_owner'],
           permissions: ownerPermissions,
           loginTime: new Date().toISOString(),
-          token: authData.session?.access_token || `auth-${user.id}`,
+          token: `sess_${user.id}_${Date.now()}`,
         }
 
         if (typeof document !== 'undefined') {
@@ -679,7 +679,7 @@ export class AuthService {
         responsibilities: companyUser.responsibilities || [primaryRole],
         permissions: effectivePermissions,
         loginTime: new Date().toISOString(),
-        token: authData.session?.access_token || `auth-${user.id}`,
+        token: `sess_${user.id}_${Date.now()}`,
       }
 
       // Store session in Cookie (Browser environment)
@@ -1198,20 +1198,20 @@ export class AuthService {
 
     if (!userId) {
       try {
-        const { data: userList } = await admin.auth.admin.listUsers()
-        const user = userList?.users?.find((u) => u.email?.toLowerCase() === email)
-        if (user) userId = user.id
+        const { data: profile } = await (admin as any)
+          .from('user_profiles')
+          .select('id')
+          .ilike('email', email)
+          .maybeSingle()
+        if (profile) userId = profile.id
       } catch {}
     }
 
     if (!userId) {
       try {
-        const { data: profile } = await (admin as any)
-          .from('user_profiles')
-          .select('id')
-          .eq('email', email)
-          .maybeSingle()
-        if (profile) userId = profile.id
+        const { data: userList } = await admin.auth.admin.listUsers({ page: 1, perPage: 100 })
+        const user = userList?.users?.find((u) => u.email?.toLowerCase() === email)
+        if (user) userId = user.id
       } catch {}
     }
 
@@ -1392,31 +1392,30 @@ export class AuthService {
       let userName: string | null = null
 
       try {
-        const { data: userList } = await admin.auth.admin.listUsers()
-        const user = userList?.users?.find(
-          (u) => u.email?.toLowerCase() === normalizedEmail
-        )
-        if (user) {
-          userId = user.id
-          userName = user.user_metadata?.full_name || null
+        const { data: profile } = await (admin as any)
+          .from('user_profiles')
+          .select('id, full_name')
+          .ilike('email', normalizedEmail)
+          .maybeSingle()
+        if (profile) {
+          userId = profile.id
+          userName = profile.full_name || null
         }
-      } catch (adminErr) {
-        console.warn('[AuthService] admin.auth.admin.listUsers query error:', adminErr)
-      }
+      } catch {}
 
-      // Check user_profiles table as fallback if not matched in first page of auth.users
       if (!userId) {
         try {
-          const { data: profile } = await (admin as any)
-            .from('user_profiles')
-            .select('id, full_name')
-            .eq('email', normalizedEmail)
-            .maybeSingle()
-          if (profile) {
-            userId = profile.id
-            userName = profile.full_name || null
+          const { data: userList } = await admin.auth.admin.listUsers({ page: 1, perPage: 100 })
+          const user = userList?.users?.find(
+            (u) => u.email?.toLowerCase() === normalizedEmail
+          )
+          if (user) {
+            userId = user.id
+            userName = user.user_metadata?.full_name || null
           }
-        } catch {}
+        } catch (adminErr) {
+          console.warn('[AuthService] admin.auth.admin.listUsers query error:', adminErr)
+        }
       }
 
       if (userId || isTestEnvironment()) {
@@ -1528,7 +1527,18 @@ export class AuthService {
 
       if (!userId) {
         try {
-          const { data: userList } = await admin.auth.admin.listUsers()
+          const { data: profile } = await (admin as any)
+            .from('user_profiles')
+            .select('id')
+            .ilike('email', normalizedEmail)
+            .maybeSingle()
+          if (profile) userId = profile.id
+        } catch {}
+      }
+
+      if (!userId) {
+        try {
+          const { data: userList } = await admin.auth.admin.listUsers({ page: 1, perPage: 100 })
           const user = userList?.users?.find((u) => u.email?.toLowerCase() === normalizedEmail)
           if (user) userId = user.id
         } catch {}
@@ -1550,6 +1560,13 @@ export class AuthService {
 
         if (updateErr) {
           return { success: false, error: updateErr.message || 'Failed to update password.' }
+        }
+
+        // Revoke active sessions across all devices on password reset
+        try {
+          await admin.auth.admin.signOut(userId)
+        } catch (signOutErr) {
+          console.warn('[AuthService] admin.auth.admin.signOut error:', signOutErr)
         }
       }
 

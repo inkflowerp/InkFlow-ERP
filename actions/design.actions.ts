@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath } from 'next/cache.js'
 import { DesignService } from '../services/design.service.ts'
 import { DesignRepository } from '../lib/repositories/design.repository.ts'
 import { AuditService } from '../services/audit.service.ts'
@@ -23,22 +23,13 @@ export async function markDesignReadyAction(
   jobPayload?: Partial<DesignJobRecord>
 ): Promise<ServerActionResult<DesignJobRecord>> {
   try {
-    let companyId = requestedCompanyId || ''
-    let userId = 'system'
-    let userEmail = 'system@printerp.local'
-
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) {
-        companyId = tenant.companyId
-        userId = tenant.userId
-        userEmail = tenant.userEmail
-      }
-    } catch {}
-
-    if (!companyId) {
-      companyId = (jobPayload as any)?.company_id || requestedCompanyId || 'default'
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail
 
     if (jobPayload) {
       const existing = await DesignRepository.getDesignJobById(designJobId, companyId)
@@ -96,22 +87,13 @@ export async function updateDesignVersionApprovalAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<boolean>> {
   try {
-    let companyId = requestedCompanyId || ''
-    let userId = 'system'
-    let userEmail = 'system@printerp.local'
-
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) {
-        companyId = tenant.companyId
-        userId = tenant.userId
-        userEmail = tenant.userEmail
-      }
-    } catch {}
-
-    if (!companyId) {
-      companyId = requestedCompanyId || 'default'
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail
 
     await DesignService.updateVersionApproval({
       company_id: companyId,
@@ -162,20 +144,12 @@ export async function addDesignVersionAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<DesignVersionRecord>> {
   try {
-    let companyId = requestedCompanyId || ''
-    let creatorName = 'Designer'
-
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) {
-        companyId = tenant.companyId
-        creatorName = tenant.fullName || 'Designer'
-      }
-    } catch {}
-
-    if (!companyId) {
-      companyId = requestedCompanyId || 'default'
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const creatorName = tenant.fullName || 'Designer'
 
     const created = await DesignService.addVersion({
       company_id: companyId,
@@ -204,14 +178,12 @@ export async function getDesignJobsAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<DesignJobRecord[]>> {
   try {
-    let companyId = requestedCompanyId || ''
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) companyId = tenant.companyId
-    } catch {}
-    if (!companyId) companyId = requestedCompanyId || 'default'
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
 
-    const data = await DesignService.getJobs(companyId)
+    const data = await DesignService.getJobs(tenant.companyId)
     return { success: true, data }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch design jobs' }
@@ -226,14 +198,12 @@ export async function getDesignJobByIdAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<DesignJobRecord | null>> {
   try {
-    let companyId = requestedCompanyId || ''
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) companyId = tenant.companyId
-    } catch {}
-    if (!companyId) companyId = requestedCompanyId || 'default'
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
 
-    const data = await DesignService.getJobById(id, companyId)
+    const data = await DesignService.getJobById(id, tenant.companyId)
     return { success: true, data }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch design job' }
@@ -247,24 +217,14 @@ export async function sendToPrintOperatorAction(
   options?: { assignedMachineId?: string; assignedMachineName?: string; actorName?: string }
 ): Promise<ServerActionResult<DesignJobRecord>> {
   try {
-    let companyId = requestedCompanyId || ''
-    let userId = 'system'
-    let userEmail = 'system@printerp.local'
-    let actorName = options?.actorName || 'Designer'
-
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) {
-        companyId = tenant.companyId
-        userId = tenant.userId
-        userEmail = tenant.userEmail
-        actorName = options?.actorName || tenant.fullName || 'Designer'
-      }
-    } catch {}
-
-    if (!companyId) {
-      companyId = (jobPayload as any)?.company_id || requestedCompanyId || 'default'
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
+    const companyId = tenant.companyId
+    const userId = tenant.userId
+    const userEmail = tenant.userEmail
+    const actorName = options?.actorName || tenant.fullName || 'Designer'
 
     if (jobPayload) {
       const existing = await DesignRepository.getDesignJobById(designJobId, companyId)

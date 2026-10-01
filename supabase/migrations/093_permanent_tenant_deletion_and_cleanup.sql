@@ -177,6 +177,27 @@ begin
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'sync_outbox') then
         delete from public.sync_outbox where company_id = p_company_id;
     end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'communication_jobs') then
+        delete from public.communication_jobs where tenant_id = p_company_id;
+    end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'whatsapp_messages') then
+        delete from public.whatsapp_messages where tenant_id = p_company_id;
+    end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'whatsapp_chats') then
+        delete from public.whatsapp_chats where tenant_id = p_company_id;
+    end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'whatsapp_contacts') then
+        delete from public.whatsapp_contacts where tenant_id = p_company_id;
+    end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'tenant_whatsapp_connections') then
+        delete from public.tenant_whatsapp_connections where tenant_id = p_company_id;
+    end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'otp_requests') then
+        delete from public.otp_requests where tenant_id = p_company_id;
+    end if;
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'notification_preferences') then
+        delete from public.notification_preferences where tenant_id = p_company_id;
+    end if;
 
     -- E. Workforce, Shifts, Attendance & Payroll
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'workforce_audit_logs') then
