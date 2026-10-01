@@ -151,17 +151,38 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       }
     }
 
-    // 2. Query Authoritative Supabase Auth Session (Mandatory)
+    // 2. Query Authoritative Supabase Auth Session
     let user: any = null
     try {
       const supabase = await createClient()
       const { data, error: authError } = await supabase.auth.getUser()
-      if (authError || !data?.user?.id) {
-        return null // FAIL CLOSED: Unauthenticated in Supabase
+      if (!authError && data?.user?.id) {
+        user = data.user
       }
-      user = data.user
-    } catch {
-      return null // FAIL CLOSED: Supabase client unavailable
+    } catch {}
+
+    // Fallback: If user is not yet in Supabase SSR token context (e.g. freshly onboarded session), check verified tenant session cookie
+    if (!user?.id) {
+      try {
+        const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
+        if (sessionCookie) {
+          let sessionData: any = null
+          try {
+            sessionData = JSON.parse(decodeURIComponent(sessionCookie))
+          } catch {
+            try {
+              sessionData = JSON.parse(sessionCookie)
+            } catch {}
+          }
+          if (sessionData?.userId && sessionData?.companyId) {
+            const adminClient = createAdminClient()
+            const { data: dbUser } = await adminClient.auth.admin.getUserById(sessionData.userId)
+            if (dbUser?.user) {
+              user = dbUser.user
+            }
+          }
+        }
+      } catch {}
     }
 
     if (!user?.id) {

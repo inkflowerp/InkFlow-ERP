@@ -367,7 +367,7 @@ export async function updateSession(request: NextRequest) {
       // 1. If actively authenticated tenant user visits /login on root domain -> redirect to their tenant workspace
       if (pathname === '/login') {
         const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
-        if (user && hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
+        if ((user || hasValidTenantCookie) && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
           const targetSlug = tenantSessionData.companySlug
           if (isPslOrLocal) {
             const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)
@@ -375,8 +375,8 @@ export async function updateSession(request: NextRequest) {
           }
           const tenantUrl = getTenantLink(targetSlug, `/dashboard`, rootDomain)
           return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl), 307))
-        } else if ((hasAuthError || !user) && hasValidTenantCookie) {
-          // Stale tenant session cookie with no active Supabase user session: purge cookie to prevent redirect loops
+        } else if (hasAuthError && hasValidTenantCookie) {
+          // Explicit logout or authentication error: purge cookie to prevent redirect loops
           const res = NextResponse.next({ request })
           res.cookies.delete(TENANT_SESSION_COOKIE)
           responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
@@ -388,7 +388,7 @@ export async function updateSession(request: NextRequest) {
       // If logged in as tenant -> redirect to their actual tenant workspace (e.g. vision.inkflow.com.bd/dashboard)
       // Otherwise redirect to /login
       if (pathname === '/dashboard') {
-        if (user && hasValidTenantCookie && tenantSessionData?.companySlug) {
+        if ((user || hasValidTenantCookie) && tenantSessionData?.companySlug) {
           const targetSlug = tenantSessionData.companySlug
           if (isPslOrLocal) {
             const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)

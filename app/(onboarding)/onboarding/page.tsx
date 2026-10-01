@@ -305,6 +305,21 @@ function OnboardingWizard() {
 
       const companySlug = (res.data.slug || data.slug).toLowerCase().trim()
 
+      // Also ensure client-side Supabase auth session is synchronized if owner email & password were provided
+      if (data.owner_email && data.owner_password) {
+        try {
+          const { createBrowserClient } = await import('@supabase/ssr')
+          const supabase = createBrowserClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          )
+          await supabase.auth.signInWithPassword({
+            email: data.owner_email.toLowerCase().trim(),
+            password: data.owner_password,
+          })
+        } catch {}
+      }
+
       // Notify client-side state listeners about company creation
       if (typeof window !== 'undefined') {
         try {
@@ -313,11 +328,28 @@ function OnboardingWizard() {
         } catch {}
       }
 
-      const targetSubdomainDashboard = res.subdomainUrl || getTenantLink(companySlug, '/dashboard')
+      const isLocalOrPsl =
+        typeof window !== 'undefined' &&
+        (window.location.hostname.includes('localhost') ||
+          window.location.hostname.includes('127.0.0.1') ||
+          window.location.hostname.endsWith('.vercel.app') ||
+          window.location.hostname.endsWith('.pages.dev') ||
+          window.location.hostname.endsWith('.netlify.app'))
+
+      const targetDashboardUrl = isLocalOrPsl
+        ? `/${companySlug}/dashboard`
+        : res.subdomainUrl || getTenantLink(companySlug, '/dashboard')
 
       // 2. If Paid Plan, initiate subscription checkout
       if (isPaidPlan) {
         try {
+          const checkoutSuccessUrl = isLocalOrPsl
+            ? `${window.location.origin}/${companySlug}/dashboard?payment=success&plan=${selectedPlan}`
+            : getTenantLink(companySlug, `/dashboard?payment=success&plan=${selectedPlan}`)
+          const checkoutCancelUrl = isLocalOrPsl
+            ? `${window.location.origin}/${companySlug}/dashboard?payment=cancelled`
+            : getTenantLink(companySlug, `/dashboard?payment=cancelled`)
+
           const checkoutRes = await initiateSubscriptionCheckoutAction({
             companyId: res.data.id,
             planCode: selectedPlan,
@@ -326,8 +358,8 @@ function OnboardingWizard() {
             customerName: data.owner_name || data.name,
             customerPhone: data.owner_phone || data.phone,
             customerEmail: data.owner_email || data.email,
-            successUrl: getTenantLink(companySlug, `/dashboard?payment=success&plan=${selectedPlan}`),
-            cancelUrl: getTenantLink(companySlug, `/dashboard?payment=cancelled`),
+            successUrl: checkoutSuccessUrl,
+            cancelUrl: checkoutCancelUrl,
           })
 
           if (checkoutRes.success && checkoutRes.data?.checkoutUrl) {
@@ -336,22 +368,26 @@ function OnboardingWizard() {
             return
           } else if (checkoutRes.success) {
             // Offline / Bank wire / direct activation
-            window.location.href = getTenantLink(companySlug, `/dashboard?payment=initiated&trx=${checkoutRes.data?.internalTrxId || ''}`)
+            window.location.href = isLocalOrPsl
+              ? `/${companySlug}/dashboard?payment=initiated&trx=${checkoutRes.data?.internalTrxId || ''}`
+              : getTenantLink(companySlug, `/dashboard?payment=initiated&trx=${checkoutRes.data?.internalTrxId || ''}`)
             return
           } else {
             console.warn('Checkout warning:', checkoutRes.error)
-            window.location.href = getTenantLink(companySlug, `/dashboard?payment=pending`)
+            window.location.href = isLocalOrPsl
+              ? `/${companySlug}/dashboard?payment=pending`
+              : getTenantLink(companySlug, `/dashboard?payment=pending`)
             return
           }
         } catch (checkoutErr) {
           console.warn('Checkout initiation error:', checkoutErr)
-          window.location.href = targetSubdomainDashboard
+          window.location.href = targetDashboardUrl
           return
         }
       }
 
-      // 3. For trial / free plan: Hard redirect directly to the new company subdomain dashboard
-      window.location.href = targetSubdomainDashboard
+      // 3. For trial / free plan: Hard redirect directly to the new company dashboard
+      window.location.href = targetDashboardUrl
     } catch (err: any) {
       setError(err?.message || 'An unexpected error occurred during setup')
       setIsLoading(false)

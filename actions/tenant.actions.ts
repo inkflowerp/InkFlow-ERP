@@ -53,6 +53,20 @@ export async function createCompanyAction(
   const company = result.data
   const effectiveUserId = (result as any).ownerUserId || resolvedUserId
 
+  // 1. Establish active Supabase Auth user session if owner email & password were provided
+  if (data.owner_email && data.owner_password) {
+    try {
+      const supabase = await createClient()
+      await supabase.auth.signInWithPassword({
+        email: data.owner_email.toLowerCase().trim(),
+        password: data.owner_password,
+      })
+    } catch (authErr) {
+      console.warn('[createCompanyAction] Auto sign-in error:', authErr)
+    }
+  }
+
+  // 2. Set Tenant Session Cookie
   if (effectiveUserId) {
     const membership = await TenantRepository.resolveUserMembership(effectiveUserId, company.slug)
     const sessionData: TenantSessionData = {
@@ -84,7 +98,28 @@ export async function createCompanyAction(
   }
 
   revalidatePath('/', 'layout')
-  const subdomainUrl = `${getTenantBaseUrl(company.slug)}/dashboard`
+
+  // Check if current request is from localhost or PSL (e.g. *.vercel.app)
+  let isPslOrLocalRequest = false
+  try {
+    const { headers } = await import('next/headers')
+    const headerStore = await headers()
+    const host = (headerStore.get('x-forwarded-host') || headerStore.get('host') || '').toLowerCase().split(':')[0]
+    if (
+      host.includes('localhost') ||
+      host.includes('127.0.0.1') ||
+      host.endsWith('.vercel.app') ||
+      host.endsWith('.pages.dev') ||
+      host.endsWith('.netlify.app')
+    ) {
+      isPslOrLocalRequest = true
+    }
+  } catch {}
+
+  const subdomainUrl = isPslOrLocalRequest
+    ? `/${company.slug}/dashboard`
+    : `${getTenantBaseUrl(company.slug)}/dashboard`
+
   return { success: true, data: result.data, subdomainUrl }
 }
 
