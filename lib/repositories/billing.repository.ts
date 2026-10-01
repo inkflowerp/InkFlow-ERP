@@ -2186,7 +2186,7 @@ export class BillingRepository {
                 const newStatus = newDue <= 0 ? 'paid' : 'partially_paid'
 
                 try {
-                  await (client as any)
+                  const { error: invUpErr } = await (client as any)
                     .from('invoices')
                     .update({
                       paid_amount: newPaid,
@@ -2195,7 +2195,14 @@ export class BillingRepository {
                       updated_at: new Date().toISOString(),
                     })
                     .eq('id', matchedInv.id)
-                } catch (_) {}
+                  if (invUpErr && mode === 'production') {
+                    throw new Error(`Database error updating invoice ${matchedInv.invoice_number || matchedInv.id}: ${invUpErr.message}`)
+                  }
+                } catch (invCatchErr: any) {
+                  if (mode === 'production') {
+                    throw invCatchErr
+                  }
+                }
 
                 matchedInv.paid_amount = newPaid
                 matchedInv.due_amount = newDue
@@ -2228,7 +2235,7 @@ export class BillingRepository {
             const newStatus = newDue <= 0 ? 'paid' : 'partially_paid'
 
             try {
-              await (client as any)
+              const { error: invUpErr } = await (client as any)
                 .from('invoices')
                 .update({
                   paid_amount: newPaid,
@@ -2237,7 +2244,14 @@ export class BillingRepository {
                   updated_at: new Date().toISOString(),
                 })
                 .eq('id', inv.id)
-            } catch (_) {}
+              if (invUpErr && mode === 'production') {
+                throw new Error(`Database error updating invoice ${inv.invoice_number || inv.id}: ${invUpErr.message}`)
+              }
+            } catch (invCatchErr: any) {
+              if (mode === 'production') {
+                throw invCatchErr
+              }
+            }
 
             inv.paid_amount = newPaid
             inv.due_amount = newDue
@@ -2283,10 +2297,17 @@ export class BillingRepository {
         }
 
         try {
-          await (client as any)
+          const { error: payInsertErr } = await (client as any)
             .from('payments')
             .insert(newPaymentRow)
-        } catch (_) {}
+          if (payInsertErr && mode === 'production') {
+            throw new Error(`Database payment creation failed: ${payInsertErr.message}`)
+          }
+        } catch (payCatchErr: any) {
+          if (mode === 'production') {
+            throw new Error(`Database payment creation failed: ${payCatchErr?.message || 'Supabase insert failed'}`)
+          }
+        }
 
         if (allocationRecords.length > 0) {
           try {

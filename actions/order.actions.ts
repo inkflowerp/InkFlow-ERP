@@ -9,6 +9,7 @@ import type { SalesOrderRecord, JobOrderRecord } from '../types/order.types.ts'
 import type { ProductionTaskRecord } from '../types/production.types.ts'
 import type { DesignJobRecord } from '../types/design.types.ts'
 import type { DeliveryChallanRecord } from '../types/logistics.types.ts'
+import { SalesOrderCreateSchema } from '../lib/security/input-validation.ts'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -71,12 +72,13 @@ export async function createSalesOrderAction(
       return { success: false, error: 'Unauthorized: You do not have permission to create sales orders.' }
     }
 
-    if (!orderData.customer_id || !orderData.customer_name) {
-      return { success: false, error: 'Customer is required for sales order.' }
-    }
-
-    if (!orderData.items || orderData.items.length === 0) {
-      return { success: false, error: 'At least one line item is required.' }
+    const validationResult = SalesOrderCreateSchema.safeParse(orderData)
+    if (!validationResult.success) {
+      const issue = validationResult.error.issues[0]
+      return {
+        success: false,
+        error: `Validation error: ${issue ? `${issue.path.join('.')}: ${issue.message}` : 'Invalid sales order data'}`,
+      }
     }
 
     const mappedPriority =

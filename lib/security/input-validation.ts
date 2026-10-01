@@ -136,3 +136,37 @@ export const SettingsChangeSchema = z.object({
   settings: z.record(z.string(), z.any()),
   reason: z.string().optional(),
 })
+
+// 11. Sales Order Create Schema
+export const SalesOrderCreateSchema = z.object({
+  customer_id: z.string().min(1, 'Customer ID is required'),
+  customer_name: z.string().min(1, 'Customer name is required'),
+  customer_phone: z.string().optional().nullable(),
+  customer_address: z.string().optional().nullable(),
+  order_date: z.string().optional().nullable(),
+  delivery_date: z.string().optional().nullable(),
+  priority: z.enum(['urgent', 'high', 'normal', 'low']).optional().default('normal'),
+  status: z.enum(['draft', 'confirmed', 'in_production', 'completed', 'delivered', 'cancelled']).optional().default('confirmed'),
+  payment_terms: z.enum(['advance', 'on_delivery', 'credit_7_days', 'credit_15_days', 'credit_30_days', 'cash', 'partial', 'credit']).optional(),
+  subtotal: z.number().min(0, 'Subtotal must be non-negative'),
+  discount_amount: z.number().min(0, 'Discount must be non-negative').optional().default(0),
+  vat_amount: z.number().min(0, 'VAT must be non-negative').optional().default(0),
+  final_price: z.number().min(0, 'Final price must be non-negative'),
+  advance_amount: z.number().min(0, 'Advance amount must be non-negative').optional().default(0),
+  notes: z.string().max(2000).optional().nullable(),
+  idempotency_key: z.string().max(128).optional().nullable(),
+  items: z.array(
+    z.object({
+      item_name: z.string().min(1, 'Item name is required'),
+      quantity: z.number().positive('Quantity must be positive'),
+      unit_price: z.number().min(0, 'Unit price must be non-negative'),
+      total_price: z.number().min(0, 'Total price must be non-negative'),
+      width: z.number().min(0).optional(),
+      height: z.number().min(0).optional(),
+      dimension_unit: z.enum(['ft', 'inch', 'mm', 'cm', 'm']).optional(),
+      unit: z.string().optional(),
+      media_type: z.string().optional().nullable(),
+      notes: z.string().optional().nullable(),
+    })
+  ).min(1, 'At least one line item is required'),
+})

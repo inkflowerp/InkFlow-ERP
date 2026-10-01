@@ -294,19 +294,34 @@ export class OrderRepository {
         return existing as unknown as SalesOrderRecord
       }
 
-      const { data, error } = await (supabase as any)
+      let insertResult = await (supabase as any)
         .from('sales_orders')
         .insert(payload)
         .select()
         .single()
 
-      if (error) {
+      if (insertResult.error && payload.idempotency_key) {
+        // Fallback without idempotency_key column if schema does not have the column (key is already recorded in notes)
+        const { idempotency_key: _, ...corePayload } = payload
+        insertResult = await (supabase as any)
+          .from('sales_orders')
+          .insert(corePayload)
+          .select()
+          .single()
+      }
+
+      if (insertResult.error) {
         if (mode === 'production') {
-          throw new Error(`Database order creation failed: ${error.message}`)
+          throw new Error(`Database order creation failed: ${insertResult.error.message}`)
         }
       }
 
-      if (!error && data) {
+      const data = insertResult.data
+
+      if (data) {
+        let itemsSuccess = true
+        let itemsError = ''
+
         if (order.items && order.items.length > 0) {
           const itemsPayload = order.items.map((it) => ({
             order_id: data.id,
@@ -322,26 +337,46 @@ export class OrderRepository {
             total_price: it.total_price || (it.quantity || 1) * (it.unit_price || 0),
           }))
           try {
-            await (supabase as any).from('sales_order_items').insert(itemsPayload)
-          } catch {
-            // Fallback without sales_order_id column in case strict schema
-            const fallbackPayload = itemsPayload.map(({ sales_order_id, ...rest }) => rest)
-            await (supabase as any).from('sales_order_items').insert(fallbackPayload)
+            const { error: itemErr } = await (supabase as any).from('sales_order_items').insert(itemsPayload)
+            if (itemErr) {
+              // Fallback without sales_order_id column in case strict schema
+              const fallbackPayload = itemsPayload.map(({ sales_order_id, ...rest }) => rest)
+              const { error: fbErr } = await (supabase as any).from('sales_order_items').insert(fallbackPayload)
+              if (fbErr) {
+                itemsSuccess = false
+                itemsError = fbErr.message
+              }
+            }
+          } catch (itemCatchErr: any) {
+            itemsSuccess = false
+            itemsError = itemCatchErr?.message || 'Failed to insert line items'
           }
         }
 
-        await (supabase as any).from('order_timeline_events').insert({
-          company_id: order.company_id,
-          order_id: data.id,
-          stage: 'sales_order',
-          title: 'Order Created',
-          description: `Sales order ${orderNumber} booked for ${order.customer_name} (Routing: ${workflowRouting})`,
-          actor_name: order.salesperson_name,
-          created_at: new Date().toISOString(),
-        })
+        if (!itemsSuccess) {
+          // Compensating rollback: delete incomplete parent record to prevent orphaned orders
+          try {
+            await (supabase as any).from('sales_orders').delete().eq('id', data.id)
+          } catch (_) {}
+          if (mode === 'production') {
+            throw new Error(`Database order creation failed on line items: ${itemsError}`)
+          }
+        } else {
+          try {
+            await (supabase as any).from('order_timeline_events').insert({
+              company_id: order.company_id,
+              order_id: data.id,
+              stage: 'sales_order',
+              title: 'Order Created',
+              description: `Sales order ${orderNumber} booked for ${order.customer_name} (Routing: ${workflowRouting})`,
+              actor_name: order.salesperson_name,
+              created_at: new Date().toISOString(),
+            })
+          } catch (_) {}
 
-        const retrieved = await this.getOrderById(String(data.id), order.company_id)
-        if (retrieved) return retrieved
+          const retrieved = await this.getOrderById(String(data.id), order.company_id)
+          if (retrieved) return retrieved
+        }
       }
     } catch (err: any) {
       if (mode === 'production') {

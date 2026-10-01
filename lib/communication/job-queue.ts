@@ -250,6 +250,24 @@ export class CommunicationJobQueue {
     const adminClient = createAdminClient()
     const now = new Date().toISOString()
 
+    // 0. Auto-reclaim stale locked jobs from crashed or timed-out workers (10-minute lease)
+    try {
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+      await (adminClient as any)
+        .from('communication_jobs')
+        .update({
+          status: 'retrying',
+          next_retry_at: now,
+          next_attempt_at: now,
+          last_error: 'Worker lease expired (recovered from worker timeout or container restart)',
+          updated_at: now,
+        })
+        .eq('status', 'processing')
+        .lte('locked_at', tenMinutesAgo)
+    } catch (reclaimErr) {
+      console.warn('[JobQueue] Stale lock reclamation warning:', reclaimErr)
+    }
+
     const { data: pendingJobs } = await (adminClient as any)
       .from('communication_jobs')
       .select('id')

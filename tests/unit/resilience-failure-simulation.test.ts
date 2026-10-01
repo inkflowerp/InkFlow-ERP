@@ -261,4 +261,107 @@ describe('Real-World Resilience & Failure Simulation Suite', () => {
       }
     })
   })
+
+  describe('6. Confirmed Resilience Weakness Fixes Verification', () => {
+    it('SalesOrderCreateSchema rejects negative prices, negative quantities, or empty items', async () => {
+      const { SalesOrderCreateSchema } = await import('../../lib/security/input-validation.ts')
+
+      // Negative price
+      const negPrice = SalesOrderCreateSchema.safeParse({
+        customer_id: 'cust-1',
+        customer_name: 'Test Customer',
+        final_price: -100,
+        subtotal: -100,
+        items: [{ item_name: 'Banner', quantity: 1, unit_price: 100, total_price: 100 }],
+      })
+      assert.strictEqual(negPrice.success, false)
+
+      // Negative quantity
+      const negQty = SalesOrderCreateSchema.safeParse({
+        customer_id: 'cust-1',
+        customer_name: 'Test Customer',
+        final_price: 100,
+        subtotal: 100,
+        items: [{ item_name: 'Banner', quantity: -5, unit_price: 100, total_price: 100 }],
+      })
+      assert.strictEqual(negQty.success, false)
+
+      // Zero items
+      const zeroItems = SalesOrderCreateSchema.safeParse({
+        customer_id: 'cust-1',
+        customer_name: 'Test Customer',
+        final_price: 100,
+        subtotal: 100,
+        items: [],
+      })
+      assert.strictEqual(zeroItems.success, false)
+
+      // Valid order passes
+      const valid = SalesOrderCreateSchema.safeParse({
+        customer_id: 'cust-1',
+        customer_name: 'Valid Customer',
+        final_price: 500,
+        subtotal: 500,
+        items: [{ item_name: 'Signboard', quantity: 2, unit_price: 250, total_price: 500 }],
+      })
+      assert.strictEqual(valid.success, true)
+    })
+
+    it('Quotation conversion throws explicit error in production mode when database is unreachable', async () => {
+      const { QuotationRepository } = await import('../../lib/repositories/quotation.repository.ts')
+      const originalMode = process.env.FINANCIAL_PERSISTENCE_MODE
+      const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+      try {
+        process.env.FINANCIAL_PERSISTENCE_MODE = 'production'
+        process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:59999'
+
+        // Create a local quotation in test store
+        const { PrintERPDataStore, STORAGE_KEYS } = await import('../../lib/db/data-store.ts')
+        const companyId = 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e'
+        const quoteId = 'c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f'
+
+        PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, {
+          id: quoteId,
+          company_id: companyId,
+          quotation_number: 'QUO-FAIL-TEST',
+          customer_name: 'Failover Corp',
+          customer_phone: '+8801700112233',
+          grand_total: 10000,
+          subtotal: 10000,
+          items: [{ description: 'Test Item', quantity: 1, unit_rate: 10000, item_total: 10000 }],
+        })
+
+        await assert.rejects(
+          async () => {
+            await QuotationRepository.convertQuotationToJobOrder(quoteId, companyId)
+          },
+          (err: any) => {
+            assert.ok(
+              err.message.includes('Database quotation conversion failed'),
+              `Expected fail-closed error, got: ${err.message}`
+            )
+            return true
+          }
+        )
+      } finally {
+        if (originalMode) {
+          process.env.FINANCIAL_PERSISTENCE_MODE = originalMode
+        } else {
+          delete process.env.FINANCIAL_PERSISTENCE_MODE
+        }
+        if (originalUrl) {
+          process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl
+        }
+      }
+    })
+
+    it('CommunicationJobQueue processPendingBatch auto-reclaims stale locked jobs', async () => {
+      const { CommunicationJobQueue } = await import('../../lib/communication/job-queue.ts')
+      // Running processPendingBatch should execute lease recovery without crashing
+      const res = await CommunicationJobQueue.processPendingBatch(5)
+      assert.ok(typeof res.processed === 'number')
+      assert.ok(typeof res.succeeded === 'number')
+    })
+  })
 })

@@ -101,14 +101,14 @@ const FEATURE_CATEGORIES = [
     label: 'Production, Inventory & Kanban',
     label_bn: 'প্রোডাকশন, ইনভেন্টরি ও কানবান',
     color: 'amber',
-    features: ['multi_department', 'inventory', 'inventory_rolls', 'production', 'production_kanban'] as FeatureCode[],
+    features: ['multi_department', 'inventory', 'inventory_rolls', 'production', 'production_kanban', 'machinery'] as FeatureCode[],
   },
   {
     id: 'management',
     label: 'Management, HR & Job Costing',
     label_bn: 'ম্যানেজমেন্ট, এইচআর ও জব কস্টিং',
     color: 'purple',
-    features: ['reports', 'reports_analytics', 'hr', 'hr_payroll', 'job_costing'] as FeatureCode[],
+    features: ['reports', 'reports_analytics', 'hr', 'hr_payroll', 'job_costing', 'attendance_qr'] as FeatureCode[],
   },
   {
     id: 'advanced',
@@ -117,6 +117,7 @@ const FEATURE_CATEGORIES = [
     color: 'emerald',
     features: [
       'whatsapp_notifications',
+      'sms_notifications',
       'multi_branch',
       'advanced_analytics',
       'advanced_permissions',
@@ -282,6 +283,9 @@ export default function PlatformPlansPage() {
         'hr_payroll',
         'job_costing',
         'whatsapp_notifications',
+        'sms_notifications',
+        'machinery',
+        'attendance_qr',
       ]
     } else if (preset === 'enterprise' || preset === 'all') {
       features = [...ALL_FEATURES]

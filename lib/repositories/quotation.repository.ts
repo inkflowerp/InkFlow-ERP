@@ -13,7 +13,7 @@ import {
   deduplicateQuotations,
 } from '../../types/quotation.types.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
-import { BillingRepository, generateUUID } from './billing.repository.ts'
+import { BillingRepository, generateUUID, getFinancialPersistenceMode } from './billing.repository.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse, type PaginatedResult } from '../api/pagination-helper.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
@@ -974,9 +974,18 @@ export class QuotationRepository {
             actor_name: salesOrder.salesperson_name,
             created_at: new Date().toISOString(),
           })
+        } else if (orderErr) {
+          const mode = getFinancialPersistenceMode()
+          if (mode === 'production') {
+            throw new Error(`Database quotation conversion failed: ${orderErr.message}`)
+          }
         }
       }
-    } catch (dbErr) {
+    } catch (dbErr: any) {
+      const mode = getFinancialPersistenceMode()
+      if (mode === 'production') {
+        throw new Error(`Database quotation conversion failed: ${dbErr?.message || 'Supabase unreachable'}`)
+      }
       console.warn('[QuotationRepository] Supabase order insertion fallback to local:', dbErr)
     }
 
