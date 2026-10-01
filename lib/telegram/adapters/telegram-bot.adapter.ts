@@ -128,6 +128,35 @@ export class TelegramBotAdapter implements ITelegramProvider {
       const json = await res.json().catch(() => null)
 
       if (!res.ok || !json?.ok) {
+        // If Telegram rejected due to HTML/Markdown parse entities error, auto-retry as plain text
+        const desc = (json?.description || '').toLowerCase()
+        if (desc.includes("can't parse entities") || desc.includes('parse entity') || desc.includes('entity')) {
+          try {
+            const fallbackBody = {
+              chat_id: targetChat,
+              text: payload.text.replace(/<[^>]*>?/gm, ''), // Strip tags for plain text
+              disable_web_page_preview: Boolean(payload.disableWebPagePreview),
+              reply_to_message_id: payload.replyToMessageId,
+            }
+            const fallbackRes = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(fallbackBody),
+              signal: AbortSignal.timeout(15000),
+            })
+            const fallbackJson = await fallbackRes.json().catch(() => null)
+            if (fallbackRes.ok && fallbackJson?.ok) {
+              return {
+                success: true,
+                messageId: fallbackJson.result?.message_id,
+                timestamp: new Date().toISOString(),
+                latency_ms: Date.now() - start,
+                rawResponse: fallbackJson,
+              }
+            }
+          } catch {}
+        }
+
         return {
           success: false,
           timestamp: new Date().toISOString(),

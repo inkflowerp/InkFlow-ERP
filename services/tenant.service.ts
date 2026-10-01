@@ -232,22 +232,21 @@ export class TenantService {
         TenantRepository.invalidateMembershipCache(resolvedOwnerId)
       }
 
-      // Generate real-time platform notification for tenant registration
+      // Generate real-time platform notification for tenant registration (and Telegram alert)
       try {
-        await (admin as any).from('platform_notifications').insert({
+        const { PlatformService } = await import('./platform.service.ts')
+        await PlatformService.createNotification({
           title: `New Tenant Registered: ${created.name}`,
           message: `Tenant "${created.name}" (/${created.slug}) registered on ${(data.plan || 'trial').toUpperCase()} tier.`,
           severity: 'info',
           type: 'tenant',
           company_id: created.id,
-          company_name: created.name,
           action_url: `/platform/tenants`,
           target_audience: 'all_admins',
-          is_read: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
         })
-      } catch {}
+      } catch (notifErr) {
+        console.warn('[TenantService] Platform notification warning:', notifErr)
+      }
 
       return {
         success: true,

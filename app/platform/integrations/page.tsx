@@ -564,6 +564,7 @@ export default function PlatformIntegrationsPage() {
   const [savingConfig, setSavingConfig] = useState(false)
   const [modalTestResult, setModalTestResult] = useState<GatewayTestResult | null>(null)
   const [testingInModal, setTestingInModal] = useState(false)
+  const [sendingTestInModal, setSendingTestInModal] = useState(false)
 
   // Send Real Test Message Modal State
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
@@ -925,6 +926,97 @@ export default function PlatformIntegrationsPage() {
     }
   }
 
+  // Dispatch Real Test Message directly from inside Configuration Modal
+  const handleSendTestFromModal = async () => {
+    if (!selectedMeta) return
+    setSendingTestInModal(true)
+    setModalTestResult(null)
+
+    try {
+      const cleanCreds: Record<string, string> = {}
+      for (const [k, v] of Object.entries(formData.credentials)) {
+        if (v && !v.includes('••••')) {
+          cleanCreds[k] = v.trim()
+        }
+      }
+
+      let recipient = ''
+      if (selectedMeta.category === 'telegram') {
+        recipient = String(formData.public_config?.default_chat_id || '').trim()
+        if (!recipient) {
+          showToast('Please enter Default Group / Channel Chat ID first', 'warning')
+          setModalTestResult({
+            success: false,
+            status: 'error',
+            latency_ms: 0,
+            message: 'Default Group / Channel Chat ID is required to send Telegram test message.',
+            error: 'Missing Chat ID',
+          })
+          setSendingTestInModal(false)
+          return
+        }
+      } else if (selectedMeta.category === 'email') {
+        recipient = String(formData.public_config?.sender_email || formData.public_config?.gmail_account_email || 'admin@printerp.com').trim()
+      } else if (selectedMeta.category === 'sms' || selectedMeta.category === 'whatsapp') {
+        recipient = '01711000000'
+      }
+
+      let testMessage = `Verified live test message dispatched at ${formatTime(new Date())} (BDT).`
+      if (selectedMeta.category === 'telegram') {
+        testMessage = `🔔 <b>PrintFlow Telegram Bot Connected!</b>\n\n` +
+          `This is a verified live test message confirming that your Official Telegram Bot API gateway is active and able to receive platform alerts.\n\n` +
+          `• <b>Bot Name:</b> ${formData.name || 'Telegram Bot'}\n` +
+          `• <b>Chat ID:</b> <code>${recipient}</code>\n` +
+          `• <b>Parse Mode:</b> ${formData.public_config?.parse_mode || 'HTML'}\n` +
+          `• <b>Dispatched At:</b> ${new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })} (BDT)\n\n` +
+          `<i>PrintFlow Cloud ERP • Notification Engine</i>`
+      }
+
+      const res = await sendPlatformGatewayTestAction({
+        gatewayId: editingGateway?.id,
+        category: selectedMeta.category,
+        provider: selectedMeta.id,
+        recipient,
+        recipientName: 'PrintFlow Administrator',
+        subject: `PrintFlow ${formData.name || selectedMeta.name} Test`,
+        message: testMessage,
+        credentials: cleanCreds,
+        publicConfig: formData.public_config,
+      })
+
+      if (res.success && res.data) {
+        setModalTestResult({
+          success: true,
+          status: 'connected',
+          latency_ms: res.data.latency_ms || 0,
+          message: `✓ Test message sent to ${recipient}! (Message ID: ${res.data.providerMessageId || 'Delivered'})`,
+        })
+        showToast(`✓ Test message sent to ${selectedMeta.name}! (${res.data.latency_ms} ms)`)
+        await loadGateways()
+      } else {
+        setModalTestResult({
+          success: false,
+          status: 'error',
+          latency_ms: res.data?.latency_ms || 0,
+          message: `✕ Failed to send test message: ${res.error || 'Check Chat ID & permissions'}`,
+          error: res.error,
+        })
+        showToast(res.error || 'Failed to send test message', 'error')
+      }
+    } catch (err: any) {
+      setModalTestResult({
+        success: false,
+        status: 'error',
+        latency_ms: 0,
+        message: err?.message || 'Error dispatching test message',
+        error: err?.message,
+      })
+      showToast('Error dispatching test message', 'error')
+    } finally {
+      setSendingTestInModal(false)
+    }
+  }
+
   // Set Default Gateway (Atomic single-default)
   const handleSetDefault = async (gw: SanitizedGatewayRecord) => {
     if (!gw.is_enabled) {
@@ -994,14 +1086,18 @@ export default function PlatformIntegrationsPage() {
     else if (gw.category === 'sms' || gw.category === 'whatsapp') defaultRecipient = '01711000000'
     else if (gw.category === 'telegram') defaultRecipient = gw.public_config?.default_chat_id || ''
 
+    const defaultMsg = gw.category === 'telegram'
+      ? `🔔 <b>PrintFlow Telegram Test Message</b>\n\nVerified live test message dispatched at ${formatTime(new Date())} (BDT).\n\n• Gateway: ${gw.name}\n• Channel: Official Telegram Bot API`
+      : `Verified live test message dispatched at ${formatTime(new Date())} (BDT).`
+
     setTestPayload({
       gatewayId: gw.id,
       category: gw.category,
       provider: gw.provider,
       recipient: defaultRecipient,
-      recipientName: 'PrintERP Administrator',
-      subject: `PrintERP ${gw.name} Live Test`,
-      message: `Verified live test message dispatched at ${formatTime(new Date())} (BDT).`,
+      recipientName: 'PrintFlow Administrator',
+      subject: `PrintFlow ${gw.name} Live Test`,
+      message: defaultMsg,
     })
 
     setTestConfirmed(false)
@@ -2497,17 +2593,33 @@ export default function PlatformIntegrationsPage() {
               )}
 
               {/* Modal Action Buttons */}
-              <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleTestInModal}
-                  disabled={testingInModal || savingConfig}
-                  className="h-10 text-xs border-slate-200 text-slate-700"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${testingInModal ? 'animate-spin' : ''}`} />
-                  {testingInModal ? 'Testing...' : 'Test Connection'}
-                </Button>
+              <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleTestInModal}
+                    disabled={testingInModal || sendingTestInModal || savingConfig}
+                    className="h-10 text-xs border-slate-200 text-slate-700 hover:bg-slate-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${testingInModal ? 'animate-spin' : ''}`} />
+                    {testingInModal ? 'Testing...' : 'Test Connection'}
+                  </Button>
+
+                  {/* Send Test Message Button for communication channels (Telegram, Email, SMS, WhatsApp) */}
+                  {['telegram', 'email', 'sms', 'whatsapp'].includes(selectedMeta.category) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleSendTestFromModal}
+                      disabled={testingInModal || sendingTestInModal || savingConfig}
+                      className="h-10 text-xs border-blue-200 bg-blue-50/70 text-blue-700 hover:bg-blue-100 hover:text-blue-800 font-medium"
+                    >
+                      <Send className={`w-3.5 h-3.5 mr-1.5 ${sendingTestInModal ? 'animate-spin' : ''}`} />
+                      {sendingTestInModal ? 'Sending...' : 'Send Test Message'}
+                    </Button>
+                  )}
+                </div>
 
                 <div className="flex items-center gap-2">
                   <Button
@@ -2555,7 +2667,7 @@ export default function PlatformIntegrationsPage() {
 
           <div>
             <Label className="text-xs font-semibold text-slate-700">
-              Recipient {testPayload.category === 'email' ? 'Email Address' : 'Phone / Chat ID'}
+              Recipient {testPayload.category === 'email' ? 'Email Address' : testPayload.category === 'telegram' ? 'Telegram Chat ID / Channel' : 'Mobile Phone Number'}
             </Label>
             <Input
               required
@@ -2565,7 +2677,9 @@ export default function PlatformIntegrationsPage() {
               placeholder={
                 testPayload.category === 'email'
                   ? 'admin@printerp.com'
-                  : '01711000000 or Chat ID'
+                  : testPayload.category === 'telegram'
+                  ? '1990933920 or @channel'
+                  : '01711000000'
               }
             />
           </div>

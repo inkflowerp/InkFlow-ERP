@@ -8,6 +8,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeBdPhoneNumber, isValidEmail } from '@/lib/gateway/phone-utils'
+import { PlatformService } from '@/services/platform.service'
 
 export interface SubmitDemoRequestInput {
   pressName: string
@@ -93,19 +94,18 @@ export async function submitDemoRequestAction(
       }
     }
 
-    // 5. Persist to platform_notifications table via Supabase Admin Client
-    const admin = createAdminClient()
-    const { error: insertError } = await (admin as any).from('platform_notifications').insert({
+    // 5. Persist to platform_notifications table & dispatch Telegram alert
+    const notifRes = await PlatformService.createNotification({
       title: `New Demo Walkthrough: ${cleanPressName}`,
       message: `Contact: ${cleanContactName}\nPhone: ${phoneValidation.formatted} (${phoneValidation.operator || 'Mobile'})\nEmail: ${cleanEmail || 'N/A'}\nCity: ${cleanCity}\nBusiness Focus: ${cleanBusinessType}`,
       type: 'general',
       severity: 'info',
       target_audience: 'all_admins',
-      is_read: false,
+      action_url: '/platform/tenants',
     })
 
-    if (insertError) {
-      console.error('[submitDemoRequestAction] Supabase persistence error:', insertError)
+    if (!notifRes.success) {
+      console.error('[submitDemoRequestAction] Notification creation error:', notifRes.error)
       return {
         success: false,
         error: 'Unable to schedule walkthrough at this moment. Please call our Dhaka helpline directly.',

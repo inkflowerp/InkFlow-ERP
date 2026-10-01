@@ -352,20 +352,23 @@ export class GatewayRegistry {
         }
 
         case 'telegram': {
+          const defaultChat = String(publicConfig.default_chat_id || credentials.chat_id || '').trim()
+          const targetChat = String(payload.recipient || defaultChat).trim()
+
           const tgAdapter = new TelegramBotAdapter({
             botToken: credentials.bot_token || credentials.token || credentials.password || '',
-            defaultChatId: publicConfig.default_chat_id || credentials.chat_id,
+            defaultChatId: defaultChat,
             parseMode: publicConfig.parse_mode || 'HTML',
           })
 
           const res = await tgAdapter.sendMessage({
-            chatId: payload.recipient,
+            chatId: targetChat,
             text: payload.message,
           })
 
           return {
             success: res.success,
-            providerMessageId: String(res.messageId),
+            providerMessageId: res.messageId ? String(res.messageId) : undefined,
             timestamp: res.timestamp,
             latency_ms: res.latency_ms,
             rawResponse: res.rawResponse,

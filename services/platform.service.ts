@@ -6840,6 +6840,10 @@ export class PlatformService {
           id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           ...rowToInsert,
         }
+        // Automatic Telegram relay for all platform notifications
+        this.dispatchTelegramNotification(fallbackItem).catch((tgErr) => {
+          console.warn('[PlatformService] Telegram notification dispatch warning:', tgErr?.message || tgErr)
+        })
         return { success: true, data: fallbackItem }
       }
 
@@ -6860,9 +6864,152 @@ export class PlatformService {
         )
       }
 
+      // Automatic Telegram relay for all platform notifications
+      this.dispatchTelegramNotification(data as PlatformNotificationItem).catch((tgErr) => {
+        console.warn('[PlatformService] Telegram notification dispatch warning:', tgErr?.message || tgErr)
+      })
+
       return { success: true, data }
     } catch (err: any) {
       return { success: false, error: err?.message || 'Failed to create notification' }
+    }
+  }
+
+  /**
+   * Dispatches a formatted notification message to the active Telegram Bot gateway
+   */
+  static async dispatchTelegramNotification(
+    notification: PlatformNotificationItem
+  ): Promise<boolean> {
+    try {
+      const admin = createAdminClient()
+
+      // 1. Resolve active Telegram gateway (Platform level first, then Tenant level fallback)
+      let { data: gateways } = await (admin as any)
+        .from('gateway_integrations')
+        .select('*')
+        .eq('category', 'telegram')
+        .eq('is_enabled', true)
+        .is('tenant_id', null)
+        .order('is_default', { ascending: false })
+        .limit(1)
+
+      if ((!gateways || gateways.length === 0) && notification.company_id) {
+        const { data: tenantGws } = await (admin as any)
+          .from('gateway_integrations')
+          .select('*')
+          .eq('category', 'telegram')
+          .eq('tenant_id', notification.company_id)
+          .eq('is_enabled', true)
+          .order('is_default', { ascending: false })
+          .limit(1)
+        if (tenantGws && tenantGws.length > 0) {
+          gateways = tenantGws
+        }
+      }
+
+      if (!gateways || gateways.length === 0) {
+        return false
+      }
+
+      const tgGateway = gateways[0]
+      const { GatewayService } = await import('./gateway.service.ts')
+      const creds = GatewayService.getDecryptedCredentials(tgGateway)
+      const botToken = creds.bot_token || creds.token || creds.password
+      const defaultChatId = tgGateway.public_config?.default_chat_id || creds.chat_id
+
+      if (!botToken || !defaultChatId) {
+        return false
+      }
+
+      // 2. Format Telegram message with HTML markup
+      const escape = (str?: string | null) =>
+        (str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+
+      const severityIcons: Record<string, string> = {
+        critical: '🚨 <b>CRITICAL ALERT</b>',
+        warning: '⚠️ <b>WARNING</b>',
+        error: '❌ <b>ERROR</b>',
+        success: '✅ <b>SUCCESS</b>',
+        info: '🔔 <b>PLATFORM NOTIFICATION</b>',
+      }
+      const header = severityIcons[notification.severity] || '🔔 <b>PLATFORM NOTIFICATION</b>'
+
+      const typeLabels: Record<string, string> = {
+        tenant: '🏢 Tenant Registration',
+        tenant_lifecycle: '🏢 Tenant Lifecycle',
+        tenant_suspension: '⚠️ Tenant Suspension',
+        billing: '💳 Billing & Plan',
+        subscription: '💳 Subscription Event',
+        system: '⚙️ System Health',
+        security: '🛡️ Security Alert',
+        general: '📋 Demo / Inquiry',
+        broadcast: '📢 Broadcast Announcement',
+        quota: '📊 Quota Warning',
+      }
+      const typeLabel = typeLabels[notification.type] || `🏷️ ${notification.type.toUpperCase()}`
+
+      let formattedMessage = `${header}\n`
+      formattedMessage += `━━━━━━━━━━━━━━━━━━━━━\n`
+      formattedMessage += `<b>${escape(notification.title)}</b>\n\n`
+      formattedMessage += `${escape(notification.message)}\n\n`
+      formattedMessage += `• <b>Category:</b> ${typeLabel}\n`
+
+      if (notification.company_name) {
+        formattedMessage += `• <b>Tenant:</b> ${escape(notification.company_name)}\n`
+      }
+
+      if (notification.action_url) {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://inkflow-erp.vercel.app'
+        const fullUrl = notification.action_url.startsWith('http')
+          ? notification.action_url
+          : `${baseUrl}${notification.action_url}`
+        formattedMessage += `• <b>Action:</b> <a href="${escape(fullUrl)}">Open Dashboard</a>\n`
+      }
+
+      formattedMessage += `━━━━━━━━━━━━━━━━━━━━━\n`
+      formattedMessage += `<i>PrintFlow Cloud • ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' })} (BDT)</i>`
+
+      // 3. Dispatch through TelegramBotAdapter
+      const { TelegramBotAdapter } = await import('../lib/telegram/adapters/telegram-bot.adapter.ts')
+      const adapter = new TelegramBotAdapter({
+        botToken,
+        defaultChatId: String(defaultChatId),
+        parseMode: tgGateway.public_config?.parse_mode || 'HTML',
+      })
+
+      const sendRes = await adapter.sendMessage({
+        chatId: String(defaultChatId),
+        text: formattedMessage,
+      })
+
+      // 4. Record in communication_logs
+      try {
+        const now = new Date().toISOString()
+        await (admin as any).from('communication_logs').insert({
+          company_id: notification.company_id || null,
+          gateway_id: tgGateway.id,
+          channel: 'telegram',
+          recipient_name: 'Platform Administrator',
+          recipient_destination: String(defaultChatId),
+          provider_used: 'telegram_bot',
+          message_content: notification.title + ': ' + notification.message,
+          status: sendRes.success ? 'sent' : 'failed',
+          provider_message_id: sendRes.messageId ? String(sendRes.messageId) : null,
+          error_message: sendRes.error || null,
+          sent_at: sendRes.success ? now : null,
+          failed_at: sendRes.success ? null : now,
+          created_at: now,
+        })
+      } catch {}
+
+      return sendRes.success
+    } catch (err: any) {
+      console.warn('[PlatformService] Error in dispatchTelegramNotification:', err?.message || err)
+      return false
     }
   }
 

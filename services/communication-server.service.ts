@@ -143,10 +143,10 @@ export class CommunicationService {
     }
 
     // 4. Telegram Dispatch
-    if (channels.includes('telegram') && telegramChatId) {
+    if (channels.includes('telegram')) {
       const tgRes = await GatewayService.sendTestMessage({
         category: 'telegram',
-        recipient: telegramChatId,
+        recipient: telegramChatId || '',
         recipientName,
         message: textContent,
       })

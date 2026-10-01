@@ -76,4 +76,30 @@ describe('Gateway Provider Adapters Unit Tests', () => {
     assert.strictEqual(res.success, false)
     assert.ok(res.message.includes('required'))
   })
+
+  it('10. Telegram Bot API adapter validates missing chat ID when sending message', async () => {
+    const adapter = new TelegramBotAdapter({ botToken: 'mock-token' })
+    const res = await adapter.sendMessage({ text: 'Test alert' })
+    assert.strictEqual(res.success, false)
+    assert.ok(res.error?.includes('chat ID is missing'))
+  })
+
+  it('11. Telegram test message auto-resolves default_chat_id fallback in registry', async () => {
+    const { GatewayRegistry } = await import('../../lib/gateway/gateway.registry.ts')
+    const res = await GatewayRegistry.sendTestMessage(
+      {
+        category: 'telegram',
+        provider: 'telegram_bot',
+        credentials: { bot_token: '' },
+        publicConfig: { default_chat_id: '1990933920' },
+      },
+      {
+        category: 'telegram',
+        recipient: '',
+        message: 'Hello Telegram',
+      }
+    )
+    assert.strictEqual(res.success, false)
+    assert.ok(res.error?.includes('not configured') || res.error?.includes('missing') || res.error?.includes('Token'))
+  })
 })

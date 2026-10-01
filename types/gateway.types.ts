@@ -109,6 +109,8 @@ export interface SendTestPayload {
   message: string
   templateId?: string
   variables?: Record<string, string>
+  credentials?: Record<string, string>
+  publicConfig?: Record<string, any>
 }
 
 export interface SendTestResult {

@@ -1643,6 +1643,34 @@ export class SubscriptionService {
           performed_by: sanitizedUserId,
           created_at: new Date().toISOString(),
         })
+
+        // Forward subscription event to platform notifications & Telegram
+        const notableEvents: SubscriptionEventType[] = [
+          'PLAN_UPGRADED',
+          'PLAN_DOWNGRADED',
+          'REACTIVATED',
+          'EXPIRED',
+          'SUSPENDED',
+          'PAYMENT_VERIFIED',
+          'SUBSCRIPTION_CREATED',
+        ]
+
+        if (notableEvents.includes(entry.event_type)) {
+          try {
+            const { PlatformService } = await import('./platform.service.ts')
+            await PlatformService.createNotification({
+              title: `Subscription ${entry.event_type.replace(/_/g, ' ')}: ${entry.new_plan_code?.toUpperCase() || ''}`,
+              message: entry.reason || `Tenant subscription updated: ${entry.event_type}`,
+              severity: entry.event_type === 'EXPIRED' || entry.event_type === 'SUSPENDED' ? 'warning' : 'info',
+              type: 'billing',
+              company_id: entry.company_id,
+              action_url: `/platform/subscriptions`,
+              target_audience: 'all_admins',
+            })
+          } catch (notifErr) {
+            console.warn('[SubscriptionService] Platform notification dispatch warning:', notifErr)
+          }
+        }
       }
     } catch (err) {
       console.warn('[SubscriptionService] Event ledger notice:', err)

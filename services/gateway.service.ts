@@ -593,7 +593,7 @@ export class GatewayService {
 
     if (gateway) {
       const dec = this.getDecryptedCredentialsResult(gateway)
-      if (dec.needsReentry) {
+      if (dec.needsReentry && (!payload.credentials || Object.keys(payload.credentials).length === 0)) {
         return {
           success: false,
           timestamp: now,
@@ -604,6 +604,29 @@ export class GatewayService {
       credentials = dec.credentials
       publicConfig = gateway.public_config || {}
       provider = gateway.provider
+    }
+
+    // Merge any credentials override passed from payload (e.g. from modal before saving)
+    if (payload.credentials && Object.keys(payload.credentials).length > 0) {
+      for (const [k, v] of Object.entries(payload.credentials)) {
+        if (v && !v.includes('••••')) {
+          credentials[k] = v.trim()
+        }
+      }
+    }
+
+    // Merge any publicConfig override passed from payload
+    if (payload.publicConfig && Object.keys(payload.publicConfig).length > 0) {
+      publicConfig = { ...publicConfig, ...payload.publicConfig }
+    }
+
+    // Auto-resolve recipient for Telegram / Email if not explicitly set
+    if (!payload.recipient) {
+      if (payload.category === 'telegram') {
+        payload.recipient = String(publicConfig.default_chat_id || credentials.chat_id || '').trim()
+      } else if (payload.category === 'email') {
+        payload.recipient = String(publicConfig.sender_email || publicConfig.gmail_account_email || 'admin@printerp.com').trim()
+      }
     }
 
     if (!provider) {

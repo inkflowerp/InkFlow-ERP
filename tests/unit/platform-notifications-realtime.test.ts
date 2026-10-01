@@ -228,4 +228,24 @@ describe('Platform Notifications Real-Time & Authoritative Pipeline Tests', () =
     assert.strictEqual(tenantChannelName.includes('platform:notifications'), false)
     assert.strictEqual(platformChannelName.includes('company:'), false)
   })
+
+  it('should safely relay platform notification to Telegram without throwing exceptions', async () => {
+    const testItem: PlatformNotificationItem = {
+      id: `notif-${Date.now()}`,
+      title: 'New Tenant Provisioned',
+      message: 'Tenant "Dhaka Prints Ltd" registered on Starter tier.',
+      severity: 'info',
+      type: 'tenant',
+      company_name: 'Dhaka Prints Ltd',
+      action_url: '/platform/tenants',
+      target_audience: 'all_admins',
+      is_read: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    const dispatched = await PlatformService.dispatchTelegramNotification(testItem)
+    // Returns boolean safely (false if no active bot in test environment, true if bot credentials present)
+    assert.strictEqual(typeof dispatched, 'boolean')
+  })
 })
