@@ -55,7 +55,8 @@ export async function savePlatformGatewayAction(
     // Force platform-level (tenant_id is null)
     formData.tenant_id = null
 
-    const res = await GatewayService.saveGateway(formData, user.id)
+    const effectiveUserId = user.userId || user.user_id || user.id
+    const res = await GatewayService.saveGateway(formData, effectiveUserId)
     if (!res.success || !res.data) {
       return { success: false, error: res.error || 'Failed to save gateway' }
     }

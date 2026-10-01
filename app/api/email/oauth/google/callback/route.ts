@@ -16,6 +16,10 @@ import { AuditService } from '@/services/audit.service'
 import type { EmailGatewayRecord } from '@/types/communication.types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 
+const isValidUuid = (str?: string | null): boolean => {
+  return Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const origin = resolveRequestOrigin(request)
@@ -134,18 +138,34 @@ export async function GET(request: NextRequest) {
           savedRecord = data
         }
       } else {
-        const { data, error } = await (adminClient as any)
+        const candidateUserId = isValidUuid(statePayload.userId) ? statePayload.userId : null
+        let insertRes = await (adminClient as any)
           .from('email_gateways')
           .insert({
             ...gatewayPayload,
-            created_by: statePayload.userId,
+            created_by: candidateUserId,
             created_at: nowIso,
           })
           .select()
           .single()
 
-        if (!error && data) {
-          savedRecord = data
+        if (
+          insertRes.error &&
+          (insertRes.error.message?.includes('created_by_fkey') || insertRes.error.code === '23503')
+        ) {
+          insertRes = await (adminClient as any)
+            .from('email_gateways')
+            .insert({
+              ...gatewayPayload,
+              created_by: null,
+              created_at: nowIso,
+            })
+            .select()
+            .single()
+        }
+
+        if (!insertRes.error && insertRes.data) {
+          savedRecord = insertRes.data
         }
       }
 

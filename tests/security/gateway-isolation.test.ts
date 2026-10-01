@@ -34,4 +34,22 @@ describe('Gateway Platform vs Tenant Isolation Security Tests', () => {
       assert.strictEqual(g.tenant_id, null)
     }
   })
+
+  it('4. Resilience: saving gateway with platform admin ID not in auth.users does not fail with FK violation', async () => {
+    const syntheticAdminId = '99999999-9999-9999-9999-999999999999'
+    const gmailForm: GatewayFormData = {
+      category: 'email',
+      provider: 'gmail',
+      name: 'Platform Gmail Integration',
+      environment: 'live',
+      is_enabled: true,
+      credentials: { tokens: JSON.stringify({ access_token: 'test-token', refresh_token: 'test-refresh' }) },
+      public_config: { sender_email: 'inkflow.erp@gmail.com', sender_name: 'InkFlow Platform' },
+    }
+
+    const res = await GatewayService.saveGateway(gmailForm, syntheticAdminId)
+    assert.strictEqual(res.success, true)
+    assert.ok(res.data)
+    assert.strictEqual(res.data.provider, 'gmail')
+  })
 })

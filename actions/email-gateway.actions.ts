@@ -136,7 +136,7 @@ export async function savePlatformEmailGatewayAction(
       if (error) throw error
       savedRecord = data
     } else {
-      const { data, error } = await (adminClient as any)
+      let insertRes = await (adminClient as any)
         .from('email_gateways')
         .insert({
           ...gatewayPayload,
@@ -146,8 +146,23 @@ export async function savePlatformEmailGatewayAction(
         .select()
         .single()
 
-      if (error) throw error
-      savedRecord = data
+      if (
+        insertRes.error &&
+        (insertRes.error.message?.includes('created_by_fkey') || insertRes.error.code === '23503')
+      ) {
+        insertRes = await (adminClient as any)
+          .from('email_gateways')
+          .insert({
+            ...gatewayPayload,
+            created_by: null,
+            created_at: new Date().toISOString(),
+          })
+          .select()
+          .single()
+      }
+
+      if (insertRes.error) throw insertRes.error
+      savedRecord = insertRes.data
     }
 
     // Sync to local data store
@@ -579,7 +594,7 @@ export async function saveTenantEmailGatewayAction(
       if (error) throw error
       savedRecord = data
     } else {
-      const { data, error } = await (adminClient as any)
+      let insertRes = await (adminClient as any)
         .from('email_gateways')
         .insert({
           ...payload,
@@ -589,8 +604,23 @@ export async function saveTenantEmailGatewayAction(
         .select()
         .single()
 
-      if (error) throw error
-      savedRecord = data
+      if (
+        insertRes.error &&
+        (insertRes.error.message?.includes('created_by_fkey') || insertRes.error.code === '23503')
+      ) {
+        insertRes = await (adminClient as any)
+          .from('email_gateways')
+          .insert({
+            ...payload,
+            created_by: null,
+            created_at: new Date().toISOString(),
+          })
+          .select()
+          .single()
+      }
+
+      if (insertRes.error) throw insertRes.error
+      savedRecord = insertRes.data
     }
 
     // Sync to local data store
