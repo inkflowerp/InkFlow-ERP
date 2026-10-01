@@ -3451,14 +3451,14 @@ export class BillingRepository {
 
       return {
         invoice,
-        company: company || { name: 'InkFlow Enterprise', address: 'Dhaka, Bangladesh' },
+        company: company || { name: 'InkFlow Enterprise', address: '' },
       }
     } catch {
       const invoice = await this.getInvoiceById(id, companyId)
       if (!invoice) return null
       return {
         invoice,
-        company: { name: 'InkFlow Enterprise', address: 'Dhaka, Bangladesh' },
+        company: { name: 'InkFlow Enterprise', address: '' },
       }
     }
   }

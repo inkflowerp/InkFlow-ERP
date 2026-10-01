@@ -159,7 +159,7 @@ export class PdfGeneratorService {
   static generateQuotationPdf(quote: QuotationRecord, company?: any): Buffer {
     const doc = new SimplePdfBuilder()
     const compName = company?.name || 'Printing Enterprise'
-    const compAddress = company?.address || 'Dhaka, Bangladesh'
+    const compAddress = company?.address || ''
     const compPhone = company?.phone || '+880 1700-000000'
     const compEmail = company?.email || 'billing@example.com'
     const compBin = company?.bin || company?.bin_no || '18291004821'
@@ -169,7 +169,7 @@ export class PdfGeneratorService {
 
     // Company Header
     doc.drawText(compName.toUpperCase(), 40, 35, { font: 'F2', size: 16, color: [15, 23, 42] })
-    doc.drawText(`${compAddress} | Phone: ${compPhone}`, 40, 55, { font: 'F1', size: 9, color: [100, 116, 139] })
+    doc.drawText(compAddress ? `${compAddress} | Phone: ${compPhone}` : `Phone: ${compPhone}`, 40, 55, { font: 'F1', size: 9, color: [100, 116, 139] })
     doc.drawText(`Email: ${compEmail} | BIN: ${compBin}`, 40, 68, { font: 'F1', size: 9, color: [100, 116, 139] })
 
     // Quotation Title Badge
@@ -286,7 +286,7 @@ export class PdfGeneratorService {
   static generateInvoicePdf(invoice: InvoiceRecord, company?: any): Buffer {
     const doc = new SimplePdfBuilder()
     const compName = company?.name || 'Printing Enterprise'
-    const compAddress = company?.address || 'Dhaka, Bangladesh'
+    const compAddress = company?.address || ''
     const compPhone = company?.phone || '+880 1700-000000'
     const compEmail = company?.email || 'billing@example.com'
     const compBin = company?.bin || company?.bin_no || '18291004821'
@@ -296,7 +296,7 @@ export class PdfGeneratorService {
 
     // Company Header
     doc.drawText(compName.toUpperCase(), 40, 35, { font: 'F2', size: 16, color: [15, 23, 42] })
-    doc.drawText(`${compAddress} | Phone: ${compPhone}`, 40, 55, { font: 'F1', size: 9, color: [100, 116, 139] })
+    doc.drawText(compAddress ? `${compAddress} | Phone: ${compPhone}` : `Phone: ${compPhone}`, 40, 55, { font: 'F1', size: 9, color: [100, 116, 139] })
     doc.drawText(`Email: ${compEmail} | BIN: ${compBin}`, 40, 68, { font: 'F1', size: 9, color: [100, 116, 139] })
 
     // Invoice Title Badge

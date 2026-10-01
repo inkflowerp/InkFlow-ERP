@@ -94,10 +94,13 @@ export class TenantService {
           const updated = await TenantRepository.updateCompany(existingCompany.id, {
             name: data.name.trim(),
             name_bn: data.name_bn?.trim() || null,
+            legal_name: data.legal_name?.trim() || null,
             business_type: data.business_type,
             phone: data.phone || data.owner_phone || existingCompany.phone,
             email: data.email || normalizedOwnerEmail || existingCompany.email,
+            area: data.area?.trim() || existingCompany.area || null,
             address: data.address || existingCompany.address,
+            address_bn: data.address_bn?.trim() || existingCompany.address_bn || null,
             currency: data.currency || existingCompany.currency,
             default_locale: data.default_locale || data.default_language || existingCompany.default_locale,
           })
@@ -213,6 +216,7 @@ export class TenantService {
           division_id: data.division_id,
           district_id: data.district_id,
           upazila_id: data.upazila_id,
+          area: data.area?.trim() || null,
           address: data.address,
           address_bn: data.address_bn,
           office_hours: data.office_hours,

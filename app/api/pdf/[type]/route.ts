@@ -61,7 +61,7 @@ export async function GET(
     const companyMeta = {
       name: tenantCompany?.name || "InkFlow PrintERP",
       tagline: tenantCompany?.legal_name || "Printing & Signage Solutions",
-      address: tenantCompany?.address || "Dhaka, Bangladesh",
+      address: tenantCompany?.address || "",
       phone: tenantCompany?.phone || "+880 1700-000000",
       email: tenantCompany?.email || "billing@inkflow-erp.com",
       website: tenantCompany?.website || "www.inkflow-erp.com",

@@ -72,7 +72,7 @@ export function MoneyReceiptModal({
   const generateWhatsAppText = () => {
     const custName = payment.customer_name || customer?.name || 'Valued Customer'
     const companyName = company?.name || 'CLASSIC PRINTER'
-    const companyAddress = company?.address || 'Dhaka, Bangladesh'
+    const companyAddress = company?.address || ''
     const companyPhone = company?.phone || ''
     const receiptNo = payment.receipt_number
     const amount = formatBDT(payment.amount)

@@ -19,14 +19,48 @@ import { useI18n } from '@/i18n/context'
 
 const TenantContext = createContext<TenantContextType | null>(null)
 
+function sanitizeField(val?: string | null): string | null {
+  if (!val) return null
+  const trimmed = val.trim()
+  return trimmed || null
+}
+
+function sanitizeCorporateNameBn(nameBn?: string | null, name?: string): string | null {
+  const cleanBn = sanitizeField(nameBn)
+  if (!cleanBn) return null
+  if (name && cleanBn.toLowerCase() === name.trim().toLowerCase()) return null
+  return cleanBn
+}
+
+function sanitizeLegalName(legalName?: string | null, name?: string): string | null {
+  const clean = sanitizeField(legalName)
+  if (!clean) return null
+  if (name) {
+    const cleanLower = clean.toLowerCase()
+    const nameLower = name.trim().toLowerCase()
+    if (cleanLower === nameLower || cleanLower === `${nameLower} ltd.` || cleanLower === `${nameLower} ltd`) {
+      return null
+    }
+  }
+  return clean
+}
+
+function sanitizeAddress(address?: string | null): string {
+  if (!address) return ''
+  const trimmed = address.trim()
+  if (trimmed.toLowerCase() === 'dhaka, bangladesh') return ''
+  return trimmed
+}
+
 // Helper to convert PlatformTenantCompany to CompanyRow
 function platformCompanyToRow(p: PlatformTenantCompany): CompanyRow {
+  const name = p.name
   return {
     id: p.id,
     slug: p.slug,
-    name: p.name,
-    name_bn: p.name_bn || null,
-    legal_name: null,
+    name,
+    name_bn: sanitizeCorporateNameBn(p.name_bn, name),
+    legal_name: sanitizeLegalName((p as any).legal_name, name),
     trade_license_no: null,
     bin_no: null,
     tin_no: null,
@@ -39,7 +73,7 @@ function platformCompanyToRow(p: PlatformTenantCompany): CompanyRow {
     district_id: 1,
     upazila_id: 1,
     area: p.hub || null,
-    address: p.hub || 'Dhaka, Bangladesh',
+    address: sanitizeAddress((p as any).address || p.hub),
     address_bn: null,
     office_hours: '9:00 AM - 8:00 PM (Sat - Thu)',
     holidays: 'Friday',
@@ -58,40 +92,93 @@ function resolveCompanyFromContextOrStore(
   targetSlug?: string
 ): CompanyRow | null {
   if (ctx?.companyId && ctx?.companySlug) {
+    if (ctx.company) {
+      const co = ctx.company
+      const rawName = co.name || ctx.companyName || ctx.companySlug
+      return {
+        ...co,
+        name: rawName,
+        name_bn: sanitizeCorporateNameBn(co.name_bn, rawName),
+        legal_name: sanitizeLegalName(co.legal_name, rawName),
+        address: sanitizeAddress(co.address),
+        address_bn: co.address_bn || null,
+        area: co.area || null,
+      }
+    }
+    const rawName = ctx.companyName || ctx.companySlug
     return {
       id: ctx.companyId,
       slug: ctx.companySlug,
-      name: ctx.companyName || ctx.companySlug,
-      name_bn: ctx.companyNameBn || ctx.companyName || null,
-      legal_name: `${ctx.companyName || ctx.companySlug} Ltd.`,
-      trade_license_no: null,
-      bin_no: null,
-      tin_no: null,
-      business_type: 'printing_signage',
+      name: rawName,
+      name_bn: sanitizeCorporateNameBn(ctx.companyNameBn, rawName),
+      legal_name: sanitizeLegalName((ctx as any).legalName || (ctx as any).legal_name, rawName),
+      trade_license_no: (ctx as any).trade_license_no || null,
+      bin_no: (ctx as any).bin_no || null,
+      tin_no: (ctx as any).tin_no || null,
+      business_type: (ctx as any).business_type || 'printing_signage',
       phone: ctx.phone || null,
-      whatsapp: ctx.phone || null,
+      whatsapp: (ctx as any).whatsapp || ctx.phone || null,
       email: ctx.userEmail || null,
       website: null,
-      division_id: 1,
-      district_id: 1,
-      upazila_id: 1,
-      area: null,
-      address: 'Dhaka, Bangladesh',
-      address_bn: null,
-      office_hours: '9:00 AM - 8:00 PM (Sat - Thu)',
-      holidays: 'Friday',
-      currency: 'BDT',
+      division_id: (ctx as any).division_id || 1,
+      district_id: (ctx as any).district_id || 1,
+      upazila_id: (ctx as any).upazila_id || 1,
+      area: (ctx as any).area || null,
+      address: sanitizeAddress((ctx as any).address),
+      address_bn: (ctx as any).address_bn || null,
+      office_hours: (ctx as any).office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
+      holidays: (ctx as any).holidays || 'Friday',
+      currency: (ctx as any).currency || 'BDT',
       default_locale: (ctx as any).defaultLocale || 'bn',
-      logo_url: null,
+      logo_url: (ctx as any).logo_url || null,
       is_active: true,
-      settings: { vat_rate: 7.5, bilingual_invoicing: true },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      settings: (ctx as any).settings || { vat_rate: 7.5, bilingual_invoicing: true },
+      created_at: (ctx as any).created_at || new Date().toISOString(),
+      updated_at: (ctx as any).updated_at || new Date().toISOString(),
     }
   }
 
   const slug = (targetSlug || '').toLowerCase().trim()
   if (!slug) return null
+
+  const cookieSession = getSessionFromCookie()
+  if (
+    cookieSession &&
+    (cookieSession.companySlug?.toLowerCase() === slug ||
+      cookieSession.companyId?.toLowerCase() === slug)
+  ) {
+    const rawName = cookieSession.companyName || cookieSession.companySlug
+    return {
+      id: cookieSession.companyId,
+      slug: cookieSession.companySlug,
+      name: rawName,
+      name_bn: sanitizeCorporateNameBn(cookieSession.companyNameBn, rawName),
+      legal_name: sanitizeLegalName((cookieSession as any).legalName, rawName),
+      trade_license_no: null,
+      bin_no: null,
+      tin_no: null,
+      business_type: 'printing_signage',
+      phone: cookieSession.phone || null,
+      whatsapp: cookieSession.phone || null,
+      email: cookieSession.userEmail || null,
+      website: null,
+      division_id: 1,
+      district_id: 1,
+      upazila_id: 1,
+      area: (cookieSession as any).area || null,
+      address: sanitizeAddress((cookieSession as any).address),
+      address_bn: (cookieSession as any).addressBn || null,
+      office_hours: '9:00 AM - 8:00 PM (Sat - Thu)',
+      holidays: 'Friday',
+      currency: 'BDT',
+      default_locale: cookieSession.defaultLocale || 'bn',
+      logo_url: null,
+      is_active: true,
+      settings: { vat_rate: 7.5, bilingual_invoicing: true },
+      created_at: cookieSession.loginTime || new Date().toISOString(),
+      updated_at: cookieSession.loginTime || new Date().toISOString(),
+    }
+  }
 
   const platformCompanies =
     PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
@@ -100,12 +187,13 @@ function resolveCompanyFromContextOrStore(
 
   const profile = PrintERPDataStore.get<Partial<CompanyRow>>(STORAGE_KEYS.COMPANY_PROFILE)
   if (profile && (profile.slug === slug || profile.id === slug)) {
+    const rawName = profile.name || slug
     return {
       id: profile.id || slug,
       slug: profile.slug || slug,
-      name: profile.name || slug,
-      name_bn: profile.name_bn || null,
-      legal_name: profile.legal_name || null,
+      name: rawName,
+      name_bn: sanitizeCorporateNameBn(profile.name_bn, rawName),
+      legal_name: sanitizeLegalName(profile.legal_name, rawName),
       trade_license_no: profile.trade_license_no || null,
       bin_no: profile.bin_no || null,
       tin_no: profile.tin_no || null,
@@ -118,7 +206,7 @@ function resolveCompanyFromContextOrStore(
       district_id: profile.district_id || 1,
       upazila_id: profile.upazila_id || 1,
       area: profile.area || null,
-      address: profile.address || 'Dhaka, Bangladesh',
+      address: sanitizeAddress(profile.address),
       address_bn: profile.address_bn || null,
       office_hours: profile.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
       holidays: profile.holidays || 'Friday',
@@ -139,6 +227,7 @@ export const DEMO_COMPANIES: CompanyRow[] = []
 
 function getSessionFromContext(ctx?: ServerTenantContext | null): TenantSessionData | null {
   if (!ctx || !ctx.userId) return null
+  const rawName = ctx.companyName || ctx.companySlug || ''
   return {
     userId: ctx.userId,
     userEmail: ctx.userEmail,
@@ -147,8 +236,12 @@ function getSessionFromContext(ctx?: ServerTenantContext | null): TenantSessionD
     phone: ctx.phone || null,
     companyId: ctx.companyId,
     companySlug: ctx.companySlug,
-    companyName: ctx.companyName,
-    companyNameBn: ctx.companyNameBn || null,
+    companyName: rawName,
+    companyNameBn: sanitizeCorporateNameBn(ctx.companyNameBn, rawName),
+    legalName: sanitizeLegalName(ctx.legalName || ctx.company?.legal_name, rawName),
+    address: sanitizeAddress(ctx.address || ctx.company?.address),
+    addressBn: ctx.addressBn || ctx.company?.address_bn || null,
+    area: ctx.area || ctx.company?.area || null,
     branchId: ctx.branchId || null,
     branchName: ctx.branchName,
     role: ctx.companyRole,

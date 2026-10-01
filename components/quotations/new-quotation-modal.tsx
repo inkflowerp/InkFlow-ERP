@@ -1544,7 +1544,7 @@ export function NewQuotationModal({
         mobile: customerPhone.trim(),
         whatsapp: customerWhatsapp.trim() || undefined,
         email: customerEmail.trim() || undefined,
-        address: customerAddress.trim() || 'Dhaka, Bangladesh',
+        address: customerAddress.trim() || undefined,
         customer_type: (customerType as any) || 'retail',
         save_customer: saveCustomer,
       },

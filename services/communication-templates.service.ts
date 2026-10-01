@@ -280,7 +280,7 @@ export class CommunicationTemplateService {
     const compName = company?.name || company?.company_name || 'Print & Signage Enterprise'
     const compPhone = company?.phone || company?.contact_phone || '+880 1711-000000'
     const compEmail = company?.email || company?.contact_email || 'info@example.com'
-    const compAddress = company?.address || 'Dhaka, Bangladesh'
+    const compAddress = company?.address || ''
     const tenantSlug = company?.slug || 'my-company'
     const compWebsite = company?.website || `https://${tenantSlug}.printerp.app`
 
@@ -367,7 +367,7 @@ export class CommunicationTemplateService {
     const compName = company?.name || company?.company_name || 'Print & Signage Enterprise'
     const compPhone = company?.phone || company?.contact_phone || '+880 1711-000000'
     const compEmail = company?.email || company?.contact_email || 'billing@example.com'
-    const compAddress = company?.address || 'Dhaka, Bangladesh'
+    const compAddress = company?.address || ''
     const tenantSlug = company?.slug || 'my-company'
     const compWebsite = company?.website || `https://${tenantSlug}.printerp.app`
 

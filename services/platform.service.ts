@@ -819,7 +819,7 @@ export class PlatformService {
         return {
           id: c.id,
           name: c.name,
-          name_bn: c.name_bn || c.name,
+          name_bn: c.name_bn || '',
           slug: c.slug,
           owner_name: ownerProf?.full_name || (c.name + ' Owner'),
           owner_email: ownerProf?.email || ownerUser?.invited_email || c.email || ('owner@' + c.slug + '.com'),
@@ -1533,7 +1533,7 @@ export class PlatformService {
       const tenantCompany: PlatformTenantCompany = {
         id: company.id,
         name: company.name,
-        name_bn: company.name_bn || company.name,
+        name_bn: company.name_bn || '',
         slug: company.slug,
         owner_name: ownerProf?.full_name || (company.name + ' Owner'),
         owner_email: ownerProf?.email || ownerUser?.invited_email || company.email || ('owner@' + company.slug + '.com'),
@@ -1611,7 +1611,7 @@ export class PlatformService {
           id: b.id,
           name: b.name,
           name_bn: b.name_bn,
-          address: b.address || 'Dhaka, Bangladesh',
+          address: b.address || '',
           phone: b.phone || company.phone || '',
           is_main: Boolean(b.is_main),
           status: 'active',

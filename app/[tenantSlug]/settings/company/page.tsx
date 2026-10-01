@@ -48,6 +48,37 @@ const HOLIDAY_PRESETS = [
   'Sunday (রবিবার)',
 ]
 
+function cleanField(val?: string | null): string {
+  if (!val) return ''
+  return val.trim()
+}
+
+function cleanCorporateNameBn(nameBn?: string | null, name?: string): string {
+  const val = cleanField(nameBn)
+  if (!val) return ''
+  if (name && val.toLowerCase() === name.trim().toLowerCase()) return ''
+  return val
+}
+
+function cleanLegalName(legalName?: string | null, name?: string): string {
+  const val = cleanField(legalName)
+  if (!val) return ''
+  if (name) {
+    const valLower = val.toLowerCase()
+    const nameLower = name.trim().toLowerCase()
+    if (valLower === nameLower || valLower === `${nameLower} ltd.` || valLower === `${nameLower} ltd`) {
+      return ''
+    }
+  }
+  return val
+}
+
+function cleanAddress(address?: string | null): string {
+  const val = cleanField(address)
+  if (!val || val.toLowerCase() === 'dhaka, bangladesh') return ''
+  return val
+}
+
 export default function CompanyProfileSettingsPage() {
   const params = useParams()
   const routeSlug = (params?.tenantSlug as string) || ''
@@ -64,17 +95,25 @@ export default function CompanyProfileSettingsPage() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const effectiveName = company?.name || ''
+  const initialNameBn = cleanCorporateNameBn(company?.name_bn, effectiveName)
+  const initialLegalName = cleanLegalName(company?.legal_name || (settings as any)?.legal_name, effectiveName)
+  const initialAddress = cleanAddress(company?.address)
+  const initialAddressBn = cleanField(company?.address_bn)
+  const initialArea = cleanField(company?.area)
+
   const [profile, setProfile] = useDataStore(STORAGE_KEYS.COMPANY_PROFILE, {
-    name: company?.name || '',
-    name_bn: company?.name_bn || '',
-    legal_name: company?.legal_name || (settings as any)?.legal_name || '',
+    name: effectiveName,
+    name_bn: initialNameBn,
+    legal_name: initialLegalName,
     logo_url: company?.logo_url || settings?.logo_url || '',
     phone: company?.phone || settings?.phone || '',
     whatsapp: company?.whatsapp || settings?.whatsapp || '',
     email: company?.email || settings?.email || '',
-    area: company?.area || '',
-    address: company?.address || '',
-    address_bn: company?.address_bn || '',
+    area: initialArea,
+    address: initialAddress,
+    address_bn: initialAddressBn,
     trade_license_no: company?.trade_license_no || '',
     bin_no: company?.bin_no || '',
     office_hours: company?.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
@@ -83,16 +122,16 @@ export default function CompanyProfileSettingsPage() {
 
   // Form State initialized from tenant data
   const [formData, setFormData] = useState({
-    name: company?.name || profile?.name || '',
-    name_bn: company?.name_bn || profile?.name_bn || '',
-    legal_name: company?.legal_name || (settings as any)?.legal_name || profile?.legal_name || '',
+    name: effectiveName || profile?.name || '',
+    name_bn: initialNameBn || cleanCorporateNameBn(profile?.name_bn, effectiveName),
+    legal_name: initialLegalName || cleanLegalName(profile?.legal_name, effectiveName),
     logo_url: company?.logo_url || settings?.logo_url || profile?.logo_url || '',
     phone: company?.phone || settings?.phone || profile?.phone || '',
     whatsapp: company?.whatsapp || settings?.whatsapp || profile?.whatsapp || '',
     email: company?.email || settings?.email || profile?.email || '',
-    area: company?.area || profile?.area || '',
-    address: company?.address || profile?.address || '',
-    address_bn: company?.address_bn || profile?.address_bn || '',
+    area: initialArea || cleanField(profile?.area),
+    address: initialAddress || cleanAddress(profile?.address),
+    address_bn: initialAddressBn || cleanField(profile?.address_bn),
     trade_license_no: company?.trade_license_no || profile?.trade_license_no || '',
     bin_no: company?.bin_no || profile?.bin_no || '',
     office_hours: company?.office_hours || (settings as any)?.office_hours || profile?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
@@ -101,22 +140,47 @@ export default function CompanyProfileSettingsPage() {
 
   useEffect(() => {
     if (company) {
+      const coName = company.name || ''
+      const coNameBn = cleanCorporateNameBn(company.name_bn, coName)
+      const coLegalName = cleanLegalName(company.legal_name || (settings as any)?.legal_name, coName)
+      const coAddress = cleanAddress(company.address)
+      const coAddressBn = cleanField(company.address_bn)
+      const coArea = cleanField(company.area)
+
       setFormData({
-        name: company.name || '',
-        name_bn: company.name_bn || '',
-        legal_name: company.legal_name || (settings as any)?.legal_name || '',
+        name: coName,
+        name_bn: coNameBn,
+        legal_name: coLegalName,
         logo_url: company.logo_url || settings?.logo_url || '',
         phone: company.phone || settings?.phone || '',
         whatsapp: company.whatsapp || settings?.whatsapp || '',
         email: company.email || settings?.email || '',
-        area: company.area || '',
-        address: company.address || '',
-        address_bn: company.address_bn || '',
+        area: coArea,
+        address: coAddress,
+        address_bn: coAddressBn,
         trade_license_no: company.trade_license_no || '',
         bin_no: company.bin_no || '',
         office_hours: company.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
         holidays: company.holidays || (settings as any)?.holidays || 'Friday (সাপ্তাহিক ছুটি)',
       })
+
+      // Sanitize stored profile if it held stale auto-generated values
+      if (
+        profile &&
+        (cleanLegalName(profile.legal_name, coName) !== coLegalName ||
+          cleanAddress(profile.address) !== coAddress ||
+          cleanCorporateNameBn(profile.name_bn, coName) !== coNameBn)
+      ) {
+        setProfile((prev: any) => ({
+          ...prev,
+          name: coName,
+          name_bn: coNameBn,
+          legal_name: coLegalName,
+          address: coAddress,
+          address_bn: coAddressBn,
+          area: coArea,
+        }))
+      }
     }
   }, [company, settings])
 

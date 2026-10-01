@@ -32,7 +32,7 @@ const ChallanPdfContent = ({ challan, company }: { challan: DeliveryChallanRecor
 
   const companyName = company?.name || "InkFlow PrintERP";
   const companySubtitle = company?.tagline || "Printing & Signage Manufacturing";
-  const companyAddress = company?.address || "Dhaka, Bangladesh";
+  const companyAddress = company?.address || "";
   const companyContact = `${company?.phone || "+880 1700-000000"}  ·  ${company?.email || "dispatch@inkflow-erp.com"}`;
 
   const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/challan?id=${encodeURIComponent(challan.challan_number || challan.id)}`;
@@ -82,7 +82,7 @@ const ChallanPdfContent = ({ challan, company }: { challan: DeliveryChallanRecor
           <PageHeader
             variant="simple"
             title={companyName}
-            subtitle={`${companySubtitle}  |  ${companyAddress}`}
+            subtitle={companyAddress ? `${companySubtitle}  |  ${companyAddress}` : companySubtitle}
             rightText="DELIVERY CHALLAN / GATE PASS"
             rightSubText={companyContact}
             marginBottom={14}

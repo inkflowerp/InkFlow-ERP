@@ -192,6 +192,8 @@ export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string
   return rawRole || 'operator'
 }
 
+import type { CompanyRow } from '@/types/tenant.types'
+
 export const TENANT_SESSION_COOKIE = 'printerp_tenant_session'
 
 export interface TenantSessionData {
@@ -204,6 +206,10 @@ export interface TenantSessionData {
   companySlug: string
   companyName: string
   companyNameBn?: string | null
+  legalName?: string | null
+  address?: string | null
+  addressBn?: string | null
+  area?: string | null
   branchId: string | null
   branchName?: string
   role: TenantRole
@@ -225,6 +231,10 @@ export interface TenantContext {
   companySlug: string
   companyName: string
   companyNameBn?: string | null
+  legalName?: string | null
+  address?: string | null
+  addressBn?: string | null
+  area?: string | null
   companyRole: TenantRole
   primaryRole?: string
   branchId?: string | null
@@ -233,6 +243,7 @@ export interface TenantContext {
   permissions: string[]
   isSupportMode?: boolean
   defaultLocale?: 'en' | 'bn'
+  company?: CompanyRow | null
 }
 
 export interface PlatformSupportSession {

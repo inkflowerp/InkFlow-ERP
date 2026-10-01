@@ -1278,7 +1278,7 @@ export function NewPurchaseModal({
                         <span className="text-2xs text-slate-500 dark:text-slate-400 block">Warehouse Address:</span>
                         <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mt-0.5 truncate">
                           <MapPin className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                          <span className="truncate">{currentSupplier.address || 'Dhaka, Bangladesh'}</span>
+                          <span className="truncate">{currentSupplier.address || '-'}</span>
                         </div>
                       </div>
                     </div>

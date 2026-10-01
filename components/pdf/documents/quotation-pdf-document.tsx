@@ -35,7 +35,7 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
 
   const companyName = company?.name || "InkFlow PrintERP";
   const companySubtitle = company?.tagline || "Printing & Signage Manufacturing";
-  const companyAddress = company?.address || "Dhaka, Bangladesh";
+  const companyAddress = company?.address || "";
   const companyContact = `${company?.phone || "+880 1700-000000"}  ·  ${company?.email || "sales@inkflow-erp.com"}`;
 
   const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/quotation?id=${encodeURIComponent(quotation.quotation_number || quotation.id)}`;
@@ -112,7 +112,7 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
           <PageHeader
             variant="simple"
             title={companyName}
-            subtitle={`${companySubtitle}  |  ${companyAddress}`}
+            subtitle={companyAddress ? `${companySubtitle}  |  ${companyAddress}` : companySubtitle}
             rightText="PRICE ESTIMATE / QUOTATION"
             rightSubText={companyContact}
             marginBottom={14}

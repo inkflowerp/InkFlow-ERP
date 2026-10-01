@@ -1437,7 +1437,7 @@ export default function ProductsCatalogPage() {
           new_customer: {
             name: quoteCustomerName.trim(),
             mobile: quoteCustomerPhone.trim(),
-            address: 'Dhaka, Bangladesh',
+            address: '',
             save_customer: true,
           },
           items: [

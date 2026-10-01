@@ -64,6 +64,37 @@ const HOLIDAY_PRESETS = [
   'Sunday',
 ]
 
+function cleanField(val?: string | null): string {
+  if (!val) return ''
+  return val.trim()
+}
+
+function cleanCorporateNameBn(nameBn?: string | null, name?: string): string {
+  const val = cleanField(nameBn)
+  if (!val) return ''
+  if (name && val.toLowerCase() === name.trim().toLowerCase()) return ''
+  return val
+}
+
+function cleanLegalName(legalName?: string | null, name?: string): string {
+  const val = cleanField(legalName)
+  if (!val) return ''
+  if (name) {
+    const valLower = val.toLowerCase()
+    const nameLower = name.trim().toLowerCase()
+    if (valLower === nameLower || valLower === `${nameLower} ltd.` || valLower === `${nameLower} ltd`) {
+      return ''
+    }
+  }
+  return val
+}
+
+function cleanAddress(address?: string | null): string {
+  const val = cleanField(address)
+  if (!val || val.toLowerCase() === 'dhaka, bangladesh') return ''
+  return val
+}
+
 export default function CompanySettingsPage() {
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
@@ -80,6 +111,7 @@ export default function CompanySettingsPage() {
 
   const lastLoadedKeyRef = React.useRef<string | null>(null)
 
+  const coName = company?.name || ''
   const {
     register,
     handleSubmit,
@@ -90,16 +122,16 @@ export default function CompanySettingsPage() {
   } = useForm<CompanySettingsFormData>({
     resolver: zodResolver(companySettingsSchema),
     defaultValues: {
-      name: company?.name || '',
-      name_bn: company?.name_bn || '',
-      legal_name: company?.legal_name || (settings as any)?.legal_name || '',
+      name: coName,
+      name_bn: cleanCorporateNameBn(company?.name_bn, coName),
+      legal_name: cleanLegalName(company?.legal_name || (settings as any)?.legal_name, coName),
       logo_url: company?.logo_url || settings?.logo_url || '',
       phone: company?.phone || settings?.phone || '',
       whatsapp: company?.whatsapp || settings?.whatsapp || '',
       email: company?.email || settings?.email || '',
-      address: company?.address || '',
-      address_bn: company?.address_bn || '',
-      area: company?.area || '',
+      address: cleanAddress(company?.address),
+      address_bn: cleanField(company?.address_bn),
+      area: cleanField(company?.area),
       office_hours: company?.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
       holidays: company?.holidays || (settings as any)?.holidays || 'Friday',
       bin_no: company?.bin_no || '',
@@ -125,17 +157,18 @@ export default function CompanySettingsPage() {
       const syncKey = `${company.id}-${company.updated_at || ''}-${settings?.updated_at || (settings ? 'loaded' : 'pending')}`
       if (lastLoadedKeyRef.current !== syncKey && !isDirty) {
         lastLoadedKeyRef.current = syncKey
+        const currentCoName = company.name || ''
         reset({
-          name: company.name || '',
-          name_bn: company.name_bn || '',
-          legal_name: company.legal_name || (settings as any)?.legal_name || '',
+          name: currentCoName,
+          name_bn: cleanCorporateNameBn(company.name_bn, currentCoName),
+          legal_name: cleanLegalName(company.legal_name || (settings as any)?.legal_name, currentCoName),
           logo_url: company.logo_url || settings?.logo_url || '',
           phone: company.phone || settings?.phone || '',
           whatsapp: company.whatsapp || settings?.whatsapp || '',
           email: company.email || settings?.email || '',
-          address: company.address || '',
-          address_bn: company.address_bn || '',
-          area: company.area || '',
+          address: cleanAddress(company.address),
+          address_bn: cleanField(company.address_bn),
+          area: cleanField(company.area),
           office_hours: company.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
           holidays: company.holidays || (settings as any)?.holidays || 'Friday',
           bin_no: company.bin_no || '',

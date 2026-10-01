@@ -392,7 +392,7 @@ export default function InvoiceCockpitPage() {
               <div className="space-y-1">
                 <div className="font-bold text-slate-700 dark:text-slate-300">নিবন্ধিত ব্যক্তির নাম (Seller):</div>
                 <div className="font-black text-sm">{company?.name || 'InkFlow Printing Enterprise'}</div>
-                <div>ঠিকানা: {company?.address || 'Dhaka, Bangladesh'}</div>
+                {company?.address ? <div>ঠিকানা: {company.address}</div> : null}
                 <div className="tabular-nums font-bold text-purple-800 dark:text-purple-300">
                   বিক্রেতার মূসক নিবন্ধন / BIN: <strong>{company?.bin_no || '002938172-0101'}</strong>
                 </div>
@@ -405,7 +405,7 @@ export default function InvoiceCockpitPage() {
                 <div className="tabular-nums font-bold text-purple-800 dark:text-purple-300">
                   ক্রেতার BIN/NID: <strong>{invoice.customer_bin || 'অনিবন্ধিত / Non-registered'}</strong>
                 </div>
-                <div>গন্তব্যস্থল: {invoice.customer_address || 'Dhaka, Bangladesh'}</div>
+                {invoice.customer_address ? <div>গন্তব্যস্থল: {invoice.customer_address}</div> : null}
               </div>
             </div>
 
@@ -493,7 +493,13 @@ export default function InvoiceCockpitPage() {
                   </div>
                   <h1 className="text-xl font-black tracking-tight">{company?.name || 'InkFlow Enterprise'}</h1>
                 </div>
-                <p className="text-slate-500">{company?.address || 'Dhaka, Bangladesh'}{company?.phone ? ` • Phone: ${company.phone}` : ''}</p>
+                {(company?.address || company?.phone) && (
+                  <p className="text-slate-500">
+                    {company?.address || ''}
+                    {company?.address && company?.phone ? ' • ' : ''}
+                    {company?.phone ? `Phone: ${company.phone}` : ''}
+                  </p>
+                )}
                 {company?.email && <p className="text-slate-400">Email: {company.email}</p>}
                 {company?.bin_no && <p className="text-slate-500 tabular-nums text-2xs">BIN: <strong>{company.bin_no}</strong></p>}
               </div>
@@ -743,7 +749,13 @@ export default function InvoiceCockpitPage() {
             {/* Header */}
             <div className="text-center space-y-1 pb-4 border-b-2 border-emerald-600">
               <h1 className="text-xl font-black">{company?.name || 'Printing & Signage Solutions'}</h1>
-              <div className="text-slate-500">{company?.address || 'Dhaka, Bangladesh'}{company?.phone ? ` • Phone: ${company.phone}` : ''}</div>
+              {(company?.address || company?.phone) && (
+                <div className="text-slate-500">
+                  {company?.address || ''}
+                  {company?.address && company?.phone ? ' • ' : ''}
+                  {company?.phone ? `Phone: ${company.phone}` : ''}
+                </div>
+              )}
               <div className="inline-block mt-2 px-4 py-1 rounded-full bg-emerald-100 text-emerald-900 font-black text-sm tracking-wider uppercase">
                 {tBilingual('Official Money Receipt', 'অফিসিয়াল মানি রিসিট')}
               </div>

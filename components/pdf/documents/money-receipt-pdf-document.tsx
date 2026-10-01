@@ -33,7 +33,7 @@ const MoneyReceiptPdfContent = ({ payment, company }: { payment: PaymentRecord; 
 
   const companyName = company?.name || "InkFlow PrintERP";
   const companySubtitle = company?.tagline || "Printing & Signage Manufacturing";
-  const companyAddress = company?.address || "Dhaka, Bangladesh";
+  const companyAddress = company?.address || "";
   const companyContact = `${company?.phone || "+880 1700-000000"}  ·  ${company?.email || "accounts@inkflow-erp.com"}`;
 
   const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`;
@@ -97,7 +97,7 @@ const MoneyReceiptPdfContent = ({ payment, company }: { payment: PaymentRecord; 
           <PageHeader
             variant="simple"
             title={companyName}
-            subtitle={`${companySubtitle}  |  ${companyAddress}`}
+            subtitle={companyAddress ? `${companySubtitle}  |  ${companyAddress}` : companySubtitle}
             rightText="OFFICIAL MONEY RECEIPT"
             rightSubText={companyContact}
             marginBottom={14}

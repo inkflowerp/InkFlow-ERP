@@ -136,11 +136,16 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
                   companyId: company.id,
                   companySlug: company.slug,
                   companyName: company.name,
-                  companyNameBn: company.name_bn || company.name,
+                  companyNameBn: company.name_bn || null,
+                  legalName: company.legal_name || null,
+                  address: company.address || '',
+                  addressBn: company.address_bn || null,
+                  area: company.area || null,
                   companyRole: 'business_owner',
                   primaryRole: 'business_owner',
                   permissions: supportPerms,
                   isSupportMode: true,
+                  company: company,
                 }
               }
             }
@@ -279,6 +284,11 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       companyId: company.id,
       companySlug: company.slug,
       companyName: company.name,
+      companyNameBn: company.name_bn || null,
+      legalName: company.legal_name || null,
+      address: company.address || '',
+      addressBn: company.address_bn || null,
+      area: company.area || null,
       companyRole: resolveTenantRole(
         (companyUser.roles?.[0]?.slug as string) || primaryRole,
         companyUser.responsibilities,
@@ -289,6 +299,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       responsibilities: companyUser.responsibilities || [primaryRole],
       permissions: effectivePermissions || [],
       defaultLocale: company.default_locale === 'en' ? 'en' : 'bn',
+      company: company,
     }
 
     // Cache verified tenant context for 30s

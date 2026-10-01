@@ -164,7 +164,7 @@ export default function JobCostingDetailPage() {
           {/* Letterhead */}
           <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100 print:border-slate-900">
             <h1 className="text-xl sm:text-2xl font-black tracking-tight">{company?.name || 'Industrial Printing & Signage Solutions'}</h1>
-            <p className="text-slate-500 text-2xs">Commercial Printing • Large-Format Signage • 4-Color Offset • Dhaka, Bangladesh</p>
+            <p className="text-slate-500 text-2xs">Commercial Printing • Large-Format Signage • 4-Color Offset{company?.address ? ` • ${company.address}` : ''}</p>
             <div className="inline-block mt-2 px-5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 font-black text-xs sm:text-sm tracking-wider uppercase border border-slate-300 dark:border-slate-700">
               JOB COST TRAVELER & MARGIN AUDIT (কস্টিং ও লাভ নিরীক্ষা)
             </div>
