@@ -59,16 +59,18 @@ export const DEFAULT_PLATFORM_GATEWAY: EmailGatewayRecord = {
   id: 'gw-platform-default',
   tenant_id: null,
   scope_type: 'PLATFORM',
-  provider: 'mock',
+  provider: 'gmail',
   type: 'transactional',
-  smtp_host: 'smtp.printerp.com',
+  smtp_host: 'smtp.gmail.com',
   smtp_port: 587,
-  smtp_username: 'notifications@printerp.com',
+  smtp_username: process.env.PLATFORM_SENDER_EMAIL || 'inkflow.erp@gmail.com',
+  gmail_account_email: process.env.PLATFORM_SENDER_EMAIL || 'inkflow.erp@gmail.com',
+  gmail_display_name: process.env.PLATFORM_SENDER_NAME || 'InkFlow Platform',
   encrypted_credentials: null,
   encryption_type: 'tls',
-  sender_name: 'PrintERP Notifications',
-  sender_email: 'notifications@printerp.com',
-  reply_to_email: 'support@printerp.com',
+  sender_name: process.env.PLATFORM_SENDER_NAME || 'InkFlow Platform',
+  sender_email: process.env.PLATFORM_SENDER_EMAIL || 'inkflow.erp@gmail.com',
+  reply_to_email: process.env.PLATFORM_SENDER_EMAIL || 'inkflow.erp@gmail.com',
   status: 'active',
   is_default: true,
   extra_settings: {},
@@ -155,9 +157,9 @@ export class EmailGatewayService {
           smtp_username: process.env.SMTP_USER || process.env.SMTP_USERNAME || null,
           encrypted_credentials: process.env.SMTP_PASS || process.env.SMTP_PASSWORD || null,
           encryption_type: (process.env.SMTP_SECURE === 'true' ? 'ssl' : 'tls') as any,
-          sender_name: process.env.SMTP_FROM_NAME || 'PrintERP Notifications',
-          sender_email: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'notifications@printerp.com',
-          reply_to_email: process.env.SMTP_REPLY_TO || 'support@printerp.com',
+          sender_name: process.env.PLATFORM_SENDER_NAME || process.env.SMTP_FROM_NAME || 'InkFlow Platform',
+          sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'inkflow.erp@gmail.com',
+          reply_to_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_REPLY_TO || 'inkflow.erp@gmail.com',
           status: 'active',
           is_default: true,
           extra_settings: {},
@@ -517,11 +519,11 @@ export class EmailGatewayService {
         gateway.provider === 'smtp' &&
         gateway.smtp_username &&
         gateway.smtp_username.includes('@') &&
-        (!effectiveSenderEmail || effectiveSenderEmail === 'notifications@printerp.com')
+        (!effectiveSenderEmail || effectiveSenderEmail === 'inkflow.erp@gmail.com' || effectiveSenderEmail === 'notifications@printerp.com')
       ) {
         effectiveSenderEmail = gateway.smtp_username
       } else if (!effectiveSenderEmail) {
-        effectiveSenderEmail = 'notifications@printerp.com'
+        effectiveSenderEmail = process.env.PLATFORM_SENDER_EMAIL || 'inkflow.erp@gmail.com'
       }
 
       const fromAddress = {

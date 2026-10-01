@@ -114,7 +114,8 @@ export class GmailProviderAdapter implements IEmailProvider {
         : payload.from?.address) ||
       this.config.gmail_account_email ||
       this.config.sender_email ||
-      'notifications@printerp.com'
+      process.env.PLATFORM_SENDER_EMAIL ||
+      'inkflow.erp@gmail.com'
 
     const senderDisplayName =
       (typeof payload.from === 'object' && payload.from?.name) ||

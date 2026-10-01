@@ -102,15 +102,15 @@ export default function PlatformEmailGatewayPage() {
   const [encryptionType, setEncryptionType] = useState<'ssl' | 'tls' | 'starttls' | 'none'>('tls')
   const [smtpUsername, setSmtpUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [senderName, setSenderName] = useState('PrintERP Notifications')
-  const [senderEmail, setSenderEmail] = useState('notifications@printerp.com')
-  const [replyToEmail, setReplyToEmail] = useState('support@printerp.com')
+  const [senderName, setSenderName] = useState('InkFlow Platform')
+  const [senderEmail, setSenderEmail] = useState('inkflow.erp@gmail.com')
+  const [replyToEmail, setReplyToEmail] = useState('inkflow.erp@gmail.com')
 
   // Toast & Modal State
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string; latencyMs?: number } | null>(null)
   const [isTestModalOpen, setIsTestModalOpen] = useState(false)
-  const [testRecipient, setTestRecipient] = useState('admin@printerp.com')
+  const [testRecipient, setTestRecipient] = useState('inkflow.erp@gmail.com')
   const [sendingTestEmail, setSendingTestEmail] = useState(false)
 
   // Template Editing State
@@ -156,9 +156,9 @@ export default function PlatformEmailGatewayPage() {
         setSmtpPort(gwRes.data.smtp_port || 587)
         setEncryptionType(gwRes.data.encryption_type || 'tls')
         setSmtpUsername(gwRes.data.smtp_username || '')
-        setSenderName(gwRes.data.sender_name || 'PrintERP Notifications')
-        setSenderEmail(gwRes.data.sender_email || 'notifications@printerp.com')
-        setReplyToEmail(gwRes.data.reply_to_email || 'support@printerp.com')
+        setSenderName(gwRes.data.sender_name || 'InkFlow Platform')
+        setSenderEmail(gwRes.data.sender_email || 'inkflow.erp@gmail.com')
+        setReplyToEmail(gwRes.data.reply_to_email || 'inkflow.erp@gmail.com')
       }
 
       if (tplRes.success && tplRes.data) {
@@ -703,7 +703,7 @@ export default function PlatformEmailGatewayPage() {
                       <Input
                         value={smtpUsername}
                         onChange={(e) => setSmtpUsername(e.target.value)}
-                        placeholder="notifications@printerp.com"
+                        placeholder="inkflow.erp@gmail.com"
                         className="h-9 text-xs bg-slate-950 border-slate-800 text-white tabular-nums rounded-xl"
                       />
                     </div>
@@ -770,7 +770,7 @@ export default function PlatformEmailGatewayPage() {
                       <Input
                         value={senderName}
                         onChange={(e) => setSenderName(e.target.value)}
-                        placeholder="PrintERP Notifications"
+                        placeholder="InkFlow Platform"
                         className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl"
                       />
                     </div>
@@ -781,7 +781,7 @@ export default function PlatformEmailGatewayPage() {
                         type="email"
                         value={senderEmail}
                         onChange={(e) => setSenderEmail(e.target.value)}
-                        placeholder="notifications@printerp.com"
+                        placeholder="inkflow.erp@gmail.com"
                         className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl tabular-nums"
                       />
                     </div>
@@ -792,7 +792,7 @@ export default function PlatformEmailGatewayPage() {
                         type="email"
                         value={replyToEmail}
                         onChange={(e) => setReplyToEmail(e.target.value)}
-                        placeholder="support@printerp.com"
+                        placeholder="inkflow.erp@gmail.com"
                         className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl tabular-nums"
                       />
                     </div>
