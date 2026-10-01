@@ -25,6 +25,12 @@ export default function PlatformLayout({
     pathname === '/platform/forgot-password' ||
     pathname === '/platform/reset-password'
 
+  // Ensure documentElement has dark class so all modal portals and overlays inherit dark theme
+  useEffect(() => {
+    document.documentElement.classList.add('dark')
+    document.documentElement.style.colorScheme = 'dark'
+  }, [])
+
   useEffect(() => {
     if (isAuthPage) {
       setIsChecking(false)

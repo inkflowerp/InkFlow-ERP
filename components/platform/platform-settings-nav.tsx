@@ -61,7 +61,7 @@ export function PlatformSettingsNav() {
   ]
 
   return (
-    <div className="flex border-b border-slate-800/80 overflow-x-auto gap-2 pb-px scrollbar-none mb-6">
+    <div className="flex border-b border-slate-700/80 overflow-x-auto gap-2 pb-px scrollbar-none mb-6">
       {tabs.map((tab) => {
         const Icon = tab.icon
         const isActive = tab.matches
@@ -77,14 +77,14 @@ export function PlatformSettingsNav() {
             className={cn(
               'flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border shrink-0',
               isActive
-                ? 'bg-gradient-to-r from-indigo-600/90 to-violet-600/90 text-white border-indigo-500/50 shadow-md shadow-indigo-600/20 font-bold'
-                : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 hover:border-slate-700'
+                ? 'bg-gradient-to-r from-indigo-600/90 to-violet-600/90 text-white border-indigo-500/60 shadow-md shadow-indigo-600/25 font-bold'
+                : 'bg-slate-900 border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800 hover:border-slate-600 shadow-xs'
             )}
           >
             <Icon
               className={cn(
                 'h-3.5 w-3.5 shrink-0',
-                isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-400'
+                isActive ? 'text-white' : 'text-slate-300 group-hover:text-indigo-400'
               )}
             />
             <span>{tab.title}</span>
@@ -94,7 +94,7 @@ export function PlatformSettingsNav() {
                   'text-2xs px-1.5 py-0.2 rounded tabular-nums font-bold shrink-0',
                   isActive
                     ? 'bg-white/20 text-white'
-                    : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30'
+                    : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
                 )}
               >
                 {tab.badge}

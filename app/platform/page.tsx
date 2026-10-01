@@ -116,7 +116,7 @@ export default function PlatformDashboardPage() {
   return (
     <div className="space-y-8">
       {/* 5.1 HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 border-b border-slate-800/80 pb-4 sm:pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 border-b border-slate-700/80 pb-4 sm:pb-6">
         <div>
           <div className="flex items-center gap-2 text-2xs sm:text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -126,21 +126,21 @@ export default function PlatformDashboardPage() {
             <Activity className="h-6 w-6 sm:h-7 sm:w-7 text-indigo-400 shrink-0" />
             <span>Platform Overview</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5 sm:mt-1">
+          <p className="text-xs sm:text-sm text-slate-300 mt-0.5 sm:mt-1 font-medium">
             Monitor tenants, subscriptions, platform health, and critical activity.
           </p>
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full md:w-auto">
           {/* Date Range Selector */}
-          <div className="flex items-center rounded-xl bg-slate-900 border border-slate-800 p-0.5 text-xs shrink-0">
+          <div className="flex items-center rounded-xl bg-slate-900 border border-slate-700 p-0.5 text-xs shrink-0">
             {(['today', '7d', '30d', '90d'] as const).map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setDateRange(r)}
                 className={`px-2.5 py-1 rounded-lg font-semibold uppercase tracking-wider transition-colors cursor-pointer text-2xs sm:text-xs ${
-                  dateRange === r ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                  dateRange === r ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-300 hover:text-white'
                 }`}
               >
                 {r}
@@ -152,7 +152,7 @@ export default function PlatformDashboardPage() {
             size="sm"
             variant="outline"
             onClick={loadData}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-8 shrink-0 min-h-[36px]"
+            className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800 hover:text-white text-xs h-8 shrink-0 min-h-[36px]"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh
@@ -170,17 +170,17 @@ export default function PlatformDashboardPage() {
 
       {/* 5.1b ZERO-TENANT ONBOARDING GUIDANCE BANNER */}
       {data.total_companies === 0 && (
-        <div className="relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 via-purple-950/40 to-slate-900/80 p-5 sm:p-6 shadow-xl">
+        <div className="relative overflow-hidden rounded-2xl border border-indigo-500/40 bg-gradient-to-r from-indigo-950/70 via-purple-950/50 to-slate-900/90 p-5 sm:p-6 shadow-xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1.5">
-              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-2xs font-bold uppercase tracking-wider border border-indigo-500/30">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-2xs font-bold uppercase tracking-wider border border-indigo-500/40">
                 <Sparkles className="h-3 w-3 text-amber-400" />
                 Pristine Baseline • Ready for Onboarding
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white">
                 Platform is Initialized with Zero Active Tenants
               </h3>
-              <p className="text-xs text-slate-300/80 max-w-xl leading-relaxed">
+              <p className="text-xs text-slate-200 max-w-xl leading-relaxed">
                 The full system reset was completed successfully. Platform Owner credentials are authenticated. You can now onboard your first commercial tenant printing hub or configure subscription tiers.
               </p>
             </div>
@@ -201,7 +201,7 @@ export default function PlatformDashboardPage() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-200">
               Needs Attention
             </h2>
             {data.needs_attention.length > 0 ? (
@@ -214,7 +214,7 @@ export default function PlatformDashboardPage() {
               </span>
             )}
           </div>
-          <span className="text-xs text-slate-500 font-medium">Prioritized by severity</span>
+          <span className="text-xs text-slate-400 font-medium">Prioritized by severity</span>
         </div>
 
         {data.needs_attention.length === 0 ? (
@@ -289,12 +289,12 @@ export default function PlatformDashboardPage() {
 
       {/* 5.3 CORE PLATFORM METRICS */}
       <div className="space-y-3">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-200">
           Core Platform Metrics
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-          <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
               <span>Active Companies</span>
               <Building2 className="h-3.5 w-3.5 text-indigo-400" />
             </div>
@@ -304,21 +304,21 @@ export default function PlatformDashboardPage() {
             </div>
           </Card>
 
-          <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
               <span>Monthly Recurring</span>
               <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">
               <CurrencyDisplay amount={data.revenue_mrr} />
             </div>
-            <div className="text-2xs text-slate-400 mt-1">
+            <div className="text-2xs text-slate-300 mt-1 font-medium">
               ARR: <CurrencyDisplay amount={data.revenue_arr} />
             </div>
           </Card>
 
-          <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
               <span>Free Trials</span>
               <Clock className="h-3.5 w-3.5 text-cyan-400" />
             </div>
@@ -326,32 +326,32 @@ export default function PlatformDashboardPage() {
             <div className="text-2xs text-cyan-400 mt-1 font-semibold">Active trials</div>
           </Card>
 
-          <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
               <span>Past Due / Risk</span>
               <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
             </div>
             <div className="text-2xl font-black text-amber-400 mt-1.5">{data.past_due_companies}</div>
-            <div className="text-2xs text-amber-400 mt-1">Renewal failed</div>
+            <div className="text-2xs text-amber-400 mt-1 font-medium">Renewal failed</div>
           </Card>
 
-          <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
               <span>Orders Processed</span>
               <Layers className="h-3.5 w-3.5 text-purple-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">{data.orders_count.toLocaleString()}</div>
-            <div className="text-2xs text-purple-400 mt-1">Live this month</div>
+            <div className="text-2xs text-purple-400 mt-1 font-semibold">Live this month</div>
           </Card>
 
-          <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
               <span>Cloud Storage</span>
               <HardDrive className="h-3.5 w-3.5 text-pink-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">
               {data.storage_used_gb >= 1
-                ? `${data.storage_used_gb.toFixed(2)} GB`
+                 ? `${data.storage_used_gb.toFixed(2)} GB`
                 : `${data.storage_used_mb || (data.storage_used_gb * 1024).toFixed(1)} MB`}
             </div>
             <div className="text-2xs text-pink-400 mt-1 font-semibold">
@@ -370,20 +370,20 @@ export default function PlatformDashboardPage() {
       {/* 5.4 COMPANY HEALTH & 5.5 SUBSCRIPTION SUMMARY */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Company Health Breakdown */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3 border-b border-slate-800 flex flex-row items-center justify-between">
+        <Card className="bg-slate-900 border-slate-700 shadow-sm">
+          <CardHeader className="pb-3 border-b border-slate-700 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white font-bold flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-emerald-400" />
                 <span>Company Health Breakdown</span>
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-slate-300 font-medium">
                 Rule-based health monitoring across all tenants.
               </CardDescription>
             </div>
             <Link
               href="/platform/tenants"
-              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+              className="text-xs text-indigo-300 hover:text-indigo-200 font-semibold"
             >
               View Directory →
             </Link>
@@ -393,52 +393,52 @@ export default function PlatformDashboardPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
               <Link
                 href="/platform/tenants?health=healthy"
-                className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40 hover:bg-emerald-900/30 transition-colors"
+                className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/50 hover:bg-emerald-900/40 transition-colors"
               >
                 <div className="text-xs font-bold text-emerald-400 uppercase">Healthy</div>
                 <div className="text-2xl font-black text-white mt-1">
                   {data.company_health_breakdown?.healthy ?? 0}
                 </div>
-                <div className="text-2xs text-slate-400">Good standing</div>
+                <div className="text-2xs text-slate-300 font-medium">Good standing</div>
               </Link>
 
               <Link
                 href="/platform/tenants?health=at_risk"
-                className="p-3 rounded-xl bg-amber-950/30 border border-amber-800/40 hover:bg-amber-900/30 transition-colors"
+                className="p-3 rounded-xl bg-amber-950/30 border border-amber-800/50 hover:bg-amber-900/40 transition-colors"
               >
                 <div className="text-xs font-bold text-amber-400 uppercase">At Risk</div>
                 <div className="text-2xl font-black text-amber-300 mt-1">
                   {data.company_health_breakdown?.at_risk ?? 0}
                 </div>
-                <div className="text-2xs text-slate-400">Near limits/slow</div>
+                <div className="text-2xs text-slate-300 font-medium">Near limits/slow</div>
               </Link>
 
               <Link
                 href="/platform/tenants?health=critical"
-                className="p-3 rounded-xl bg-red-950/30 border border-red-800/40 hover:bg-red-900/30 transition-colors"
+                className="p-3 rounded-xl bg-red-950/30 border border-red-800/50 hover:bg-red-900/40 transition-colors"
               >
                 <div className="text-xs font-bold text-red-400 uppercase">Critical</div>
                 <div className="text-2xl font-black text-red-300 mt-1">
                   {data.company_health_breakdown?.critical ?? 0}
                 </div>
-                <div className="text-2xs text-slate-400">Delinquent</div>
+                <div className="text-2xs text-slate-300 font-medium">Delinquent</div>
               </Link>
 
               <Link
                 href="/platform/tenants?status=suspended"
-                className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:bg-slate-800/60 transition-colors"
+                className="p-3 rounded-xl bg-slate-950 border border-slate-700 hover:bg-slate-800/60 transition-colors"
               >
-                <div className="text-xs font-bold text-slate-400 uppercase">Suspended</div>
+                <div className="text-xs font-bold text-slate-300 uppercase">Suspended</div>
                 <div className="text-2xl font-black text-white mt-1">
                   {data.company_health_breakdown?.suspended ?? 0}
                 </div>
-                <div className="text-2xs text-slate-500">Access locked</div>
+                <div className="text-2xs text-slate-300 font-medium">Access locked</div>
               </Link>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-2xs text-slate-400 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-slate-950 border border-slate-700 text-2xs text-slate-300 flex items-center justify-between">
               <span>Platform Health Engine evaluates subscription, storage %, recent errors, and meaningful activity.</span>
-              <Link href="/platform/customer-success" className="text-indigo-400 hover:underline font-semibold shrink-0 ml-2">
+              <Link href="/platform/customer-success" className="text-indigo-300 hover:underline font-semibold shrink-0 ml-2">
                 Customer Success →
               </Link>
             </div>
@@ -446,20 +446,20 @@ export default function PlatformDashboardPage() {
         </Card>
 
         {/* Subscription Summary */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3 border-b border-slate-800 flex flex-row items-center justify-between">
+        <Card className="bg-slate-900 border-slate-700 shadow-sm">
+          <CardHeader className="pb-3 border-b border-slate-700 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white font-bold flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-indigo-400" />
                 <span>Subscription Tiers &amp; Revenue</span>
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-slate-300 font-medium">
                 SaaS revenue distribution across Bangladesh printing hubs.
               </CardDescription>
             </div>
             <Link
               href="/platform/subscriptions"
-              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+              className="text-xs text-indigo-300 hover:text-indigo-200 font-semibold"
             >
               Manage Subscriptions →
             </Link>
@@ -471,7 +471,7 @@ export default function PlatformDashboardPage() {
                 data.subscription_metrics.map((tier) => (
                   <div
                     key={tier.plan_code}
-                    className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs"
+                    className="p-2.5 rounded-xl bg-slate-950 border border-slate-700 flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-2.5">
                       <span className="font-bold text-white">{tier.plan_name}</span>
@@ -481,7 +481,7 @@ export default function PlatformDashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                      <span className="text-slate-400">{tier.active_subscribers} tenants</span>
+                      <span className="text-slate-300 font-medium">{tier.active_subscribers} tenants</span>
                       <div className="tabular-nums font-bold text-emerald-400 text-right">
                         <CurrencyDisplay amount={tier.mrr_bdt} /> / mo
                       </div>
@@ -489,16 +489,16 @@ export default function PlatformDashboardPage() {
                   </div>
                 ))
               ) : (
-                <div className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/80 text-center text-xs text-slate-500 space-y-1">
-                  <CreditCard className="h-6 w-6 mx-auto text-slate-600" />
-                  <p className="font-semibold text-slate-300">No active subscriptions yet</p>
-                  <p className="text-2xs text-slate-500">Tier revenue analytics will calculate automatically as tenants subscribe.</p>
+                <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-700 text-center text-xs text-slate-400 space-y-1">
+                  <CreditCard className="h-6 w-6 mx-auto text-slate-400" />
+                  <p className="font-semibold text-slate-200">No active subscriptions yet</p>
+                  <p className="text-2xs text-slate-300">Tier revenue analytics will calculate automatically as tenants subscribe.</p>
                 </div>
               )}
             </div>
 
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs font-semibold">
-              <span className="text-slate-400">Total Monthly Recurring (MRR)</span>
+            <div className="pt-2 border-t border-slate-700 flex items-center justify-between text-xs font-semibold">
+              <span className="text-slate-300">Total Monthly Recurring (MRR)</span>
               <span className="text-sm tabular-nums font-black text-white">
                 <CurrencyDisplay amount={data.revenue_mrr} />
               </span>
@@ -510,11 +510,11 @@ export default function PlatformDashboardPage() {
       {/* 5.6 PLATFORM HEALTH TELEMETRY */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
             <HeartPulse className="h-4 w-4 text-pink-400" />
             <span>Platform Service Health Status</span>
           </h2>
-          <Link href="/platform/health" className="text-xs text-indigo-400 hover:underline font-semibold">
+          <Link href="/platform/health" className="text-xs text-indigo-300 hover:text-indigo-200 hover:underline font-semibold">
             Inspect Full Telemetry →
           </Link>
         </div>
@@ -544,7 +544,7 @@ export default function PlatformDashboardPage() {
               ? 'text-red-400'
               : isStandby
               ? 'text-cyan-400'
-              : 'text-slate-400'
+              : 'text-slate-300'
 
             const dotBg = isOp
               ? 'bg-emerald-400'
@@ -554,7 +554,7 @@ export default function PlatformDashboardPage() {
               ? 'bg-red-400'
               : isStandby
               ? 'bg-cyan-400'
-              : 'bg-slate-500'
+              : 'bg-slate-400'
 
             const label = isNotConf
               ? 'Not Configured'
@@ -565,10 +565,10 @@ export default function PlatformDashboardPage() {
             return (
               <div
                 key={svc.name}
-                className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1 hover:border-slate-700 transition-colors"
+                className="p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-center space-y-1 hover:border-slate-600 transition-colors shadow-xs"
                 title={svc.notes || `${svc.name}: ${label}`}
               >
-                <div className="text-2xs font-bold text-slate-300 truncate" title={svc.name}>{svc.name}</div>
+                <div className="text-2xs font-bold text-slate-200 truncate" title={svc.name}>{svc.name}</div>
                 <div className={`text-2xs font-semibold flex items-center justify-center gap-1 ${color}`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${dotBg}`} />
                   <span className="truncate">{label}</span>
@@ -580,50 +580,50 @@ export default function PlatformDashboardPage() {
       </div>
 
       {/* 5.7 RECENT PLATFORM ACTIVITY */}
-      <Card className="bg-slate-900 border-slate-800">
-        <CardHeader className="pb-3 border-b border-slate-800 flex flex-row items-center justify-between">
+      <Card className="bg-slate-900 border-slate-700 shadow-sm">
+        <CardHeader className="pb-3 border-b border-slate-700 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base text-white font-bold flex items-center gap-2">
               <FileClock className="h-4 w-4 text-cyan-400" />
               <span>Recent Privileged Platform Activity</span>
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">
+            <CardDescription className="text-xs text-slate-300 font-medium">
               Immutable audit ledger of recent administrative operations.
             </CardDescription>
           </div>
           <Link
             href="/platform/audit"
-            className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+            className="text-xs text-indigo-300 hover:text-indigo-200 font-semibold"
           >
             Full Audit Log →
           </Link>
         </CardHeader>
 
-        <CardContent className="p-0 divide-y divide-slate-800">
+        <CardContent className="p-0 divide-y divide-slate-700/80">
           {(data.recent_audit_logs && data.recent_audit_logs.length > 0) ? (
             data.recent_audit_logs.map((act) => (
               <div key={act.id} className="p-3.5 flex items-center justify-between text-xs hover:bg-slate-800/40 transition-colors">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="tabular-nums text-indigo-400 font-bold">{act.action}</span>
-                    <span className="text-slate-500">•</span>
+                    <span className="tabular-nums text-indigo-300 font-bold">{act.action}</span>
+                    <span className="text-slate-400">•</span>
                     <span className="font-semibold text-white">{act.target_company_name || act.entity_type || 'Platform'}</span>
                   </div>
-                  <div className="text-2xs text-slate-400">
+                  <div className="text-2xs text-slate-300 font-medium">
                     {act.reason || act.details?.description || act.details?.note || (typeof act.details === 'object' && Object.keys(act.details).length > 0 ? JSON.stringify(act.details).slice(0, 80) : 'Administrative action executed')}
                   </div>
                 </div>
 
                 <div className="text-right shrink-0">
-                  <div className="tabular-nums text-2xs text-slate-400">
+                  <div className="tabular-nums text-2xs text-slate-300 font-medium">
                     {formatTime(act.created_at)}
                   </div>
-                  <div className="text-2xs text-slate-500">{act.actor_email}</div>
+                  <div className="text-2xs text-slate-400">{act.actor_email}</div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-6 text-center text-xs text-slate-500">
+            <div className="p-6 text-center text-xs text-slate-300">
               No recent administrative actions recorded yet.
             </div>
           )}

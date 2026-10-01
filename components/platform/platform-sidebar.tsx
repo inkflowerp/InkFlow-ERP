@@ -242,19 +242,19 @@ export function PlatformSidebar() {
         {!isCollapsed && (
           <div className="px-1 mb-2">
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-500" />
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Filter menu..."
-                className="w-full h-8 pl-8 pr-7 rounded-lg bg-slate-950/80 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/40 transition-all"
+                className="w-full h-8 pl-8 pr-7 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/40 transition-all"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-2 text-slate-500 hover:text-slate-300 p-0.5"
+                  className="absolute right-2 top-2 text-slate-400 hover:text-slate-200 p-0.5"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -264,14 +264,14 @@ export function PlatformSidebar() {
         )}
 
         {filteredSections.length === 0 ? (
-          <div className="px-3 py-6 text-center text-xs text-slate-500">
+          <div className="px-3 py-6 text-center text-xs text-slate-400">
             No items matching &ldquo;{searchQuery}&rdquo;
           </div>
         ) : (
           filteredSections.map((sec) => (
             <div key={sec.title} className="space-y-1">
               {!isCollapsed && (
-                <div className="px-2.5 text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                <div className="px-2.5 text-2xs font-bold uppercase tracking-wider text-slate-300 mb-1">
                   {sec.title}
                 </div>
               )}
@@ -309,7 +309,7 @@ export function PlatformSidebar() {
                           : 'justify-between px-3 py-2 min-h-[38px]',
                         isActive
                           ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-800/90'
                       )}
                     >
                       <div className={cn('flex items-center min-w-0', isCollapsed ? 'justify-center' : 'gap-2.5')}>
@@ -356,15 +356,15 @@ export function PlatformSidebar() {
     const tooltipTitle = hasActiveTenant ? `Exit to Business ERP (${businessSlug})` : 'Tenant Directory'
 
     return (
-      <div className="p-2.5 border-t border-slate-800 bg-slate-950/80 space-y-2 shrink-0 select-none">
+      <div className="p-2.5 border-t border-slate-700 bg-slate-950 space-y-2 shrink-0 select-none">
         {!isCollapsed ? (
           <>
-            <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-400 flex items-center justify-between">
+            <div className="p-2 rounded-xl bg-slate-900 border border-slate-700 text-2xs text-slate-200 flex items-center justify-between">
               <span className="flex items-center gap-1.5 font-medium">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 BD-Central Cluster
               </span>
-              <span className="tabular-nums text-slate-500 text-2xs font-bold">{appName} SaaS</span>
+              <span className="tabular-nums text-slate-300 text-2xs font-bold">{appName} SaaS</span>
             </div>
 
             <Link
@@ -372,20 +372,20 @@ export function PlatformSidebar() {
               onClick={() => {
                 if (isMobile) setMobileOpen(false)
               }}
-              className="flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-white bg-slate-800/40 hover:bg-slate-800/90 hover:border-indigo-500/40 px-3 py-2 rounded-xl transition-all border border-slate-800 group min-h-[38px] shadow-sm cursor-pointer"
+              className="flex items-center justify-between text-xs font-semibold text-slate-200 hover:text-white bg-slate-800/70 hover:bg-slate-800 hover:border-indigo-400 px-3 py-2 rounded-xl transition-all border border-slate-700 group min-h-[38px] shadow-sm cursor-pointer"
             >
               <span className="flex items-center gap-2">
                 <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform text-indigo-400" />
                 <span>{buttonLabel}</span>
               </span>
-              <ExternalLink className="h-3 w-3 text-slate-500 group-hover:text-indigo-400 transition-colors" />
+              <ExternalLink className="h-3 w-3 text-slate-400 group-hover:text-indigo-400 transition-colors" />
             </Link>
           </>
         ) : (
           <Link
             href={businessHref}
             title={tooltipTitle}
-            className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 hover:border-indigo-500/40 transition-colors cursor-pointer"
+            className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-indigo-400 transition-colors cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4 text-indigo-400" />
           </Link>

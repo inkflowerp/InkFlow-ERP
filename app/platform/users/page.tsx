@@ -198,7 +198,7 @@ export default function PlatformTenantUsersPage() {
   return (
     <div className="space-y-6 max-w-7xl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-700/80 pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-indigo-400" />
@@ -208,7 +208,7 @@ export default function PlatformTenantUsersPage() {
             <Users className="h-7 w-7 text-indigo-400" />
             Tenant Users Directory
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-300 mt-1 font-medium">
             Real-time multi-tenant user registry across all active InkFlow client companies. Passwords and sensitive credentials remain cryptographically protected.
           </p>
         </div>
@@ -218,7 +218,7 @@ export default function PlatformTenantUsersPage() {
             <Button
               size="sm"
               variant="outline"
-              className="h-9 text-xs border-indigo-500/30 bg-indigo-950/40 text-indigo-300 hover:bg-indigo-900/60 cursor-pointer"
+              className="h-9 text-xs border-indigo-500/40 bg-indigo-950/60 text-indigo-200 hover:bg-indigo-900/80 hover:text-white cursor-pointer font-medium"
             >
               <Shield className="h-3.5 w-3.5 mr-1.5" />
               Manage Platform Admins
@@ -228,7 +228,7 @@ export default function PlatformTenantUsersPage() {
             size="sm"
             variant="outline"
             onClick={() => loadData()}
-            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 cursor-pointer"
+            className="h-9 text-xs border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800 hover:text-white cursor-pointer"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -238,7 +238,7 @@ export default function PlatformTenantUsersPage() {
 
       {/* Notification */}
       {notification && (
-        <div className="p-3 bg-emerald-950/70 border border-emerald-800 text-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in-0">
+        <div className="p-3 bg-emerald-950/80 border border-emerald-700 text-emerald-100 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in-0 shadow-lg">
           <Check className="h-4 w-4 text-emerald-400 shrink-0" />
           <span>{notification}</span>
         </div>
@@ -246,57 +246,57 @@ export default function PlatformTenantUsersPage() {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm p-4">
+        <Card className="border-slate-700 bg-slate-900 p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Registered Users</span>
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Total Registered Users</span>
             <Users className="h-4 w-4 text-indigo-400" />
           </div>
           <p className="text-2xl font-black text-white mt-2">{totalCount.toLocaleString()}</p>
-          <p className="text-2xs text-slate-500 mt-1">Across all onboarded tenants</p>
+          <p className="text-2xs text-slate-300 mt-1 font-medium">Across all onboarded tenants</p>
         </Card>
 
-        <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm p-4">
+        <Card className="border-slate-700 bg-slate-900 p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Organizations</span>
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Active Organizations</span>
             <Building2 className="h-4 w-4 text-emerald-400" />
           </div>
           <p className="text-2xl font-black text-white mt-2">{companies.length}</p>
-          <p className="text-2xs text-slate-500 mt-1">Tenant companies provisioned</p>
+          <p className="text-2xs text-slate-300 mt-1 font-medium">Tenant companies provisioned</p>
         </Card>
 
-        <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm p-4">
+        <Card className="border-slate-700 bg-slate-900 p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Isolation Policy</span>
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Isolation Policy</span>
             <ShieldCheck className="h-4 w-4 text-cyan-400" />
           </div>
-          <p className="text-sm font-bold text-cyan-400 mt-2">Database RLS Enforced</p>
-          <p className="text-2xs text-slate-500 mt-1">Tenant boundaries strictly isolated</p>
+          <p className="text-sm font-bold text-cyan-300 mt-2">Database RLS Enforced</p>
+          <p className="text-2xs text-slate-300 mt-1 font-medium">Tenant boundaries strictly isolated</p>
         </Card>
       </div>
 
       {/* Filter & Search Bar */}
-      <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm p-4">
+      <Card className="border-slate-700 bg-slate-900 p-4 shadow-sm">
         <form onSubmit={handleSearchSubmit} className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Search user name, email, phone, role, or company..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-slate-950/80 border-slate-800 text-sm text-white placeholder:text-slate-500 focus-visible:ring-indigo-500/30"
+              className="pl-9 bg-slate-950 border-slate-700 text-sm text-white placeholder:text-slate-400 focus-visible:ring-indigo-500/50"
             />
           </div>
 
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
             <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
+              <Building2 className="h-4 w-4 text-slate-300 shrink-0" />
               <select
                 value={companyFilter}
                 onChange={(e) => {
                   setCompanyFilter(e.target.value)
                   setPage(1)
                 }}
-                className="bg-slate-950/80 border border-slate-800 text-xs text-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500/50"
+                className="bg-slate-950 border border-slate-700 text-xs text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500/50"
               >
                 <option value="all">All Tenant Companies</option>
                 {companies.map((c) => (
@@ -308,14 +308,14 @@ export default function PlatformTenantUsersPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-slate-400 shrink-0" />
+              <Filter className="h-4 w-4 text-slate-300 shrink-0" />
               <select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value as any)
                   setPage(1)
                 }}
-                className="bg-slate-950/80 border border-slate-800 text-xs text-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500/50"
+                className="bg-slate-950 border border-slate-700 text-xs text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500/50"
               >
                 <option value="all">All Statuses</option>
                 <option value="active">Active Only</option>
@@ -327,7 +327,7 @@ export default function PlatformTenantUsersPage() {
             <Button
               type="submit"
               size="sm"
-              className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs h-9 px-4 cursor-pointer"
+              className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs h-9 px-4 cursor-pointer font-bold shadow-md shadow-indigo-600/30"
             >
               Search
             </Button>
@@ -336,38 +336,38 @@ export default function PlatformTenantUsersPage() {
       </Card>
 
       {/* Users Table */}
-      <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm overflow-hidden">
+      <Card className="border-slate-700 bg-slate-900 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/80 text-slate-400 font-semibold border-b border-slate-800">
+            <thead className="bg-slate-950 text-slate-200 font-bold border-b border-slate-700">
               <tr>
-                <th className="py-3.5 px-4">User</th>
-                <th className="py-3.5 px-4">Organization / Tenant</th>
-                <th className="py-3.5 px-4">Tenant Role</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Joined Date</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 font-bold text-slate-100">User</th>
+                <th className="py-3.5 px-4 font-bold text-slate-100">Organization / Tenant</th>
+                <th className="py-3.5 px-4 font-bold text-slate-100">Tenant Role</th>
+                <th className="py-3.5 px-4 font-bold text-slate-100">Status</th>
+                <th className="py-3.5 px-4 font-bold text-slate-100">Joined Date</th>
+                <th className="py-3.5 px-4 font-bold text-slate-100 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-700/80">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                  <td colSpan={6} className="py-12 text-center text-slate-300">
                     <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
                     Loading cross-tenant users directory...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
-                    <Users className="h-8 w-8 mx-auto mb-2 text-slate-600" />
-                    <p className="font-semibold text-slate-400">No tenant users found</p>
-                    <p className="text-2xs text-slate-600 mt-1">Try refining your search or filter parameters.</p>
+                  <td colSpan={6} className="py-12 text-center text-slate-300">
+                    <Users className="h-8 w-8 mx-auto mb-2 text-slate-500" />
+                    <p className="font-semibold text-slate-200">No tenant users found</p>
+                    <p className="text-2xs text-slate-400 mt-1">Try refining your search or filter parameters.</p>
                   </td>
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
+                  <tr key={u.id} className="hover:bg-slate-800/40 transition-colors">
                     {/* User */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
@@ -378,17 +378,17 @@ export default function PlatformTenantUsersPage() {
                           <div className="flex items-center gap-1.5">
                             <p className="font-bold text-white text-xs">{u.full_name || 'Unnamed User'}</p>
                             {u.full_name_bn && (
-                              <span className="text-2xs text-slate-400 font-normal">({u.full_name_bn})</span>
+                              <span className="text-2xs text-slate-300 font-normal">({u.full_name_bn})</span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 text-2xs text-slate-400 mt-0.5">
+                          <div className="flex items-center gap-2 text-2xs text-slate-300 mt-0.5 font-medium">
                             <span className="flex items-center gap-1">
-                              <Mail className="h-3 w-3 text-slate-500" />
-                              <span>{u.email}</span>
+                              <Mail className="h-3 w-3 text-slate-400" />
+                              <span className="text-slate-200">{u.email}</span>
                               <button
                                 type="button"
                                 onClick={() => handleCopyText(u.email, `email-${u.id}`)}
-                                className="text-slate-500 hover:text-slate-300 ml-0.5 cursor-pointer"
+                                className="text-slate-400 hover:text-white ml-0.5 cursor-pointer"
                                 title="Copy Email"
                               >
                                 {copiedField === `email-${u.id}` ? (
@@ -400,12 +400,12 @@ export default function PlatformTenantUsersPage() {
                             </span>
                             {u.phone && (
                               <span className="flex items-center gap-1">
-                                <Phone className="h-3 w-3 text-slate-500" />
-                                <span>{u.phone}</span>
+                                <Phone className="h-3 w-3 text-slate-400" />
+                                <span className="text-slate-200">{u.phone}</span>
                                 <button
                                   type="button"
                                   onClick={() => handleCopyText(u.phone!, `phone-${u.id}`)}
-                                  className="text-slate-500 hover:text-slate-300 ml-0.5 cursor-pointer"
+                                  className="text-slate-400 hover:text-white ml-0.5 cursor-pointer"
                                   title="Copy Phone"
                                 >
                                   {copiedField === `phone-${u.id}` ? (
@@ -425,37 +425,37 @@ export default function PlatformTenantUsersPage() {
                     <td className="py-3 px-4">
                       <Link
                         href={`/platform/tenants/${u.company_id}`}
-                        className="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 font-medium group"
+                        className="inline-flex items-center gap-1.5 text-indigo-300 hover:text-indigo-200 font-medium group"
                       >
-                        <Building2 className="h-3.5 w-3.5 text-slate-500 group-hover:text-indigo-400" />
+                        <Building2 className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-400" />
                         <span>{u.company_name}</span>
                         <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </Link>
-                      <p className="text-2xs text-slate-500 mt-0.5 tabular-nums">/{u.company_slug}</p>
+                      <p className="text-2xs text-slate-400 mt-0.5 tabular-nums font-mono">/{u.company_slug}</p>
                     </td>
 
                     {/* Role */}
                     <td className="py-3 px-4">
                       {getRoleBadge(u.primary_role)}
                       {u.branch_name && (
-                        <p className="text-2xs text-slate-500 mt-0.5">Branch: {u.branch_name}</p>
+                        <p className="text-2xs text-slate-400 mt-0.5">Branch: {u.branch_name}</p>
                       )}
                     </td>
 
                     {/* Status */}
                     <td className="py-3 px-4">
                       {u.status === 'active' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold bg-emerald-950/50 border border-emerald-800 text-emerald-300">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold bg-emerald-950/60 border border-emerald-700/80 text-emerald-300">
                           <UserCheck className="h-3 w-3" />
                           Active
                         </span>
                       ) : u.status === 'disabled' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold bg-rose-950/50 border border-rose-800 text-rose-300">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold bg-rose-950/60 border border-rose-700/80 text-rose-300">
                           <UserX className="h-3 w-3" />
                           Disabled
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold bg-amber-950/50 border border-amber-800 text-amber-300">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold bg-amber-950/60 border border-amber-700/80 text-amber-300">
                           <Clock className="h-3 w-3" />
                           {u.status}
                         </span>
@@ -463,7 +463,7 @@ export default function PlatformTenantUsersPage() {
                     </td>
 
                     {/* Created */}
-                    <td className="py-3 px-4 text-slate-400 text-2xs">
+                    <td className="py-3 px-4 text-slate-300 font-medium text-2xs">
                       {formatDate(u.created_at)}
                     </td>
 
@@ -474,7 +474,7 @@ export default function PlatformTenantUsersPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleOpenStatusModal(u)}
-                          className="h-7 text-2xs border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-300 px-2 cursor-pointer"
+                          className="h-7 text-2xs border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 px-2 cursor-pointer font-medium"
                         >
                           {u.status === 'active' ? 'Disable' : 'Enable'}
                         </Button>
@@ -484,7 +484,7 @@ export default function PlatformTenantUsersPage() {
                           variant="outline"
                           disabled={isStartingSupport}
                           onClick={() => handleStartSupport(u.company_id, u.company_slug, u.company_name)}
-                          className="h-7 text-2xs border-indigo-900 bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-300 px-2 cursor-pointer"
+                          className="h-7 text-2xs border-indigo-800/80 bg-indigo-950/50 hover:bg-indigo-900/70 text-indigo-200 px-2 cursor-pointer font-medium"
                           title="Start Platform Support Mode for this tenant"
                         >
                           <Headphones className="h-3 w-3 mr-1" />
@@ -495,7 +495,7 @@ export default function PlatformTenantUsersPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 text-2xs text-indigo-400 hover:text-indigo-300 hover:bg-slate-800/80 px-2 cursor-pointer"
+                            className="h-7 text-2xs text-indigo-300 hover:text-white hover:bg-slate-800/80 px-2 cursor-pointer"
                           >
                             Tenant
                             <ExternalLink className="h-3 w-3 ml-1" />
@@ -512,7 +512,7 @@ export default function PlatformTenantUsersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800 bg-slate-950/60 text-xs text-slate-400">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-700 bg-slate-950 text-xs text-slate-300 font-medium">
             <div>
               Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} users
             </div>
@@ -522,11 +522,11 @@ export default function PlatformTenantUsersPage() {
                 variant="outline"
                 disabled={page <= 1 || loading}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="h-8 w-8 p-0 border-slate-800 bg-slate-900 text-slate-300 disabled:opacity-40 cursor-pointer"
+                className="h-8 w-8 p-0 border-slate-700 bg-slate-900 text-slate-200 disabled:opacity-40 cursor-pointer"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="px-2 font-medium text-slate-300">
+              <span className="px-2 font-medium text-slate-200">
                 Page {page} of {totalPages}
               </span>
               <Button
@@ -534,7 +534,7 @@ export default function PlatformTenantUsersPage() {
                 variant="outline"
                 disabled={page >= totalPages || loading}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="h-8 w-8 p-0 border-slate-800 bg-slate-900 text-slate-300 disabled:opacity-40 cursor-pointer"
+                className="h-8 w-8 p-0 border-slate-700 bg-slate-900 text-slate-200 disabled:opacity-40 cursor-pointer"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -546,8 +546,8 @@ export default function PlatformTenantUsersPage() {
       {/* Status Toggle Modal */}
       {statusModalUser && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative animate-in fade-in-0 zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl shadow-black/90 ring-1 ring-slate-700/60 relative animate-in fade-in-0 zoom-in-95">
+            <div className="flex items-center justify-between border-b border-slate-700 pb-3">
               <div className="flex items-center gap-2">
                 <AlertTriangle className={`h-5 w-5 ${targetStatus === 'disabled' ? 'text-rose-400' : 'text-emerald-400'}`} />
                 <h3 className="font-bold text-white text-base">
@@ -562,7 +562,7 @@ export default function PlatformTenantUsersPage() {
               </button>
             </div>
 
-            <div className="space-y-3 text-xs text-slate-300">
+            <div className="space-y-3 text-xs text-slate-200">
               <p>
                 You are about to modify the membership status for user{' '}
                 <strong className="text-white">{statusModalUser.full_name}</strong> ({statusModalUser.email}) in tenant{' '}
@@ -570,11 +570,11 @@ export default function PlatformTenantUsersPage() {
               </p>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Select Target Status</label>
+                <label className="block text-xs font-semibold text-slate-200 mb-1">Select Target Status</label>
                 <select
                   value={targetStatus}
                   onChange={(e) => setTargetStatus(e.target.value as any)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
                 >
                   <option value="active">Active (Full Tenant Access)</option>
                   <option value="disabled">Disabled (Block Tenant Access)</option>
@@ -582,22 +582,22 @@ export default function PlatformTenantUsersPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Reason for Status Change</label>
+                <label className="block text-xs font-semibold text-slate-200 mb-1">Reason for Status Change</label>
                 <Input
                   value={statusReason}
                   onChange={(e) => setStatusReason(e.target.value)}
                   placeholder="e.g. Account locked by admin or requested by tenant owner"
-                  className="bg-slate-950 border-slate-800 text-xs text-white"
+                  className="bg-slate-950 border-slate-700 text-xs text-white placeholder:text-slate-400"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-700">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setStatusModalUser(null)}
-                className="border-slate-700 text-slate-300 text-xs cursor-pointer"
+                className="border-slate-700 text-slate-300 hover:text-white text-xs cursor-pointer"
               >
                 Cancel
               </Button>
@@ -605,10 +605,10 @@ export default function PlatformTenantUsersPage() {
                 size="sm"
                 disabled={isUpdatingStatus}
                 onClick={handleConfirmStatusChange}
-                className={`text-white text-xs font-bold cursor-pointer ${
+                className={`text-white text-xs font-bold cursor-pointer shadow-md ${
                   targetStatus === 'disabled'
-                    ? 'bg-rose-600 hover:bg-rose-500'
-                    : 'bg-emerald-600 hover:bg-emerald-500'
+                    ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-600/30'
+                    : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30'
                 }`}
               >
                 {isUpdatingStatus ? 'Updating...' : `Confirm ${targetStatus === 'disabled' ? 'Disable' : 'Enable'}`}

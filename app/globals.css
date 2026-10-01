@@ -815,3 +815,89 @@ input.no-spinner,
 input.no-spinners {
   -moz-appearance: textfield;
 }
+
+/* ==============================================================================
+   Platform Admin High-Contrast & Accessibility Visibility Overrides
+   Resolves low-contrast text, dim borders, invisible table headers, and washed-out inputs.
+   ============================================================================== */
+.dark {
+  /* Upgrade dark mode borders from washed-out #1e293b to distinct slate-700 (#334155) */
+  --border: 217.2 32.6% 27.5%;
+  --input: 217.2 32.6% 27.5%;
+}
+
+/* Ensure high text contrast for muted/subdued elements in dark mode (WCAG AA > 4.5:1) */
+.dark .text-slate-500 {
+  color: #94a3b8 !important; /* upgraded from #64748b to #94a3b8 (slate-400) */
+}
+
+.dark .text-slate-600 {
+  color: #cbd5e1 !important; /* upgraded from #475569 to #cbd5e1 (slate-300) */
+}
+
+.dark .text-slate-400 {
+  color: #cbd5e1 !important; /* upgraded to #cbd5e1 for crystal-clear readability */
+}
+
+/* Ensure placeholder text is easily readable instead of nearly black */
+.dark input::placeholder,
+.dark textarea::placeholder,
+.dark .placeholder\:text-slate-500::placeholder,
+.dark .placeholder\:text-slate-600::placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.9 !important;
+}
+
+/* Make card borders, table dividers, and container boundaries cleanly delineated */
+.dark .border-slate-800 {
+  border-color: #334155 !important; /* slate-700 */
+}
+
+.dark .border-slate-800\/80 {
+  border-color: rgba(51, 65, 85, 0.85) !important;
+}
+
+.dark .border-slate-800\/60 {
+  border-color: rgba(51, 65, 85, 0.7) !important;
+}
+
+.dark .divide-slate-800 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #334155 !important;
+}
+
+/* Table headers high visibility */
+.dark thead {
+  background-color: #0b1120 !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.dark thead th {
+  color: #f1f5f9 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.025em !important;
+}
+
+/* Form inputs & select controls high visibility in dark theme */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+  border-color: #334155 !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #6366f1 !important; /* indigo-500 */
+}
+
+/* Scrollbar contrast in platform dark mode */
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
+}
+.dark ::-webkit-scrollbar-track {
+  background-color: #020617;
+}

@@ -91,7 +91,7 @@ export function PlatformHeader() {
 
   return (
     <>
-      <header className="h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 sticky top-0 z-30 shrink-0">
+      <header className="h-16 border-b border-slate-700/80 bg-slate-900/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 sticky top-0 z-30 shrink-0">
         {/* Left: Hamburger (Mobile) & Branding */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
@@ -99,7 +99,7 @@ export function PlatformHeader() {
             onClick={() => {
               window.dispatchEvent(new Event('printerp_open_platform_nav'))
             }}
-            className="lg:hidden flex items-center justify-center h-10 w-10 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700/60 cursor-pointer min-h-[44px] min-w-[44px]"
+            className="lg:hidden flex items-center justify-center h-10 w-10 rounded-xl bg-slate-800/80 text-slate-200 hover:text-white border border-slate-700 cursor-pointer min-h-[44px] min-w-[44px]"
             aria-label="Open Platform Navigation Menu"
           >
             <Menu className="h-5 w-5" />
@@ -110,7 +110,7 @@ export function PlatformHeader() {
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-8 w-8 rounded-lg object-contain bg-slate-950 border border-slate-700/60 p-1 shadow-md ring-1 ring-white/20 shrink-0"
+                className="h-8 w-8 rounded-lg object-contain bg-slate-950 border border-slate-700 p-1 shadow-md ring-1 ring-white/20 shrink-0"
               />
             ) : (
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 ring-1 ring-white/20 group-hover:scale-105 transition-transform shrink-0">
@@ -124,7 +124,7 @@ export function PlatformHeader() {
                   ROOT
                 </span>
               </div>
-              <div className="text-2xs text-slate-400 font-medium">Platform Control Center</div>
+              <div className="text-2xs text-slate-300 font-medium">Platform Control Center</div>
             </div>
           </Link>
         </div>
@@ -134,15 +134,15 @@ export function PlatformHeader() {
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="w-full h-9 px-2.5 sm:px-3 rounded-xl bg-slate-950/70 hover:bg-slate-950 border border-slate-800 hover:border-indigo-500/40 text-slate-400 hover:text-slate-200 text-xs flex items-center justify-between transition-all cursor-pointer shadow-inner min-h-[36px]"
+            className="w-full h-9 px-2.5 sm:px-3 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-700 hover:border-indigo-500/60 text-slate-300 hover:text-white text-xs flex items-center justify-between transition-all cursor-pointer shadow-inner min-h-[36px]"
           >
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               <Search className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
-              <span className="truncate hidden sm:inline">Search platform, tenants, users, audit...</span>
-              <span className="truncate sm:hidden text-2xs">Search platform...</span>
+              <span className="truncate hidden sm:inline text-slate-300">Search platform, tenants, users, audit...</span>
+              <span className="truncate sm:hidden text-2xs text-slate-300">Search platform...</span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-2xs tabular-nums text-slate-400 bg-slate-800 border border-slate-700 rounded shadow-xs">
+              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-2xs tabular-nums text-slate-300 bg-slate-800 border border-slate-600 rounded font-semibold shadow-xs">
                 /
               </kbd>
             </div>
@@ -157,7 +157,7 @@ export function PlatformHeader() {
           {/* System Health Pill */}
           <Link
             href="/platform/health"
-            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 text-2xs font-semibold hover:bg-emerald-900/30 transition-colors"
+            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-700/80 text-emerald-200 text-2xs font-semibold hover:bg-emerald-900/50 transition-colors"
             title="System Cluster Operational (BD-Central)"
           >
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -169,21 +169,21 @@ export function PlatformHeader() {
             <button
               type="button"
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-              className="flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer min-h-[40px]"
+              className="flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-xl hover:bg-slate-800 text-slate-200 hover:text-white transition-colors cursor-pointer min-h-[40px]"
             >
-              <div className="h-7 w-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 flex items-center justify-center font-bold text-xs">
+              <div className="h-7 w-7 rounded-lg bg-indigo-600/40 border border-indigo-500/50 text-indigo-200 flex items-center justify-center font-bold text-xs">
                 {initials}
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+              <ChevronDown className="h-3.5 w-3.5 text-slate-300" />
             </button>
 
             {profileMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setProfileMenuOpen(false)} />
-                <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 p-2 text-xs divide-y divide-slate-800 animate-in fade-in-0 zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl shadow-black/80 ring-1 ring-slate-700/50 z-50 p-2 text-xs divide-y divide-slate-700 animate-in fade-in-0 zoom-in-95 duration-150">
                   <div className="px-3 py-2">
                     <div className="font-bold text-white truncate">{userFullName}</div>
-                    <div className="text-2xs text-indigo-400 tabular-nums truncate">{userEmail}</div>
+                    <div className="text-2xs text-indigo-300 tabular-nums truncate font-mono">{userEmail}</div>
                     <span className="inline-block mt-1 text-2xs font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                       {formattedRole}
                     </span>
