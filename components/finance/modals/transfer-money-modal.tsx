@@ -129,13 +129,13 @@ export function TransferMoneyModal({
 
         {/* Source Account */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
             {tBilingual('Transfer From (Source)', 'কোথা থেকে পাঠাচ্ছেন?')} *
           </Label>
           <select
             value={fromAccountId || liquidAccounts[0]?.id || ''}
             onChange={(e) => setFromAccountId(e.target.value)}
-            className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+            className="w-full h-10 px-3 text-sm rounded-xl border border-input bg-card text-foreground dark:text-foreground"
           >
             {liquidAccounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
@@ -147,13 +147,13 @@ export function TransferMoneyModal({
 
         {/* Destination Account */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
             {tBilingual('Transfer To (Destination)', 'কোথায় জমা হবে?')} *
           </Label>
           <select
             value={toAccountId || liquidAccounts[1]?.id || liquidAccounts[0]?.id || ''}
             onChange={(e) => setToAccountId(e.target.value)}
-            className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+            className="w-full h-10 px-3 text-sm rounded-xl border border-input bg-card text-foreground dark:text-foreground"
           >
             {liquidAccounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
@@ -166,7 +166,7 @@ export function TransferMoneyModal({
         {/* Amount & Fee */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
               {tBilingual('Transfer Amount', 'স্থানান্তরের পরিমাণ')} *
             </Label>
             <Input
@@ -180,7 +180,7 @@ export function TransferMoneyModal({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-600 dark:text-slate-400">
+            <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual('Processing Fee', 'চার্জ বা ফি')}
             </Label>
             <Input
@@ -197,7 +197,7 @@ export function TransferMoneyModal({
         {/* Date & Note */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <Label className="text-xs text-slate-600 dark:text-slate-400">
+            <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual('Transfer Date', 'তারিখ')}
             </Label>
             <Input
@@ -208,7 +208,7 @@ export function TransferMoneyModal({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-slate-600 dark:text-slate-400">
+            <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual('Reference / Note', 'নোট বা ট্রানজ্যাকশন আইডি')}
             </Label>
             <Input
@@ -221,14 +221,14 @@ export function TransferMoneyModal({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border dark:border-border">
           <Button type="button" variant="outline" onClick={onClose} className="rounded-xl">
             {tBilingual('Cancel', 'বাতিল')}
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl px-5"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl px-5"
           >
             {isSubmitting ? tBilingual('Transferring...', 'ট্রান্সফার হচ্ছে...') : tBilingual('Confirm Transfer', 'ট্রান্সফার সম্পন্ন করুন')}
           </Button>

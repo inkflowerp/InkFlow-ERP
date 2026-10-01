@@ -173,7 +173,7 @@ export function ReworkTaskModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

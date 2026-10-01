@@ -29,7 +29,7 @@ export function AttendanceSummaryWidget({
 }: AttendanceSummaryWidgetProps) {
   if (isLoading) {
     return (
-      <Card className="p-4 bg-white border-slate-200 shadow-none">
+      <Card className="p-4 bg-card border-border shadow-none">
         <Skeleton className="h-6 w-44 mb-4" />
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -86,14 +86,14 @@ export function AttendanceSummaryWidget({
   ]
 
   return (
-    <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl flex flex-col justify-between h-full">
-      <CardHeader className="pb-3 border-b border-slate-100 px-5 pt-5 flex flex-row items-center justify-between">
+    <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl flex flex-col justify-between h-full">
+      <CardHeader className="pb-3 border-b border-border px-5 pt-5 flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+          <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
             <span>Today's Attendance</span>
-            <span className="text-xs font-normal text-slate-500">আজকের হাজিরা</span>
+            <span className="text-xs font-normal text-muted-foreground">আজকের হাজিরা</span>
           </CardTitle>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {attendanceRatio}% workforce attendance rate today ({present + late}/{totalActive} active)
           </p>
         </div>
@@ -111,17 +111,17 @@ export function AttendanceSummaryWidget({
           return (
             <div
               key={item.label}
-              className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50/60 transition-colors"
+              className="flex items-center justify-between p-2.5 rounded-lg border border-border hover:bg-muted transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className={`p-1.5 rounded-md border ${item.color}`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-slate-800 leading-tight">
+                  <div className="text-sm font-medium text-foreground leading-tight">
                     {item.label}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-normal">
+                  <div className="text-[11px] text-muted-foreground font-normal">
                     {item.labelBn}
                   </div>
                 </div>

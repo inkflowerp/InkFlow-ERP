@@ -560,7 +560,7 @@ export default function TenantWhatsAppSettingsPage() {
             </div>
 
             {/* QR Visual */}
-            <div className="flex flex-col items-center justify-center p-6 bg-white rounded-xl border shadow-inner min-h-[260px]">
+            <div className="flex flex-col items-center justify-center p-6 bg-card rounded-xl border shadow-inner min-h-[260px]">
               {qrCodeData ? (
                 <img
                   src={qrCodeData.startsWith('data:') ? qrCodeData : `data:image/png;base64,${qrCodeData}`}

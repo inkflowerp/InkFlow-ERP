@@ -233,7 +233,7 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
       role="status"
       aria-live="polite"
       className={cn(
-        'group relative overflow-hidden rounded-2xl bg-slate-900/95 dark:bg-slate-950/95 text-white shadow-2xl border border-slate-700/60 dark:border-slate-800 backdrop-blur-xl transition-all duration-300 transform animate-in fade-in slide-in-from-top-3 border-l-4 pointer-events-auto',
+        'group relative overflow-hidden rounded-2xl bg-foreground text-white shadow-2xl border border-slate-700/60 backdrop-blur-xl transition-all duration-300 transform animate-in fade-in slide-in-from-top-3 border-l-4 pointer-events-auto',
         theme.borderAccent
       )}
     >
@@ -255,13 +255,13 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
               </h5>
             </div>
 
-            <span className="text-2xs text-slate-400 shrink-0 tabular-nums">
+            <span className="text-2xs text-muted-foreground shrink-0 tabular-nums">
               {tBilingual('Just now', 'এইমাত্র')}
             </span>
           </div>
 
           {notification.message && (
-            <p className="text-2xs text-slate-300 bangla-text line-clamp-2 leading-relaxed">
+            <p className="text-2xs text-muted-foreground bangla-text line-clamp-2 leading-relaxed">
               {tBilingual(notification.message, notification.messageBn)}
             </p>
           )}
@@ -290,7 +290,7 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
         <button
           type="button"
           onClick={() => onDismiss(notification.id)}
-          className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/80 transition-colors cursor-pointer shrink-0 opacity-70 group-hover:opacity-100"
+          className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-slate-800/80 transition-colors cursor-pointer shrink-0 opacity-70 group-hover:opacity-100"
           aria-label="Dismiss notification"
         >
           <X className="h-4 w-4" />
@@ -403,7 +403,7 @@ export function RealtimeNotificationPopup() {
     >
       {/* Controls Bar when multiple notifications are stacked */}
       {queue.length > 1 && (
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/95 border border-slate-700/60 backdrop-blur-md text-xs text-slate-300 pointer-events-auto shadow-2xl animate-in fade-in">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-foreground border border-slate-700/60 backdrop-blur-md text-xs text-muted-foreground pointer-events-auto shadow-2xl animate-in fade-in">
           <span className="font-semibold text-2xs bangla-text">
             {queue.length} {tBilingual('Active Alerts', 'টি নোটিফিকেশন')}
           </span>
@@ -411,7 +411,7 @@ export function RealtimeNotificationPopup() {
             <button
               type="button"
               onClick={handleToggleMute}
-              className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-white transition-colors cursor-pointer"
               title={muted ? 'Unmute alerts' : 'Mute alert sounds'}
             >
               {muted ? <VolumeX className="h-3.5 w-3.5 text-rose-400" /> : <Volume2 className="h-3.5 w-3.5 text-emerald-400" />}

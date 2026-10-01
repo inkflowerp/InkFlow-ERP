@@ -1442,7 +1442,7 @@ export function MaterialConfigModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-slate-900 dark:text-white">
+              <span className="text-base font-bold text-foreground dark:text-white">
                 {initialData ? `Edit Raw Material: ${initialData.name}` : 'New Raw Material Master'}
               </span>
               <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
@@ -1457,7 +1457,7 @@ export function MaterialConfigModal({
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               Purchased raw printing substrate & consumables tracked by physical dimensions, yield formulas, and consumed in production.
             </p>
           </div>
@@ -1476,7 +1476,7 @@ export function MaterialConfigModal({
                   else if (activeTab === 'inventory') setActiveTab('costing')
                   else if (activeTab === 'production') setActiveTab('inventory')
                 }}
-                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+                className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -1539,7 +1539,7 @@ export function MaterialConfigModal({
     >
       <div className="space-y-4 py-1">
         {/* 5-Tab Navigation Stepper Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700/60">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 p-1 bg-muted rounded-xl text-xs font-bold border border-border dark:border-slate-700/60">
           {[
             { id: 'basic', label: '1. Basic & Specs', icon: Layers, count: name ? '✓' : null },
             { id: 'geometry', label: '2. Geometry & Sizes', icon: Maximize2, count: materialType === 'roll' ? configuredRolls.length : materialType === 'sheet' ? availableSheetSizes.length : null },
@@ -1557,16 +1557,16 @@ export function MaterialConfigModal({
                 className={cn(
                   'px-2 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap text-xs relative',
                   isSelected
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium'
+                    ? 'bg-card text-foreground dark:text-white shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-white font-medium'
                 )}
               >
-                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400')} />
+                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground')} />
                 <span>{tab.label}</span>
                 {tab.count !== null && (
                   <span className={cn(
                     'text-2xs px-1.5 py-0.2 rounded-full tabular-nums font-bold leading-tight',
-                    isSelected ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                    isSelected ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                   )}>
                     {tab.count}
                   </span>
@@ -1580,19 +1580,19 @@ export function MaterialConfigModal({
         {/* TAB 1: BASIC IDENTITY & SUBSTRATE SPECIFICATIONS          */}
         {/* ======================================================== */}
         {activeTab === 'basic' && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
             {/* 1. Name & SKU */}
-            <div className="space-y-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 pb-3 border-b border-border dark:border-border">
+              <div className="flex items-center justify-between pb-1.5 border-b border-border dark:border-border">
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
                     1
                   </div>
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                     Material Identity & Bilingual Naming
                   </h3>
                 </div>
-                <span className="text-2xs text-slate-400 font-medium">Bilingual stock naming & SKU</span>
+                <span className="text-2xs text-muted-foreground font-medium">Bilingual stock naming & SKU</span>
               </div>
 
               <div>
@@ -1623,7 +1623,7 @@ export function MaterialConfigModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Bengali Name (বাংলা নাম - ঐচ্ছিক)
                   </Label>
                   <Input
@@ -1635,7 +1635,7 @@ export function MaterialConfigModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Material SKU / Stock Code
                   </Label>
                   <Input
@@ -1649,9 +1649,9 @@ export function MaterialConfigModal({
             </div>
 
             {/* 2. Physical Classification Cards */}
-            <div className="space-y-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 pb-3 border-b border-border dark:border-border">
               <div className="flex items-center justify-between pb-1.5">
-                <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                <Label className="text-xs font-semibold text-foreground dark:text-foreground">
                   Physical Form / Classification <span className="text-rose-500">*</span>
                 </Label>
                 <span className="text-2xs text-amber-600 dark:text-amber-400 font-semibold">
@@ -1672,7 +1672,7 @@ export function MaterialConfigModal({
                         'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between group shadow-2xs',
                         isSelected
                           ? 'bg-amber-50/50 dark:bg-amber-950/40 border-amber-500 ring-1 ring-amber-400 dark:ring-amber-600 shadow-xs'
-                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
+                          : 'bg-card border-border hover:border-input dark:hover:border-border'
                       )}
                     >
                       <div className="flex items-start gap-2.5">
@@ -1681,14 +1681,14 @@ export function MaterialConfigModal({
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className={cn('font-bold text-xs', isSelected ? 'text-amber-900 dark:text-amber-200' : 'text-slate-900 dark:text-white')}>
+                            <span className={cn('font-bold text-xs', isSelected ? 'text-amber-900 dark:text-amber-200' : 'text-foreground dark:text-white')}>
                               {card.title}
                             </span>
                           </div>
-                          <span className="text-2xs text-slate-400 font-bengali block">
+                          <span className="text-2xs text-muted-foreground font-bengali block">
                             {card.titleBn}
                           </span>
-                          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                          <p className="text-2xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                             {card.subtitle}
                           </p>
                         </div>
@@ -1702,7 +1702,7 @@ export function MaterialConfigModal({
               <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold text-foreground dark:text-foreground">
                       Catalog Category (ক্যাটালগ ক্যাটাগরি) <span className="text-rose-500">*</span>
                     </Label>
                     <span className="text-2xs text-amber-600 dark:text-amber-400 font-semibold">
@@ -1720,7 +1720,7 @@ export function MaterialConfigModal({
                         if (match.defaultUsageUnit) setUsageUnit(match.defaultUsageUnit)
                       }
                     }}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium"
                   >
                     {filteredCatalogCategories.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -1734,7 +1734,7 @@ export function MaterialConfigModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Substrate Brand / Manufacturer
                   </Label>
                   <Input
@@ -1748,10 +1748,10 @@ export function MaterialConfigModal({
             </div>
 
             {/* 3. Substrate Technical Attributes */}
-            <div className="space-y-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 pb-3 border-b border-border dark:border-border">
               <div className="flex items-center gap-2 pb-1">
-                <Tag className="w-4 h-4 text-slate-500" />
-                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                <Tag className="w-4 h-4 text-muted-foreground" />
+                <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   Technical Specifications & Surface Finish
                 </h4>
               </div>
@@ -1759,13 +1759,13 @@ export function MaterialConfigModal({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Finish */}
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Surface Finish
                   </Label>
                   <select
                     value={finish}
                     onChange={(e) => setFinish(e.target.value)}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium"
                   >
                     {SUBSTRATE_FINISH_OPTIONS.map((f) => (
                       <option key={f.value} value={f.value}>
@@ -1777,7 +1777,7 @@ export function MaterialConfigModal({
 
                 {/* Weight GSM / Caliper */}
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     {tBilingual('Weight / Density (GSM)', 'ওজন বা ঘনত্ব (জিএসএম)')}
                   </Label>
                   <div className="relative">
@@ -1790,19 +1790,19 @@ export function MaterialConfigModal({
                       onChange={(e) => setWeightGsm(e.target.value === '' ? '' : parseFloat(e.target.value))}
                       className="h-9 text-xs tabular-nums pr-12"
                     />
-                    <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">GSM</span>
+                    <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-muted-foreground">GSM</span>
                   </div>
                 </div>
 
                 {/* Durability */}
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     {tBilingual('Outdoor Durability', 'আউটডোর স্থায়িত্ব')}
                   </Label>
                   <select
                     value={durabilityGrade}
                     onChange={(e) => setDurabilityGrade(e.target.value)}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium"
                   >
                     {DURABILITY_OPTIONS.map((d) => (
                       <option key={d.value} value={d.value}>
@@ -1822,7 +1822,7 @@ export function MaterialConfigModal({
                   placeholder="e.g. 280 GSM heavy duty PVC substrate, matte finish, solvent/eco-solvent compatible, 1-year outdoor UV resistance, high tear strength..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-1 focus:ring-amber-500 outline-none resize-none"
+                  className="w-full p-2.5 rounded-md border border-input bg-card text-xs focus:ring-1 focus:ring-amber-500 outline-none resize-none"
                 />
               </div>
             </div>
@@ -1833,17 +1833,17 @@ export function MaterialConfigModal({
         {/* TAB 2: PHYSICAL GEOMETRY & DIMENSIONS MATRIX             */}
         {/* ======================================================== */}
         {activeTab === 'geometry' && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                   2
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   {tBilingual('Measurement Units & Physical Dimensions Matrix', 'পরিমাপ একক ও সাইজ মেট্রিক্স')}
                 </h3>
               </div>
-              <span className="text-2xs text-slate-400 font-medium">
+              <span className="text-2xs text-muted-foreground font-medium">
                 {tBilingual('Purchase units, roll widths & dimensions', 'ক্রয় একক, রোল প্রস্থ ও সাইজ')}
               </span>
             </div>
@@ -1852,7 +1852,7 @@ export function MaterialConfigModal({
               {/* Units Selection Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 block">
+                  <Label className="text-xs font-semibold text-foreground mb-1 block">
                     {tBilingual('Purchase Unit', 'ক্রয় একক')} <span className="text-rose-500">*</span>
                   </Label>
                   <select
@@ -1863,7 +1863,7 @@ export function MaterialConfigModal({
                       const match = COMMON_PURCHASE_UNITS.find((x) => x.value === u)
                       if (match) setMaterialType(match.defaultType)
                     }}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium"
                   >
                     {COMMON_PURCHASE_UNITS.map((u) => (
                       <option key={u.value} value={u.value}>
@@ -1874,13 +1874,13 @@ export function MaterialConfigModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 block">
+                  <Label className="text-xs font-semibold text-foreground mb-1 block">
                     {tBilingual('Usage Unit', 'ব্যবহার বা খরচের একক')} <span className="text-rose-500">*</span>
                   </Label>
                   <select
                     value={usageUnit}
                     onChange={(e) => setUsageUnit(e.target.value as any)}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium"
                   >
                     {COMMON_USAGE_UNITS.map((u) => (
                       <option key={u.value} value={u.value}>
@@ -1891,13 +1891,13 @@ export function MaterialConfigModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 block">
+                  <Label className="text-xs font-semibold text-foreground mb-1 block">
                     {tBilingual('Dimension Unit', 'পরিমাপের একক')}
                   </Label>
                   <select
                     value={dimensionUnit}
                     onChange={(e) => setDimensionUnit(e.target.value as any)}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium"
                   >
                     <option value="ft">{tBilingual('Feet (ft)', 'ফুট')}</option>
                     <option value="inch">{tBilingual('Inches (in)', 'ইঞ্চি')}</option>
@@ -1914,7 +1914,7 @@ export function MaterialConfigModal({
                   <div className="space-y-2.5 pt-1">
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                       <div className="sm:col-span-5">
-                        <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                        <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                           Roll Width (Feet) + Extra Allowance
                         </Label>
                         <div className="flex items-center gap-1.5">
@@ -1928,9 +1928,9 @@ export function MaterialConfigModal({
                               onChange={(e) => handleWidthInputChange(e.target.value)}
                               className="h-9 text-xs tabular-nums font-bold pr-7"
                             />
-                            <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
+                            <span className="absolute right-2.5 top-2 text-2xs font-bold text-muted-foreground">ft</span>
                           </div>
-                          <span className="text-sm font-bold text-slate-400">+</span>
+                          <span className="text-sm font-bold text-muted-foreground">+</span>
                           <div className="relative w-24">
                             <Input
                               type="number"
@@ -1941,13 +1941,13 @@ export function MaterialConfigModal({
                               onChange={(e) => handleAllowanceChange(e.target.value)}
                               className="h-9 text-xs tabular-nums font-bold pr-7"
                             />
-                            <span className="absolute right-2 top-2 text-2xs font-bold text-slate-400">ft</span>
+                            <span className="absolute right-2 top-2 text-2xs font-bold text-muted-foreground">ft</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="sm:col-span-5">
-                        <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                        <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                           Roll Length (Feet)
                         </Label>
                         <div className="relative">
@@ -1960,7 +1960,7 @@ export function MaterialConfigModal({
                             onChange={(e) => handleRollLengthChange(e.target.value)}
                             className="h-9 text-xs tabular-nums font-bold pr-7"
                           />
-                          <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
+                          <span className="absolute right-2.5 top-2 text-2xs font-bold text-muted-foreground">ft</span>
                         </div>
                       </div>
 
@@ -1968,7 +1968,7 @@ export function MaterialConfigModal({
                         <Button
                           type="button"
                           onClick={handleAddRollSize}
-                          className="w-full h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer shadow-xs"
+                          className="w-full h-9 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold cursor-pointer shadow-xs"
                         >
                           <Plus className="w-3.5 h-3.5 mr-1" /> Add Size
                         </Button>
@@ -1980,10 +1980,10 @@ export function MaterialConfigModal({
                   {configuredRolls.length > 0 && (
                     <div className="pt-2.5 border-t border-blue-200/40 dark:border-blue-900/40 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xs font-bold text-slate-700 dark:text-slate-300">
+                        <span className="text-2xs font-bold text-foreground dark:text-muted-foreground">
                           Active Configured Roll Sizes (Width × Length) & Discrete Economics:
                         </span>
-                        <span className="text-2xs text-slate-500 font-medium">
+                        <span className="text-2xs text-muted-foreground font-medium">
                           {configuredRolls.length} configured variant{configuredRolls.length > 1 ? 's' : ''}
                         </span>
                       </div>
@@ -2007,7 +2007,7 @@ export function MaterialConfigModal({
                                 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs tabular-nums font-bold transition-all cursor-pointer shadow-2xs',
                                 isCurrentActive
                                   ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-700 dark:text-blue-300 ring-1 ring-blue-400'
-                                  : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:border-blue-400'
+                                  : 'bg-card border-input text-foreground dark:text-white hover:border-blue-400'
                               )}
                               title="Click to view & edit price and allowance for this roll size"
                             >
@@ -2025,7 +2025,7 @@ export function MaterialConfigModal({
                                   e.stopPropagation()
                                   handleRemoveRoll(roll.width, rollLen)
                                 }}
-                                className="ml-0.5 text-slate-400 hover:text-rose-600 cursor-pointer text-sm font-bold"
+                                className="ml-0.5 text-muted-foreground hover:text-rose-600 cursor-pointer text-sm font-bold"
                                 title={`Remove ${roll.width}ft × ${rollLen}ft roll`}
                               >
                                 ×
@@ -2044,7 +2044,7 @@ export function MaterialConfigModal({
                 <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 space-y-3">
                   {/* Preset Sheet Sizes */}
                   <div>
-                    <span className="text-2xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    <span className="text-2xs font-bold text-foreground block mb-1.5">
                       Quick Add Popular Sheet Sizes:
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -2053,7 +2053,7 @@ export function MaterialConfigModal({
                           key={p.label}
                           type="button"
                           onClick={() => handleQuickAddSheetSize(p.width, p.length, p.label)}
-                          className="px-2 py-1 rounded-md text-2xs tabular-nums font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 cursor-pointer"
+                          className="px-2 py-1 rounded-md text-2xs tabular-nums font-bold bg-card border border-input text-foreground hover:border-blue-500 cursor-pointer"
                         >
                           +{p.label}
                         </button>
@@ -2063,7 +2063,7 @@ export function MaterialConfigModal({
 
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                     <div className="sm:col-span-3">
-                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                      <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                         Sheet Width (Feet)
                       </Label>
                       <div className="relative">
@@ -2076,12 +2076,12 @@ export function MaterialConfigModal({
                           onChange={(e) => setNewSheetWidthInput(e.target.value)}
                           className="h-9 text-xs tabular-nums font-bold pr-7"
                         />
-                        <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
+                        <span className="absolute right-2.5 top-2 text-2xs font-bold text-muted-foreground">ft</span>
                       </div>
                     </div>
 
                     <div className="sm:col-span-3">
-                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                      <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                         Sheet Length (Feet)
                       </Label>
                       <div className="relative">
@@ -2094,12 +2094,12 @@ export function MaterialConfigModal({
                           onChange={(e) => setNewSheetLengthInput(e.target.value)}
                           className="h-9 text-xs tabular-nums font-bold pr-7"
                         />
-                        <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
+                        <span className="absolute right-2.5 top-2 text-2xs font-bold text-muted-foreground">ft</span>
                       </div>
                     </div>
 
                     <div className="sm:col-span-4">
-                      <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                      <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                         Board Thickness (mm / gauge)
                       </Label>
                       <Input
@@ -2117,7 +2117,7 @@ export function MaterialConfigModal({
                       <Button
                         type="button"
                         onClick={handleAddCustomSheetSize}
-                        className="w-full h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer"
+                        className="w-full h-9 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5 mr-1" /> Add
                       </Button>
@@ -2127,7 +2127,7 @@ export function MaterialConfigModal({
                   {/* Configured Sheet Sizes List */}
                   {availableSheetSizes.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                      <span className="text-2xs font-bold text-slate-600 dark:text-slate-400 mr-1">
+                      <span className="text-2xs font-bold text-muted-foreground mr-1">
                         Configured Sheet Sizes:
                       </span>
                       {availableSheetSizes.map((s, index) => (
@@ -2137,7 +2137,7 @@ export function MaterialConfigModal({
                             setNewSheetWidthInput(s.width.toString())
                             setNewSheetLengthInput(s.length.toString())
                           }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs tabular-nums font-bold text-slate-900 dark:text-white shadow-2xs hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-card border border-input text-xs tabular-nums font-bold text-foreground dark:text-white shadow-2xs hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors"
                         >
                           <span>{s.width}ft × {s.length}ft ({s.width * s.length} sft)</span>
                           <button
@@ -2146,7 +2146,7 @@ export function MaterialConfigModal({
                               e.stopPropagation()
                               handleRemoveSheetSize(index)
                             }}
-                            className="ml-1 text-slate-400 hover:text-rose-600 cursor-pointer text-sm font-bold"
+                            className="ml-1 text-muted-foreground hover:text-rose-600 cursor-pointer text-sm font-bold"
                           >
                             ×
                           </button>
@@ -2161,7 +2161,7 @@ export function MaterialConfigModal({
               {(materialType === 'liquid' || purchaseUnit === 'bottle' || purchaseUnit === 'liter') && (
                 <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Bottle / Can Volume
                     </Label>
                     <div className="relative">
@@ -2174,18 +2174,18 @@ export function MaterialConfigModal({
                         onChange={(e) => setLiquidVolumeMl(e.target.value === '' ? '' : parseFloat(e.target.value))}
                         className="h-9 text-xs tabular-nums pr-8"
                       />
-                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">ml</span>
+                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-muted-foreground">ml</span>
                     </div>
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Ink Chemistry Formulation
                     </Label>
                     <select
                       value={inkChemistry}
                       onChange={(e) => setInkChemistry(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                      className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium"
                     >
                       <option value="Eco-Solvent">Eco-Solvent Ink</option>
                       <option value="Solvent">Solvent Heavy Duty Ink</option>
@@ -2197,7 +2197,7 @@ export function MaterialConfigModal({
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Estimated Coverage Yield
                     </Label>
                     <div className="relative">
@@ -2210,7 +2210,7 @@ export function MaterialConfigModal({
                         onChange={(e) => setCoverageYieldSqft(e.target.value === '' ? '' : parseFloat(e.target.value))}
                         className="h-9 text-xs tabular-nums pr-12"
                       />
-                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">sft/L</span>
+                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-muted-foreground">sft/L</span>
                     </div>
                   </div>
                 </div>
@@ -2220,7 +2220,7 @@ export function MaterialConfigModal({
               {(materialType === 'rigid') && (
                 <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Standard Bar / Pipe Length (Feet)
                     </Label>
                     <div className="relative">
@@ -2233,12 +2233,12 @@ export function MaterialConfigModal({
                         onChange={(e) => setProfileLengthFt(e.target.value === '' ? '' : parseFloat(e.target.value))}
                         className="h-9 text-xs tabular-nums pr-7"
                       />
-                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">ft</span>
+                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-muted-foreground">ft</span>
                     </div>
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Profile Cross-Section Spec
                     </Label>
                     <Input
@@ -2255,7 +2255,7 @@ export function MaterialConfigModal({
               {(purchaseUnit === 'box' || purchaseUnit === 'pack' || materialType === 'accessory' || materialType === 'electrical') && (
                 <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Items / Pieces per {purchaseUnit}
                     </Label>
                     <Input
@@ -2270,7 +2270,7 @@ export function MaterialConfigModal({
                       }}
                       className="h-9 text-xs tabular-nums font-bold"
                     />
-                    <span className="text-2xs text-slate-500">Auto-converts purchase pack price to unit cost per piece</span>
+                    <span className="text-2xs text-muted-foreground">Auto-converts purchase pack price to unit cost per piece</span>
                   </div>
                 </div>
               )}
@@ -2282,17 +2282,17 @@ export function MaterialConfigModal({
         {/* TAB 3: COSTING, PURCHASING & RESALE PRICING               */}
         {/* ======================================================== */}
         {activeTab === 'costing' && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
                   3
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Purchasing Rate, Direct Costing & Resale Pricing
                 </h3>
               </div>
-              <span className="text-2xs text-slate-400 font-medium">Purchase rate, wastage & multi-tier resale</span>
+              <span className="text-2xs text-muted-foreground font-medium">Purchase rate, wastage & multi-tier resale</span>
             </div>
 
             {/* Section A: Purchase Pricing */}
@@ -2301,7 +2301,7 @@ export function MaterialConfigModal({
                 {/* Usage Unit Purchase Rate */}
                 <div className="flex flex-col justify-between">
                   <div className="h-6 flex items-center justify-between mb-1">
-                    <Label className="text-xs font-semibold text-slate-900 dark:text-white truncate">
+                    <Label className="text-xs font-semibold text-foreground dark:text-white truncate">
                       Purchase Price (৳/{usageUnit.toUpperCase()}) <span className="text-rose-500">*</span>
                     </Label>
                     <span className="text-2xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded shrink-0">
@@ -2309,7 +2309,7 @@ export function MaterialConfigModal({
                     </span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                    <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -2320,23 +2320,23 @@ export function MaterialConfigModal({
                       className="pl-7 h-9 text-xs tabular-nums font-bold bg-blue-50/20 border-blue-200 dark:border-blue-800 focus:border-blue-500"
                     />
                   </div>
-                  <span className="text-2xs text-slate-500 mt-1 block truncate">Direct material cost per {usageUnit}</span>
+                  <span className="text-2xs text-muted-foreground mt-1 block truncate">Direct material cost per {usageUnit}</span>
                 </div>
 
                 {/* Package Purchase Price */}
                 <div className="flex flex-col justify-between">
                   <div className="h-6 flex items-center justify-between mb-1">
-                    <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    <Label className="text-xs font-semibold text-foreground truncate">
                       Purchase Price (৳/{purchaseUnit})
                     </Label>
-                    <span className="text-2xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded shrink-0">
+                    <span className="text-2xs font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
                       {materialType === 'roll' || purchaseUnit === 'roll'
                         ? `${parseFloat(newWidthInput) || 10}ft roll`
                         : `Total ${purchaseUnit}`}
                     </span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                    <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -2347,7 +2347,7 @@ export function MaterialConfigModal({
                       className="pl-7 h-9 text-xs tabular-nums font-bold"
                     />
                   </div>
-                  <span className="text-2xs text-slate-500 mt-1 block truncate">
+                  <span className="text-2xs text-muted-foreground mt-1 block truncate">
                     {materialType === 'roll' || purchaseUnit === 'roll'
                       ? `Package price for ${parseFloat(newWidthInput) || 10}ft roll`
                       : 'Supplier invoice package price'}
@@ -2357,7 +2357,7 @@ export function MaterialConfigModal({
                 {/* Wastage Factor */}
                 <div className="flex flex-col justify-between">
                   <div className="h-6 flex items-center justify-between mb-1">
-                    <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    <Label className="text-xs font-semibold text-foreground truncate">
                       Expected Wastage (%)
                     </Label>
                   </div>
@@ -2371,15 +2371,15 @@ export function MaterialConfigModal({
                       onChange={(e) => setWastePercent(parseFloat(e.target.value) || 0)}
                       className="pr-7 h-9 text-xs tabular-nums"
                     />
-                    <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
+                    <span className="absolute right-3 top-2.5 text-muted-foreground font-bold text-xs">%</span>
                   </div>
-                  <span className="text-2xs text-slate-500 mt-1 block truncate">Production scrap margin</span>
+                  <span className="text-2xs text-muted-foreground mt-1 block truncate">Production scrap margin</span>
                 </div>
 
                 {/* Landed Cost Markup Factor */}
                 <div className="flex flex-col justify-between">
                   <div className="h-6 flex items-center justify-between mb-1">
-                    <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    <Label className="text-xs font-semibold text-foreground truncate">
                       Landed / Duty Markup (%)
                     </Label>
                   </div>
@@ -2393,9 +2393,9 @@ export function MaterialConfigModal({
                       onChange={(e) => setLandedCostMarkupPercent(parseFloat(e.target.value) || 0)}
                       className="pr-7 h-9 text-xs tabular-nums"
                     />
-                    <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
+                    <span className="absolute right-3 top-2.5 text-muted-foreground font-bold text-xs">%</span>
                   </div>
-                  <span className="text-2xs text-slate-500 mt-1 block truncate">Freight & import duty surcharge</span>
+                  <span className="text-2xs text-muted-foreground mt-1 block truncate">Freight & import duty surcharge</span>
                 </div>
               </div>
 
@@ -2414,22 +2414,22 @@ export function MaterialConfigModal({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                  <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-2xs font-medium text-slate-500 block">Direct Base Cost (৳ / {usageUnit})</span>
+                  <div className="p-2.5 rounded-lg bg-card/80 border border-emerald-100 dark:border-emerald-900/60">
+                    <span className="text-2xs font-medium text-muted-foreground block">Direct Base Cost (৳ / {usageUnit})</span>
                     <span className="text-sm font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
                       ৳{calculatedEconomics.unitCost.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-2xs font-medium text-slate-500 block">Effective Cost ({wastePercent}% Waste)</span>
-                    <span className="text-sm font-bold tabular-nums text-slate-900 dark:text-white">
+                  <div className="p-2.5 rounded-lg bg-card/80 border border-emerald-100 dark:border-emerald-900/60">
+                    <span className="text-2xs font-medium text-muted-foreground block">Effective Cost ({wastePercent}% Waste)</span>
+                    <span className="text-sm font-bold tabular-nums text-foreground dark:text-white">
                       ৳{calculatedEconomics.effectiveCost.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-2xs font-medium text-slate-500 block">Suggested Selling Rate ({targetMargin}% Margin)</span>
+                  <div className="p-2.5 rounded-lg bg-card/80 border border-emerald-100 dark:border-emerald-900/60">
+                    <span className="text-2xs font-medium text-muted-foreground block">Suggested Selling Rate ({targetMargin}% Margin)</span>
                     <span className="text-sm font-bold tabular-nums text-blue-700 dark:text-blue-300">
                       ৳{suggestedSellingPrice.toFixed(2)} / {usageUnit}
                     </span>
@@ -2442,24 +2442,24 @@ export function MaterialConfigModal({
               </div>
 
               {/* Section B: Direct Customer Resale & Pricing Tiers */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="pt-3 border-t border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-4 h-4 text-blue-600" />
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    <h4 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                       Direct Resale & Multi-Tier Customer Pricing (ঐচ্ছিক বিক্রয় মূল্য)
                     </h4>
                   </div>
-                  <span className="text-2xs text-slate-400">When selling raw rolls/sheets directly</span>
+                  <span className="text-2xs text-muted-foreground">When selling raw rolls/sheets directly</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Direct Selling Price (৳/{usageUnit})
                     </Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                      <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                       <Input
                         type="number"
                         step="any"
@@ -2473,7 +2473,7 @@ export function MaterialConfigModal({
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Target Gross Margin (%)
                     </Label>
                     <div className="relative">
@@ -2486,12 +2486,12 @@ export function MaterialConfigModal({
                         onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
                         className="pr-7 h-9 text-xs tabular-nums"
                       />
-                      <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
+                      <span className="absolute right-3 top-2.5 text-muted-foreground font-bold text-xs">%</span>
                     </div>
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Minimum Floor Margin (%)
                     </Label>
                     <div className="relative">
@@ -2504,19 +2504,19 @@ export function MaterialConfigModal({
                         onChange={(e) => setMinAllowedMargin(parseFloat(e.target.value) || 15)}
                         className="pr-7 h-9 text-xs tabular-nums"
                       />
-                      <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
+                      <span className="absolute right-3 top-2.5 text-muted-foreground font-bold text-xs">%</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Multi-tier Rate Grid */}
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl space-y-2 border border-slate-200 dark:border-slate-700">
-                  <span className="text-2xs font-bold text-slate-700 dark:text-slate-300 block">
+                <div className="p-3 bg-muted rounded-xl space-y-2 border border-border dark:border-border">
+                  <span className="text-2xs font-bold text-foreground block">
                     Customer Tier Price List (৳ / {usageUnit}):
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div>
-                      <Label className="text-2xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">
+                      <Label className="text-2xs font-medium text-muted-foreground mb-1 block">
                         Retail (খুচরা)
                       </Label>
                       <Input
@@ -2530,7 +2530,7 @@ export function MaterialConfigModal({
                     </div>
 
                     <div>
-                      <Label className="text-2xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">
+                      <Label className="text-2xs font-medium text-muted-foreground mb-1 block">
                         Corporate (কর্পোরেট)
                       </Label>
                       <Input
@@ -2544,7 +2544,7 @@ export function MaterialConfigModal({
                     </div>
 
                     <div>
-                      <Label className="text-2xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">
+                      <Label className="text-2xs font-medium text-muted-foreground mb-1 block">
                         Dealer (ডিলার)
                       </Label>
                       <Input
@@ -2558,7 +2558,7 @@ export function MaterialConfigModal({
                     </div>
 
                     <div>
-                      <Label className="text-2xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">
+                      <Label className="text-2xs font-medium text-muted-foreground mb-1 block">
                         Wholesale (পাইকারি)
                       </Label>
                       <Input
@@ -2575,12 +2575,12 @@ export function MaterialConfigModal({
 
                 {/* Tax & VAT toggles */}
                 <div className="pt-2 flex flex-wrap items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-200">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-foreground dark:text-foreground">
                     <input
                       type="checkbox"
                       checked={vatApplicable}
                       onChange={(e) => setVatApplicable(e.target.checked)}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                     />
                     <span>VAT Applicable (ভ্যাট প্রযোজ্য)</span>
                   </label>
@@ -2598,12 +2598,12 @@ export function MaterialConfigModal({
                     </div>
                   )}
 
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-200">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-foreground dark:text-foreground">
                     <input
                       type="checkbox"
                       checked={allowManualOverride}
                       onChange={(e) => setAllowManualOverride(e.target.checked)}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                     />
                     <span>Allow manual price override on sales</span>
                   </label>
@@ -2617,24 +2617,24 @@ export function MaterialConfigModal({
         {/* TAB 4: INVENTORY, STORAGE & REORDER INTELLIGENCE          */}
         {/* ======================================================== */}
         {activeTab === 'inventory' && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 flex items-center justify-center font-bold text-xs">
                   4
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Inventory Storage, Reorder Thresholds & Suppliers
                 </h3>
               </div>
-              <span className="text-2xs text-slate-400 font-medium">Reorder intelligence & store bins</span>
+              <span className="text-2xs text-muted-foreground font-medium">Reorder intelligence & store bins</span>
             </div>
 
             <div className="space-y-3">
               {/* Storage & Reorder Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="sm:col-span-2">
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Warehouse / Storage Rack Location
                   </Label>
                   <Input
@@ -2646,7 +2646,7 @@ export function MaterialConfigModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Reorder Alert Level ({purchaseUnit}s)
                   </Label>
                   <Input
@@ -2657,11 +2657,11 @@ export function MaterialConfigModal({
                     onChange={(e) => setReorderLevel(parseInt(e.target.value, 10) || 0)}
                     className="h-9 text-xs tabular-nums"
                   />
-                  <span className="text-2xs text-slate-500 mt-1 block">Low stock warning threshold</span>
+                  <span className="text-2xs text-muted-foreground mt-1 block">Low stock warning threshold</span>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Reorder Batch Qty ({purchaseUnit}s)
                   </Label>
                   <Input
@@ -2672,14 +2672,14 @@ export function MaterialConfigModal({
                     onChange={(e) => setReorderQuantity(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
                     className="h-9 text-xs tabular-nums"
                   />
-                  <span className="text-2xs text-slate-500 mt-1 block">Suggested purchase batch</span>
+                  <span className="text-2xs text-muted-foreground mt-1 block">Suggested purchase batch</span>
                 </div>
               </div>
 
               {/* Barcode & Shelf Life */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Barcode / QR Stock Code
                   </Label>
                   <Input
@@ -2691,7 +2691,7 @@ export function MaterialConfigModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Lead Time (Days)
                   </Label>
                   <Input
@@ -2706,7 +2706,7 @@ export function MaterialConfigModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                     Shelf-Life / Expiry (Months)
                   </Label>
                   <Input
@@ -2722,17 +2722,17 @@ export function MaterialConfigModal({
               </div>
 
               {/* Primary Supplier Section */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="pt-3 border-t border-border space-y-3">
                 <div className="flex items-center gap-2 pb-1">
-                  <Building className="w-4 h-4 text-slate-500" />
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                  <Building className="w-4 h-4 text-muted-foreground" />
+                  <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
                     Primary Supplier & Procurement Metadata
                   </h4>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Primary Supplier Name
                     </Label>
                     {suppliers && suppliers.length > 0 ? (
@@ -2744,7 +2744,7 @@ export function MaterialConfigModal({
                           const matched = suppliers.find((s) => s.id === val)
                           if (matched) setPrimarySupplierName(matched.name)
                         }}
-                        className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                        className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium"
                       >
                         <option value="">-- Select Registered Supplier --</option>
                         {suppliers.map((s) => (
@@ -2764,7 +2764,7 @@ export function MaterialConfigModal({
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Supplier SKU / Part No.
                     </Label>
                     <Input
@@ -2776,7 +2776,7 @@ export function MaterialConfigModal({
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                       Supplier Minimum Order (MOQ)
                     </Label>
                     <Input
@@ -2792,12 +2792,12 @@ export function MaterialConfigModal({
                 </div>
 
                 <div className="pt-2 flex items-center gap-3">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-200">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-foreground dark:text-foreground">
                     <input
                       type="checkbox"
                       checked={trackBatches}
                       onChange={(e) => setTrackBatches(e.target.checked)}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                     />
                     <span>Track Physical Roll Codes & Lot Numbers (রোল কোড ট্র্যাকিং)</span>
                   </label>
@@ -2811,29 +2811,29 @@ export function MaterialConfigModal({
         {/* TAB 5: PRODUCTION & MACHINE COMPATIBILITY                 */}
         {/* ======================================================== */}
         {activeTab === 'production' && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs animate-in fade-in-0">
+            <div className="flex items-center justify-between pb-2 border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-cyan-100 text-cyan-700 dark:bg-cyan-900/60 dark:text-cyan-300 flex items-center justify-center font-bold text-xs">
                   5
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Production Role & Machine Compatibility
                 </h3>
               </div>
-              <span className="text-2xs text-slate-400 font-medium">BOM role & printer compatibility</span>
+              <span className="text-2xs text-muted-foreground font-medium">BOM role & printer compatibility</span>
             </div>
 
             <div className="space-y-3.5">
               {/* Production Role in Service BOMs */}
               <div>
-                <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                   Default Role in Production BOM (উৎপাদনে ভূমিকা)
                 </Label>
                 <select
                   value={productionRole}
                   onChange={(e) => setProductionRole(e.target.value)}
-                  className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                  className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium"
                 >
                   {PRODUCTION_ROLE_OPTIONS.map((r) => (
                     <option key={r.value} value={r.value}>
@@ -2846,10 +2846,10 @@ export function MaterialConfigModal({
               {/* Compatible Printing Methods */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold text-foreground dark:text-foreground">
                     {tBilingual('Compatible Printing Methods & Machinery', 'সামঞ্জস্যপূর্ণ প্রিন্টিং পদ্ধতি ও মেশিন')}
                   </Label>
-                  <span className="text-2xs text-slate-400 font-medium">
+                  <span className="text-2xs text-muted-foreground font-medium">
                     {compatiblePrintingMethods.length} Selected
                   </span>
                 </div>
@@ -2868,7 +2868,7 @@ export function MaterialConfigModal({
                           'px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer border flex items-center gap-1.5',
                           isSelected
                             ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-700 dark:text-blue-300 font-bold'
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-400'
+                            : 'bg-card border-border text-foreground hover:border-input'
                         )}
                       >
                         <Printer className="w-3 h-3" />
@@ -2881,12 +2881,12 @@ export function MaterialConfigModal({
               </div>
 
               {/* Compatible Ink Formulations */}
-              <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="space-y-2 pt-2 border-t border-border dark:border-border">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <Label className="text-xs font-semibold text-foreground dark:text-foreground">
                     Compatible Inks & Chemistry (কালির ধরন)
                   </Label>
-                  <span className="text-2xs text-slate-400 font-medium">
+                  <span className="text-2xs text-muted-foreground font-medium">
                     {compatibleInkTypes.length} Selected
                   </span>
                 </div>
@@ -2902,7 +2902,7 @@ export function MaterialConfigModal({
                           'px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer border flex items-center gap-1.5',
                           isSelected
                             ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-500 text-rose-700 dark:text-rose-300 font-bold'
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-400'
+                            : 'bg-card border-border text-foreground hover:border-input'
                         )}
                       >
                         <Droplets className="w-3 h-3" />
@@ -2915,8 +2915,8 @@ export function MaterialConfigModal({
               </div>
 
               {/* Technical Machine Notes */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+              <div className="pt-2 border-t border-border dark:border-border">
+                <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-foreground">
                   Machine Technical Settings & Calibration Notes
                 </Label>
                 <textarea
@@ -2924,18 +2924,18 @@ export function MaterialConfigModal({
                   placeholder="e.g. Recommended Printhead Gap: 2.0mm, Pre-Heat: 40°C, Post-Heat: 45°C, Vacuum: Medium..."
                   value={machineSettingsNotes}
                   onChange={(e) => setMachineSettingsNotes(e.target.value)}
-                  className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+                  className="w-full p-2.5 rounded-md border border-input bg-card text-xs focus:ring-1 focus:ring-ring outline-none resize-none"
                 />
               </div>
 
               {/* Active Toggle */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
+              <div className="pt-2 border-t border-border dark:border-border">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground dark:text-foreground">
                   <input
                     type="checkbox"
                     checked={isActive}
                     onChange={(e) => setIsActive(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                   />
                   <span>Active in Raw Material Inventory & Available for Service BOM Consumption</span>
                 </label>

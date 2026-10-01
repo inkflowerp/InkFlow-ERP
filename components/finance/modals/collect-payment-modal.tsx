@@ -168,11 +168,11 @@ export function CollectPaymentModal({
 
         {/* Customer Select */}
         <div>
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+          <Label className="text-xs font-semibold text-foreground mb-1 block">
             {tBilingual('Customer *', 'গ্রাহকের নাম *')}
           </Label>
           {initialCustomerName ? (
-            <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+            <div className="p-2.5 rounded-xl bg-muted text-xs font-bold text-foreground flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <User className="w-3.5 h-3.5 text-blue-600" />
                 {selectedCustomerName}
@@ -187,7 +187,7 @@ export function CollectPaymentModal({
             <select
               value={selectedCustomerId}
               onChange={(e) => handleCustomerChange(e.target.value)}
-              className="h-9 w-full text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3"
+              className="h-9 w-full text-xs rounded-xl bg-card border border-border px-3"
               required
             >
               <option value="">{tBilingual('-- Select Customer --', '-- কাস্টমার নির্বাচন করুন --')}</option>
@@ -203,7 +203,7 @@ export function CollectPaymentModal({
         {/* Optional Invoice ID */}
         {initialInvoiceId ? (
           <div>
-            <Label className="text-2xs font-semibold text-slate-500 mb-1 block">
+            <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
               {tBilingual('Invoice Reference', 'ইনভয়েস নম্বর')}
             </Label>
             <div className="p-2 rounded-lg bg-blue-50/50 dark:bg-blue-950/30 text-xs tabular-nums font-medium text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/60">
@@ -212,7 +212,7 @@ export function CollectPaymentModal({
           </div>
         ) : (
           <div>
-            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+            <Label className="text-xs font-semibold text-foreground mb-1 block">
               {tBilingual('Invoice # (Optional)', 'ইনভয়েস নং (ঐচ্ছিক)')}
             </Label>
             <Input
@@ -227,7 +227,7 @@ export function CollectPaymentModal({
         {/* Amount to collect */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
               {tBilingual('Collection Amount (৳) *', 'আদায়ের পরিমাণ (৳) *')}
             </Label>
             {initialDueAmount > 0 && (
@@ -242,7 +242,7 @@ export function CollectPaymentModal({
             )}
           </div>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">৳</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-bold pointer-events-none">৳</span>
             <Input
               type="number"
               min="1"
@@ -250,7 +250,7 @@ export function CollectPaymentModal({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              className="h-9 pl-7 text-xs rounded-xl tabular-nums font-bold text-slate-900 dark:text-white"
+              className="h-9 pl-7 text-xs rounded-xl tabular-nums font-bold text-foreground dark:text-white"
               required
             />
           </div>
@@ -258,7 +258,7 @@ export function CollectPaymentModal({
 
         {/* Receiving Account */}
         <div>
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+          <Label className="text-xs font-semibold text-foreground mb-1 block">
             {tBilingual('Deposit Into Account *', 'যে অ্যাকাউন্টে জমা হবে *')}
           </Label>
           <select
@@ -276,7 +276,7 @@ export function CollectPaymentModal({
                 }
               }
             }}
-            className="h-9 w-full text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 font-medium"
+            className="h-9 w-full text-xs rounded-xl bg-card border border-border px-3 font-medium"
             required
           >
             {liquidAccounts.map((a) => (
@@ -290,33 +290,33 @@ export function CollectPaymentModal({
         {/* Payment Date & Reference */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-1 block">
+            <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
               {tBilingual('Payment Date', 'জমার তারিখ')}
             </Label>
             <Input
               type="date"
               value={paymentDate}
               onChange={(e) => setPaymentDate(e.target.value)}
-              className="h-8 text-xs rounded-lg bg-white dark:bg-slate-900"
+              className="h-8 text-xs rounded-lg bg-card dark:bg-card"
               required
             />
           </div>
           <div>
-            <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-1 block">
+            <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
               {tBilingual('Receipt / TrxID #', 'রসিদ / ট্রানজেকশন আইডি')}
             </Label>
             <Input
               value={referenceNumber}
               onChange={(e) => setReferenceNumber(e.target.value)}
               placeholder="e.g. TRX-9041 / Chq 458"
-              className="h-8 text-xs rounded-lg bg-white dark:bg-slate-900"
+              className="h-8 text-xs rounded-lg bg-card dark:bg-card"
             />
           </div>
         </div>
 
         {/* Notes */}
         <div>
-          <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-1 block">
+          <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
             {tBilingual('Narration / Note', 'মন্তব্য / নোট')}
           </Label>
           <Input
@@ -328,7 +328,7 @@ export function CollectPaymentModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

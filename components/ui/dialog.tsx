@@ -131,7 +131,7 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 xs:p-3 sm:p-4 overflow-y-auto">
         {/* Backdrop: rgba(15,23,42,.45) with no blur */}
         <div
-          className="fixed inset-0 bg-slate-900/45 dark:bg-slate-950/65 transition-opacity animate-in fade-in-0"
+          className="fixed inset-0 bg-foreground transition-opacity animate-in fade-in-0"
           onClick={() => onOpenChangeRef.current?.(false)}
           aria-hidden="true"
         />

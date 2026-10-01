@@ -227,7 +227,7 @@ function CatalogItemCombobox({
                 setKeyword('')
                 if (onCustomSelect) onCustomSelect()
               }}
-              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded cursor-pointer"
+              className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer"
               title="Clear to Custom Item"
             >
               <X className="h-3.5 w-3.5" />
@@ -236,7 +236,7 @@ function CatalogItemCombobox({
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded cursor-pointer"
+            className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer"
           >
             <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")} />
           </button>
@@ -244,7 +244,7 @@ function CatalogItemCombobox({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-card rounded-xl border border-border shadow-xl divide-y divide-border text-xs">
           {/* Custom Item option (Index 0) */}
           <div
             ref={(el) => {
@@ -259,7 +259,7 @@ function CatalogItemCombobox({
                 ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
                 : !selectedProductId
                 ? "bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                : "hover:bg-muted text-muted-foreground dark:text-muted-foreground"
             )}
           >
             <span>✨ -- Custom Item (Manual Specification) --</span>
@@ -289,9 +289,9 @@ function CatalogItemCombobox({
                     )}
                   >
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                         {p.printable_material_name && <span className="text-indigo-600">• {p.printable_material_name}</span>}
                       </div>
@@ -327,9 +327,9 @@ function CatalogItemCombobox({
                     )}
                   >
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                       </div>
                     </div>
@@ -364,9 +364,9 @@ function CatalogItemCombobox({
                     )}
                   >
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
                       </div>
                     </div>
@@ -401,9 +401,9 @@ function CatalogItemCombobox({
                     )}
                   >
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
                       </div>
                     </div>
@@ -419,7 +419,7 @@ function CatalogItemCombobox({
           )}
 
           {filteredProducts.length === 0 && (
-            <div className="p-4 text-center text-slate-400">
+            <div className="p-4 text-center text-muted-foreground">
               No catalog items match &quot;{keyword}&quot;. You can use it as a custom item description.
             </div>
           )}
@@ -451,7 +451,7 @@ function CustomerSuggestionsDropdown({
   }, [highlightedIndex])
 
   return (
-    <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl divide-y divide-slate-100 dark:divide-slate-800 text-xs animate-in fade-in-0">
+    <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-card rounded-xl border border-border shadow-2xl divide-y divide-border text-xs animate-in fade-in-0">
       {results.map((cust, idx) => {
         const isHighlighted = idx === highlightedIndex
         return (
@@ -467,31 +467,31 @@ function CustomerSuggestionsDropdown({
               'p-2.5 cursor-pointer transition-colors flex items-center justify-between gap-2',
               isHighlighted
                 ? 'bg-blue-50 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100'
-                : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200'
+                : 'hover:bg-muted dark:hover:bg-muted/60 text-foreground dark:text-foreground'
             )}
           >
             <div className="min-w-0">
               <div className="font-bold flex items-center gap-1.5 truncate">
                 <span>{cust.name}</span>
                 {cust.name_bn && (
-                  <span className="text-2xs font-normal text-slate-500 dark:text-slate-400">
+                  <span className="text-2xs font-normal text-muted-foreground dark:text-muted-foreground">
                     ({cust.name_bn})
                   </span>
                 )}
                 {cust.company_name && (
-                  <span className="text-2xs font-normal text-slate-500 dark:text-slate-400 truncate">
+                  <span className="text-2xs font-normal text-muted-foreground truncate">
                     • {cust.company_name}
                   </span>
                 )}
               </div>
-              <div className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
+              <div className="text-2xs text-muted-foreground tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
                 <span>📞 {cust.mobile}</span>
                 {cust.email && <span className="truncate">✉️ {cust.email}</span>}
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground dark:text-muted-foreground">
                 {cust.customer_type || cust.customer_category || 'Retail'}
               </span>
               {isHighlighted && (
@@ -1731,13 +1731,13 @@ export function NewQuotationModal({
               <FileSpreadsheet className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              <h2 className="text-base font-bold text-foreground dark:text-white">
                 New Quotation
               </h2>
             </div>
           </div>
         }
-        footerClassName="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3"
+        footerClassName="bg-card border-border px-4 sm:px-6 py-3"
         footer={
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
             <Button
@@ -1745,7 +1745,7 @@ export function NewQuotationModal({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting || isSending}
-              className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted cursor-pointer"
             >
               Cancel
             </Button>
@@ -1756,7 +1756,7 @@ export function NewQuotationModal({
                 variant="outline"
                 onClick={handleSaveAsDraft}
                 disabled={isSubmitting || isSending}
-                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted cursor-pointer"
               >
                 {isSubmitting && submitActionType === 'draft' ? (
                   <>
@@ -1790,21 +1790,21 @@ export function NewQuotationModal({
           </div>
         }
       >
-        <div className="space-y-4 pt-1 pb-2 text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pt-1 pb-2 text-foreground dark:text-foreground">
           {/* Submission Alerts */}
                 {/* =========================================================================
               CUSTOMER INFORMATION (LEFT - 2 COLUMN) & QUOTATION INFO & VALIDITY (RIGHT - 1 COLUMN)
              ========================================================================= */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
             {/* SECTION 1: CUSTOMER INFORMATION (2 COLUMNS) */}
-            <div className="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs flex flex-col justify-between">
+            <div className="lg:col-span-2 rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
                   <div className="flex items-center gap-2">
                     <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                       1
                     </div>
-                    <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                       Customer Information
                     </h3>
                   </div>
@@ -1821,7 +1821,7 @@ export function NewQuotationModal({
                           variant="ghost"
                           size="sm"
                           onClick={handleClearCustomer}
-                          className="h-6 text-2xs text-slate-400 hover:text-slate-700 cursor-pointer"
+                          className="h-6 text-2xs text-muted-foreground hover:text-foreground cursor-pointer"
                         >
                           Change
                         </Button>
@@ -1829,7 +1829,7 @@ export function NewQuotationModal({
                     )}
 
                     {/* Customer Type Tabs */}
-                    <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
+                    <div className="inline-flex items-center p-0.5 rounded-lg bg-muted border border-border dark:border-border">
                       {[
                         { value: 'retail', label: 'Retail' },
                         { value: 'reseller', label: 'Reseller' },
@@ -1843,8 +1843,8 @@ export function NewQuotationModal({
                           className={cn(
                             'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
                             customerType === tab.value
-                              ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                              ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
+                              : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                           )}
                         >
                           {tab.label}
@@ -1878,7 +1878,7 @@ export function NewQuotationModal({
                         autoFocus
                       />
                       {isSearchingCustomers && activeCustomerSearchField === 'name' && (
-                        <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
+                        <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
                       )}
                     </div>
 
@@ -1914,7 +1914,7 @@ export function NewQuotationModal({
                         className="text-xs h-9 pr-8 font-numeric tabular-nums"
                       />
                       {isSearchingCustomers && activeCustomerSearchField === 'phone' && (
-                        <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
+                        <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
                       )}
                     </div>
 
@@ -1950,7 +1950,7 @@ export function NewQuotationModal({
                         className="text-xs h-9 pr-8"
                       />
                       {isSearchingCustomers && activeCustomerSearchField === 'company' && (
-                        <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
+                        <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
                       )}
                     </div>
 
@@ -1998,14 +1998,14 @@ export function NewQuotationModal({
 
               {/* Save Customer Checkbox */}
               {!selectedCustomer && (
-                <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 mt-2">
-                  <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-700 dark:text-slate-300">
+                <div className="pt-2 flex items-center justify-between border-t border-border dark:border-border/80 mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-foreground dark:text-muted-foreground">
                     <input
                       type="checkbox"
                       id="saveCustCheck"
                       checked={saveCustomer}
                       onChange={(e) => setSaveCustomer(e.target.checked)}
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-input text-blue-600 focus:ring-ring"
                     />
                     <span>Save customer details to directory for future quotations & orders</span>
                   </label>
@@ -2029,7 +2029,7 @@ export function NewQuotationModal({
                     size="sm"
                     variant="outline"
                     onClick={() => handleSelectCustomer(duplicateWarning.matches[0].customer)}
-                    className="h-7 text-xs bg-white text-amber-900 border-amber-300 hover:bg-amber-100"
+                    className="h-7 text-xs bg-card text-amber-900 border-amber-300 hover:bg-amber-100"
                   >
                     Use Existing Customer Profile
                   </Button>
@@ -2038,13 +2038,13 @@ export function NewQuotationModal({
             </div>
 
             {/* SECTION 2: QUOTATION METADATA (RIGHT - 1 COLUMN) */}
-            <div className="lg:col-span-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs flex flex-col justify-between">
+            <div className="lg:col-span-1 rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                     2
                   </div>
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                     Quote Info
                   </h3>
                 </div>
@@ -2109,12 +2109,12 @@ export function NewQuotationModal({
           {/* =========================================================================
               SECTION 3: ITEM BUILDER (MULTI-ITEM ESTIMATOR)
              ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 3
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 Quotation Line Items ({items.length})
               </h3>
             </div>
@@ -2137,12 +2137,12 @@ export function NewQuotationModal({
                 return (
                   <div
                     key={item.tempId}
-                    className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5 transition-all"
+                    className="p-4 rounded-xl bg-muted border border-border shadow-xs space-y-3.5 transition-all"
                   >
                     {/* Item Header & Badges */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800 pb-2.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2.5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="tabular-nums text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
+                        <span className="tabular-nums text-xs font-bold text-muted-foreground bg-muted/80 px-2 py-0.5 rounded">
                           Item #{index + 1}
                         </span>
 
@@ -2169,7 +2169,7 @@ export function NewQuotationModal({
                         )}
 
                         {isCustom && (
-                          <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-300 text-2xs font-bold">
+                          <Badge variant="outline" className="bg-muted text-foreground border-input text-2xs font-bold">
                             ✨ Custom Item
                           </Badge>
                         )}
@@ -2194,7 +2194,7 @@ export function NewQuotationModal({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleToggleAdvanced(index)}
-                          className="h-7 px-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 text-xs font-semibold cursor-pointer"
+                          className="h-7 px-2 text-muted-foreground hover:text-foreground text-xs font-semibold cursor-pointer"
                         >
                           {item.showAdvanced ? 'Simple Specs' : 'Additional Spec'}
                         </Button>
@@ -2235,13 +2235,13 @@ export function NewQuotationModal({
                           </Label>
                           {isCustom && (
                             <div className="flex items-center gap-1">
-                              <span className="text-2xs text-slate-400 mr-1">Pricing Mode:</span>
+                              <span className="text-2xs text-muted-foreground mr-1">Pricing Mode:</span>
                               <button
                                 type="button"
                                 onClick={() => handleToggleItemKind(index, 'service')}
                                 className={cn(
                                   'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
-                                  isService ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
+                                  isService ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
                                 )}
                               >
                                 📐 Sqft Area
@@ -2251,7 +2251,7 @@ export function NewQuotationModal({
                                 onClick={() => handleToggleItemKind(index, 'ready_product')}
                                 className={cn(
                                   'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
-                                  isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
+                                  isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
                                 )}
                               >
                                 📦 Unit
@@ -2301,7 +2301,7 @@ export function NewQuotationModal({
                           <select
                             value={item.dimension_unit || 'ft'}
                             onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
-                            className="w-full h-9 px-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                            className="w-full h-9 px-1 rounded-lg border border-input bg-card text-xs font-medium"
                           >
                             <option value="ft">{tBilingual('ft', 'ফুট')}</option>
                             <option value="inch">{tBilingual('inch', 'ইঞ্চি')}</option>
@@ -2332,7 +2332,7 @@ export function NewQuotationModal({
                           <select
                             value={item.finishing || 'None'}
                             onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
-                            className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                            className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                           >
                             {Array.isArray(item.available_finishing_options) && item.available_finishing_options.length > 0 ? (
                               <>
@@ -2367,7 +2367,7 @@ export function NewQuotationModal({
                           <select
                             value={item.add_on || 'None'}
                             onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
-                            className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                            className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                           >
                             {Array.isArray(STANDARD_ADD_ON_OPTIONS) && STANDARD_ADD_ON_OPTIONS.map((a) => (
                               <option key={a.id} value={a.name}>
@@ -2394,19 +2394,19 @@ export function NewQuotationModal({
 
                     {/* READY PRODUCT CONTROLS */}
                     {isReadyProduct && (
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-card rounded-xl border border-border dark:border-border">
                         <div className="sm:col-span-5 flex flex-col justify-center">
-                          <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">Physical Specs & Packaging</span>
-                          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                          <span className="text-2xs uppercase font-bold text-muted-foreground block mb-0.5">Physical Specs & Packaging</span>
+                          <div className="flex flex-wrap items-center gap-1.5 text-xs text-foreground font-medium">
                             {item.dimensions_spec ? (
-                              <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums text-2xs">
+                              <span className="bg-muted px-2 py-0.5 rounded tabular-nums text-2xs">
                                 📐 {item.dimensions_spec}
                               </span>
                             ) : (
-                              <span className="text-slate-400 italic text-2xs">Standard Factory Unit</span>
+                              <span className="text-muted-foreground italic text-2xs">Standard Factory Unit</span>
                             )}
                             {item.pcs_per_carton ? (
-                              <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-2xs">
+                              <span className="bg-muted px-2 py-0.5 rounded text-2xs">
                                 📦 {item.pcs_per_carton} pcs/box
                               </span>
                             ) : null}
@@ -2429,7 +2429,7 @@ export function NewQuotationModal({
                           <select
                             value={item.unit}
                             onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                            className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                            className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                           >
                             <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
                             <option value="set">{tBilingual('set', 'সেট')}</option>
@@ -2468,7 +2468,7 @@ export function NewQuotationModal({
 
                     {/* Substrate Pill */}
                     {isService && item.printable_material_name && (
-                      <div className="flex items-center gap-2 text-2xs text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                      <div className="flex items-center gap-2 text-2xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border dark:border-border">
                         <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
                         <span>Linked Catalog Substrate: <strong>{item.printable_material_name}</strong></span>
                       </div>
@@ -2476,9 +2476,9 @@ export function NewQuotationModal({
 
                     {/* Additional Spec Drawer */}
                     {item.showAdvanced && (
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5 text-xs animate-in fade-in-0">
-                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                          <span className="text-2xs uppercase font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                      <div className="p-3.5 rounded-xl bg-card border border-border space-y-2.5 text-xs animate-in fade-in-0">
+                        <div className="flex items-center justify-between border-b border-border pb-2">
+                          <span className="text-2xs uppercase font-bold text-muted-foreground flex items-center gap-1.5">
                             <Wrench className="h-3.5 w-3.5 text-blue-600" />
                             Additional Spec
                           </span>
@@ -2497,7 +2497,7 @@ export function NewQuotationModal({
                     )}
 
                     {/* Line Calculation Summary HUD */}
-                    <div className="flex flex-wrap items-center justify-between text-xs pt-1.5 px-1 text-slate-500 font-medium border-t border-slate-200/50 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center justify-between text-xs pt-1.5 px-1 text-muted-foreground font-medium border-t border-border dark:border-border">
                       <div className="flex items-center gap-3">
                         {(item.area_sft || 0) > 0 ? (
                           <span>
@@ -2510,15 +2510,15 @@ export function NewQuotationModal({
                         )}
 
                         {estimatedDirectCost > 0 && (
-                          <span className="text-2xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums">
+                          <span className="text-2xs text-muted-foreground bg-muted px-2 py-0.5 rounded tabular-nums">
                             Est. Direct Cost: ৳{estimatedDirectCost} • Margin: {estMarginPercent}%
                           </span>
                         )}
                       </div>
 
                       <div className="text-right">
-                        <span className="text-2xs text-slate-400 mr-2">Line Total:</span>
-                        <span className="tabular-nums font-bold text-slate-900 dark:text-white text-sm">
+                        <span className="text-2xs text-muted-foreground mr-2">Line Total:</span>
+                        <span className="tabular-nums font-bold text-foreground dark:text-white text-sm">
                           {formatBDT(Number(item.item_total))}
                         </span>
                       </div>
@@ -2566,25 +2566,25 @@ export function NewQuotationModal({
              ========================================================================= */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
             {/* CARD 1: NOTES */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 shadow-xs flex flex-col justify-between">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-xs flex flex-col justify-between">
               <div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2.5">Notes</h3>
+                <h3 className="text-xs font-bold text-foreground dark:text-white mb-2.5">Notes</h3>
                 <textarea
                   id="customerNotes"
                   rows={4}
                   value={customerNotes}
                   onChange={(e) => setCustomerNotes(e.target.value)}
                   placeholder="Quotation notes..."
-                  className="w-full min-h-[118px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 leading-relaxed font-sans"
+                  className="w-full min-h-[118px] p-3 rounded-lg border border-border bg-card text-xs text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring leading-relaxed font-sans"
                 />
               </div>
             </div>
 
             {/* CARD 2: TERMS & CONDITIONS */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 shadow-xs flex flex-col justify-between">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white">Terms & Conditions</h3>
+                  <h3 className="text-xs font-bold text-foreground dark:text-white">Terms & Conditions</h3>
                   <select
                     value={selectedTermsTemplate}
                     onChange={(e) => {
@@ -2598,7 +2598,7 @@ export function NewQuotationModal({
                         setTermsAndConditions(DEFAULT_QUOTATION_TERMS)
                       }
                     }}
-                    className="text-2xs font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-0.5 cursor-pointer focus:outline-none"
+                    className="text-2xs font-medium text-muted-foreground bg-card border border-border rounded-md px-2 py-0.5 cursor-pointer focus:outline-none"
                   >
                     <option value="default">Use Default</option>
                     <option value="standard">Standard (15 Days)</option>
@@ -2610,29 +2610,29 @@ export function NewQuotationModal({
                   rows={4}
                   value={termsAndConditions}
                   onChange={(e) => setTermsAndConditions(e.target.value)}
-                  className="w-full min-h-[118px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 leading-relaxed font-sans overflow-y-auto"
+                  className="w-full min-h-[118px] p-3 rounded-lg border border-border bg-card text-xs text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring leading-relaxed font-sans overflow-y-auto"
                 />
               </div>
             </div>
 
             {/* CARD 3: AMOUNT SUMMARY */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 shadow-xs flex flex-col justify-between">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-xs flex flex-col justify-between">
               <div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2.5">Amount Summary</h3>
+                <h3 className="text-xs font-bold text-foreground dark:text-white mb-2.5">Amount Summary</h3>
                 <div className="space-y-2">
                   {/* Subtotal */}
                   <div className="flex items-center justify-between py-1 text-xs">
-                    <span className="text-slate-600 dark:text-slate-400 font-medium">Subtotal</span>
-                    <span className="font-bold font-numeric text-slate-900 dark:text-slate-100">
+                    <span className="text-muted-foreground font-medium">Subtotal</span>
+                    <span className="font-bold font-numeric text-foreground dark:text-foreground">
                       {formatBDT(calculatedSubtotal)}
                     </span>
                   </div>
 
                   {/* Discount */}
                   <div className="flex items-center justify-between py-1 text-xs">
-                    <span className="text-slate-600 dark:text-slate-400 font-medium">Discount</span>
+                    <span className="text-muted-foreground font-medium">Discount</span>
                     <div className="flex items-center gap-2">
-                      <div className="inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
+                      <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
                         <button
                           type="button"
                           onClick={() => setDiscountType('percent')}
@@ -2640,7 +2640,7 @@ export function NewQuotationModal({
                             'px-2 py-0.5 text-xs font-semibold transition-colors cursor-pointer',
                             discountType === 'percent'
                               ? 'bg-blue-600 text-white'
-                              : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                              : 'bg-card text-muted-foreground hover:bg-muted'
                           )}
                         >
                           %
@@ -2649,10 +2649,10 @@ export function NewQuotationModal({
                           type="button"
                           onClick={() => setDiscountType('fixed')}
                           className={cn(
-                            'px-2 py-0.5 text-xs font-semibold transition-colors border-l border-slate-200 dark:border-slate-700 cursor-pointer',
+                            'px-2 py-0.5 text-xs font-semibold transition-colors border-l border-border cursor-pointer',
                             discountType === 'fixed'
                               ? 'bg-blue-600 text-white'
-                              : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                              : 'bg-card text-muted-foreground hover:bg-muted'
                           )}
                         >
                           ৳
@@ -2672,9 +2672,9 @@ export function NewQuotationModal({
                           }
                         }}
                         placeholder="0"
-                        className="w-14 h-7 text-xs text-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 tabular-nums focus:outline-none focus:ring-1 focus:ring-blue-500 no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-14 h-7 text-xs text-center rounded-md border border-border bg-card tabular-nums focus:outline-none focus:ring-1 focus:ring-ring no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
-                      <span className="w-16 text-right font-bold font-numeric text-slate-900 dark:text-slate-100">
+                      <span className="w-16 text-right font-bold font-numeric text-foreground dark:text-foreground">
                         {formatBDT(effectiveDiscountAmount)}
                       </span>
                     </div>
@@ -2682,7 +2682,7 @@ export function NewQuotationModal({
 
                   {/* VAT (15%) */}
                   <div className="flex items-center justify-between py-1 text-xs">
-                    <span className="text-slate-600 dark:text-slate-400 font-medium">VAT ({vatRate}%)</span>
+                    <span className="text-muted-foreground font-medium">VAT ({vatRate}%)</span>
                     <div className="flex items-center gap-4">
                       <button
                         type="button"
@@ -2691,25 +2691,25 @@ export function NewQuotationModal({
                         onClick={() => setIsVatEnabled(!isVatEnabled)}
                         className={cn(
                           'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
-                          isVatEnabled ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+                          isVatEnabled ? 'bg-blue-600' : 'bg-slate-300 dark:bg-muted'
                         )}
                       >
                         <span
                           aria-hidden="true"
                           className={cn(
-                            'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
+                            'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-card shadow-md ring-0 transition duration-200 ease-in-out',
                             isVatEnabled ? 'translate-x-4' : 'translate-x-0'
                           )}
                         />
                       </button>
-                      <span className="w-16 text-right font-bold font-numeric text-slate-900 dark:text-slate-100">
+                      <span className="w-16 text-right font-bold font-numeric text-foreground dark:text-foreground">
                         {formatBDT(calculatedVat)}
                       </span>
                     </div>
                   </div>
 
                   {/* Total Amount */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-emerald-600 dark:text-emerald-400">
+                  <div className="flex items-center justify-between pt-2 border-t border-border text-emerald-600 dark:text-emerald-400">
                     <span className="text-sm font-bold">Total Amount</span>
                     <span className="text-base font-extrabold font-numeric">
                       {formatBDT(calculatedGrandTotal)}
@@ -2721,15 +2721,15 @@ export function NewQuotationModal({
           </div>
 
           {/* Options Card */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 shadow-xs">
-            <span className="text-xs font-bold text-slate-900 dark:text-white">Options</span>
-            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-700 dark:text-slate-300">
+          <div className="rounded-xl border border-border bg-card p-3.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 shadow-xs">
+            <span className="text-xs font-bold text-foreground dark:text-white">Options</span>
+            <div className="flex flex-wrap items-center gap-4 text-xs text-foreground dark:text-muted-foreground">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={sendToCustomer}
                   onChange={(e) => setSendToCustomer(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="h-4 w-4 rounded border-input text-blue-600 focus:ring-ring cursor-pointer"
                 />
                 <span>Send quotation to customer (WhatsApp/Email)</span>
               </label>
@@ -2739,7 +2739,7 @@ export function NewQuotationModal({
                   type="checkbox"
                   checked={createJobOrder}
                   onChange={(e) => setCreateJobOrder(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="h-4 w-4 rounded border-input text-blue-600 focus:ring-ring cursor-pointer"
                 />
                 <span>Create job order(s) after approval</span>
               </label>
@@ -2749,7 +2749,7 @@ export function NewQuotationModal({
                   type="checkbox"
                   checked={printPdfAfterSaving}
                   onChange={(e) => setPrintPdfAfterSaving(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="h-4 w-4 rounded border-input text-blue-600 focus:ring-ring cursor-pointer"
                 />
                 <span>Print PDF after saving</span>
               </label>
@@ -2790,7 +2790,7 @@ export function NewQuotationModal({
               <select
                 value={quickAddCategory}
                 onChange={(e) => setQuickAddCategory(e.target.value)}
-                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                className="w-full h-9 px-2.5 rounded-lg border border-input bg-card text-xs font-medium"
               >
                 <option value="flex_banner">🎨 Flex & Banner</option>
                 <option value="vinyl_sticker">🖼️ Vinyl Sticker</option>
@@ -2806,7 +2806,7 @@ export function NewQuotationModal({
               <select
                 value={quickAddUnit}
                 onChange={(e) => setQuickAddUnit(e.target.value)}
-                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium uppercase tabular-nums"
+                className="w-full h-9 px-2.5 rounded-lg border border-input bg-card text-xs font-medium uppercase tabular-nums"
               >
                 <option value="sft">{tBilingual('sft', 'বর্গফুট')}</option>
                 <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
@@ -2855,7 +2855,7 @@ export function NewQuotationModal({
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
@@ -2870,7 +2870,7 @@ export function NewQuotationModal({
               type="submit"
               size="sm"
               disabled={isSavingQuickProduct}
-              className="text-xs h-8 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 cursor-pointer"
+              className="text-xs h-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-4 cursor-pointer"
             >
               {isSavingQuickProduct ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}
               Save & Add to Quote

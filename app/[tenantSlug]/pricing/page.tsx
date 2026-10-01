@@ -518,7 +518,7 @@ export default function PricingManagementPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsCopyModalOpen(true)}
-                  className="text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+                  className="text-xs h-9 font-semibold text-foreground dark:text-muted-foreground"
                 >
                   <Copy className="mr-1.5 h-3.5 w-3.5" />
                   {tBilingual('Copy Tiers', 'টায়ার কপি')}
@@ -528,7 +528,7 @@ export default function PricingManagementPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsBulkModalOpen(true)}
-                  className="text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+                  className="text-xs h-9 font-semibold text-foreground dark:text-muted-foreground"
                 >
                   <Sliders className="mr-1.5 h-3.5 w-3.5" />
                   {tBilingual('Bulk Adjust', 'একযোগে সমন্বয়')}
@@ -560,14 +560,14 @@ export default function PricingManagementPage() {
 
       {/* KPI METRIC HUD */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
+        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border dark:border-border">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Total Catalog Items', 'মোট পণ্য ও সেবা')}
             </span>
             <Package className="h-4 w-4 text-teal-600 dark:text-teal-400" />
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 tabular-nums">
+          <div className="text-2xl font-black text-foreground dark:text-white mt-1 tabular-nums">
             {products.length}
           </div>
           <div className="text-2xs text-teal-600 dark:text-teal-400 font-semibold mt-0.5">
@@ -575,9 +575,9 @@ export default function PricingManagementPage() {
           </div>
         </Card>
 
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
+        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border dark:border-border">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Active Tier Rules', 'সক্রিয় মূল্য নিয়ম')}
             </span>
             <Tag className="h-4 w-4 text-blue-600" />
@@ -585,12 +585,12 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mt-1 tabular-nums">
             {rules.length}
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5">Customer-type rules</div>
+          <div className="text-2xs text-muted-foreground mt-0.5">Customer-type rules</div>
         </Card>
 
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
+        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border dark:border-border">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Finishing Tariffs', 'ফিনিশিং ট্যারিফ')}
             </span>
             <Wrench className="h-4 w-4 text-purple-600" />
@@ -598,12 +598,12 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1 tabular-nums">
             {finishingOptions.length}
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5">Lamination, Eyelets, etc.</div>
+          <div className="text-2xs text-muted-foreground mt-0.5">Lamination, Eyelets, etc.</div>
         </Card>
 
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
+        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border dark:border-border">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Printing Methods', 'প্রিন্টিং মেথড')}
             </span>
             <Printer className="h-4 w-4 text-amber-600" />
@@ -611,12 +611,12 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 tabular-nums">
             {printingMethods.length}
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5">Solvent, Eco, UV modes</div>
+          <div className="text-2xs text-muted-foreground mt-0.5">Solvent, Eco, UV modes</div>
         </Card>
 
-        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 col-span-2 lg:col-span-1">
+        <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-border col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Avg Retail Margin', 'গড় খুচরা মুনাফা')}
             </span>
             <TrendingUp className="h-4 w-4 text-emerald-600" />
@@ -653,7 +653,7 @@ export default function PricingManagementPage() {
       </div>
 
       {/* 5 DOMAIN TABS NAVIGATION */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 overflow-x-auto">
+      <div className="flex border-b border-border gap-2 overflow-x-auto">
         {[
           { id: 'matrix', labelEn: '🎯 Customer Pricing Matrix', labelBn: '🎯 কাস্টমার দর তালিকা' },
           { id: 'services', labelEn: '🧵 Custom Print Services', labelBn: '🧵 প্রিন্ট সেবা ট্যারিফ' },
@@ -667,7 +667,7 @@ export default function PricingManagementPage() {
             className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer bangla-text ${
               domainTab === tab.id
                 ? 'border-teal-600 text-teal-700 dark:border-teal-400 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 rounded-t-lg'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/40'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/40'
             }`}
           >
             <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
@@ -783,7 +783,7 @@ export default function PricingManagementPage() {
             <select
               value={formProductId}
               onChange={(e) => setFormProductId(e.target.value)}
-              className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+              className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
               required
             >
               {products.map((p) => (
@@ -802,7 +802,7 @@ export default function PricingManagementPage() {
               <select
                 value={formCustomerType}
                 onChange={(e) => setFormCustomerType(e.target.value as PricingCustomerType)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
               >
                 {Object.entries(CUSTOMER_TYPES_META).map(([key, meta]) => (
                   <option key={key} value={key}>
@@ -819,7 +819,7 @@ export default function PricingManagementPage() {
               <select
                 value={formRuleType}
                 onChange={(e) => setFormRuleType(e.target.value as PricingRuleType)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
               >
                 <option value="percentage_adjustment">Percentage Discount / Surcharge (%)</option>
                 <option value="fixed_adjustment">Fixed Amount Discount / Surcharge (৳)</option>
@@ -864,7 +864,7 @@ export default function PricingManagementPage() {
               <select
                 value={formRoundingRule}
                 onChange={(e) => setFormRoundingRule(e.target.value as RoundingRule)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
               >
                 <option value="none">No Rounding (Exact)</option>
                 <option value="round_1">Round to nearest Integer (৳ 1)</option>
@@ -876,13 +876,13 @@ export default function PricingManagementPage() {
 
           {/* Live Preview Card */}
           <div className="p-3 bg-teal-50 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800 flex items-center justify-between text-xs">
-            <span className="text-slate-600 dark:text-slate-300">Effective Calculated Price:</span>
+            <span className="text-muted-foreground dark:text-muted-foreground">Effective Calculated Price:</span>
             <span className="text-base font-black text-teal-700 dark:text-teal-300 tabular-nums">
               {formatBDT(livePreview.calculatedPrice)}
             </span>
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsRuleModalOpen(false)} className="text-xs h-9">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
@@ -905,7 +905,7 @@ export default function PricingManagementPage() {
             <select
               value={bulkCustomerType}
               onChange={(e) => setBulkCustomerType(e.target.value as PricingCustomerType)}
-              className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+              className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
             >
               {Object.entries(CUSTOMER_TYPES_META).map(([key, meta]) => (
                 <option key={key} value={key}>
@@ -921,7 +921,7 @@ export default function PricingManagementPage() {
               <select
                 value={bulkAdjustmentType}
                 onChange={(e) => setBulkAdjustmentType(e.target.value as any)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
               >
                 <option value="percentage">Percentage Discount / Surcharge (%)</option>
                 <option value="fixed">Fixed Amount Discount / Surcharge (৳)</option>
@@ -959,13 +959,13 @@ export default function PricingManagementPage() {
               </button>
             </div>
 
-            <div className="max-h-40 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-lg p-2 space-y-1">
+            <div className="max-h-40 overflow-y-auto border border-border rounded-lg p-2 space-y-1">
               {products.map((p) => {
                 const isSelected = bulkProductIds.includes(p.id)
                 return (
                   <label
                     key={p.id}
-                    className="flex items-center gap-2 p-1 text-xs hover:bg-slate-50 dark:hover:bg-slate-800 rounded cursor-pointer"
+                    className="flex items-center gap-2 p-1 text-xs hover:bg-muted rounded cursor-pointer"
                   >
                     <input
                       type="checkbox"
@@ -986,7 +986,7 @@ export default function PricingManagementPage() {
             </div>
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsBulkModalOpen(false)} className="text-xs h-9">
               Cancel
             </Button>
@@ -1010,7 +1010,7 @@ export default function PricingManagementPage() {
               <select
                 value={copySourceType}
                 onChange={(e) => setCopySourceType(e.target.value as PricingCustomerType)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
               >
                 {Object.entries(CUSTOMER_TYPES_META).map(([key, meta]) => (
                   <option key={key} value={key}>
@@ -1025,7 +1025,7 @@ export default function PricingManagementPage() {
               <select
                 value={copyTargetType}
                 onChange={(e) => setCopyTargetType(e.target.value as PricingCustomerType)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
               >
                 {Object.entries(CUSTOMER_TYPES_META).map(([key, meta]) => (
                   <option key={key} value={key}>
@@ -1050,7 +1050,7 @@ export default function PricingManagementPage() {
             />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsCopyModalOpen(false)} className="text-xs h-9">
               Cancel
             </Button>

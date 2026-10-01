@@ -144,15 +144,15 @@ export function FinancialReportsView({
   return (
     <div className="space-y-6">
       {/* 1. TOP REPORT TABS BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border dark:border-border">
+        <div className="flex flex-wrap items-center gap-1.5 bg-muted p-1 rounded-2xl">
           <button
             type="button"
             onClick={() => setActiveReport('income_expense')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeReport === 'income_expense'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Income & Expense', 'আয় ও ব্যয়')}
@@ -163,8 +163,8 @@ export function FinancialReportsView({
             onClick={() => setActiveReport('cash_flow')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeReport === 'cash_flow'
-                ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-emerald-600 dark:text-emerald-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Cash Flow', 'ক্যাশ ফ্লো')}
@@ -175,8 +175,8 @@ export function FinancialReportsView({
             onClick={() => setActiveReport('receivables')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeReport === 'receivables'
-                ? 'bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-amber-600 dark:text-amber-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Receivables Report', 'বাকি আদায়')}
@@ -187,8 +187,8 @@ export function FinancialReportsView({
             onClick={() => setActiveReport('payables')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeReport === 'payables'
-                ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-rose-600 dark:text-rose-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Payables Report', 'মহাজন দেনা')}
@@ -199,8 +199,8 @@ export function FinancialReportsView({
             onClick={() => setActiveReport('statement')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeReport === 'statement'
-                ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-purple-600 dark:text-purple-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Account Statements', 'হিসাব বিবরণী')}
@@ -211,7 +211,7 @@ export function FinancialReportsView({
           size="sm"
           variant="outline"
           onClick={handlePrint}
-          className="text-xs h-8 px-3 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-semibold flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+          className="text-xs h-8 px-3 rounded-xl border-border bg-card font-semibold flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
         >
           <Printer className="w-3.5 h-3.5" />
           <span>{tBilingual('Print Report', 'প্রিন্ট')}</span>
@@ -224,8 +224,8 @@ export function FinancialReportsView({
       {activeReport === 'income_expense' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="rounded-2xl border-slate-200 dark:border-slate-800 p-5 bg-white dark:bg-slate-900 shadow-xs">
-              <span className="text-3xs uppercase font-semibold text-slate-400 block">
+            <Card className="rounded-2xl border-border p-5 bg-card shadow-xs">
+              <span className="text-3xs uppercase font-semibold text-muted-foreground block">
                 {tBilingual('Total Money In (Revenue/Collections)', 'মোট আয় ও কালেকশন')}
               </span>
               <span className="text-2xl sm:text-3xl font-black tabular-nums text-emerald-600 dark:text-emerald-400 mt-1 block">
@@ -234,8 +234,8 @@ export function FinancialReportsView({
               <p className="text-3xs text-emerald-600/80 mt-1">{tBilingual('Invoice receipts & deposits', 'আদায়কৃত বিল')}</p>
             </Card>
 
-            <Card className="rounded-2xl border-slate-200 dark:border-slate-800 p-5 bg-white dark:bg-slate-900 shadow-xs">
-              <span className="text-3xs uppercase font-semibold text-slate-400 block">
+            <Card className="rounded-2xl border-border p-5 bg-card shadow-xs">
+              <span className="text-3xs uppercase font-semibold text-muted-foreground block">
                 {tBilingual('Total Money Out (Expenditures)', 'মোট খরচ ও বিল পরিশোধ')}
               </span>
               <span className="text-2xl sm:text-3xl font-black tabular-nums text-rose-600 dark:text-rose-400 mt-1 block">
@@ -244,23 +244,23 @@ export function FinancialReportsView({
               <p className="text-3xs text-rose-600/80 mt-1">{tBilingual('Operating & supplier payouts', 'পরিচালন ও মহাজন বিল')}</p>
             </Card>
 
-            <Card className="rounded-2xl border-slate-200 dark:border-slate-800 p-5 bg-white dark:bg-slate-900 shadow-xs">
-              <span className="text-3xs uppercase font-semibold text-slate-400 block">
+            <Card className="rounded-2xl border-border p-5 bg-card shadow-xs">
+              <span className="text-3xs uppercase font-semibold text-muted-foreground block">
                 {tBilingual('Net Cash Surplus / Margin', 'নিট নগদ উদ্বৃত্ত')}
               </span>
               <span className={`text-2xl sm:text-3xl font-black tabular-nums mt-1 block ${netSurplus >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {netSurplus >= 0 ? '+' : ''}৳{netSurplus.toLocaleString()}
               </span>
-              <p className="text-3xs text-slate-400 mt-1">
+              <p className="text-3xs text-muted-foreground mt-1">
                 {netSurplus >= 0 ? tBilingual('Positive operating cash flow', 'ধনাত্মক নগদ উদ্বৃত্ত') : tBilingual('Deficit cash flow', 'ঘাটতি')}
               </p>
             </Card>
           </div>
 
           {/* Expense Category Breakdown */}
-          <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
+          <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+            <CardHeader className="pb-3 border-b border-border dark:border-border">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                 {tBilingual('Expense Breakdown by Category', 'খাতভিত্তিক ব্যয় বিবরণী')}
               </CardTitle>
             </CardHeader>
@@ -270,11 +270,11 @@ export function FinancialReportsView({
                 const pct = totalOutflow > 0 ? Math.round((amtNum / totalOutflow) * 100) : 0
                 return (
                   <div key={cat} className="space-y-1">
-                    <div className="flex justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    <div className="flex justify-between text-xs font-semibold text-foreground dark:text-foreground">
                       <span>{cat}</span>
                       <span className="tabular-nums text-rose-600">৳{amtNum.toLocaleString()} ({pct}%)</span>
                     </div>
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
                       <div className="bg-rose-500 h-full rounded-full" style={{ width: `${Math.min(100, pct)}%` }} />
                     </div>
                   </div>
@@ -282,7 +282,7 @@ export function FinancialReportsView({
               })}
 
               {expenseByCategory.length === 0 && (
-                <p className="text-xs text-center text-slate-400 py-6">
+                <p className="text-xs text-center text-muted-foreground py-6">
                   {tBilingual('No categorized expenses logged in this timeframe.', 'কোনো খরচের রেকর্ড পাওয়া যায়নি।')}
                 </p>
               )}
@@ -293,9 +293,9 @@ export function FinancialReportsView({
 
       {/* Report 2: Cash Flow */}
       {activeReport === 'cash_flow' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
+        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
+            <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
               {tBilingual('Cash Flow Statement (Liquid Movements)', 'ক্যাশ ফ্লো স্টেটমেন্ট')}
             </CardTitle>
           </CardHeader>
@@ -310,7 +310,7 @@ export function FinancialReportsView({
               <span className="text-rose-600 tabular-nums">-৳{totalOutflow.toLocaleString()}</span>
             </div>
 
-            <div className="flex justify-between font-bold text-sm bg-slate-50 dark:bg-slate-850 p-3 rounded-xl">
+            <div className="flex justify-between font-bold text-sm bg-muted dark:bg-slate-850 p-3 rounded-xl">
               <span>{tBilingual('Net Liquid Cash Movement', 'নিট নগদ প্রবাহ')}</span>
               <span className={`tabular-nums ${netSurplus >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {netSurplus >= 0 ? '+' : ''}৳{netSurplus.toLocaleString()}
@@ -327,16 +327,16 @@ export function FinancialReportsView({
 
       {/* Report 3: Receivables */}
       {activeReport === 'receivables' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
+        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
+            <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
               {tBilingual('Customer Receivables Aging & Outstanding Report', 'কাস্টমার বকেয়া ও কালেকশন রিপোর্ট')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 font-semibold border-b">
+                <thead className="bg-muted font-semibold border-b">
                   <tr>
                     <th className="p-3">Customer</th>
                     <th className="p-3">Invoice #</th>
@@ -346,9 +346,9 @@ export function FinancialReportsView({
                     <th className="p-3 text-center">Bucket</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                <tbody className="divide-y divide-border dark:divide-border/50">
                   {(receivables?.items || []).map((i) => (
-                    <tr key={i.reference_id} className="hover:bg-slate-50/50">
+                    <tr key={i.reference_id} className="hover:bg-muted">
                       <td className="p-3 font-semibold">{i.party_name}</td>
                       <td className="p-3 tabular-nums text-blue-600">{i.reference_id}</td>
                       <td className="p-3 text-right tabular-nums">৳{i.total_amount.toLocaleString()}</td>
@@ -366,16 +366,16 @@ export function FinancialReportsView({
 
       {/* Report 4: Payables */}
       {activeReport === 'payables' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
+        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
+            <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
               {tBilingual('Supplier Payables & Vendor Commitments Report', 'মহাজন দেনা রিপোর্ট')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 font-semibold border-b">
+                <thead className="bg-muted font-semibold border-b">
                   <tr>
                     <th className="p-3">Supplier</th>
                     <th className="p-3">Bill #</th>
@@ -385,11 +385,11 @@ export function FinancialReportsView({
                     <th className="p-3 text-center">Aging</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                <tbody className="divide-y divide-border dark:divide-border/50">
                   {(payables?.items || []).map((i) => (
-                    <tr key={i.reference_id} className="hover:bg-slate-50/50">
+                    <tr key={i.reference_id} className="hover:bg-muted">
                       <td className="p-3 font-semibold">{i.party_name}</td>
-                      <td className="p-3 tabular-nums text-slate-600">{i.reference_id}</td>
+                      <td className="p-3 tabular-nums text-muted-foreground">{i.reference_id}</td>
                       <td className="p-3 text-right tabular-nums">৳{i.total_amount.toLocaleString()}</td>
                       <td className="p-3 text-right tabular-nums text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
                       <td className="p-3 text-right tabular-nums font-bold text-rose-600">৳{i.due_amount.toLocaleString()}</td>
@@ -406,15 +406,15 @@ export function FinancialReportsView({
       {/* Report 5: Account Statements */}
       {activeReport === 'statement' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border dark:border-border">
             <div>
-              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">
                 {tBilingual('Select Money Account', 'হিসাব নির্বাচন করুন')}
               </span>
               <select
                 value={selectedStatementAccountId}
                 onChange={(e) => setSelectedStatementAccountId(e.target.value)}
-                className="mt-1 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 text-xs font-bold"
+                className="mt-1 h-9 rounded-xl bg-muted border border-border px-3 text-xs font-bold"
               >
                 {liquidAccounts.map((a) => (
                   <option key={a.id} value={a.id}>
@@ -426,7 +426,7 @@ export function FinancialReportsView({
 
             {selectedAccount && (
               <div className="text-right">
-                <span className="text-3xs text-slate-400 block uppercase font-semibold">Current Balance</span>
+                <span className="text-3xs text-muted-foreground block uppercase font-semibold">Current Balance</span>
                 <span className="text-xl font-black tabular-nums text-blue-600 dark:text-blue-400">
                   ৳{Number(selectedAccount.current_balance || 0).toLocaleString()}
                 </span>
@@ -434,11 +434,11 @@ export function FinancialReportsView({
             )}
           </div>
 
-          <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+          <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 dark:bg-slate-800/60 font-semibold border-b">
+                  <thead className="bg-muted font-semibold border-b">
                     <tr>
                       <th className="p-3">Date</th>
                       <th className="p-3">Voucher #</th>
@@ -448,10 +448,10 @@ export function FinancialReportsView({
                       <th className="p-3 text-right">Running Balance</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                  <tbody className="divide-y divide-border dark:divide-border/50">
                     {statementLines.map((l) => (
-                      <tr key={l.id} className="hover:bg-slate-50/50">
-                        <td className="p-3 tabular-nums text-slate-500">{l.date}</td>
+                      <tr key={l.id} className="hover:bg-muted">
+                        <td className="p-3 tabular-nums text-muted-foreground">{l.date}</td>
                         <td className="p-3 tabular-nums text-blue-600">{l.number}</td>
                         <td className="p-3">{l.memo}</td>
                         <td className="p-3 text-right tabular-nums text-emerald-600">
@@ -468,7 +468,7 @@ export function FinancialReportsView({
 
                     {statementLines.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="p-8 text-center text-slate-400 text-xs">
+                        <td colSpan={6} className="p-8 text-center text-muted-foreground text-xs">
                           {tBilingual('No entries found for this account in the selected period.', 'কোনো লেনদেন রেকর্ড পাওয়া যায়নি।')}
                         </td>
                       </tr>

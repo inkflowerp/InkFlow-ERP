@@ -94,7 +94,7 @@ export function TrialDashboardCard() {
               {tBilingual(currentPlan?.name || 'PrintERP Free Trial', currentPlan?.name_bn || 'প্রিন্টইআরপি ফ্রি ট্রায়াল')}
             </Badge>
 
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1 bangla-text">
+            <span className="text-xs font-bold text-foreground flex items-center gap-1 bangla-text">
               <Clock className="h-3.5 w-3.5 text-amber-500" />
               {isTrialExpired
                 ? tBilingual('Trial Expired', 'ট্রায়াল মেয়াদ শেষ')
@@ -107,7 +107,7 @@ export function TrialDashboardCard() {
             </span>
           </div>
 
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed bangla-text">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">
             {isTrialExpired
               ? tBilingual(
                   `Your ${trialDaysTotal}-day free trial has expired. Upgrade your plan now to restore full write operations, keep all your data, and scale your printing business.`,
@@ -121,11 +121,11 @@ export function TrialDashboardCard() {
 
           {/* Trial Progress Bar */}
           <div className="space-y-1 pt-1 max-w-sm">
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold bangla-text">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold bangla-text">
               <span>{tBilingual('Trial Duration', 'ট্রায়াল অগ্রগতি')}</span>
               <span>{locale === 'bn' ? toBengaliDigits(trialProgressPercent) : trialProgressPercent}%</span>
             </div>
-            <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
               <div
                 className={cn(
                   'h-2 rounded-full transition-all',
@@ -141,21 +141,21 @@ export function TrialDashboardCard() {
         <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-3 w-full lg:w-auto">
           {/* 4 Mini Limit Pills */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-1.5 w-full text-left">
-            <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 block text-2xs uppercase font-semibold bangla-text">{tBilingual('Users', 'ইউজার')}</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm">{formatLimit(usage.users_count, usage.users_limit)}</span>
+            <div className="bg-card/80 px-2.5 py-1.5 rounded-lg border border-border text-xs">
+              <span className="text-muted-foreground block text-2xs uppercase font-semibold bangla-text">{tBilingual('Users', 'ইউজার')}</span>
+              <span className="font-bold text-foreground text-xs sm:text-sm">{formatLimit(usage.users_count, usage.users_limit)}</span>
             </div>
-            <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 block text-2xs uppercase font-semibold bangla-text">{tBilingual('Orders / Mo', 'অর্ডার / মাস')}</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm">{formatLimit(usage.orders_this_month, usage.orders_limit)}</span>
+            <div className="bg-card/80 px-2.5 py-1.5 rounded-lg border border-border text-xs">
+              <span className="text-muted-foreground block text-2xs uppercase font-semibold bangla-text">{tBilingual('Orders / Mo', 'অর্ডার / মাস')}</span>
+              <span className="font-bold text-foreground text-xs sm:text-sm">{formatLimit(usage.orders_this_month, usage.orders_limit)}</span>
             </div>
-            <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 block text-2xs uppercase font-semibold bangla-text">{tBilingual('Customers', 'কাস্টমার')}</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm">{formatLimit(usage.customers_count, usage.customers_limit)}</span>
+            <div className="bg-card/80 px-2.5 py-1.5 rounded-lg border border-border text-xs">
+              <span className="text-muted-foreground block text-2xs uppercase font-semibold bangla-text">{tBilingual('Customers', 'কাস্টমার')}</span>
+              <span className="font-bold text-foreground text-xs sm:text-sm">{formatLimit(usage.customers_count, usage.customers_limit)}</span>
             </div>
-            <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 block text-2xs uppercase font-semibold bangla-text">{tBilingual('Branches', 'শাখা')}</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm">{formatLimit(usage.branches_count, usage.branches_limit)}</span>
+            <div className="bg-card/80 px-2.5 py-1.5 rounded-lg border border-border text-xs">
+              <span className="text-muted-foreground block text-2xs uppercase font-semibold bangla-text">{tBilingual('Branches', 'শাখা')}</span>
+              <span className="font-bold text-foreground text-xs sm:text-sm">{formatLimit(usage.branches_count, usage.branches_limit)}</span>
             </div>
           </div>
 

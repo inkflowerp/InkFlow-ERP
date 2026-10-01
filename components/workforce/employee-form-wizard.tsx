@@ -178,12 +178,12 @@ export function EmployeeFormWizard({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-slate-200 shadow-xl rounded-2xl">
-        <DialogHeader className="p-5 border-b border-slate-100 bg-slate-50/60">
-          <DialogTitle className="text-lg font-bold text-slate-900">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-border shadow-xl rounded-2xl">
+        <DialogHeader className="p-5 border-b border-border bg-muted">
+          <DialogTitle className="text-lg font-bold text-foreground">
             {initialData ? 'Edit Employee Profile' : 'Add New Employee'}
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
+          <DialogDescription className="text-xs text-muted-foreground">
             Step {currentStep} of 7: {STEPS[currentStep - 1].label} ({STEPS[currentStep - 1].labelBn})
           </DialogDescription>
 
@@ -203,7 +203,7 @@ export function EmployeeFormWizard({
                       ? 'bg-blue-600 text-white shadow-sm'
                       : isDone
                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      : 'bg-muted text-muted-foreground hover:bg-muted'
                   }`}
                 >
                   {isDone ? <Check className="w-3 h-3 text-emerald-600" /> : <Icon className="w-3 h-3" />}
@@ -228,7 +228,7 @@ export function EmployeeFormWizard({
             <div className="space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Full Name (English) *</Label>
+                  <Label className="text-xs font-semibold text-foreground">Full Name (English) *</Label>
                   <Input
                     placeholder="e.g. Rahim Uddin"
                     value={formData.name || ''}
@@ -237,7 +237,7 @@ export function EmployeeFormWizard({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Full Name (বাংলা)</Label>
+                  <Label className="text-xs font-semibold text-foreground">Full Name (বাংলা)</Label>
                   <Input
                     placeholder="যেমনঃ রহিম উদ্দিন"
                     value={formData.name_bn || ''}
@@ -249,7 +249,7 @@ export function EmployeeFormWizard({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Mobile Phone *</Label>
+                  <Label className="text-xs font-semibold text-foreground">Mobile Phone *</Label>
                   <Input
                     placeholder="+880 1700-000000"
                     value={formData.mobile || ''}
@@ -258,7 +258,7 @@ export function EmployeeFormWizard({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Email Address</Label>
+                  <Label className="text-xs font-semibold text-foreground">Email Address</Label>
                   <Input
                     type="email"
                     placeholder="rahim@example.com"
@@ -270,7 +270,7 @@ export function EmployeeFormWizard({
               </div>
 
               <div>
-                <Label className="text-xs font-semibold text-slate-700">Present Address</Label>
+                <Label className="text-xs font-semibold text-foreground">Present Address</Label>
                 <Input
                   placeholder="Street, City, Postal code..."
                   value={formData.address || ''}
@@ -286,7 +286,7 @@ export function EmployeeFormWizard({
             <div className="space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Employee ID Number *</Label>
+                  <Label className="text-xs font-semibold text-foreground">Employee ID Number *</Label>
                   <Input
                     placeholder="e.g. EMP-1001"
                     value={formData.employee_id_number || ''}
@@ -295,11 +295,11 @@ export function EmployeeFormWizard({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Department</Label>
+                  <Label className="text-xs font-semibold text-foreground">Department</Label>
                   <select
                     value={formData.department || 'printing'}
                     onChange={(e) => updateField('department', e.target.value)}
-                    className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 mt-1"
+                    className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1"
                   >
                     <option value="printing">Printing</option>
                     <option value="finishing">Finishing</option>
@@ -316,7 +316,7 @@ export function EmployeeFormWizard({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Role / Designation</Label>
+                  <Label className="text-xs font-semibold text-foreground">Role / Designation</Label>
                   <Input
                     placeholder="e.g. Master Offset Operator"
                     value={formData.role || ''}
@@ -325,11 +325,11 @@ export function EmployeeFormWizard({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Employment Type</Label>
+                  <Label className="text-xs font-semibold text-foreground">Employment Type</Label>
                   <select
                     value={formData.employee_type || 'permanent'}
                     onChange={(e) => updateField('employee_type', e.target.value as EmploymentType)}
-                    className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 mt-1 capitalize"
+                    className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1 capitalize"
                   >
                     <option value="permanent">Permanent Staff</option>
                     <option value="contract">Contract Worker</option>
@@ -341,7 +341,7 @@ export function EmployeeFormWizard({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Joining Date</Label>
+                  <Label className="text-xs font-semibold text-foreground">Joining Date</Label>
                   <Input
                     type="date"
                     value={formData.joining_date || ''}
@@ -351,11 +351,11 @@ export function EmployeeFormWizard({
                 </div>
                 {branches.length > 0 && (
                   <div>
-                    <Label className="text-xs font-semibold text-slate-700">Branch Assignment</Label>
+                    <Label className="text-xs font-semibold text-foreground">Branch Assignment</Label>
                     <select
                       value={formData.branch_id || ''}
                       onChange={(e) => updateField('branch_id', e.target.value || null)}
-                      className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 mt-1"
+                      className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1"
                     >
                       <option value="">Default Branch</option>
                       {branches.map((b) => (
@@ -375,11 +375,11 @@ export function EmployeeFormWizard({
             <div className="space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Salary Basis</Label>
+                  <Label className="text-xs font-semibold text-foreground">Salary Basis</Label>
                   <select
                     value={formData.salary_basis || 'monthly'}
                     onChange={(e) => updateField('salary_basis', e.target.value as SalaryBasis)}
-                    className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 mt-1 capitalize"
+                    className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1 capitalize"
                   >
                     <option value="monthly">Monthly Fixed Salary</option>
                     <option value="daily_rate">Daily Wage (দিনমজুর)</option>
@@ -387,7 +387,7 @@ export function EmployeeFormWizard({
                   </select>
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Base Salary (৳)</Label>
+                  <Label className="text-xs font-semibold text-foreground">Base Salary (৳)</Label>
                   <Input
                     type="number"
                     value={formData.base_salary || 0}
@@ -399,7 +399,7 @@ export function EmployeeFormWizard({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Daily Rate (৳)</Label>
+                  <Label className="text-xs font-semibold text-foreground">Daily Rate (৳)</Label>
                   <Input
                     type="number"
                     value={formData.daily_rate || 0}
@@ -408,7 +408,7 @@ export function EmployeeFormWizard({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Hourly Rate (৳)</Label>
+                  <Label className="text-xs font-semibold text-foreground">Hourly Rate (৳)</Label>
                   <Input
                     type="number"
                     value={formData.hourly_rate || 0}
@@ -417,7 +417,7 @@ export function EmployeeFormWizard({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">OT Hourly Rate (৳)</Label>
+                  <Label className="text-xs font-semibold text-foreground">OT Hourly Rate (৳)</Label>
                   <Input
                     type="number"
                     value={formData.overtime_hourly_rate || 0}
@@ -434,7 +434,7 @@ export function EmployeeFormWizard({
             <div className="space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Office Start Time</Label>
+                  <Label className="text-xs font-semibold text-foreground">Office Start Time</Label>
                   <Input
                     type="time"
                     value={formData.duty_settings?.office_start_time || '09:00'}
@@ -443,7 +443,7 @@ export function EmployeeFormWizard({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Office End Time</Label>
+                  <Label className="text-xs font-semibold text-foreground">Office End Time</Label>
                   <Input
                     type="time"
                     value={formData.duty_settings?.office_end_time || '18:00'}
@@ -455,7 +455,7 @@ export function EmployeeFormWizard({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Late Grace Period (Mins)</Label>
+                  <Label className="text-xs font-semibold text-foreground">Late Grace Period (Mins)</Label>
                   <Input
                     type="number"
                     value={formData.duty_settings?.late_grace_minutes ?? 15}
@@ -464,11 +464,11 @@ export function EmployeeFormWizard({
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Weekly Off Day</Label>
+                  <Label className="text-xs font-semibold text-foreground">Weekly Off Day</Label>
                   <select
                     value={formData.duty_settings?.weekly_off_day || 'Friday'}
                     onChange={(e) => updateDuty('weekly_off_day', e.target.value)}
-                    className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 mt-1"
+                    className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1"
                   >
                     <option value="Friday">Friday (শুক্রবার)</option>
                     <option value="Sunday">Sunday (রবিবার)</option>
@@ -484,7 +484,7 @@ export function EmployeeFormWizard({
           {currentStep === 5 && (
             <div className="space-y-3.5 text-xs">
               <div>
-                <Label className="text-xs font-semibold text-slate-700">Preferred Payout Method</Label>
+                <Label className="text-xs font-semibold text-foreground">Preferred Payout Method</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-2">
                   {(['cash', 'bank', 'bkash', 'nagad', 'rocket'] as PaymentMethod[]).map((method) => (
                     <button
@@ -494,7 +494,7 @@ export function EmployeeFormWizard({
                       className={`p-2.5 rounded-lg border text-center uppercase font-bold text-xs transition-all ${
                         formData.payment_method === method
                           ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
-                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                          : 'border-border bg-card text-muted-foreground hover:bg-muted'
                       }`}
                     >
                       {method}
@@ -508,15 +508,15 @@ export function EmployeeFormWizard({
           {/* STEP 6: Portal Access */}
           {currentStep === 6 && (
             <div className="space-y-3.5 text-xs">
-              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+              <div className="p-3.5 rounded-xl border border-border bg-muted space-y-3">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.portal_credentials?.create_login || false}
                     onChange={(e) => updatePortal('create_login', e.target.checked)}
-                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                    className="rounded border-input text-blue-600 focus:ring-ring w-4 h-4"
                   />
-                  <span className="font-semibold text-slate-900 text-xs">
+                  <span className="font-semibold text-foreground text-xs">
                     Enable Web & Mobile App Access
                   </span>
                 </label>
@@ -524,7 +524,7 @@ export function EmployeeFormWizard({
                 {formData.portal_credentials?.create_login && (
                   <div className="space-y-3 pt-2">
                     <div>
-                      <Label className="text-xs font-semibold text-slate-700">Login Username / Mobile</Label>
+                      <Label className="text-xs font-semibold text-foreground">Login Username / Mobile</Label>
                       <Input
                         placeholder="Mobile or username"
                         value={formData.portal_credentials?.username || formData.mobile || ''}
@@ -533,11 +533,11 @@ export function EmployeeFormWizard({
                       />
                     </div>
                     <div>
-                      <Label className="text-xs font-semibold text-slate-700">Role</Label>
+                      <Label className="text-xs font-semibold text-foreground">Role</Label>
                       <select
                         value={formData.portal_credentials?.role || 'operator'}
                         onChange={(e) => updatePortal('role', e.target.value)}
-                        className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 mt-1 capitalize"
+                        className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1 capitalize"
                       >
                         <option value="operator">Production Operator</option>
                         <option value="designer">Graphic Designer</option>
@@ -555,10 +555,10 @@ export function EmployeeFormWizard({
           {/* STEP 7: Documents */}
           {currentStep === 7 && (
             <div className="space-y-3.5 text-xs">
-              <div className="p-4 rounded-xl border border-slate-200 bg-white text-center space-y-2">
-                <FileText className="w-8 h-8 text-slate-400 mx-auto" />
-                <h4 className="font-semibold text-slate-900 text-xs">Identity & Contract Files</h4>
-                <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+              <div className="p-4 rounded-xl border border-border bg-card text-center space-y-2">
+                <FileText className="w-8 h-8 text-muted-foreground mx-auto" />
+                <h4 className="font-semibold text-foreground text-xs">Identity & Contract Files</h4>
+                <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
                   National ID (NID), appointment letter, and resume attachments can be uploaded now or attached later.
                 </p>
               </div>
@@ -567,14 +567,14 @@ export function EmployeeFormWizard({
         </div>
 
         {/* Footer Navigation */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        <div className="p-4 border-t border-border bg-muted flex items-center justify-between">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleBack}
             disabled={currentStep === 1 || isSubmitting}
-            className="h-8 text-xs border-slate-200"
+            className="h-8 text-xs border-border"
           >
             <ChevronLeft className="w-3.5 h-3.5 mr-1" />
             <span>Back</span>
@@ -586,7 +586,7 @@ export function EmployeeFormWizard({
                 type="button"
                 size="sm"
                 onClick={handleNext}
-                className="h-8 px-4 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs min-h-[32px]"
+                className="h-8 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs min-h-[32px]"
               >
                 <span>Continue</span>
                 <ChevronRight className="w-3.5 h-3.5 ml-1" />

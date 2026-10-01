@@ -284,7 +284,7 @@ export function AssignMachineryModal({
                 setSelectedMachine(null)
               }
             }}
-            className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500"
+            className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-medium text-foreground focus:ring-2 focus:ring-ring"
           >
             {PRODUCTION_TASK_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -337,8 +337,8 @@ export function AssignMachineryModal({
 
             {/* Empty Fleet State Check */}
             {eligibilitySummary && eligibilitySummary.totalFleetCount === 0 && (
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400">
-                <p className="font-bold text-slate-800 dark:text-slate-200">No registered machinery</p>
+              <div className="p-3 rounded-lg bg-muted border border-border text-xs text-muted-foreground dark:text-muted-foreground">
+                <p className="font-bold text-foreground dark:text-foreground">No registered machinery</p>
                 <p className="text-2xs mt-0.5">
                   Your company currently operates with 0 machines registered. Work orders will continue seamlessly as manual fabrication or outsourced workflows.
                 </p>
@@ -364,7 +364,7 @@ export function AssignMachineryModal({
                       setOperatorName(found.default_operator_requirement)
                     }
                   }}
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold text-foreground focus:ring-2 focus:ring-ring"
                   required
                 >
                   <option value="">-- Choose Machine --</option>
@@ -385,12 +385,12 @@ export function AssignMachineryModal({
 
             {/* Selected Machine Status Bar */}
             {selectedMachine && (
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-3 rounded-lg bg-muted border border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-slate-800 dark:text-slate-200">
+                  <span className="font-bold text-xs text-foreground dark:text-foreground">
                     {selectedMachine.name}
                   </span>
-                  <span className="text-xs tabular-nums px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                  <span className="text-xs tabular-nums px-2 py-0.5 rounded bg-muted text-foreground font-bold">
                     {selectedMachine.code}
                   </span>
                 </div>
@@ -505,7 +505,7 @@ export function AssignMachineryModal({
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"
@@ -520,7 +520,7 @@ export function AssignMachineryModal({
             type="submit"
             disabled={(!isNoMachineTask && (Boolean(conflict?.hasConflict) || !selectedMachine)) || loading}
             isLoading={loading}
-            className="w-full sm:w-auto min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold"
+            className="w-full sm:w-auto min-h-[40px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           >
             {isNoMachineTask ? 'Confirm Manual Task' : 'Confirm Machine Assignment'}
           </Button>

@@ -38,18 +38,18 @@ export function MonthlySalesProfitChart({
     <div className="flex flex-col h-full justify-between">
       {/* Header matching Finance Dashboard */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+        <h3 className="text-sm font-bold text-foreground dark:text-white">
           Monthly Sales vs Profit
         </h3>
 
         <div className="flex items-center gap-4">
           {/* Legend */}
           <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-1.5 font-medium text-muted-foreground dark:text-muted-foreground">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
               <span>Sales</span>
             </div>
-            <div className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-1.5 font-medium text-muted-foreground dark:text-muted-foreground">
               <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
               <span>Profit</span>
             </div>
@@ -60,7 +60,7 @@ export function MonthlySalesProfitChart({
             <select
               value={monthsCount}
               onChange={(e) => onMonthsCountChange(Number(e.target.value) as 6 | 9 | 12)}
-              className="text-xs font-semibold px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 shadow-2xs transition-colors focus:outline-none"
+              className="text-xs font-semibold px-2.5 py-1 rounded-lg border border-border bg-card text-foreground cursor-pointer hover:bg-muted dark:hover:bg-muted/60 shadow-2xs transition-colors focus:outline-none"
             >
               <option value={6}>Last 6 Months</option>
               <option value={9}>Last 9 Months</option>
@@ -73,14 +73,14 @@ export function MonthlySalesProfitChart({
       {/* Responsive Flexbox Grouped Bar Chart */}
       <div className="relative w-full h-56 pt-2">
         {data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-slate-400 text-xs">
-            <Activity className="w-8 h-8 stroke-1 text-slate-300 dark:text-slate-700 mb-2" />
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-xs">
+            <Activity className="w-8 h-8 stroke-1 text-muted-foreground mb-2" />
             <span>No monthly sales or profit recorded for this period</span>
           </div>
         ) : (
           <>
             {/* Y Axis Grid Labels */}
-            <div className="absolute left-0 top-0 bottom-6 w-14 flex flex-col justify-between text-2xs tabular-nums text-slate-400 pointer-events-none select-none text-right pr-2">
+            <div className="absolute left-0 top-0 bottom-6 w-14 flex flex-col justify-between text-2xs tabular-nums text-muted-foreground pointer-events-none select-none text-right pr-2">
               <span>{formatYAxis(maxVal)}</span>
               <span>{formatYAxis(maxVal * 0.75)}</span>
               <span>{formatYAxis(maxVal * 0.5)}</span>
@@ -90,11 +90,11 @@ export function MonthlySalesProfitChart({
 
             {/* Horizontal Gridlines */}
             <div className="absolute left-16 right-0 top-1 bottom-6 flex flex-col justify-between pointer-events-none">
-              <div className="border-b border-dashed border-slate-100 dark:border-slate-800 w-full" />
-              <div className="border-b border-dashed border-slate-100 dark:border-slate-800 w-full" />
-              <div className="border-b border-dashed border-slate-100 dark:border-slate-800 w-full" />
-              <div className="border-b border-dashed border-slate-100 dark:border-slate-800 w-full" />
-              <div className="border-b border-slate-200 dark:border-slate-700 w-full" />
+              <div className="border-b border-dashed border-border w-full" />
+              <div className="border-b border-dashed border-border w-full" />
+              <div className="border-b border-dashed border-border w-full" />
+              <div className="border-b border-dashed border-border w-full" />
+              <div className="border-b border-border w-full" />
             </div>
 
             {/* Bars container */}
@@ -113,8 +113,8 @@ export function MonthlySalesProfitChart({
                   >
                     {/* Hover Tooltip */}
                     {isHovered && (
-                      <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-30 bg-slate-900 text-white text-2xs py-2 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none border border-slate-700">
-                        <div className="font-bold text-slate-200 mb-0.5 flex items-center justify-between gap-2">
+                      <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-30 bg-foreground text-white text-2xs py-2 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none border border-border">
+                        <div className="font-bold text-foreground mb-0.5 flex items-center justify-between gap-2">
                           <span>{item.monthLabel}</span>
                           <span className="text-2xs text-blue-300 tabular-nums">
                             {item.margin}% margin
@@ -152,7 +152,7 @@ export function MonthlySalesProfitChart({
             </div>
 
             {/* X Axis Month Labels */}
-            <div className="absolute left-16 right-0 bottom-0 flex justify-between text-2xs text-slate-400 font-medium px-2">
+            <div className="absolute left-16 right-0 bottom-0 flex justify-between text-2xs text-muted-foreground font-medium px-2">
               {data.map((c) => (
                 <span
                   key={c.monthKey}

@@ -261,11 +261,11 @@ export function PricingCalculatorSimulator({
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
       {/* LEFT: JOB & TARIFF CONFIGURATION PANEL */}
       <div className="lg:col-span-7 space-y-4">
-        <Card className="rounded-xl shadow-xs border-slate-200 dark:border-slate-800 p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <Card className="rounded-xl shadow-xs border-border p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-border pb-3">
             <div className="flex items-center gap-2">
               <Calculator className="h-4 w-4 text-teal-600" />
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-sm font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Commercial Job Specification', 'বাণিজ্যিক কাজের স্পেসিফিকেশন')}
               </h3>
             </div>
@@ -282,7 +282,7 @@ export function PricingCalculatorSimulator({
             <select
               value={selectedProductId}
               onChange={(e) => setSelectedProductId(e.target.value)}
-              className="w-full h-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-bold"
+              className="w-full h-10 rounded-xl border border-input bg-card px-3 text-xs font-bold"
             >
               {digitalProducts.length > 0 && (
                 <optgroup label="🎨 Digital & Large Format Print Services">
@@ -347,10 +347,10 @@ export function PricingCalculatorSimulator({
                     className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       isSelected
                         ? 'border-teal-600 bg-teal-50/80 dark:bg-teal-950/60 ring-1 ring-teal-500 shadow-xs font-bold'
-                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                        : 'border-border bg-card hover:border-input dark:hover:border-border'
                     }`}
                   >
-                    <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                    <div className="text-xs font-bold text-foreground dark:text-white truncate">
                       {meta.label}
                     </div>
                     <div className="text-2xs text-teal-700 dark:text-teal-400 truncate font-medium">
@@ -408,14 +408,14 @@ export function PricingCalculatorSimulator({
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-3 bg-muted rounded-xl border border-border flex items-center justify-between">
                 <div>
-                  <span className="text-2xs font-bold text-slate-500 uppercase block">Billing Unit</span>
-                  <span className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tabular-nums">
+                  <span className="text-2xs font-bold text-muted-foreground uppercase block">Billing Unit</span>
+                  <span className="text-sm font-black text-foreground uppercase tabular-nums">
                     Per {selectedProduct?.unit || 'Piece'} (Fixed Unit)
                   </span>
                 </div>
-                <Badge variant="outline" className="text-2xs font-medium text-slate-600 bg-white dark:bg-slate-800">
+                <Badge variant="outline" className="text-2xs font-medium text-muted-foreground bg-card dark:bg-muted">
                   No Dimensions Needed
                 </Badge>
               </div>
@@ -444,7 +444,7 @@ export function PricingCalculatorSimulator({
               <select
                 value={selectedPrintingMethodId}
                 onChange={(e) => setSelectedPrintingMethodId(e.target.value)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
               >
                 <option value="">-- Standard Default Print Mode (No Surcharge) --</option>
                 {printingMethods.map((m) => (
@@ -473,20 +473,20 @@ export function PricingCalculatorSimulator({
                       className={`p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                         isChecked
                           ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 ring-1 ring-teal-500'
-                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                          : 'border-border bg-card hover:border-input dark:hover:border-border'
                       }`}
                     >
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        <div className="text-xs font-bold text-foreground dark:text-white truncate">
                           {fin.name}
                         </div>
-                        <div className="text-2xs text-slate-500 tabular-nums">
+                        <div className="text-2xs text-muted-foreground tabular-nums">
                           + ৳{fin.selling_price || (fin as any).price_per_unit || 0} / {fin.pricing_method || 'sft'}
                         </div>
                       </div>
                       <div
                         className={`h-4 w-4 rounded-md border flex items-center justify-center shrink-0 ${
-                          isChecked ? 'bg-teal-600 border-teal-600 text-white' : 'border-slate-300 dark:border-slate-700'
+                          isChecked ? 'bg-teal-600 border-teal-600 text-white' : 'border-input dark:border-border'
                         }`}
                       >
                         {isChecked && <CheckCircle2 className="h-3 w-3" />}
@@ -502,8 +502,8 @@ export function PricingCalculatorSimulator({
 
       {/* RIGHT: REAL-TIME PRICING BREAKDOWN & MARGIN HUD */}
       <div className="lg:col-span-5 space-y-4">
-        <Card className="rounded-xl shadow-md border-slate-200 dark:border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 text-white p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <Card className="rounded-xl shadow-md border-border bg-gradient-to-br from-slate-900 to-slate-950 text-white p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-border pb-3">
             <div>
               <span className="text-2xs text-teal-400 uppercase font-bold tracking-wider">
                 {tBilingual('Calculated Commercial Tariff', 'গণনাকৃত বাণিজ্যিক মূল্য')}
@@ -513,7 +513,7 @@ export function PricingCalculatorSimulator({
               </div>
             </div>
             <div className="text-right">
-              <span className="text-2xs text-slate-400 uppercase font-bold">Gross Margin</span>
+              <span className="text-2xs text-muted-foreground uppercase font-bold">Gross Margin</span>
               <div
                 className={`text-lg font-black tabular-nums ${
                   simulation.marginPct >= 35 ? 'text-emerald-400' : 'text-amber-400'
@@ -526,46 +526,46 @@ export function PricingCalculatorSimulator({
 
           {/* Breakdown Items */}
           <div className="space-y-2.5 text-xs">
-            <div className="flex justify-between py-1 border-b border-slate-800/80">
-              <span className="text-slate-400">
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">
                 {isAreaBased ? 'Total Billable Area:' : 'Total Billable Quantity:'}
               </span>
-              <span className="tabular-nums font-bold text-slate-200">
+              <span className="tabular-nums font-bold text-foreground">
                 {isAreaBased
                   ? `${simulation.totalArea.toFixed(1)} sft (${quantity} pcs)`
                   : `${quantity} ${selectedProduct?.unit || 'pcs'}`}
               </span>
             </div>
 
-            <div className="flex justify-between py-1 border-b border-slate-800/80">
-              <span className="text-slate-400">Resolved Tier Rate ({customerType.toUpperCase()}):</span>
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Resolved Tier Rate ({customerType.toUpperCase()}):</span>
               <span className="tabular-nums font-bold text-teal-300">
                 {formatBDT(simulation.tierUnitPrice)} / {isAreaBased ? 'sft' : (selectedProduct?.unit || 'pcs')}
               </span>
             </div>
 
-            <div className="flex justify-between py-1 border-b border-slate-800/80">
-              <span className="text-slate-400">Base Print Substrate:</span>
-              <span className="tabular-nums text-slate-200">{formatBDT(simulation.baseMediaCost)}</span>
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Base Print Substrate:</span>
+              <span className="tabular-nums text-foreground">{formatBDT(simulation.baseMediaCost)}</span>
             </div>
 
             {simulation.machineSurcharge > 0 && (
-              <div className="flex justify-between py-1 border-b border-slate-800/80">
-                <span className="text-slate-400">Machine Method Surcharge:</span>
-                <span className="tabular-nums text-slate-200">{formatBDT(simulation.machineSurcharge)}</span>
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Machine Method Surcharge:</span>
+                <span className="tabular-nums text-foreground">{formatBDT(simulation.machineSurcharge)}</span>
               </div>
             )}
 
             {simulation.finishingTotal > 0 && (
-              <div className="flex justify-between py-1 border-b border-slate-800/80">
-                <span className="text-slate-400">Finishing & Fabrication:</span>
-                <span className="tabular-nums text-slate-200">{formatBDT(simulation.finishingTotal)}</span>
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Finishing & Fabrication:</span>
+                <span className="tabular-nums text-foreground">{formatBDT(simulation.finishingTotal)}</span>
               </div>
             )}
 
-            <div className="flex justify-between py-1 border-b border-slate-800/80">
-              <span className="text-slate-400">Estimated Raw Material Cost:</span>
-              <span className="tabular-nums text-slate-400">{formatBDT(simulation.estimatedBOMCost)}</span>
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Estimated Raw Material Cost:</span>
+              <span className="tabular-nums text-muted-foreground">{formatBDT(simulation.estimatedBOMCost)}</span>
             </div>
 
             <div className="flex justify-between py-1 pt-1.5 text-sm font-bold">
@@ -575,7 +575,7 @@ export function PricingCalculatorSimulator({
           </div>
 
           {/* Action to convert to Quote */}
-          <div className="pt-2 border-t border-slate-800">
+          <div className="pt-2 border-t border-border">
             <Button
               asChild
               onClick={handleSaveToQuoteSession}

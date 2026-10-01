@@ -353,13 +353,13 @@ function LoginForm() {
   }
 
   return (
-    <Card className="border-slate-200/90 shadow-2xl shadow-slate-200/50 dark:border-slate-800/90 dark:bg-slate-900/95 dark:shadow-black/40 backdrop-blur-xl">
+    <Card className="border-border shadow-2xl shadow-slate-200/50 dark:border-border/90 dark:shadow-black/40 backdrop-blur-xl">
       <CardHeader className="space-y-1.5 text-center pb-3 pt-6 px-5 sm:px-6">
         <div>
-          <CardTitle className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+          <CardTitle className="text-xl sm:text-2xl font-black tracking-tight text-foreground dark:text-white">
             {t('auth.login_title')}
           </CardTitle>
-          <CardDescription className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+          <CardDescription className="text-xs text-muted-foreground mt-0.5">
             {t('auth.login_subtitle')}
           </CardDescription>
         </div>
@@ -473,7 +473,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                  className="p-2 text-muted-foreground hover:text-muted-foreground transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
@@ -501,9 +501,9 @@ function LoginForm() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-900 cursor-pointer"
+                className="h-4 w-4 rounded border-input text-cyan-600 focus:ring-cyan-500 cursor-pointer"
               />
-              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              <span className="text-xs text-muted-foreground font-medium">
                 {t('auth.remember_me') || 'Remember Me'}
               </span>
             </label>
@@ -529,10 +529,10 @@ function LoginForm() {
           {/* Divider */}
           <div className="relative my-2.5">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200 dark:border-slate-800" />
+              <span className="w-full border-t border-border dark:border-border" />
             </div>
             <div className="relative flex justify-center text-2xs uppercase font-bold tracking-wider">
-              <span className="bg-white px-2.5 text-slate-400 dark:bg-slate-900">
+              <span className="bg-card px-2.5 text-muted-foreground dark:bg-card">
                 {locale === 'bn' ? 'অথবা' : 'Or continue with'}
               </span>
             </div>
@@ -545,7 +545,7 @@ function LoginForm() {
             onClick={handleGoogleLogin}
             isLoading={isGoogleLoading}
             disabled={isGoogleLoading || isLoading}
-            className="w-full text-xs font-semibold cursor-pointer h-10 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="w-full text-xs font-semibold cursor-pointer h-10 border-border hover:bg-muted dark:hover:bg-muted"
           >
             <svg className="mr-2 h-4 w-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -578,7 +578,7 @@ function LoginForm() {
         </CardContent>
 
         {/* Card Footer: Sign Up Link */}
-        <CardFooter className="flex flex-col space-y-3 pt-4 pb-5 px-5 sm:px-6 text-center text-xs text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800/80">
+        <CardFooter className="flex flex-col space-y-3 pt-4 pb-5 px-5 sm:px-6 text-center text-xs text-muted-foreground border-t border-border dark:border-border/80">
           <div>
             {t('auth.no_account')}{' '}
             <Link
@@ -598,7 +598,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
+        <div className="p-8 text-center text-sm text-muted-foreground dark:text-muted-foreground">
           <div className="inline-flex items-center gap-2">
             <RefreshCw className="h-4 w-4 animate-spin text-cyan-500" />
             <span>Loading login portal...</span>

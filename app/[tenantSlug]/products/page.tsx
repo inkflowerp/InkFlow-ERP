@@ -1743,8 +1743,8 @@ export default function ProductsCatalogPage() {
             className={cn(
               'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
               isOpen
-                ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
-                : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-muted text-foreground dark:text-white'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
             )}
             title={tBilingual('Actions', 'অ্যাকশন')}
             aria-label="Product Actions"
@@ -1756,7 +1756,7 @@ export default function ProductsCatalogPage() {
           {isOpen && (
             <div
               className={cn(
-                'absolute right-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+                'absolute right-0 w-56 bg-card border border-border rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
                 idx >= totalCount - 2 && totalCount >= 3
                   ? 'bottom-full mb-1'
                   : 'top-full mt-1'
@@ -1769,7 +1769,7 @@ export default function ProductsCatalogPage() {
                   setActiveMenuProductId(null)
                   handleOpenFastQuote(item)
                 }}
-                className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
               >
                 <Calculator className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 <span className="font-medium">{tBilingual('Fast Quote Calculator', 'কোটেশন ক্যালকুলেটর')}</span>
@@ -1786,7 +1786,7 @@ export default function ProductsCatalogPage() {
                   setNewTargetMargin(item.target_margin_percentage || 35)
                   setNewWastage(item.default_wastage_percentage || 0)
                 }}
-                className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 hover:text-amber-700 dark:hover:text-amber-400 transition-colors cursor-pointer"
+                className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-foreground hover:text-amber-700 dark:hover:text-amber-400 transition-colors cursor-pointer"
               >
                 <Edit3 className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                 <span>{tBilingual('Adjust Price & Margin', 'মূল্য ও মার্জিন নির্ধারণ')}</span>
@@ -1799,7 +1799,7 @@ export default function ProductsCatalogPage() {
                   setActiveMenuProductId(null)
                   handleOpenEdit(item)
                 }}
-                className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors cursor-pointer"
               >
                 <Sliders className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
                 <span>{tBilingual('Edit Details & Specs', 'তথ্য ও স্পেসিফিকেশন')}</span>
@@ -1809,14 +1809,14 @@ export default function ProductsCatalogPage() {
               <Link
                 href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                 onClick={() => setActiveMenuProductId(null)}
-                className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors"
+                className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors"
               >
-                <ExternalLink className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span>{tBilingual('Open Product Cockpit', 'প্রোডাক্ট ককপিট')}</span>
               </Link>
 
               {/* Divider */}
-              <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+              <div className="my-1 border-t border-border dark:border-border" />
 
               {/* 5. Archive / Restore */}
               {item.is_active !== false ? (
@@ -1826,9 +1826,9 @@ export default function ProductsCatalogPage() {
                     setActiveMenuProductId(null)
                     handleToggleArchive(item)
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-600 dark:text-slate-400 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-muted-foreground transition-colors cursor-pointer"
                 >
-                  <Archive className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                  <Archive className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   <span>{tBilingual('Archive Item', 'আইটেম আর্কাইভ করুন')}</span>
                 </button>
               ) : (
@@ -1867,13 +1867,13 @@ export default function ProductsCatalogPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
-        <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="h-10 bg-muted rounded-xl w-1/3" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-24 bg-muted rounded-xl" />
           ))}
         </div>
-        <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+        <div className="h-96 bg-muted rounded-xl" />
       </div>
     )
   }
@@ -1955,20 +1955,20 @@ export default function ProductsCatalogPage() {
       {/* Business Owner KPI Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* 1. Total Active Catalog Items */}
-        <Card className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        <Card className="p-3.5 bg-card border-border shadow-xs">
+          <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             Active Catalog Items
           </div>
-          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground dark:text-white mt-1">
             {metrics.totalActive}
           </div>
-          <div className="text-xs text-slate-500 font-numeric tabular-nums mt-0.5">
+          <div className="text-xs text-muted-foreground font-numeric tabular-nums mt-0.5">
             {tabCounts.service} Services • {tabCounts.product} Products • {tabCounts.material} Materials • {tabCounts.outsource} Outsource
           </div>
         </Card>
 
         {/* 2. Average Gross Margin */}
-        <Card className="p-3.5 bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-900/60 shadow-xs">
+        <Card className="p-3.5 bg-card border-emerald-200 dark:border-emerald-900/60 shadow-xs">
           <div className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
             Average Gross Margin
           </div>
@@ -1981,7 +1981,7 @@ export default function ProductsCatalogPage() {
         </Card>
 
         {/* 3. Low Margin Alert */}
-        <Card className="p-3.5 bg-white dark:bg-slate-900 border-amber-200 dark:border-amber-900/60 shadow-xs">
+        <Card className="p-3.5 bg-card border-amber-200 dark:border-amber-900/60 shadow-xs">
           <div className="text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
             Low Margin Alert (&lt;20%)
           </div>
@@ -1994,21 +1994,21 @@ export default function ProductsCatalogPage() {
         </Card>
 
         {/* 4. Configuration Masters */}
-        <Card className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        <Card className="p-3.5 bg-card border-border shadow-xs">
+          <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             Configuration Masters
           </div>
-          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
+          <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-foreground dark:text-white mt-1">
             {tabCounts.finishing + tabCounts.additional + tabCounts.installation + tabCounts.printing_methods}
           </div>
-          <div className="text-xs text-slate-500 font-numeric tabular-nums mt-0.5">
+          <div className="text-xs text-muted-foreground font-numeric tabular-nums mt-0.5">
             Finishing, Addons, Logistics & Inks
           </div>
         </Card>
       </div>
 
       {/* 9 Specialized Commercial Navigation Tabs with Live Counts */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800 scrollbar-thin">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border scrollbar-thin">
         {[
           { id: 'all', label: 'All Items', count: tabCounts.all, icon: Package },
           { id: 'service', label: 'Services', count: tabCounts.service, icon: Printer },
@@ -2030,8 +2030,8 @@ export default function ProductsCatalogPage() {
               className={cn(
                 'px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 border',
                 isActive
-                  ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  ? 'bg-foreground text-white border-slate-900 dark:border-white shadow-xs'
+                  : 'bg-card text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted'
               )}
             >
               <Icon className="h-3.5 w-3.5 shrink-0" />
@@ -2040,8 +2040,8 @@ export default function ProductsCatalogPage() {
                 className={cn(
                   'px-1.5 py-0.5 text-2xs rounded-full tabular-nums font-bold',
                   isActive
-                    ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    ? 'bg-card/20 text-white dark:text-foreground'
+                    : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                 )}
               >
                 {tab.count}
@@ -2052,10 +2052,10 @@ export default function ProductsCatalogPage() {
       </div>
 
       {/* Search, Category, Commercial Type & Status Filters */}
-      <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div className="p-3 bg-card rounded-xl border border-border shadow-xs flex flex-wrap items-center justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[220px]">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by English name, বাংলা নাম, SKU, specs, pricing..."
             value={search}
@@ -2070,7 +2070,7 @@ export default function ProductsCatalogPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold"
             >
               <option value="all">All Categories (সকল ক্যাটাগরি)</option>
               {categories.length > 0 ? (
@@ -2104,7 +2104,7 @@ export default function ProductsCatalogPage() {
                 setIsCategoryModalOpen(true)
               }}
               title="Add New Category"
-              className="h-9 px-2.5 text-xs text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-blue-500 hover:text-blue-600 shrink-0"
+              className="h-9 px-2.5 text-xs text-muted-foreground border-input hover:border-blue-500 hover:text-blue-600 shrink-0"
             >
               <Plus className="h-3.5 w-3.5 mr-1" />
               Category
@@ -2118,7 +2118,7 @@ export default function ProductsCatalogPage() {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold"
             >
               <option value="all">All Commercial Types</option>
               {COMMERCIAL_PRODUCT_TYPES.map((t) => (
@@ -2131,12 +2131,12 @@ export default function ProductsCatalogPage() {
         )}
 
         {/* Status Tabs */}
-        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-bold">
+        <div className="flex items-center gap-1 bg-muted p-1 rounded-lg text-xs font-bold">
           <button
             onClick={() => setStatusFilter('active')}
             className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
-              statusFilter === 'active' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+              statusFilter === 'active' ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
             )}
           >
             Active
@@ -2145,7 +2145,7 @@ export default function ProductsCatalogPage() {
             onClick={() => setStatusFilter('low_margin')}
             className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
-              statusFilter === 'low_margin' ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+              statusFilter === 'low_margin' ? 'bg-card text-amber-600 dark:text-amber-400 shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
             )}
           >
             Low Margin
@@ -2154,7 +2154,7 @@ export default function ProductsCatalogPage() {
             onClick={() => setStatusFilter('archived')}
             className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
-              statusFilter === 'archived' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+              statusFilter === 'archived' ? 'bg-card text-foreground dark:text-white shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
             )}
           >
             Archived
@@ -2163,7 +2163,7 @@ export default function ProductsCatalogPage() {
             onClick={() => setStatusFilter('all')}
             className={cn(
               'px-3 py-1.5 rounded-md transition-all cursor-pointer',
-              statusFilter === 'all' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+              statusFilter === 'all' ? 'bg-card text-foreground dark:text-white shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
             )}
           >
             All
@@ -2176,9 +2176,9 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'printing_methods' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                 <span>Printing Technologies & Methods</span>
                 <Badge variant="outline" className="text-xs tabular-nums font-bold">
                   {filteredPrintingMethods.length}
@@ -2194,7 +2194,7 @@ export default function ProductsCatalogPage() {
                 setEditingPrintingMethod(null)
                 setIsPrintingMethodModalOpen(true)
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               Add Printing Method
@@ -2203,9 +2203,9 @@ export default function ProductsCatalogPage() {
           <CardContent className="p-0">
             {filteredPrintingMethods.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Palette className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Printing Methods Found</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <Palette className="h-10 w-10 text-muted-foreground mx-auto" />
+                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Printing Methods Found</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   Add printing technologies to bind compatible raw media, ink rates, and production speeds.
                 </p>
                 <Button
@@ -2214,7 +2214,7 @@ export default function ProductsCatalogPage() {
                     setEditingPrintingMethod(null)
                     setIsPrintingMethodModalOpen(true)
                   }}
-                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                  className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" /> Add Printing Method
                 </Button>
@@ -2222,7 +2222,7 @@ export default function ProductsCatalogPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                     <tr>
                       <th className="py-3 px-4">Method Name & Description</th>
                       <th className="py-3 px-3">Code</th>
@@ -2233,15 +2233,15 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredPrintingMethods.map((pm) => (
-                      <tr key={pm.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                      <tr key={pm.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
                           <div>{pm.name}</div>
-                          {pm.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{pm.name_bn}</div>}
-                          {pm.description && <div className="text-2xs text-slate-400 font-normal">{pm.description}</div>}
+                          {pm.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{pm.name_bn}</div>}
+                          {pm.description && <div className="text-2xs text-muted-foreground font-normal">{pm.description}</div>}
                         </td>
-                        <td className="py-3.5 px-3 tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                        <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                           {pm.code ? <Badge variant="secondary" className="tabular-nums text-xs">{pm.code}</Badge> : '—'}
                         </td>
                         <td className="py-3.5 px-3">
@@ -2253,10 +2253,10 @@ export default function ProductsCatalogPage() {
                             ))}
                           </div>
                         </td>
-                        <td className="py-3.5 px-3 text-xs text-slate-600 dark:text-slate-300">
+                        <td className="py-3.5 px-3 text-xs text-muted-foreground dark:text-muted-foreground">
                           {pm.default_ink_type || 'Standard CMYK'}
                         </td>
-                        <td className="py-3.5 px-3 tabular-nums font-semibold text-xs text-slate-800 dark:text-slate-200">
+                        <td className="py-3.5 px-3 tabular-nums font-semibold text-xs text-foreground dark:text-foreground">
                           ৳{pm.cost_per_sqft || 0}/sft
                         </td>
                         <td className="py-3.5 px-3">
@@ -2265,7 +2265,7 @@ export default function ProductsCatalogPage() {
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
+                            <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
                               <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
                             </span>
                           )}
@@ -2309,9 +2309,9 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'finishing' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                 <span>Post-Press Finishing & Fabrication Masters</span>
                 <Badge variant="outline" className="text-xs tabular-nums font-bold">
                   {filteredFinishingOptions.length}
@@ -2327,7 +2327,7 @@ export default function ProductsCatalogPage() {
                 setEditingFinishing(null)
                 setIsFinishingModalOpen(true)
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               Add Finishing Option
@@ -2336,9 +2336,9 @@ export default function ProductsCatalogPage() {
           <CardContent className="p-0">
             {filteredFinishingOptions.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Scissors className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Finishing Options Configured</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <Scissors className="h-10 w-10 text-muted-foreground mx-auto" />
+                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Finishing Options Configured</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   Add finishing operations with custom pricing methods (per sqft, per linear ft, per piece, or fixed) to attach them to services.
                 </p>
                 <Button
@@ -2347,7 +2347,7 @@ export default function ProductsCatalogPage() {
                     setEditingFinishing(null)
                     setIsFinishingModalOpen(true)
                   }}
-                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                  className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" /> Add Finishing Option
                 </Button>
@@ -2355,7 +2355,7 @@ export default function ProductsCatalogPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                     <tr>
                       <th className="py-3 px-4">Finishing Name</th>
                       <th className="py-3 px-3">Category</th>
@@ -2368,7 +2368,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredFinishingOptions.map((f) => {
                       const margin =
                         f.selling_price > 0
@@ -2377,25 +2377,25 @@ export default function ProductsCatalogPage() {
                       const linkedMat = products.find((p) => p.id === f.material_id)
 
                       return (
-                        <tr key={f.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                        <tr key={f.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
                             <div>{f.name}</div>
-                            {f.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{f.name_bn}</div>}
+                            {f.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{f.name_bn}</div>}
                           </td>
                           <td className="py-3.5 px-3">
-                            <span className="capitalize px-2 py-0.5 rounded text-2xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                            <span className="capitalize px-2 py-0.5 rounded text-2xs font-semibold bg-muted text-foreground dark:text-muted-foreground">
                               {f.category?.replace('_', ' ') || 'General'}
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums text-xs text-slate-700 dark:text-slate-300">
+                          <td className="py-3.5 px-3 tabular-nums text-xs text-foreground dark:text-muted-foreground">
                             <Badge variant="outline" className="text-2xs uppercase">
                               {f.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                          <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                             ৳{f.cost || 0}
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-slate-900 dark:text-white">
+                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-foreground dark:text-white">
                             ৳{f.selling_price || 0}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
@@ -2410,11 +2410,11 @@ export default function ProductsCatalogPage() {
                               {margin}%
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 text-xs text-slate-600 dark:text-slate-300">
+                          <td className="py-3.5 px-3 text-xs text-muted-foreground dark:text-muted-foreground">
                             {linkedMat ? (
                               <span className="text-blue-600 font-semibold">{linkedMat.name}</span>
                             ) : (
-                              <span className="text-slate-400 italic">None</span>
+                              <span className="text-muted-foreground italic">None</span>
                             )}
                           </td>
                           <td className="py-3.5 px-3">
@@ -2423,7 +2423,7 @@ export default function ProductsCatalogPage() {
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
                               </span>
                             )}
@@ -2468,9 +2468,9 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'additional' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                 <span>Additional Work & Catalog Addons</span>
                 <Badge variant="outline" className="text-xs tabular-nums font-bold">
                   {filteredAdditionalOptions.length}
@@ -2486,7 +2486,7 @@ export default function ProductsCatalogPage() {
                 setEditingAdditional(null)
                 setIsAdditionalModalOpen(true)
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               Add Additional Option
@@ -2495,9 +2495,9 @@ export default function ProductsCatalogPage() {
           <CardContent className="p-0">
             {filteredAdditionalOptions.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <PlusCircle className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Additional Options Configured</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <PlusCircle className="h-10 w-10 text-muted-foreground mx-auto" />
+                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Additional Options Configured</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   Add hardware accessories, stands, or extra charges to attach them seamlessly to jobs and quotes.
                 </p>
                 <Button
@@ -2506,7 +2506,7 @@ export default function ProductsCatalogPage() {
                     setEditingAdditional(null)
                     setIsAdditionalModalOpen(true)
                   }}
-                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                  className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" /> Add Additional Option
                 </Button>
@@ -2514,7 +2514,7 @@ export default function ProductsCatalogPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                     <tr>
                       <th className="py-3 px-4">Option Name</th>
                       <th className="py-3 px-3">Linked Catalog Item</th>
@@ -2526,7 +2526,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredAdditionalOptions.map((a) => {
                       const margin =
                         a.selling_price > 0
@@ -2535,16 +2535,16 @@ export default function ProductsCatalogPage() {
                       const linkedProduct = products.find((p) => p.id === a.product_id)
 
                       return (
-                        <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                        <tr key={a.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
                             <div>{a.name}</div>
-                            {a.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{a.name_bn}</div>}
+                            {a.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{a.name_bn}</div>}
                           </td>
-                          <td className="py-3.5 px-3 text-xs text-slate-600 dark:text-slate-300">
+                          <td className="py-3.5 px-3 text-xs text-muted-foreground dark:text-muted-foreground">
                             {linkedProduct ? (
                               <span className="text-blue-600 font-semibold">{linkedProduct.name}</span>
                             ) : (
-                              <span className="text-slate-400 italic">None (Custom)</span>
+                              <span className="text-muted-foreground italic">None (Custom)</span>
                             )}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
@@ -2552,10 +2552,10 @@ export default function ProductsCatalogPage() {
                               {a.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                          <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                             ৳{a.cost || 0}
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-slate-900 dark:text-white">
+                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-foreground dark:text-white">
                             ৳{a.selling_price || 0}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
@@ -2576,7 +2576,7 @@ export default function ProductsCatalogPage() {
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
                               </span>
                             )}
@@ -2621,9 +2621,9 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'installation' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                 <span>Installation, Logistics & Dispatch Masters</span>
                 <Badge variant="outline" className="text-xs tabular-nums font-bold">
                   {filteredInstallationOptions.length}
@@ -2639,7 +2639,7 @@ export default function ProductsCatalogPage() {
                 setEditingInstallation(null)
                 setIsInstallationModalOpen(true)
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               Add Installation Option
@@ -2648,9 +2648,9 @@ export default function ProductsCatalogPage() {
           <CardContent className="p-0">
             {filteredInstallationOptions.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Truck className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Installation & Delivery Options Configured</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <Truck className="h-10 w-10 text-muted-foreground mx-auto" />
+                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Installation & Delivery Options Configured</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   Add installation tariffs or delivery zones with automatic shop-floor task generation upon order confirmation.
                 </p>
                 <Button
@@ -2659,7 +2659,7 @@ export default function ProductsCatalogPage() {
                     setEditingInstallation(null)
                     setIsInstallationModalOpen(true)
                   }}
-                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                  className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" /> Add Installation Option
                 </Button>
@@ -2667,7 +2667,7 @@ export default function ProductsCatalogPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                     <tr>
                       <th className="py-3 px-4">Scope Name</th>
                       <th className="py-3 px-3">Fulfillment Scope</th>
@@ -2680,7 +2680,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredInstallationOptions.map((i) => {
                       const margin =
                         i.selling_price > 0
@@ -2688,10 +2688,10 @@ export default function ProductsCatalogPage() {
                           : 0
 
                       return (
-                        <tr key={i.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                        <tr key={i.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
                             <div>{i.name}</div>
-                            {i.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{i.name_bn}</div>}
+                            {i.name_bn && <div className="text-xs text-muted-foreground font-medium font-bengali">{i.name_bn}</div>}
                           </td>
                           <td className="py-3.5 px-3">
                             <span className="capitalize px-2 py-0.5 rounded text-2xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
@@ -2704,7 +2704,7 @@ export default function ProductsCatalogPage() {
                                 🛠️ Auto-Task
                               </Badge>
                             ) : (
-                              <span className="text-xs text-slate-400">No Task</span>
+                              <span className="text-xs text-muted-foreground">No Task</span>
                             )}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
@@ -2712,10 +2712,10 @@ export default function ProductsCatalogPage() {
                               {i.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                          <td className="py-3.5 px-3 tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                             ৳{i.cost || 0}
                           </td>
-                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-slate-900 dark:text-white">
+                          <td className="py-3.5 px-3 tabular-nums font-bold text-xs text-foreground dark:text-white">
                             ৳{i.selling_price || 0}
                           </td>
                           <td className="py-3.5 px-3 tabular-nums text-xs">
@@ -2736,7 +2736,7 @@ export default function ProductsCatalogPage() {
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
                               </span>
                             )}
@@ -2781,9 +2781,9 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'service' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                 <span>Printing & Fabrication Services Master</span>
                 <Badge variant="outline" className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
@@ -2796,7 +2796,7 @@ export default function ProductsCatalogPage() {
             <Button
               size="sm"
               onClick={handleOpenCreateService}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               New Service
@@ -2806,24 +2806,24 @@ export default function ProductsCatalogPage() {
             {isLoading ? (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Printer className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Services Found</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <Printer className="h-10 w-10 text-muted-foreground mx-auto" />
+                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Services Found</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   Create high-performance printing services with substrate allowances, dimension presets, and finishing tariffs.
                 </p>
-                <Button size="sm" onClick={handleOpenCreateService} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white">
+                <Button size="sm" onClick={handleOpenCreateService} className="mt-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Plus className="h-3.5 w-3.5 mr-1" /> Add Service
                 </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Service & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Printable Substrate</th>
@@ -2838,7 +2838,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
                       const marginPercent =
                         item.selling_price > 0
@@ -2848,19 +2848,19 @@ export default function ProductsCatalogPage() {
                       const finishings = item.service_config?.finishing_options || []
 
                       return (
-                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                              className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
                               <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
                             </Link>
                             {item.name_bn && (
-                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                              <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-2xs tabular-nums text-slate-400 mt-0.5">
+                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} • {item.category || 'printing'}
                             </div>
                           </td>
@@ -2869,7 +2869,7 @@ export default function ProductsCatalogPage() {
                               {item.service_config?.printable_material_name || item.material_spec || 'Standard Media'}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-slate-700 dark:text-slate-300">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-foreground dark:text-muted-foreground">
                             <Badge variant="secondary" className="text-2xs uppercase whitespace-nowrap">
                               {(item.pricing_method || item.service_config?.pricing_method || 'per_area').replace('_', ' ')}
                             </Badge>
@@ -2878,16 +2878,16 @@ export default function ProductsCatalogPage() {
                             {presets.length > 0 ? (
                               <div className="flex flex-wrap gap-1 max-w-[160px]">
                                 {presets.slice(0, 2).map((p, idx) => (
-                                  <span key={idx} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-2xs tabular-nums rounded whitespace-nowrap">
+                                  <span key={idx} className="px-1.5 py-0.5 bg-muted text-2xs tabular-nums rounded whitespace-nowrap">
                                     {p.width}&apos;×{p.length}&apos;
                                   </span>
                                 ))}
                                 {presets.length > 2 && (
-                                  <span className="text-2xs text-slate-400 tabular-nums whitespace-nowrap">+{presets.length - 2} more</span>
+                                  <span className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap">+{presets.length - 2} more</span>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400 italic whitespace-nowrap">Custom Dimensions</span>
+                              <span className="text-xs text-muted-foreground italic whitespace-nowrap">Custom Dimensions</span>
                             )}
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
@@ -2896,19 +2896,19 @@ export default function ProductsCatalogPage() {
                                 {finishings.length} options
                               </Badge>
                             ) : (
-                              <span className="text-xs text-slate-400 italic whitespace-nowrap">—</span>
+                              <span className="text-xs text-muted-foreground italic whitespace-nowrap">—</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-2xs text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-slate-900 dark:text-white">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground dark:text-white">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-2xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center tabular-nums text-xs">
@@ -2926,7 +2926,7 @@ export default function ProductsCatalogPage() {
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center text-xs tabular-nums">
-                            {item.minimum_charge ? <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span> : <span className="text-slate-300">—</span>}
+                            {item.minimum_charge ? <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span> : <span className="text-muted-foreground">—</span>}
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
@@ -2934,7 +2934,7 @@ export default function ProductsCatalogPage() {
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -2956,9 +2956,9 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'product' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                 <span>Ready Products & Display Hardware</span>
                 <Badge variant="outline" className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
@@ -2981,14 +2981,14 @@ export default function ProductsCatalogPage() {
             {isLoading ? (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Package className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Ready Products Found</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <Package className="h-10 w-10 text-muted-foreground mx-auto" />
+                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Ready Products Found</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   Add finished display hardware or stock products with packaging specifications and tiered dealer pricing.
                 </p>
                 <Button size="sm" onClick={handleOpenCreateProduct} className="mt-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
@@ -2998,7 +2998,7 @@ export default function ProductsCatalogPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Product & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Physical Dimensions & Spec</th>
@@ -3011,7 +3011,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
                       const marginPercent =
                         item.selling_price > 0
@@ -3020,28 +3020,28 @@ export default function ProductsCatalogPage() {
                       const tiers = item.price_tiers || {}
 
                       return (
-                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                              className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
                               <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
                             </Link>
                             {item.name_bn && (
-                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                              <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-2xs tabular-nums text-slate-400 mt-0.5">
+                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} • {item.category || 'hardware'}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
-                            <div className="font-semibold text-xs text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                            <div className="font-semibold text-xs text-foreground whitespace-nowrap">
                               {item.dimensions_spec || item.material_spec || 'Standard Dimension'}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-slate-600 dark:text-slate-400">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                             <span className="whitespace-nowrap">📦 MOQ: {item.min_order_quantity || 1} {item.unit || 'pcs'}</span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
@@ -3062,20 +3062,20 @@ export default function ProductsCatalogPage() {
                                 </span>
                               ) : null}
                               {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
-                                <span className="text-slate-400 italic whitespace-nowrap">Standard Retail</span>
+                                <span className="text-muted-foreground italic whitespace-nowrap">Standard Retail</span>
                               )}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-2xs text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-slate-900 dark:text-white">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground dark:text-white">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-2xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center tabular-nums text-xs">
@@ -3098,7 +3098,7 @@ export default function ProductsCatalogPage() {
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -3120,9 +3120,9 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'material' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                 <span>Raw Materials & Media Master</span>
                 <Badge variant="outline" className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
@@ -3145,14 +3145,14 @@ export default function ProductsCatalogPage() {
             {isLoading ? (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <Layers className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Raw Materials Found</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <Layers className="h-10 w-10 text-muted-foreground mx-auto" />
+                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Raw Materials Found</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   Add substrates (rolls, sheets, inks) with bulk procurement rates, dimensional conversion ratios, and wastage factors.
                 </p>
                 <Button size="sm" onClick={handleOpenCreateMaterial} className="mt-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
@@ -3162,7 +3162,7 @@ export default function ProductsCatalogPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Material Name & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Media Form & Geometry</th>
@@ -3174,24 +3174,24 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
                       const printingList = item.material_config?.compatible_printing_methods || item.printing_methods || []
 
                       return (
-                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                              className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
                               <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
                             </Link>
                             {item.name_bn && (
-                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                              <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-2xs tabular-nums text-slate-400 mt-0.5">
+                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} • {item.material_spec || 'Standard Grade'}
                             </div>
                           </td>
@@ -3213,15 +3213,15 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {item.purchase_price && item.purchase_price > 0 ? (
                               <div>
-                                <div className="tabular-nums text-xs font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                                <div className="tabular-nums text-xs font-bold text-foreground whitespace-nowrap">
                                   ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400 italic whitespace-nowrap">No Purchase Tariff</span>
+                              <span className="text-xs text-muted-foreground italic whitespace-nowrap">No Purchase Tariff</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-slate-600 dark:text-slate-400">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                             <div className="whitespace-nowrap">1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit}</div>
                             {item.default_wastage_percentage ? (
                               <div className="text-2xs text-amber-600 whitespace-nowrap">({item.default_wastage_percentage}% waste allowance)</div>
@@ -3237,13 +3237,13 @@ export default function ProductsCatalogPage() {
                                 ))}
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400 italic whitespace-nowrap">Universal Media</span>
+                              <span className="text-xs text-muted-foreground italic whitespace-nowrap">Universal Media</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-slate-900 dark:text-white">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground dark:text-white">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <span>৳{item.base_cost}</span>
-                              <span className="text-2xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
@@ -3252,7 +3252,7 @@ export default function ProductsCatalogPage() {
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -3274,9 +3274,9 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'outsource' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                 <span>Outsource Products & Subcontract Services (Non-Inventory)</span>
                 <Badge variant="outline" className="text-xs tabular-nums font-bold text-purple-600 border-purple-300">
                   {filteredProducts.length}
@@ -3299,14 +3299,14 @@ export default function ProductsCatalogPage() {
             {isLoading ? (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center space-y-3">
                 <Share2 className="h-10 w-10 text-purple-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Outsource Products Found</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Outsource Products Found</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   Add non-inventory outsource items with third-party vendor cost, turnaround lead time, and multi-tier pricing.
                 </p>
                 <Button size="sm" onClick={handleOpenCreateOutsource} className="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white">
@@ -3316,7 +3316,7 @@ export default function ProductsCatalogPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Product & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Subcontract Vendor</th>
@@ -3329,7 +3329,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
                       const marginPercent =
                         item.selling_price > 0
@@ -3341,37 +3341,37 @@ export default function ProductsCatalogPage() {
                       const turnaround = item.turnaround_days ?? item.outsource_config?.turnaround_days ?? 3
 
                       return (
-                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-slate-900 dark:text-white hover:text-purple-600 flex items-center gap-1.5 group"
+                              className="font-bold text-foreground dark:text-white hover:text-purple-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
                               <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-purple-600 transition-opacity" />
                             </Link>
                             {item.name_bn && (
-                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                              <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-2xs tabular-nums text-slate-400 mt-0.5">
+                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} • {item.category || 'outsource'}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
-                            <div className="font-semibold text-xs text-slate-900 dark:text-slate-100 flex items-center gap-1 whitespace-nowrap">
+                            <div className="font-semibold text-xs text-foreground flex items-center gap-1 whitespace-nowrap">
                               <Building2 className="h-3 w-3 text-purple-500" />
                               <span>{vendorName}</span>
                             </div>
                             {vendorPhone && (
-                              <div className="text-2xs text-slate-400 tabular-nums whitespace-nowrap">{vendorPhone}</div>
+                              <div className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap">{vendorPhone}</div>
                             )}
                             {item.vendor_item_code && (
-                              <div className="text-2xs text-slate-400 tabular-nums whitespace-nowrap">Ref: {item.vendor_item_code}</div>
+                              <div className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap">Ref: {item.vendor_item_code}</div>
                             )}
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="flex flex-col gap-1">
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground whitespace-nowrap">
                                 <Clock className="h-3 w-3 text-amber-500" />
                                 {turnaround} {turnaround === 1 ? 'day' : 'days'}
                               </span>
@@ -3398,20 +3398,20 @@ export default function ProductsCatalogPage() {
                                 </span>
                               ) : null}
                               {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
-                                <span className="text-slate-400 italic whitespace-nowrap">Standard Retail</span>
+                                <span className="text-muted-foreground italic whitespace-nowrap">Standard Retail</span>
                               )}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-2xs text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-slate-900 dark:text-white">
+                          <td className="py-3.5 px-3 whitespace-nowrap tabular-nums font-bold text-xs text-foreground dark:text-white">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-2xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center tabular-nums text-xs">
@@ -3434,7 +3434,7 @@ export default function ProductsCatalogPage() {
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -3456,15 +3456,15 @@ export default function ProductsCatalogPage() {
       {/* ======================================================== */}
       {entityTypeFilter === 'all' && (
         <Card className="shadow-xs overflow-hidden">
-          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <CardHeader className="py-3.5 px-4 border-b border-border bg-muted dark:bg-card">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                 <span>Commercial Master Catalog</span>
                 <Badge variant="outline" className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
               </CardTitle>
-              <span className="text-xs text-slate-400">PostgreSQL Authoritative Units, Conversion & Costing</span>
+              <span className="text-xs text-muted-foreground">PostgreSQL Authoritative Units, Conversion & Costing</span>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -3472,7 +3472,7 @@ export default function ProductsCatalogPage() {
             {isLoading && (
               <div className="p-8 space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                  <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
                 ))}
               </div>
             )}
@@ -3480,9 +3480,9 @@ export default function ProductsCatalogPage() {
             {/* Empty State */}
             {!isLoading && filteredProducts.length === 0 && (
               <div className="p-12 text-center space-y-3">
-                <Package className="h-10 w-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Products Found</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                <Package className="h-10 w-10 text-muted-foreground mx-auto" />
+                <h3 className="text-sm font-bold text-foreground dark:text-foreground">No Products Found</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                   No catalog items matched your current filter criteria. Create a new product or reset your search.
                 </p>
                 <Button size="sm" onClick={handleOpenCreate} className="mt-2 text-xs bg-blue-600 hover:bg-blue-700">
@@ -3495,7 +3495,7 @@ export default function ProductsCatalogPage() {
             {!isLoading && filteredProducts.length > 0 && (
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                     <tr>
                       <th className="py-3 px-4 min-w-[200px]">Item & SKU</th>
                       <th className="py-3 px-3 whitespace-nowrap">Entity Kind</th>
@@ -3508,7 +3508,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredProducts.map((item, idx) => {
                       const marginPercent =
                         item.selling_price > 0
@@ -3519,20 +3519,20 @@ export default function ProductsCatalogPage() {
                       const isMaterial = isMaterialItem(item)
 
                       return (
-                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                           {/* Item & SKU */}
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                              className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
+                              className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
                               <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
                             </Link>
                             {item.name_bn && (
-                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                              <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-2xs tabular-nums text-slate-400 mt-0.5">
+                            <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
                               {item.sku} {item.material_spec ? `• ${item.material_spec}` : ''}
                             </div>
                           </td>
@@ -3559,32 +3559,32 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {!isService && item.purchase_price && item.purchase_price > 0 ? (
                               <div>
-                                <div className="tabular-nums text-xs font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                                <div className="tabular-nums text-xs font-bold text-foreground whitespace-nowrap">
                                   ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
                                 </div>
-                                <div className="text-2xs text-slate-400 tabular-nums whitespace-nowrap">
+                                <div className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap">
                                   1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit}
                                   {item.default_wastage_percentage ? ` (${item.default_wastage_percentage}% waste)` : ''}
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400 italic whitespace-nowrap">No Purchase Unit</span>
+                              <span className="text-xs text-muted-foreground italic whitespace-nowrap">No Purchase Unit</span>
                             )}
                           </td>
 
                           {/* Effective Unit Cost */}
-                          <td className="py-3.5 px-3 whitespace-nowrap text-xs font-semibold text-slate-600 dark:text-slate-300 tabular-nums">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-xs font-semibold text-muted-foreground tabular-nums">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-2xs text-slate-400 font-normal">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs text-muted-foreground font-normal">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
 
                           {/* Selling Rate */}
-                          <td className="py-3.5 px-3 whitespace-nowrap font-bold text-slate-900 dark:text-white tabular-nums">
+                          <td className="py-3.5 px-3 whitespace-nowrap font-bold text-foreground dark:text-white tabular-nums">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-xs font-normal text-muted-foreground">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
 
@@ -3605,11 +3605,11 @@ export default function ProductsCatalogPage() {
                           </td>
 
                           {/* Minimum Charge */}
-                          <td className="py-3.5 px-3 whitespace-nowrap text-center text-xs tabular-nums font-medium text-slate-600 dark:text-slate-400">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center text-xs tabular-nums font-medium text-muted-foreground dark:text-muted-foreground">
                             {item.minimum_charge && item.minimum_charge > 0 ? (
                               <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span>
                             ) : (
-                              <span className="text-slate-300">—</span>
+                              <span className="text-muted-foreground">—</span>
                             )}
                           </td>
 
@@ -3620,7 +3620,7 @@ export default function ProductsCatalogPage() {
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -3638,7 +3638,7 @@ export default function ProductsCatalogPage() {
 
             {/* Mobile Card View (390 x 844 touch friendly) */}
             {!isLoading && filteredProducts.length > 0 && (
-              <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              <div className="md:hidden divide-y divide-border dark:divide-border">
                 {filteredProducts.map((item) => {
                   const marginPercent =
                     item.selling_price > 0
@@ -3651,14 +3651,14 @@ export default function ProductsCatalogPage() {
                         <div>
                           <Link
                             href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                            className="font-bold text-sm text-slate-900 dark:text-white hover:text-blue-600"
+                            className="font-bold text-sm text-foreground dark:text-white hover:text-blue-600"
                           >
                             {item.name}
                           </Link>
                           {item.name_bn && (
-                            <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                            <div className="text-xs text-muted-foreground font-medium font-bengali">{item.name_bn}</div>
                           )}
-                          <div className="text-2xs tabular-nums text-slate-400 mt-0.5">
+                          <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
                             {item.sku} • {item.material_spec || 'Standard Spec'}
                           </div>
                         </div>
@@ -3680,22 +3680,22 @@ export default function ProductsCatalogPage() {
 
                       {/* Commercial Economics Badges */}
                       {item.purchase_price && item.purchase_price > 0 ? (
-                        <div className="text-xs tabular-nums text-slate-500 bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                        <div className="text-xs tabular-nums text-muted-foreground bg-muted p-2 rounded-lg border border-border dark:border-border">
                           Buy: <strong>৳{item.purchase_price}/{item.purchase_unit || 'roll'}</strong> (1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit})
                         </div>
                       ) : null}
 
                       {/* Metrics Grid */}
-                      <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-center border border-slate-100 dark:border-slate-800">
+                      <div className="grid grid-cols-3 gap-2 p-2.5 bg-muted rounded-lg text-center border border-border dark:border-border">
                         <div>
-                          <span className="text-2xs text-slate-400 uppercase block">Selling Rate</span>
+                          <span className="text-2xs text-muted-foreground uppercase block">Selling Rate</span>
                           <div className="tabular-nums font-bold text-xs text-blue-600 dark:text-blue-400">
                             ৳{item.selling_price}/{item.selling_unit || item.unit}
                           </div>
                         </div>
                         <div>
-                          <span className="text-2xs text-slate-400 uppercase block">Eff. Cost</span>
-                          <div className="tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                          <span className="text-2xs text-muted-foreground uppercase block">Eff. Cost</span>
+                          <div className="tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                             ৳{item.base_cost}
                           </div>
                         </div>
@@ -3713,7 +3713,7 @@ export default function ProductsCatalogPage() {
                           <Button
                             size="sm"
                             onClick={() => handleOpenFastQuote(item)}
-                            className="flex-1 h-9 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+                            className="flex-1 h-9 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs"
                           >
                             <Calculator className="h-3.5 w-3.5 mr-1" /> Fast Quote
                           </Button>
@@ -3750,7 +3750,7 @@ export default function ProductsCatalogPage() {
                         </Button>
                         <Link
                           href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
-                          className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                          className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-input text-foreground hover:bg-muted"
                         >
                           Detail
                         </Link>
@@ -3779,14 +3779,14 @@ export default function ProductsCatalogPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-black text-slate-900 dark:text-white">
+                <span className="text-base font-black text-foreground dark:text-white">
                   Fast Estimate & Quotation
                 </span>
                 <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
                   Instant Quote
                 </Badge>
               </div>
-              <p className="text-2xs text-slate-500">
+              <p className="text-2xs text-muted-foreground">
                 {fastQuoteProduct?.name} ({fastQuoteProduct?.sku})
               </p>
             </div>
@@ -3821,8 +3821,8 @@ export default function ProductsCatalogPage() {
             {!createdQuoteNumber && (
               <>
                 {/* Customer Details */}
-                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3.5 space-y-3">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                <div className="rounded-xl border border-border bg-card p-3.5 space-y-3">
+                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
                     1. Customer Information
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -3854,8 +3854,8 @@ export default function ProductsCatalogPage() {
                 </div>
 
                 {/* Dimensions & Quantity */}
-                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3.5 space-y-3">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                <div className="rounded-xl border border-border bg-card p-3.5 space-y-3">
+                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
                     2. Dimensions & Quantity
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -3884,7 +3884,7 @@ export default function ProductsCatalogPage() {
                       <select
                         value={quoteDimUnit}
                         onChange={(e) => setQuoteDimUnit(e.target.value as any)}
-                        className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 text-xs font-medium"
+                        className="w-full h-9 rounded-lg border border-input bg-card px-2.5 text-xs font-medium"
                       >
                         <option value="ft">Feet (ft)</option>
                         <option value="inch">Inches (in)</option>
@@ -3904,7 +3904,7 @@ export default function ProductsCatalogPage() {
                   </div>
 
                   <div className="flex items-center justify-between p-2.5 bg-blue-50/60 dark:bg-blue-950/30 rounded-lg text-xs">
-                    <span className="text-slate-600 dark:text-slate-400">Calculated Billable Area:</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">Calculated Billable Area:</span>
                     <span className="tabular-nums font-bold text-blue-700 dark:text-blue-300">
                       {fastQuoteCalculation.singleAreaSft} SFT × {quoteQuantity} pcs = {fastQuoteCalculation.totalAreaSft} SFT
                     </span>
@@ -3912,12 +3912,12 @@ export default function ProductsCatalogPage() {
                 </div>
 
                 {/* Add-ons & Finishing */}
-                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3.5 space-y-2.5">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                <div className="rounded-xl border border-border bg-card p-3.5 space-y-2.5">
+                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
                     3. Finishing & Reusable Add-ons
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                    <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
                         type="checkbox"
                         checked={quoteIncludeHemming}
@@ -3927,7 +3927,7 @@ export default function ProductsCatalogPage() {
                       <span>Hemming (৳{fastQuoteCalculation.hemmingCharge})</span>
                     </label>
 
-                    <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
                         type="checkbox"
                         checked={quoteIncludeEyelets}
@@ -3937,7 +3937,7 @@ export default function ProductsCatalogPage() {
                       <span>Eyelets ({fastQuoteCalculation.eyeletCount} pcs - ৳{fastQuoteCalculation.eyeletCharge})</span>
                     </label>
 
-                    <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
                         type="checkbox"
                         checked={quoteIncludeLamination}
@@ -3947,7 +3947,7 @@ export default function ProductsCatalogPage() {
                       <span>Lamination (৳{fastQuoteCalculation.laminationCharge})</span>
                     </label>
 
-                    <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
                         type="checkbox"
                         checked={quoteIncludeInstallation}
@@ -3957,7 +3957,7 @@ export default function ProductsCatalogPage() {
                       <span>Installation (৳{fastQuoteCalculation.installationCharge})</span>
                     </label>
 
-                    <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                    <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                       <input
                         type="checkbox"
                         checked={quoteIncludeDelivery}
@@ -3970,10 +3970,10 @@ export default function ProductsCatalogPage() {
                 </div>
 
                 {/* Instant Financial Calculation Readout */}
-                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 p-4 space-y-2.5">
+                <div className="rounded-xl border border-border bg-muted p-4 space-y-2.5">
                   <div className="flex justify-between items-center text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="text-slate-600 dark:text-slate-400">
+                      <span className="text-muted-foreground dark:text-muted-foreground">
                         Print Subtotal ({fastQuoteCalculation.totalAreaSft} {fastQuoteProduct.selling_unit || 'SFT'} @ ৳{fastQuoteCalculation.effectiveRate}):
                       </span>
                       <Badge variant="outline" className="text-2xs capitalize tabular-nums">
@@ -3994,7 +3994,7 @@ export default function ProductsCatalogPage() {
 
                   {fastQuoteCalculation.addonsTotal > 0 && (
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-600 dark:text-slate-400">Finishing & Service Add-ons:</span>
+                      <span className="text-muted-foreground dark:text-muted-foreground">Finishing & Service Add-ons:</span>
                       <span className="tabular-nums font-semibold">৳{fastQuoteCalculation.addonsTotal}</span>
                     </div>
                   )}
@@ -4007,17 +4007,17 @@ export default function ProductsCatalogPage() {
                   )}
 
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-600 dark:text-slate-400">VAT ({fastQuoteProduct.tax_rate || 7.5}%):</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">VAT ({fastQuoteProduct.tax_rate || 7.5}%):</span>
                     <span className="tabular-nums">৳{fastQuoteCalculation.vatAmount}</span>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                  <div className="pt-2 border-t border-border flex justify-between items-center">
                     <div>
-                      <span className="text-xs font-bold text-slate-900 dark:text-white block">Quotation Total:</span>
+                      <span className="text-xs font-bold text-foreground dark:text-white block">Quotation Total:</span>
                       <span className="text-2xs text-emerald-600 font-semibold">
                         Est. Cost: ৳{fastQuoteCalculation.estTotalCost} • Gross Profit: ৳{fastQuoteCalculation.estGrossProfit} ({fastQuoteCalculation.estMargin}%)
                       </span>
-                      <span className="text-2xs text-slate-500 block">
+                      <span className="text-2xs text-muted-foreground block">
                         Margin Based On: {fastQuoteCalculation.costBasisType === 'direct_cost' ? 'Estimated Direct Job Cost' : 'Material Cost'}
                       </span>
                     </div>
@@ -4027,8 +4027,8 @@ export default function ProductsCatalogPage() {
                   </div>
 
                   {/* Internal-Only Commercial Production Readout */}
-                  <div className="mt-2 p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-2xs text-slate-600 dark:text-slate-300 space-y-1">
-                    <span className="font-bold block uppercase tracking-wider text-2xs text-slate-500">Internal Commercial Analysis:</span>
+                  <div className="mt-2 p-2.5 bg-muted rounded-lg text-2xs text-muted-foreground space-y-1">
+                    <span className="font-bold block uppercase tracking-wider text-2xs text-muted-foreground">Internal Commercial Analysis:</span>
                     <div className="flex justify-between">
                       <span>Expected Material Consumption (incl. {fastQuoteProduct.default_wastage_percentage || 0}% waste):</span>
                       <span className="tabular-nums font-bold">{fastQuoteCalculation.expectedConsumption} {fastQuoteProduct.selling_unit || 'SFT'}</span>
@@ -4041,7 +4041,7 @@ export default function ProductsCatalogPage() {
                 </div>
 
                 {/* Footer Action */}
-                <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+                <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
                   <Button
                     type="button"
                     variant="outline"
@@ -4054,7 +4054,7 @@ export default function ProductsCatalogPage() {
                     type="button"
                     onClick={handleGenerateFastQuotation}
                     disabled={isPending}
-                    className="w-full sm:w-auto text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm"
+                    className="w-full sm:w-auto text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 shadow-sm"
                   >
                     {isPending ? 'Generating Quotation...' : 'Create Formal Quotation'}
                   </Button>
@@ -4080,11 +4080,11 @@ export default function ProductsCatalogPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-bold text-slate-900 dark:text-white">
+                <span className="text-base font-bold text-foreground dark:text-white">
                   {editingProduct ? 'Edit Product' : 'Add Product'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 {editingProduct ? 'Update product details and commercial rules.' : 'Create a product or service your business sells.'}
               </p>
             </div>
@@ -4094,7 +4094,7 @@ export default function ProductsCatalogPage() {
         <form onSubmit={handleSaveProduct} className="space-y-4 pt-1 max-h-[78vh] overflow-y-auto pr-1">
           {/* STEP 1: WHAT ARE YOU SELLING? */}
           <div>
-            <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider block mb-2">
+            <Label className="text-xs font-bold text-foreground uppercase tracking-wider block mb-2">
               1. What are you selling?
             </Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -4110,13 +4110,13 @@ export default function ProductsCatalogPage() {
                       'flex flex-col items-start p-2.5 rounded-xl border text-left transition-all relative overflow-hidden',
                       isSelected
                         ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-100 shadow-xs ring-1 ring-blue-500'
-                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
+                        : 'border-border bg-card hover:border-input text-foreground dark:text-muted-foreground'
                     )}
                   >
                     <div className="flex items-center justify-between w-full mb-1">
                       <div className={cn(
                         'flex h-7 w-7 items-center justify-center rounded-lg',
-                        isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                        isSelected ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                       )}>
                         <Icon className="h-4 w-4" />
                       </div>
@@ -4125,7 +4125,7 @@ export default function ProductsCatalogPage() {
                       )}
                     </div>
                     <span className="text-xs font-bold block">{card.label}</span>
-                    <span className="text-2xs text-slate-500 dark:text-slate-400 leading-tight line-clamp-1 mt-0.5">
+                    <span className="text-2xs text-muted-foreground leading-tight line-clamp-1 mt-0.5">
                       {card.description}
                     </span>
                   </button>
@@ -4135,8 +4135,8 @@ export default function ProductsCatalogPage() {
           </div>
 
           {/* STEP 2: BASIC INFORMATION */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
-            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider block">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
+            <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
               2. Basic Information
             </span>
 
@@ -4174,7 +4174,7 @@ export default function ProductsCatalogPage() {
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
+                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground dark:text-white focus:border-blue-500 focus:outline-none"
                   required
                 >
                   <option value="" disabled>Select category...</option>
@@ -4217,7 +4217,7 @@ export default function ProductsCatalogPage() {
                   placeholder="PRD-FLX-01"
                   value={formData.sku}
                   onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  className="text-xs h-9 tabular-nums uppercase text-slate-600 dark:text-slate-400"
+                  className="text-xs h-9 tabular-nums uppercase text-muted-foreground dark:text-muted-foreground"
                 />
               </div>
 
@@ -4234,13 +4234,13 @@ export default function ProductsCatalogPage() {
           </div>
 
           {/* STEP 3: HOW DO YOU CHARGE? */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
-            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider block">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
+            <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
               3. How do you charge?
             </span>
 
             <div>
-              <Label className="text-xs font-medium text-slate-500 mb-1.5 block">
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                 Pricing Method
               </Label>
               <div className="flex flex-wrap gap-1.5">
@@ -4255,7 +4255,7 @@ export default function ProductsCatalogPage() {
                         'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border',
                         isSelected
                           ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                          : 'bg-muted text-foreground border-border hover:border-input'
                       )}
                     >
                       {opt.label}
@@ -4271,7 +4271,7 @@ export default function ProductsCatalogPage() {
                   Selling Price <span className="text-rose-500">*</span>
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-sm font-bold text-slate-400">৳</span>
+                  <span className="absolute left-3 top-2 text-sm font-bold text-muted-foreground">৳</span>
                   <Input
                     type="number"
                     step="0.1"
@@ -4281,7 +4281,7 @@ export default function ProductsCatalogPage() {
                     className="pl-7 pr-16 text-sm font-bold tabular-nums h-9 text-blue-600 dark:text-blue-400"
                     required
                   />
-                  <span className="absolute right-3 top-2.5 text-xs text-slate-500 font-medium">
+                  <span className="absolute right-3 top-2.5 text-xs text-muted-foreground font-medium">
                     / {formData.selling_unit || 'unit'}
                   </span>
                 </div>
@@ -4294,7 +4294,7 @@ export default function ProductsCatalogPage() {
                 <select
                   value={formData.selling_unit}
                   onChange={(e) => setFormData({ ...formData, selling_unit: e.target.value, unit: e.target.value as UnitOfMeasure })}
-                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium uppercase tabular-nums"
+                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium uppercase tabular-nums"
                 >
                   {COMMON_SELLING_UNITS.map((u) => (
                     <option key={u.code} value={u.code}>
@@ -4310,10 +4310,10 @@ export default function ProductsCatalogPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between pt-1">
               <div>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   Advanced Settings (Optional)
                 </h4>
-                <p className="text-2xs text-slate-500">
+                <p className="text-2xs text-muted-foreground">
                   Optional settings for purchasing, production allowances, minimums, costing and components.
                 </p>
               </div>
@@ -4328,7 +4328,7 @@ export default function ProductsCatalogPage() {
                     'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
                     expandedSections.purchasing
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                      : 'border-border bg-card text-foreground hover:border-input'
                   )}
                 >
                   <span>Purchasing</span>
@@ -4344,7 +4344,7 @@ export default function ProductsCatalogPage() {
                     'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
                     expandedSections.production
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                      : 'border-border bg-card text-foreground hover:border-input'
                   )}
                 >
                   <span>Production</span>
@@ -4359,7 +4359,7 @@ export default function ProductsCatalogPage() {
                   'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
                   expandedSections.minimums
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                    : 'border-border bg-card text-foreground hover:border-input'
                 )}
               >
                 <span>Minimums</span>
@@ -4373,7 +4373,7 @@ export default function ProductsCatalogPage() {
                   'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
                   expandedSections.costing
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                    : 'border-border bg-card text-foreground hover:border-input'
                   )}
               >
                 <span>Costing</span>
@@ -4387,7 +4387,7 @@ export default function ProductsCatalogPage() {
                   'py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all',
                   expandedSections.components
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 shadow-xs'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                    : 'border-border bg-card text-foreground hover:border-input'
                 )}
               >
                 <span>Components ({formData.components?.length || 0})</span>
@@ -4397,12 +4397,12 @@ export default function ProductsCatalogPage() {
 
             {/* SUBSECTION A: PURCHASING & MEDIA SPECS */}
             {expandedSections.purchasing && !liveCommercialMath.isService && (
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                     Purchasing & Material Conversion
                   </span>
-                  <span className="text-2xs text-slate-500">How you buy raw materials</span>
+                  <span className="text-2xs text-muted-foreground">How you buy raw materials</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -4411,7 +4411,7 @@ export default function ProductsCatalogPage() {
                     <select
                       value={formData.purchase_unit}
                       onChange={(e) => setFormData({ ...formData, purchase_unit: e.target.value })}
-                      className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium uppercase tabular-nums"
+                      className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium uppercase tabular-nums"
                     >
                       {COMMON_PURCHASE_UNITS.map((u) => (
                         <option key={u.code} value={u.code}>
@@ -4430,7 +4430,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, purchase_price: Number(e.target.value) })}
                       className="text-xs h-9 tabular-nums font-bold"
                     />
-                    <span className="text-2xs text-slate-400">per 1 {formData.purchase_unit}</span>
+                    <span className="text-2xs text-muted-foreground">per 1 {formData.purchase_unit}</span>
                   </div>
 
                   <div>
@@ -4444,7 +4444,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, conversion_ratio: Number(e.target.value) })}
                       className="text-xs h-9 tabular-nums font-bold"
                     />
-                    <span className="text-2xs text-slate-400">
+                    <span className="text-2xs text-muted-foreground">
                       1 {formData.purchase_unit} = {formData.conversion_ratio} {formData.selling_unit}
                     </span>
                   </div>
@@ -4457,7 +4457,7 @@ export default function ProductsCatalogPage() {
                       <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
                         Roll Dimension Helper (1 Roll Area)
                       </span>
-                      <Badge variant="outline" className="text-2xs tabular-nums bg-white">
+                      <Badge variant="outline" className="text-2xs tabular-nums bg-card">
                         {formData.roll_width_ft}ft × {formData.roll_length_ft}ft = {Math.round((formData.roll_width_ft || 0) * (formData.roll_length_ft || 0))} sqft
                       </Badge>
                     </div>
@@ -4494,7 +4494,7 @@ export default function ProductsCatalogPage() {
                       </div>
                       <div className="col-span-2 sm:col-span-1">
                         <Label className="text-2xs font-semibold mb-1 block">Derived Ratio</Label>
-                        <div className="h-8 px-3 rounded-md bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 flex items-center tabular-nums font-bold text-xs text-blue-700 dark:text-blue-300">
+                        <div className="h-8 px-3 rounded-md bg-card border border-blue-200 dark:border-blue-800 flex items-center tabular-nums font-bold text-xs text-blue-700 dark:text-blue-300">
                           {formData.conversion_ratio} sqft / roll
                         </div>
                       </div>
@@ -4506,8 +4506,8 @@ export default function ProductsCatalogPage() {
 
             {/* SUBSECTION B: PRODUCTION DETAILS */}
             {expandedSections.production && (
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
-                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
+                <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
                   Production Rules & Geometric Allowances
                 </span>
 
@@ -4528,7 +4528,7 @@ export default function ProductsCatalogPage() {
                       }}
                       className="text-xs h-9 tabular-nums"
                     />
-                    <span className="text-2xs text-slate-400">Bleed / grip allowance (feet)</span>
+                    <span className="text-2xs text-muted-foreground">Bleed / grip allowance (feet)</span>
                   </div>
 
                   <div>
@@ -4547,7 +4547,7 @@ export default function ProductsCatalogPage() {
                       }}
                       className="text-xs h-9 tabular-nums"
                     />
-                    <span className="text-2xs text-slate-400">Lead / tail allowance (feet)</span>
+                    <span className="text-2xs text-muted-foreground">Lead / tail allowance (feet)</span>
                   </div>
 
                   <div>
@@ -4561,12 +4561,12 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, default_wastage_percentage: Number(e.target.value) })}
                       className="text-xs h-9 tabular-nums font-bold"
                     />
-                    <span className="text-2xs text-slate-400">Statistical scrap (e.g. 5%)</span>
+                    <span className="text-2xs text-muted-foreground">Statistical scrap (e.g. 5%)</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
-                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
                       type="checkbox"
                       checked={formData.requires_design}
@@ -4576,7 +4576,7 @@ export default function ProductsCatalogPage() {
                     <span>Requires Design</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
                       type="checkbox"
                       checked={formData.requires_approval}
@@ -4586,7 +4586,7 @@ export default function ProductsCatalogPage() {
                     <span>Requires Approval</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
                       type="checkbox"
                       checked={formData.requires_production}
@@ -4596,7 +4596,7 @@ export default function ProductsCatalogPage() {
                     <span>Requires Production</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
                       type="checkbox"
                       checked={formData.requires_fabrication}
@@ -4606,7 +4606,7 @@ export default function ProductsCatalogPage() {
                     <span>Requires Fabrication</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
                       type="checkbox"
                       checked={formData.requires_finishing}
@@ -4616,7 +4616,7 @@ export default function ProductsCatalogPage() {
                     <span>Requires Finishing</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50">
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-border cursor-pointer hover:bg-muted">
                     <input
                       type="checkbox"
                       checked={formData.requires_installation}
@@ -4631,8 +4631,8 @@ export default function ProductsCatalogPage() {
 
             {/* SUBSECTION C: MINIMUM CHARGES */}
             {expandedSections.minimums && (
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
-                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
+                <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
                   3-Way Minimum Separation (MOQ vs Min Billable Qty vs Min Charge)
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -4645,7 +4645,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, min_order_quantity: Number(e.target.value) })}
                       className="text-xs h-9 tabular-nums"
                     />
-                    <span className="text-2xs text-slate-400">Order cutoff (e.g. 1 pc)</span>
+                    <span className="text-2xs text-muted-foreground">Order cutoff (e.g. 1 pc)</span>
                   </div>
 
                   <div>
@@ -4657,7 +4657,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, min_billable_quantity: Number(e.target.value) })}
                       className="text-xs h-9 tabular-nums text-amber-600 font-bold"
                     />
-                    <span className="text-2xs text-slate-400">Billing floor (e.g. 20 sqft min)</span>
+                    <span className="text-2xs text-muted-foreground">Billing floor (e.g. 20 sqft min)</span>
                   </div>
 
                   <div>
@@ -4669,7 +4669,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, minimum_charge: Number(e.target.value) })}
                       className="text-xs h-9 tabular-nums font-bold text-blue-600"
                     />
-                    <span className="text-2xs text-slate-400">Money floor (e.g. ৳500 min)</span>
+                    <span className="text-2xs text-muted-foreground">Money floor (e.g. ৳500 min)</span>
                   </div>
                 </div>
               </div>
@@ -4677,9 +4677,9 @@ export default function ProductsCatalogPage() {
 
             {/* SUBSECTION D: COSTING & MARGINS */}
             {expandedSections.costing && (
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
                     Direct Cost Breakdown & Target Margins
                   </span>
                   <Badge variant="outline" className="text-2xs tabular-nums">
@@ -4821,7 +4821,7 @@ export default function ProductsCatalogPage() {
                     size="sm"
                     variant="outline"
                     onClick={() => setFormData({ ...formData, selling_price: liveCommercialMath.suggestedSellingPrice })}
-                    className="text-xs bg-white hover:bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs shrink-0"
+                    className="text-xs bg-card hover:bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs shrink-0"
                   >
                     Apply Suggested Price
                   </Button>
@@ -4831,9 +4831,9 @@ export default function ProductsCatalogPage() {
 
             {/* SUBSECTION E: MATERIALS & COMPONENTS */}
             {expandedSections.components && (
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs animate-in fade-in">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs animate-in fade-in">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <span className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                     Materials & Components (Recipe / BOM)
                   </span>
                   <Badge variant="outline" className="tabular-nums text-xs">
@@ -4843,9 +4843,9 @@ export default function ProductsCatalogPage() {
 
                 {/* Components Table */}
                 {formData.components && formData.components.length > 0 ? (
-                  <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="overflow-x-auto rounded-lg border border-border dark:border-border">
                     <table className="w-full text-xs text-left">
-                      <thead className="bg-slate-50 dark:bg-slate-800 font-semibold text-slate-600 dark:text-slate-300">
+                      <thead className="bg-muted font-semibold text-muted-foreground dark:text-muted-foreground">
                         <tr>
                           <th className="py-2 px-3">Item Name</th>
                           <th className="py-2 px-2">Qty</th>
@@ -4855,10 +4855,10 @@ export default function ProductsCatalogPage() {
                           <th className="py-2 px-3 text-right">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 tabular-nums">
+                      <tbody className="divide-y divide-border tabular-nums">
                         {formData.components.map((comp, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/50">
-                            <td className="py-2 px-3 font-sans font-semibold text-slate-900 dark:text-white">
+                          <tr key={idx} className="hover:bg-muted">
+                            <td className="py-2 px-3 font-sans font-semibold text-foreground dark:text-white">
                               {comp.name || 'Component'}
                             </td>
                             <td className="py-2 px-2">{comp.quantity}</td>
@@ -4884,14 +4884,14 @@ export default function ProductsCatalogPage() {
                     </table>
                   </div>
                 ) : (
-                  <div className="p-3 text-center border border-dashed rounded-lg text-xs text-slate-400">
+                  <div className="p-3 text-center border border-dashed rounded-lg text-xs text-muted-foreground">
                     No child components added. Simple products do not require components.
                   </div>
                 )}
 
                 {/* Add Component Subform */}
-                <div className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
-                  <span className="text-2xs font-bold text-slate-800 dark:text-slate-200 block uppercase">
+                <div className="p-3 bg-muted rounded-xl border border-border space-y-2">
+                  <span className="text-2xs font-bold text-foreground block uppercase">
                     Add Component Item
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
@@ -4955,7 +4955,7 @@ export default function ProductsCatalogPage() {
                           production_role: 'material',
                         })
                       }}
-                      className="text-xs h-8 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="text-xs h-8 bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       <Plus className="h-3 w-3 mr-1" /> Add Component
                     </Button>
@@ -4966,7 +4966,7 @@ export default function ProductsCatalogPage() {
           </div>
 
           {/* Footer Action */}
-          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
@@ -4978,7 +4978,7 @@ export default function ProductsCatalogPage() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full sm:w-auto text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm"
+              className="w-full sm:w-auto text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 shadow-sm"
             >
               {isPending ? 'Saving...' : editingProduct ? 'Update Product' : 'Save Product'}
             </Button>
@@ -5001,14 +5001,14 @@ export default function ProductsCatalogPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-black text-slate-900 dark:text-white">
+                <span className="text-base font-black text-foreground dark:text-white">
                   Adjust Commercial Price & Tariffs
                 </span>
                 <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
                   Audit Logged
                 </Badge>
               </div>
-              <p className="text-2xs text-slate-500">
+              <p className="text-2xs text-muted-foreground">
                 {pricingProduct?.name} ({pricingProduct?.sku})
               </p>
             </div>
@@ -5018,22 +5018,22 @@ export default function ProductsCatalogPage() {
         <form onSubmit={handleUpdatePrice} className="space-y-4 pt-1">
           <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 p-3.5 space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-slate-600 dark:text-slate-400">Current Purchase Price:</span>
+              <span className="text-muted-foreground dark:text-muted-foreground">Current Purchase Price:</span>
               <span className="tabular-nums font-bold">৳{pricingProduct?.purchase_price} / {pricingProduct?.purchase_unit}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600 dark:text-slate-400">Current Effective Unit Cost:</span>
+              <span className="text-muted-foreground dark:text-muted-foreground">Current Effective Unit Cost:</span>
               <span className="tabular-nums font-bold">৳{pricingProduct?.base_cost} / {pricingProduct?.selling_unit || pricingProduct?.unit}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600 dark:text-slate-400">Current Selling Rate:</span>
+              <span className="text-muted-foreground dark:text-muted-foreground">Current Selling Rate:</span>
               <span className="tabular-nums font-bold text-blue-600 dark:text-blue-400">
                 ৳{pricingProduct?.selling_price} / {pricingProduct?.selling_unit || pricingProduct?.unit}
               </span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
@@ -5078,7 +5078,7 @@ export default function ProductsCatalogPage() {
           </div>
 
           {/* Footer */}
-          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
@@ -5090,7 +5090,7 @@ export default function ProductsCatalogPage() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full sm:w-auto text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-5"
+              className="w-full sm:w-auto text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5"
             >
               {isPending ? 'Logging Price...' : 'Save & Log Audit History'}
             </Button>
@@ -5114,7 +5114,7 @@ export default function ProductsCatalogPage() {
         }
       >
         <div className="space-y-4 pt-1 text-xs">
-          <p className="text-slate-700 dark:text-slate-300">
+          <p className="text-foreground dark:text-muted-foreground">
             Are you sure you want to remove <strong>{deletingProduct?.name}</strong> ({deletingProduct?.sku})?
           </p>
 
@@ -5128,7 +5128,7 @@ export default function ProductsCatalogPage() {
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button
               variant="outline"
               size="sm"

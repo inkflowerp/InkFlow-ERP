@@ -64,7 +64,7 @@ export default function PlatformIncidentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-red-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
@@ -74,7 +74,7 @@ export default function PlatformIncidentsPage() {
             <AlertOctagon className="h-7 w-7 text-red-400" />
             Incident Management
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Track system degradation events, blast radius across printing tenants, and root cause post-mortems.
           </p>
         </div>
@@ -83,7 +83,7 @@ export default function PlatformIncidentsPage() {
           size="sm"
           variant="outline"
           onClick={loadIncidents}
-          className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9"
+          className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
         >
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
           Refresh
@@ -105,8 +105,8 @@ export default function PlatformIncidentsPage() {
           const isMajor = inc.severity === 'major' || inc.severity === 'critical'
 
           return (
-            <Card key={inc.id} className="bg-slate-900 border-slate-800 p-5 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+            <Card key={inc.id} className="bg-foreground border-border p-5 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <span
@@ -149,13 +149,13 @@ export default function PlatformIncidentsPage() {
                 </div>
               </div>
 
-              <div className="text-xs text-slate-300 space-y-2">
+              <div className="text-xs text-muted-foreground space-y-2">
                 <p>{inc.description}</p>
 
                 {inc.root_cause && (
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                    <span className="text-slate-400 font-bold">Root Cause: </span>
-                    <span className="text-slate-200">{inc.root_cause}</span>
+                  <div className="p-3 rounded-xl bg-foreground border border-border">
+                    <span className="text-muted-foreground font-bold">Root Cause: </span>
+                    <span className="text-foreground">{inc.root_cause}</span>
                   </div>
                 )}
 
@@ -167,8 +167,8 @@ export default function PlatformIncidentsPage() {
                 )}
               </div>
 
-              <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-2xs text-slate-500 flex-wrap gap-2">
-                <span>Affected Tenants: <strong className="text-slate-300">{inc.affected_tenants_count} organizations</strong></span>
+              <div className="pt-2 border-t border-border flex items-center justify-between text-2xs text-muted-foreground flex-wrap gap-2">
+                <span>Affected Tenants: <strong className="text-muted-foreground">{inc.affected_tenants_count} organizations</strong></span>
                 <span className="tabular-nums">Started: {new Date(inc.started_at).toLocaleString()}</span>
                 {inc.resolved_at && <span className="tabular-nums text-emerald-400">Resolved: {new Date(inc.resolved_at).toLocaleString()}</span>}
               </div>
@@ -179,24 +179,24 @@ export default function PlatformIncidentsPage() {
 
       {/* Resolve / Update Incident Modal */}
       {selectedIncident && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm">
+          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm">
                 Update Incident: {selectedIncident.title}
               </div>
-              <button onClick={() => setSelectedIncident(null)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setSelectedIncident(null)} className="text-muted-foreground hover:text-white">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Incident State</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Incident State</label>
                 <select
                   value={targetStatus}
                   onChange={(e) => setTargetStatus(e.target.value as any)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-semibold capitalize"
+                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white font-semibold capitalize"
                 >
                   <option value="investigating">Investigating</option>
                   <option value="identified">Identified</option>
@@ -206,19 +206,19 @@ export default function PlatformIncidentsPage() {
               </div>
 
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Resolution Post-Mortem Notes</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Resolution Post-Mortem Notes</label>
                 <textarea
                   rows={3}
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
                   placeholder="Describe root cause and remediation steps taken..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white text-xs"
+                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white text-xs"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-              <Button variant="outline" size="sm" onClick={() => setSelectedIncident(null)} className="border-slate-700 text-xs">
+            <div className="flex justify-end gap-2 pt-3 border-t border-border">
+              <Button variant="outline" size="sm" onClick={() => setSelectedIncident(null)} className="border-border text-xs">
                 Cancel
               </Button>
               <Button

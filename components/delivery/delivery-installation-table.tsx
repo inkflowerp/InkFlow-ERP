@@ -63,7 +63,7 @@ export function DeliveryInstallationTable({
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+          <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
             <tr>
               <th className="py-3 px-4">{isBn ? 'ইনস্টলেশন নং' : 'Installation #'}</th>
               <th className="py-3 px-4">{isBn ? 'কাস্টমার ও সাইটের ঠিকানা' : 'Customer & Site Location'}</th>
@@ -74,16 +74,16 @@ export function DeliveryInstallationTable({
               <th className="py-3 px-4 text-right">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-border dark:divide-border">
             {installations.map((ins) => (
-              <tr key={ins.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+              <tr key={ins.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                 {/* Installation # */}
                 <td className="py-3.5 px-4 tabular-nums font-bold text-purple-600 dark:text-purple-400">
                   <div className="flex items-center gap-1">
                     <span>{ins.installation_number}</span>
                   </div>
                   {ins.order_number && (
-                    <span className="text-2xs text-slate-400 font-normal block tabular-nums">
+                    <span className="text-2xs text-muted-foreground font-normal block tabular-nums">
                       ({ins.order_number})
                     </span>
                   )}
@@ -91,23 +91,23 @@ export function DeliveryInstallationTable({
 
                 {/* Customer & Location */}
                 <td className="py-3.5 px-4 max-w-[220px]">
-                  <div className="font-semibold text-xs text-slate-900 dark:text-white truncate">
+                  <div className="font-semibold text-xs text-foreground dark:text-white truncate">
                     {ins.customer_name}
                   </div>
-                  <div className="text-2xs text-slate-500 flex items-center gap-1 mt-0.5 truncate">
-                    <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+                  <div className="text-2xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                    <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
                     <span className="truncate">{ins.site_location || 'Customer Location'}</span>
                   </div>
                 </td>
 
                 {/* Crew Lead & Riggers */}
                 <td className="py-3.5 px-4 text-xs">
-                  <div className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                  <div className="font-medium text-foreground flex items-center gap-1">
                     <Users className="h-3.5 w-3.5 text-purple-500" />
                     <span>{ins.installer_lead_name || 'Lead Rigging Officer'}</span>
                   </div>
                   {ins.crew_members && ins.crew_members.length > 0 && (
-                    <div className="text-2xs text-slate-400 truncate max-w-[180px] mt-0.5">
+                    <div className="text-2xs text-muted-foreground truncate max-w-[180px] mt-0.5">
                       Crew: {ins.crew_members.join(', ')}
                     </div>
                   )}
@@ -115,16 +115,16 @@ export function DeliveryInstallationTable({
 
                 {/* Scheduled Window */}
                 <td className="py-3.5 px-4 text-xs tabular-nums">
-                  <div className="font-semibold text-slate-800 dark:text-slate-200">
+                  <div className="font-semibold text-foreground dark:text-foreground">
                     {ins.installation_date}
                   </div>
-                  <div className="text-2xs text-slate-400">
+                  <div className="text-2xs text-muted-foreground">
                     {ins.scheduled_time || '10:00 AM - 04:00 PM'}
                   </div>
                 </td>
 
                 {/* Equipment */}
-                <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400 max-w-[150px] truncate">
+                <td className="py-3.5 px-4 text-xs text-muted-foreground max-w-[150px] truncate">
                   {ins.equipment_used || 'Scaffoldings, Drills, Safety Belts'}
                 </td>
 
@@ -157,9 +157,9 @@ export function DeliveryInstallationTable({
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+      <div className="md:hidden divide-y divide-border dark:divide-border">
         {installations.map((ins) => (
-          <div key={ins.id} className="p-4 space-y-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+          <div key={ins.id} className="p-4 space-y-2.5 hover:bg-muted dark:hover:bg-muted/50 transition-colors">
             <div className="flex items-center justify-between">
               <div className="tabular-nums font-bold text-sm text-purple-600 dark:text-purple-400">
                 {ins.installation_number}
@@ -168,21 +168,21 @@ export function DeliveryInstallationTable({
             </div>
 
             <div>
-              <div className="font-semibold text-sm text-slate-900 dark:text-white">{ins.customer_name}</div>
-              <div className="text-xs text-slate-500 flex items-start gap-1 mt-0.5">
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 mt-0.5" />
+              <div className="font-semibold text-sm text-foreground dark:text-white">{ins.customer_name}</div>
+              <div className="text-xs text-muted-foreground flex items-start gap-1 mt-0.5">
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground mt-0.5" />
                 <span>{ins.site_location || 'Customer Site'}</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+            <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted text-xs border border-border dark:border-border">
               <div>
-                <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'টিম লিড' : 'Crew Lead'}</span>
-                <span className="font-medium text-slate-800 dark:text-slate-200">{ins.installer_lead_name || 'Lead Officer'}</span>
+                <span className="text-2xs uppercase font-semibold text-muted-foreground block">{isBn ? 'টিম লিড' : 'Crew Lead'}</span>
+                <span className="font-medium text-foreground dark:text-foreground">{ins.installer_lead_name || 'Lead Officer'}</span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'তারিখ' : 'Date'}</span>
-                <span className="tabular-nums text-slate-700 dark:text-slate-300">{ins.installation_date}</span>
+                <span className="text-2xs uppercase font-semibold text-muted-foreground block">{isBn ? 'তারিখ' : 'Date'}</span>
+                <span className="tabular-nums text-foreground dark:text-muted-foreground">{ins.installation_date}</span>
               </div>
             </div>
 

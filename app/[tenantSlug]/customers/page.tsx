@@ -853,10 +853,10 @@ export default function CustomersPage() {
       </KpiGrid>
 
       {/* Search & Filters Toolbar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-2xl border border-border dark:border-border/80 bg-card shadow-xs">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={tBilingual(
               'Search by ID, name, company, phone, WhatsApp or area...',
@@ -864,7 +864,7 @@ export default function CustomersPage() {
             )}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 text-xs h-9 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl"
+            className="pl-9 text-xs h-9 bg-muted rounded-xl"
           />
         </div>
 
@@ -877,7 +877,7 @@ export default function CustomersPage() {
               setSelectedType(e.target.value)
               setPage(1)
             }}
-            className="h-9 px-3 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-medium"
+            className="h-9 px-3 text-xs rounded-xl border border-border bg-card font-medium"
           >
             <option value="all">{tBilingual('All Types', 'সকল ধরণ')}</option>
             <option value="retail">{tBilingual('Retail', 'খুচরা')}</option>
@@ -894,7 +894,7 @@ export default function CustomersPage() {
               setSelectedDueFilter(e.target.value as any)
               setPage(1)
             }}
-            className="h-9 px-3 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-medium"
+            className="h-9 px-3 text-xs rounded-xl border border-border bg-card font-medium"
           >
             <option value="all">{tBilingual('All Balances', 'সকল ব্যালেন্স')}</option>
             <option value="has_due">{tBilingual('Has Outstanding Due', 'বকেয়া আছে')}</option>
@@ -908,7 +908,7 @@ export default function CustomersPage() {
               setSortPreset(e.target.value as any)
               setPage(1)
             }}
-            className="h-9 px-3 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-medium text-slate-700 dark:text-slate-300"
+            className="h-9 px-3 text-xs rounded-xl border border-border bg-card font-medium text-foreground dark:text-muted-foreground"
           >
             <option value="newest">{tBilingual('Sort: Newest First', 'ক্রম: নতুন প্রথমে')}</option>
             <option value="highest_billed">{tBilingual('Sort: Highest Billed', 'ক্রম: সর্বোচ্চ বিল')}</option>
@@ -922,7 +922,7 @@ export default function CustomersPage() {
             size="sm"
             onClick={() => loadData()}
             disabled={isLoading}
-            className="h-9 px-2.5 text-xs text-slate-500 rounded-xl"
+            className="h-9 px-2.5 text-xs text-muted-foreground rounded-xl"
             title="Refresh List"
           >
             <RotateCcw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
@@ -936,7 +936,7 @@ export default function CustomersPage() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-20 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 animate-pulse"
+              className="h-20 rounded-xl border border-border bg-muted animate-pulse"
             />
           ))}
         </div>
@@ -955,15 +955,15 @@ export default function CustomersPage() {
         </Card>
       ) : customers.length === 0 ? (
         /* Empty State */
-        <Card className="border-slate-200 dark:border-slate-800 p-12 text-center space-y-4 bg-white dark:bg-slate-950">
+        <Card className="border-border p-12 text-center space-y-4 bg-card dark:bg-background">
           <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 w-fit mx-auto">
             <Users className="h-8 w-8" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            <h3 className="text-base font-bold text-foreground dark:text-white">
               {tBilingual('No Customers Found', 'কোনো গ্রাহক পাওয়া যায়নি')}
             </h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
               {search || selectedType !== 'all' || selectedDueFilter !== 'all'
                 ? tBilingual('No customer records matched your query. Try resetting your search filters.', 'আপনার সার্চের সাথে কোনো গ্রাহক মেলেনি। ফিল্টার রিসেট করে দেখুন।')
                 : tBilingual('Get started by creating your first customer profile to manage rates and invoices.', 'কাস্টমার প্রোফাইল তৈরি করে রেট ও ইনভয়েস ব্যবস্থাপনা শুরু করুন।')}
@@ -983,10 +983,10 @@ export default function CustomersPage() {
       ) : (
         <>
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-xs">
+          <div className="hidden md:block overflow-hidden rounded-2xl border border-border dark:border-border/80 bg-card shadow-xs">
             <div className="overflow-x-auto min-h-[340px] pb-12">
               <table className="w-full text-xs text-left">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 font-semibold">
+                <thead className="bg-muted border-b border-border dark:border-border/80 text-muted-foreground font-semibold">
                   <tr>
                     <th className="py-3 px-3">{tBilingual('Customer ID', 'কাস্টমার আইডি')}</th>
                     <th className="py-3 px-4">{tBilingual('Customer Name', 'গ্রাহকের নাম')}</th>
@@ -999,7 +999,7 @@ export default function CustomersPage() {
                     <th className="py-3 px-4 text-center w-[70px] min-w-[70px]">{tBilingual('Actions', 'অ্যাকশন')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800/80">
+                <tbody className="divide-y divide-border/80 dark:divide-border/80">
                   {customers.map((c, idx) => {
                     const hasDue = (c.total_due_balance || 0) > 0
                     const custType = c.customer_category || c.customer_type || 'retail'
@@ -1008,11 +1008,11 @@ export default function CustomersPage() {
                     return (
                       <tr
                         key={c.id}
-                        className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors group"
+                        className="hover:bg-muted dark:hover:bg-muted/40 transition-colors group"
                       >
                         {/* Customer ID */}
                         <td className="py-3.5 px-3">
-                          <span className="tabular-nums text-2xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          <span className="tabular-nums text-2xs font-bold px-2 py-0.5 rounded-md bg-muted text-foreground border border-border dark:border-border">
                             {custIdNo}
                           </span>
                         </td>
@@ -1021,27 +1021,27 @@ export default function CustomersPage() {
                         <td className="py-3.5 px-4">
                           <Link
                             href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
-                            className="font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5"
+                            className="font-bold text-foreground dark:text-white hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5"
                           >
                             <span>{c.name}</span>
                             <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </Link>
                           {c.name_bn && (
-                            <div className="text-2xs text-slate-500">{c.name_bn}</div>
+                            <div className="text-2xs text-muted-foreground">{c.name_bn}</div>
                           )}
                           {c.area && (
-                            <div className="text-2xs text-slate-400 mt-0.5">{c.area}</div>
+                            <div className="text-2xs text-muted-foreground mt-0.5">{c.area}</div>
                           )}
                         </td>
 
                         {/* Company */}
                         <td className="py-3.5 px-3">
                           {c.company_name ? (
-                            <div className="font-semibold text-slate-700 dark:text-slate-300">
+                            <div className="font-semibold text-foreground dark:text-muted-foreground">
                               {c.company_name}
                             </div>
                           ) : (
-                            <span className="text-slate-400 italic">—</span>
+                            <span className="text-muted-foreground italic">—</span>
                           )}
                         </td>
 
@@ -1050,10 +1050,10 @@ export default function CustomersPage() {
                           <div className="flex items-center gap-2">
                             <a
                               href={`tel:${c.mobile}`}
-                              className="tabular-nums text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
+                              className="tabular-nums text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1"
                               title="Call"
                             >
-                              <Phone className="h-3 w-3 text-slate-400" />
+                              <Phone className="h-3 w-3 text-muted-foreground" />
                               <span>{c.mobile}</span>
                             </a>
                             {c.whatsapp && (
@@ -1096,7 +1096,7 @@ export default function CustomersPage() {
                         </td>
 
                         {/* Total Invoiced */}
-                        <td className="py-3.5 px-3 text-right font-medium text-slate-700 dark:text-slate-300 font-numeric tabular-nums">
+                        <td className="py-3.5 px-3 text-right font-medium text-foreground font-numeric tabular-nums">
                           ৳{(c.total_invoiced_amount || 0).toLocaleString('en-IN')}
                         </td>
 
@@ -1107,7 +1107,7 @@ export default function CustomersPage() {
                               'font-bold px-2 py-0.5 rounded-md text-xs font-numeric tabular-nums',
                               hasDue
                                 ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900'
-                                : 'text-slate-400'
+                                : 'text-muted-foreground'
                             )}
                           >
                             ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
@@ -1115,16 +1115,16 @@ export default function CustomersPage() {
                         </td>
 
                         {/* Last Order */}
-                        <td className="py-3.5 px-3 text-right text-slate-500">
+                        <td className="py-3.5 px-3 text-right text-muted-foreground">
                           {c.last_order_date || c.last_order_number ? (
                             <div>
-                              <div className="font-medium text-slate-700 dark:text-slate-300">
+                              <div className="font-medium text-foreground dark:text-muted-foreground">
                                 {c.last_order_number || 'Order'}
                               </div>
-                              <div className="text-2xs text-slate-400 font-numeric">{c.last_order_date}</div>
+                              <div className="text-2xs text-muted-foreground font-numeric">{c.last_order_date}</div>
                             </div>
                           ) : (
-                            <span className="text-slate-400 italic">—</span>
+                            <span className="text-muted-foreground italic">—</span>
                           )}
                         </td>
 
@@ -1141,8 +1141,8 @@ export default function CustomersPage() {
                               className={cn(
                                 'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
                                 activeMenuCustomerId === c.id
-                                  ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
-                                  : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                  ? 'bg-muted text-foreground dark:text-white'
+                                  : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
                               )}
                               title={tBilingual('Actions', 'অ্যাকশন')}
                               aria-label="Customer Actions"
@@ -1154,7 +1154,7 @@ export default function CustomersPage() {
                             {activeMenuCustomerId === c.id && (
                               <div
                                 className={cn(
-                                  'absolute right-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+                                  'absolute right-0 w-56 bg-card border border-border rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
                                   idx >= customers.length - 2 && customers.length >= 3
                                     ? 'bottom-full mb-1'
                                     : 'top-full mt-1'
@@ -1164,7 +1164,7 @@ export default function CustomersPage() {
                                 <Link
                                   href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
                                   onClick={() => setActiveMenuCustomerId(null)}
-                                  className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors"
+                                  className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors"
                                 >
                                   <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                                   <span className="font-medium">
@@ -1176,7 +1176,7 @@ export default function CustomersPage() {
                                 <Link
                                   href={getTenantNavHref(`/quotations/new?customerId=${c.id}`, pathname, slug)}
                                   onClick={() => setActiveMenuCustomerId(null)}
-                                  className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+                                  className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-foreground hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
                                 >
                                   <FileText className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                                   <span>{tBilingual('Create Quotation', 'কোটেশন তৈরি করুন')}</span>
@@ -1189,7 +1189,7 @@ export default function CustomersPage() {
                                     setActiveMenuCustomerId(null)
                                     setSelectedCustomerForInvoice(c)
                                   }}
-                                  className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                                  className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                                 >
                                   <Receipt className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                                   <span>{tBilingual('Create Invoice', 'নতুন ইনভয়েস তৈরি')}</span>
@@ -1217,7 +1217,7 @@ export default function CustomersPage() {
 
                                 {/* Divider if delete permitted */}
                                 {can('delete', 'customers') && (
-                                  <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+                                  <div className="my-1 border-t border-border dark:border-border" />
                                 )}
 
                                 {/* 5. Move to Trash */}
@@ -1257,10 +1257,10 @@ export default function CustomersPage() {
                 <Card
                   key={c.id}
                   className={cn(
-                    'border shadow-sm p-4 space-y-3 bg-white dark:bg-slate-950 transition-colors rounded-2xl relative overflow-hidden',
+                    'border shadow-sm p-4 space-y-3 bg-card transition-colors rounded-2xl relative overflow-hidden',
                     hasDue
                       ? 'border-rose-200/80 dark:border-rose-950/80'
-                      : 'border-slate-200 dark:border-slate-800'
+                      : 'border-border dark:border-border'
                   )}
                 >
                   {/* Top: Name, Type, ID, Due Badge */}
@@ -1269,20 +1269,20 @@ export default function CustomersPage() {
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <Link
                           href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
-                          className="font-bold text-base text-slate-900 dark:text-white hover:text-blue-600"
+                          className="font-bold text-base text-foreground dark:text-white hover:text-blue-600"
                         >
                           {c.name}
                         </Link>
-                        <span className="tabular-nums text-2xs font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        <span className="tabular-nums text-2xs font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground dark:text-muted-foreground">
                           {custIdNo}
                         </span>
                       </div>
                       {c.name_bn && (
-                        <div className="text-xs text-slate-500">{c.name_bn}</div>
+                        <div className="text-xs text-muted-foreground">{c.name_bn}</div>
                       )}
                       {c.company_name && (
-                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1 mt-0.5">
-                          <Building className="h-3 w-3 text-slate-400" />
+                        <div className="text-xs font-semibold text-foreground flex items-center gap-1 mt-0.5">
+                          <Building className="h-3 w-3 text-muted-foreground" />
                           <span>{c.company_name}</span>
                         </div>
                       )}
@@ -1301,10 +1301,10 @@ export default function CustomersPage() {
                   </div>
 
                   {/* Contact Actions (Call & WhatsApp) */}
-                  <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-900">
+                  <div className="flex items-center gap-2 pt-1 border-t border-border dark:border-slate-900">
                     <a
                       href={`tel:${c.mobile}`}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 font-semibold text-xs text-slate-800 dark:text-slate-200"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-muted hover:bg-muted font-semibold text-xs text-foreground dark:text-foreground"
                     >
                       <Phone className="h-3.5 w-3.5 text-blue-600" />
                       <span>{c.mobile}</span>
@@ -1324,19 +1324,19 @@ export default function CustomersPage() {
                   </div>
 
                   {/* Financial Stats Bar */}
-                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 text-xs">
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-muted text-xs">
                     <div>
-                      <div className="text-2xs text-slate-400">{tBilingual('Total Billed', 'মোট বিল')}</div>
-                      <div className="font-bold text-slate-900 dark:text-white font-numeric">
+                      <div className="text-2xs text-muted-foreground">{tBilingual('Total Billed', 'মোট বিল')}</div>
+                      <div className="font-bold text-foreground dark:text-white font-numeric">
                         ৳{(c.total_invoiced_amount || 0).toLocaleString('en-IN')}
                       </div>
                     </div>
                     <div>
-                      <div className="text-2xs text-slate-400">{tBilingual('Due Balance', 'বকেয়া স্থিতি')}</div>
+                      <div className="text-2xs text-muted-foreground">{tBilingual('Due Balance', 'বকেয়া স্থিতি')}</div>
                       <div
                         className={cn(
                           'font-bold font-numeric',
-                          hasDue ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300'
+                          hasDue ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground dark:text-muted-foreground'
                         )}
                       >
                         ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
@@ -1348,7 +1348,7 @@ export default function CustomersPage() {
                   <div className="flex items-center gap-2 pt-1">
                     <Link
                       href={getTenantNavHref(`/quotations/new?customerId=${c.id}`, pathname, slug)}
-                      className="flex-1 text-center py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-2xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                      className="flex-1 text-center py-1.5 rounded-lg border border-border text-2xs font-semibold text-foreground hover:bg-muted"
                     >
                       {tBilingual('Quote', 'কোটেশন')}
                     </Link>
@@ -1380,7 +1380,7 @@ export default function CustomersPage() {
                   {/* Bottom: View 360 Workspace Button */}
                   <Link
                     href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs"
+                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-xs"
                   >
                     <span>{tBilingual('Open Customer 360 Workspace', 'কাস্টমার ৩৬০ ওয়ার্কস্পেস খুলুন')}</span>
                     <ArrowRight className="h-3.5 w-3.5" />

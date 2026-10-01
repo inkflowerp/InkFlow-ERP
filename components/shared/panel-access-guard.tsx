@@ -43,7 +43,7 @@ export function PanelAccessGuard({
 
   // During SSR / initial client mount, return minimal loading placeholder to prevent flash
   if (!mounted) {
-    return <div className="min-h-[200px] animate-pulse rounded-xl bg-slate-100/50 dark:bg-slate-900/40" />
+    return <div className="min-h-[200px] animate-pulse rounded-xl bg-muted dark:bg-card" />
   }
 
   // 1. Business Owner has universal bypass (unless explicitly overridden)

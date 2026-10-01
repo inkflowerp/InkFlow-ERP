@@ -56,7 +56,7 @@ export function PlatformMobileBottomNav() {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/80 px-2 py-1 shadow-2xl safe-area-inset-bottom"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-foreground backdrop-blur-md border-t border-border px-2 py-1 shadow-2xl safe-area-inset-bottom"
       aria-label="Platform Mobile Navigation"
     >
       <div className="flex items-center justify-around max-w-lg mx-auto">
@@ -75,7 +75,7 @@ export function PlatformMobileBottomNav() {
                 key={tab.label}
                 type="button"
                 onClick={tab.onClick}
-                className="flex flex-col items-center justify-center py-1 px-2 min-w-[56px] min-h-[48px] text-slate-400 hover:text-white transition-colors cursor-pointer rounded-xl group"
+                className="flex flex-col items-center justify-center py-1 px-2 min-w-[56px] min-h-[48px] text-muted-foreground hover:text-white transition-colors cursor-pointer rounded-xl group"
                 aria-label="Open full platform navigation menu"
               >
                 <div className="p-1 rounded-lg group-hover:bg-slate-800/80 transition-colors">
@@ -96,7 +96,7 @@ export function PlatformMobileBottomNav() {
                 'flex flex-col items-center justify-center py-1 px-2 min-w-[56px] min-h-[48px] rounded-xl transition-all',
                 isActive
                   ? 'text-indigo-400 font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <div

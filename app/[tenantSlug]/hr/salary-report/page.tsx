@@ -15,7 +15,7 @@ export default function SalaryReportRedirectPage() {
   }, [router, slug])
 
   return (
-    <div className="p-8 text-center text-xs text-slate-400">
+    <div className="p-8 text-center text-xs text-muted-foreground">
       Redirecting to Workforce Reports...
     </div>
   )

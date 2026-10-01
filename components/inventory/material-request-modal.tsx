@@ -127,7 +127,7 @@ export function MaterialRequestModal({
               id="reqTask"
               value={taskId}
               onChange={(e) => setTaskId(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
             >
               <option value="">-- General Store Requisition --</option>
               {tasks.map((t) => (
@@ -146,7 +146,7 @@ export function MaterialRequestModal({
               id="reqPri"
               value={priority}
               onChange={(e) => setPriority(e.target.value as MaterialRequestPriority)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold uppercase"
+              className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold uppercase"
             >
               <option value="normal">Normal Priority</option>
               <option value="high">High Priority</option>
@@ -159,7 +159,7 @@ export function MaterialRequestModal({
         {/* Requisition Items List */}
         <div className="space-y-3 pt-1">
           <div className="flex items-center justify-between">
-            <Label required className="font-bold text-slate-800 dark:text-slate-200">
+            <Label required className="font-bold text-foreground dark:text-foreground">
               Requested Materials List
             </Label>
             <Button type="button" size="sm" variant="outline" onClick={handleAddItem} className="h-7 text-xs">
@@ -173,10 +173,10 @@ export function MaterialRequestModal({
               return (
                 <div
                   key={idx}
-                  className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2 text-xs"
+                  className="p-3 bg-muted rounded-lg border border-border space-y-2 text-xs"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold text-slate-600 dark:text-slate-400">Item #{idx + 1}</span>
+                    <span className="font-bold text-muted-foreground dark:text-muted-foreground">Item #{idx + 1}</span>
                     {items.length > 1 && (
                       <Button
                         type="button"
@@ -196,7 +196,7 @@ export function MaterialRequestModal({
                       <select
                         value={it.material_id}
                         onChange={(e) => handleItemChange(idx, 'material_id', e.target.value)}
-                        className="w-full h-9 px-2 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs"
+                        className="w-full h-9 px-2 rounded border border-input bg-card text-xs"
                       >
                         {materials.map((m) => (
                           <option key={m.id} value={m.id}>
@@ -234,14 +234,14 @@ export function MaterialRequestModal({
           />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto min-h-[40px]">
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold"
+            className="w-full sm:w-auto min-h-[40px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           >
             {loading ? 'Submitting...' : 'Submit Material Request'}
           </Button>

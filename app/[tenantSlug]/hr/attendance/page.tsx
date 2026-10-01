@@ -208,18 +208,18 @@ export default function AttendancePage() {
 
   return (
     <PanelAccessGuard module="attendance" action="view" panelTitle="Attendance" panelTitleBn="হাজিরা">
-      <div className="min-h-screen bg-slate-50/60 pb-12">
+      <div className="min-h-screen bg-muted pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 Attendance
               </h1>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm font-medium text-slate-500">হাজিরা ও ফ্লোর কার্যক্রম</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-xs text-slate-500">Daily shop-floor roster, punch tracking & overtime</span>
+                <span className="text-sm font-medium text-muted-foreground">হাজিরা ও ফ্লোর কার্যক্রম</span>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-xs text-muted-foreground">Daily shop-floor roster, punch tracking & overtime</span>
               </div>
             </div>
 
@@ -228,7 +228,7 @@ export default function AttendancePage() {
               size="sm"
               onClick={loadData}
               disabled={isLoading || isPending}
-              className="h-9 px-3 text-xs font-medium text-slate-700 bg-white border-slate-200 hover:bg-slate-50 self-start sm:self-auto min-h-[36px]"
+              className="h-9 px-3 text-xs font-medium text-foreground bg-card border-border hover:bg-muted self-start sm:self-auto min-h-[36px]"
             >
               <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isLoading || isPending ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
@@ -236,13 +236,13 @@ export default function AttendancePage() {
           </div>
 
           {/* Secondary Navigation Toolbar */}
-          <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto text-xs font-medium">
+          <div className="flex items-center gap-2 border-b border-border pb-2 overflow-x-auto text-xs font-medium">
             <button
               onClick={() => setActiveTab('roster')}
               className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shrink-0 ${
                 activeTab === 'roster'
                   ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  : 'text-muted-foreground hover:bg-muted'
               }`}
             >
               <UserCheck className="w-4 h-4" />
@@ -251,7 +251,7 @@ export default function AttendancePage() {
 
             <button
               onClick={() => setQrModalOpen(true)}
-              className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 transition-colors shrink-0"
+              className="px-3.5 py-1.5 rounded-lg text-muted-foreground hover:bg-muted flex items-center gap-1.5 transition-colors shrink-0"
             >
               <QrCode className="w-4 h-4 text-blue-600" />
               <span>QR Punch</span>
@@ -263,7 +263,7 @@ export default function AttendancePage() {
                 setManualStatus('present')
                 setManualModalOpen(true)
               }}
-              className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 transition-colors shrink-0"
+              className="px-3.5 py-1.5 rounded-lg text-muted-foreground hover:bg-muted flex items-center gap-1.5 transition-colors shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Manual Entry</span>
@@ -274,14 +274,14 @@ export default function AttendancePage() {
               className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shrink-0 ${
                 activeTab === 'corrections'
                   ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  : 'text-muted-foreground hover:bg-muted'
               }`}
             >
               <Clock className="w-4 h-4" />
               <span>Corrections</span>
               {pendingCorrectionsCount > 0 && (
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                  activeTab === 'corrections' ? 'bg-white text-blue-600' : 'bg-amber-100 text-amber-800'
+                  activeTab === 'corrections' ? 'bg-card text-blue-600' : 'bg-amber-100 text-amber-800'
                 }`}>
                   {pendingCorrectionsCount}
                 </span>
@@ -293,14 +293,14 @@ export default function AttendancePage() {
               className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shrink-0 ${
                 activeTab === 'overtime'
                   ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  : 'text-muted-foreground hover:bg-muted'
               }`}
             >
               <Clock4 className="w-4 h-4" />
               <span>Overtime</span>
               {pendingOtCount > 0 && (
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                  activeTab === 'overtime' ? 'bg-white text-blue-600' : 'bg-indigo-100 text-indigo-800'
+                  activeTab === 'overtime' ? 'bg-card text-blue-600' : 'bg-indigo-100 text-indigo-800'
                 }`}>
                   {pendingOtCount}
                 </span>
@@ -312,7 +312,7 @@ export default function AttendancePage() {
               className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shrink-0 ${
                 activeTab === 'shifts'
                   ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  : 'text-muted-foreground hover:bg-muted'
               }`}
             >
               <Layers className="w-4 h-4" />
@@ -382,23 +382,23 @@ export default function AttendancePage() {
 
           {/* Manual Entry / Time Adjustment Dialog */}
           <Dialog open={manualModalOpen} onOpenChange={setManualModalOpen}>
-            <DialogContent className="max-w-md p-6 bg-white border-slate-200 shadow-xl rounded-2xl space-y-4">
+            <DialogContent className="max-w-md p-6 bg-card border-border shadow-xl rounded-2xl space-y-4">
               <DialogHeader>
-                <DialogTitle className="text-base font-bold text-slate-900">
+                <DialogTitle className="text-base font-bold text-foreground">
                   Manual Attendance Adjustment
                 </DialogTitle>
               </DialogHeader>
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Select Employee</Label>
+                  <Label className="text-xs font-semibold text-foreground">Select Employee</Label>
                   <select
                     value={manualEmployee?.id || ''}
                     onChange={(e) => {
                       const emp = employees.find((em) => em.id === e.target.value) || null
                       setManualEmployee(emp)
                     }}
-                    className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 mt-1"
+                    className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1"
                   >
                     {employees.map((em) => (
                       <option key={em.id} value={em.id}>
@@ -409,11 +409,11 @@ export default function AttendancePage() {
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Attendance Status</Label>
+                  <Label className="text-xs font-semibold text-foreground">Attendance Status</Label>
                   <select
                     value={manualStatus}
                     onChange={(e) => setManualStatus(e.target.value as AttendanceDailyStatus)}
-                    className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-xs text-slate-800 mt-1 capitalize"
+                    className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs text-foreground mt-1 capitalize"
                   >
                     <option value="present">Present (উপস্থিত)</option>
                     <option value="late">Late (দেরিতে আগমন)</option>
@@ -426,7 +426,7 @@ export default function AttendancePage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold text-slate-700">Check In Time</Label>
+                    <Label className="text-xs font-semibold text-foreground">Check In Time</Label>
                     <Input
                       type="time"
                       value={manualCheckIn}
@@ -435,7 +435,7 @@ export default function AttendancePage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-semibold text-slate-700">Check Out Time</Label>
+                    <Label className="text-xs font-semibold text-foreground">Check Out Time</Label>
                     <Input
                       type="time"
                       value={manualCheckOut}
@@ -446,19 +446,19 @@ export default function AttendancePage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setManualModalOpen(false)}
-                  className="h-8 text-xs border-slate-200"
+                  className="h-8 text-xs border-border"
                 >
                   Cancel
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleSaveManualAttendance}
-                  className="h-8 px-4 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white min-h-[32px]"
+                  className="h-8 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]"
                 >
                   Save Attendance
                 </Button>

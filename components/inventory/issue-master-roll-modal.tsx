@@ -750,13 +750,13 @@ export function IssueMasterRollModal({
             <Package className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-base font-bold text-slate-900 dark:text-white leading-tight">
+            <div className="text-base font-bold text-foreground dark:text-white leading-tight">
               {tBilingual(
                 'Direct Material Issue & Print Floor Requisition',
                 'সরাসরি ফ্লোরে কাঁচামাল প্রদান ও চাহিদা পূরণ'
               )}
             </div>
-            <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">
               {tBilingual(
                 'Issue single or multiple materials, rolls, sheets, or supplies directly from warehouse inventory.',
                 'গুদাম স্টক থেকে সরাসরি ফ্লোরে এক বা একাধিক কাঁচামাল বা মাস্টার রোল বরাদ্দ করুন।'
@@ -766,7 +766,7 @@ export function IssueMasterRollModal({
         </div>
       }
       onSubmit={handleSubmit}
-      className="p-0 overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800"
+      className="p-0 overflow-hidden shadow-2xl border border-border dark:border-border"
       bodyClassName="p-4 sm:p-5 space-y-4 text-xs"
       footer={
         <div className="w-full flex items-center justify-between flex-wrap gap-2.5">
@@ -794,7 +794,7 @@ export function IssueMasterRollModal({
             <Button
               type="submit"
               disabled={loading || issueItems.length === 0 || hasEmptyMaterial || hasShortage || hasInvalidQty}
-              className="h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md cursor-pointer gap-2"
+              className="h-9 px-5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-md cursor-pointer gap-2"
             >
               {loading ? (
                 <span>Issuing Materials...</span>
@@ -814,7 +814,7 @@ export function IssueMasterRollModal({
           </div>
         </div>
       }
-      footerClassName="px-5 py-3.5 bg-slate-100/90 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800"
+      footerClassName="px-5 py-3.5 bg-muted border-t border-border dark:border-border"
     >
       <div className="space-y-4 text-xs">
         {/* Success Alert */}
@@ -836,14 +836,14 @@ export function IssueMasterRollModal({
         {/* ========================================================= */}
         {/* COMMON REQUISITION HEADER: DATE, OPERATOR & PURPOSE */}
         {/* ========================================================= */}
-        <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2.5">
+        <div className="p-3.5 bg-muted rounded-xl border border-border shadow-2xs space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
+            <span className="font-bold text-xs uppercase text-foreground tracking-wider flex items-center gap-1.5">
               <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               {tBilingual('Requisition Header', 'ইস্যু তথ্য')}
             </span>
-            <span className="text-2xs text-slate-500 font-medium">
-              Destination: <strong className="text-slate-700 dark:text-slate-300">Print Floor Staging</strong>
+            <span className="text-2xs text-muted-foreground font-medium">
+              Destination: <strong className="text-foreground dark:text-muted-foreground">Print Floor Staging</strong>
             </span>
           </div>
 
@@ -851,7 +851,7 @@ export function IssueMasterRollModal({
             {/* Issue Date */}
             <div>
               <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1 h-5 whitespace-nowrap">
-                <Calendar className="h-3.5 w-3.5 text-slate-500" />
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>{tBilingual('Issue Date', 'ইস্যুর তারিখ')}</span>
                 <span className="text-rose-500">*</span>
               </Label>
@@ -859,7 +859,7 @@ export function IssueMasterRollModal({
                 type="date"
                 value={issueDate}
                 onChange={(e) => setIssueDate(e.target.value)}
-                className="h-9.5 text-xs bg-white dark:bg-slate-900"
+                className="h-9.5 text-xs bg-card dark:bg-card"
                 required
               />
             </div>
@@ -867,7 +867,7 @@ export function IssueMasterRollModal({
             {/* Request by / Operator */}
             <div>
               <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1 h-5 whitespace-nowrap">
-                <User className="h-3.5 w-3.5 text-slate-500" />
+                <User className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>{tBilingual('Request by / Operator', 'অনুরোধকারী')}</span>
                 <span className="text-rose-500">*</span>
               </Label>
@@ -875,7 +875,7 @@ export function IssueMasterRollModal({
                 value={operatorName}
                 onChange={(e) => setOperatorName(e.target.value)}
                 placeholder="e.g. Kamal Hossain / Floor Operator"
-                className="h-9.5 text-xs font-medium bg-white dark:bg-slate-900"
+                className="h-9.5 text-xs font-medium bg-card dark:bg-card"
                 required
               />
             </div>
@@ -883,14 +883,14 @@ export function IssueMasterRollModal({
             {/* Remarks / Purpose */}
             <div>
               <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1 h-5 whitespace-nowrap">
-                <FileText className="h-3.5 w-3.5 text-slate-500" />
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>{tBilingual('Purpose / Job Ref', 'কাজের রেফারেন্স')}</span>
               </Label>
               <Input
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="e.g. Job #1042 / Urgent Run"
-                className="h-9.5 text-xs font-medium bg-white dark:bg-slate-900"
+                className="h-9.5 text-xs font-medium bg-card dark:bg-card"
               />
             </div>
           </div>
@@ -902,7 +902,7 @@ export function IssueMasterRollModal({
         <div className="space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-xs uppercase text-slate-800 dark:text-slate-200 tracking-wider flex items-center gap-1.5">
+              <span className="font-bold text-xs uppercase text-foreground tracking-wider flex items-center gap-1.5">
                 <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 {tBilingual('Items to Issue', 'ইস্যু করার কাঁচামাল তালিকা')}
               </span>
@@ -933,19 +933,19 @@ export function IssueMasterRollModal({
                 <div
                   key={item.id}
                   className={cn(
-                    'p-3.5 rounded-xl border transition-all shadow-2xs space-y-3 bg-white dark:bg-slate-900',
+                    'p-3.5 rounded-xl border transition-all shadow-2xs space-y-3 bg-card dark:bg-card',
                     metrics.isStoreShortage
                       ? 'border-rose-300 dark:border-rose-900/80 bg-rose-50/20'
-                      : 'border-slate-200 dark:border-slate-800'
+                      : 'border-border dark:border-border'
                   )}
                 >
                   {/* Item Row Header */}
-                  <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-border dark:border-border">
                     <div className="flex items-center gap-2">
                       <span className="h-6 w-6 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 font-black text-2xs flex items-center justify-center tabular-nums">
                         #{idx + 1}
                       </span>
-                      <span className="font-bold text-xs text-slate-800 dark:text-slate-200">
+                      <span className="font-bold text-xs text-foreground dark:text-foreground">
                         {metrics.material ? metrics.material.name : 'Choose Material'}
                       </span>
                       {metrics.material && (
@@ -971,7 +971,7 @@ export function IssueMasterRollModal({
                         onClick={() =>
                           handleUpdateItem(idx, { showTagDetails: !item.showTagDetails })
                         }
-                        className="h-7 text-2xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white px-2 cursor-pointer"
+                        className="h-7 text-2xs font-medium text-muted-foreground hover:text-foreground dark:hover:text-white px-2 cursor-pointer"
                       >
                         <Tag className="h-3 w-3 mr-1" />
                         {item.showTagDetails ? 'Hide Lot' : 'Tag / Lot'}
@@ -983,7 +983,7 @@ export function IssueMasterRollModal({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveItem(idx)}
-                          className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 cursor-pointer rounded-lg"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 cursor-pointer rounded-lg"
                           title="Remove item"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -996,13 +996,13 @@ export function IssueMasterRollModal({
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
                     {/* Material Selector (5 cols) */}
                     <div className={cn(hasOptions ? 'sm:col-span-5' : 'sm:col-span-8')}>
-                      <Label className="text-2xs font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                      <Label className="text-2xs font-semibold mb-1 block text-muted-foreground dark:text-muted-foreground">
                         {tBilingual('Material Name', 'কাঁচামাল')} <span className="text-rose-500">*</span>
                       </Label>
                       <select
                         value={item.materialId}
                         onChange={(e) => handleMaterialChange(idx, e.target.value)}
-                        className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs"
+                        className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-semibold text-foreground dark:text-white focus:ring-2 focus:ring-ring shadow-2xs"
                         required
                       >
                         <option value="">-- Choose Material --</option>
@@ -1020,13 +1020,13 @@ export function IssueMasterRollModal({
                     {/* Size / Option Selector (4 cols if present) */}
                     {hasOptions && (
                       <div className="sm:col-span-4">
-                        <Label className="text-2xs font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                        <Label className="text-2xs font-semibold mb-1 block text-muted-foreground dark:text-muted-foreground">
                           {tBilingual('Available Option / Size', 'উপলব্ধ সাইজ ও অপশন')} <span className="text-rose-500">*</span>
                         </Label>
                         <select
                           value={item.selectedSizeKey || metrics.activeOption?.key || ''}
                           onChange={(e) => handleSizeChange(idx, e.target.value)}
-                          className="w-full h-9 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/40 dark:bg-blue-950/30 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs tabular-nums"
+                          className="w-full h-9 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/40 dark:bg-blue-950/30 px-3 text-xs font-semibold text-foreground dark:text-white focus:ring-2 focus:ring-ring shadow-2xs tabular-nums"
                         >
                           {metrics.options.map((opt) => (
                             <option key={opt.key} value={opt.key}>
@@ -1040,7 +1040,7 @@ export function IssueMasterRollModal({
                     {/* Quantity Selector (3 cols) */}
                     <div className={cn(hasOptions ? 'sm:col-span-3' : 'sm:col-span-4')}>
                       <div className="flex items-center justify-between mb-1">
-                        <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400">
+                        <Label className="text-2xs font-semibold text-muted-foreground dark:text-muted-foreground">
                           {tBilingual(`Qty (${metrics.purchaseUnitName})`, `পরিমাণ (${metrics.purchaseUnitName})`)}{' '}
                           <span className="text-rose-500">*</span>
                         </Label>
@@ -1100,9 +1100,9 @@ export function IssueMasterRollModal({
 
                   {/* Expandable Lot / Tag Overrides */}
                   {item.showTagDetails && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-slate-100 dark:border-slate-800">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-border dark:border-border">
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block text-slate-500">
+                        <Label className="text-2xs font-semibold mb-1 block text-muted-foreground">
                           Batch / Lot Number (Optional)
                         </Label>
                         <Input
@@ -1113,7 +1113,7 @@ export function IssueMasterRollModal({
                         />
                       </div>
                       <div>
-                        <Label className="text-2xs font-semibold mb-1 block text-slate-500">
+                        <Label className="text-2xs font-semibold mb-1 block text-muted-foreground">
                           Custom Roll / Item Tag (Optional)
                         </Label>
                         <Input
@@ -1137,7 +1137,7 @@ export function IssueMasterRollModal({
               variant="outline"
               size="sm"
               onClick={handleAddItem}
-              className="text-xs font-bold gap-1.5 border-dashed border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:border-blue-400 dark:hover:border-blue-600 cursor-pointer h-9 px-4"
+              className="text-xs font-bold gap-1.5 border-dashed border-input text-muted-foreground hover:text-blue-600 hover:border-blue-400 dark:hover:border-blue-600 cursor-pointer h-9 px-4"
             >
               <Plus className="h-4 w-4" />
               <span>{tBilingual('+ Add Another Material / Roll to Issue', '+ আরেকটি কাঁচামাল / রোল যোগ করুন')}</span>
@@ -1146,10 +1146,10 @@ export function IssueMasterRollModal({
         </div>
 
         {/* Printable Ticket Preview Accordion */}
-        <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-2xs">
-          <div className="p-3 bg-slate-100 dark:bg-slate-800/80 flex items-center justify-between">
-            <span className="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Barcode className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+        <div className="border border-border rounded-xl overflow-hidden bg-card shadow-2xs">
+          <div className="p-3 bg-muted flex items-center justify-between">
+            <span className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Barcode className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
               {tBilingual('Printable Ticket Preview', 'প্রিন্টযোগ্য ট্যাগ প্রিভিউ')}
             </span>
             <Button
@@ -1164,11 +1164,11 @@ export function IssueMasterRollModal({
           </div>
 
           {showPrintLabel && (
-            <div className="p-4 bg-slate-50 dark:bg-slate-950/50 flex flex-col items-center animate-in fade-in space-y-3">
+            <div className="p-4 bg-muted flex flex-col items-center animate-in fade-in space-y-3">
               {computedRows.map((r, i) => (
                 <div
                   key={i}
-                  className="w-full max-w-sm p-4 bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-100 rounded-xl shadow-md space-y-2 text-slate-900 dark:text-slate-100"
+                  className="w-full max-w-sm p-4 bg-card border-2 border-slate-900 rounded-xl shadow-md space-y-2 text-foreground dark:text-foreground"
                 >
                   <div className="flex items-center justify-between border-b pb-1.5">
                     <div className="font-black text-2xs tracking-wider">INKFLOW MATERIAL TICKET #{i + 1}</div>
@@ -1179,35 +1179,35 @@ export function IssueMasterRollModal({
 
                   <div className="text-center py-1">
                     <div className="tabular-nums font-black text-sm tracking-wider">{r.generatedRollCode}</div>
-                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <div className="text-xs font-bold text-foreground dark:text-muted-foreground">
                       {r.material?.name || 'Raw Material Item'}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-1.5 text-2xs tabular-nums border-t border-b py-1.5">
                     <div>
-                      <span className="text-slate-400 block">MEASURE:</span>
+                      <span className="text-muted-foreground block">MEASURE:</span>
                       <strong>{r.unitMeasureDisplay}</strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block">QUANTITY:</span>
+                      <span className="text-muted-foreground block">QUANTITY:</span>
                       <strong>
                         {issueItems[i]?.quantity} {formatUnitPlural(issueItems[i]?.quantity, r.purchaseUnitName).toUpperCase()}
                       </strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block">TOTAL VOLUME:</span>
+                      <span className="text-muted-foreground block">TOTAL VOLUME:</span>
                       <strong>
                         {r.totalBatchQuantity.toLocaleString()} {r.consumptionUnitName.toUpperCase()}
                       </strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block">DESTINATION:</span>
+                      <span className="text-muted-foreground block">DESTINATION:</span>
                       <strong>Floor Staging</strong>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-2xs text-slate-400 pt-0.5">
+                  <div className="flex items-center justify-between text-2xs text-muted-foreground pt-0.5">
                     <span>DATE: {issueDate}</span>
                     <span>OPERATOR: {operatorName}</span>
                   </div>

@@ -56,7 +56,7 @@ export default async function MarketingHomePage() {
   return (
     <PublicPlansProvider initialData={initialData}>
       <MarketingDemoProvider>
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-blue-600 selection:text-white">
+        <div className="min-h-screen bg-muted text-foreground font-sans antialiased overflow-x-hidden selection:bg-blue-600 selection:text-white">
           {/* Truthful Schema.org Structured Data */}
           <script
             type="application/ld+json"

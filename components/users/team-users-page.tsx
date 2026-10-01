@@ -316,14 +316,14 @@ export function TeamUsersPage() {
   return (
     <div className="space-y-6">
       {/* 1. Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1 border-b border-border dark:border-border">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Users className="w-6 h-6 text-blue-600" />
             <span>Team Users</span>
-            <span className="text-xs font-normal text-slate-400 font-hind">টিম সদস্য ও অ্যাক্সেস</span>
+            <span className="text-xs font-normal text-muted-foreground font-hind">টিম সদস্য ও অ্যাক্সেস</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Manage who can log in, linked workforce employees, roles, branch access, and data scopes.
           </p>
         </div>
@@ -334,7 +334,7 @@ export function TeamUsersPage() {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing || isLoading}
-            className="h-9 px-3 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="h-9 px-3 text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted"
           >
             <RefreshCw className={cn('w-4 h-4 mr-1.5', isRefreshing && 'animate-spin')} />
             <span>Refresh</span>
@@ -344,7 +344,7 @@ export function TeamUsersPage() {
             variant="default"
             size="sm"
             onClick={handleOpenCreateWizard}
-            className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm transition-all flex items-center gap-1.5"
+            className="h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm transition-all flex items-center gap-1.5"
           >
             <UserPlus className="w-4 h-4" />
             <span>Add User</span>
@@ -355,13 +355,13 @@ export function TeamUsersPage() {
       {/* 2. Top 4 High-Signal KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Users */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Users</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">
+            <p className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Total Users</p>
+            <p className="text-2xl font-bold text-foreground mt-1">
               {isLoading ? '...' : kpis.total}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">All authorized identities</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">All authorized identities</p>
           </div>
           <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-900/50">
             <Users className="w-5 h-5" />
@@ -369,13 +369,13 @@ export function TeamUsersPage() {
         </div>
 
         {/* Active Users */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Active Logins</p>
+            <p className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Active Logins</p>
             <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
               {isLoading ? '...' : kpis.active}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Can authenticate now</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Can authenticate now</p>
           </div>
           <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
             <CheckCircle2 className="w-5 h-5" />
@@ -383,13 +383,13 @@ export function TeamUsersPage() {
         </div>
 
         {/* Invited / Pending */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Invited / Pending</p>
+            <p className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Invited / Pending</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
               {isLoading ? '...' : kpis.invited}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Invitation link pending</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Invitation link pending</p>
           </div>
           <div className="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-900/50">
             <Clock className="w-5 h-5" />
@@ -397,38 +397,38 @@ export function TeamUsersPage() {
         </div>
 
         {/* Disabled */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="bg-card rounded-xl p-4 border border-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Disabled Logins</p>
-            <p className="text-2xl font-bold text-slate-700 dark:text-slate-300 mt-1">
+            <p className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Disabled Logins</p>
+            <p className="text-2xl font-bold text-foreground mt-1">
               {isLoading ? '...' : kpis.disabled}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Access suspended</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Access suspended</p>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+          <div className="w-10 h-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center border border-border dark:border-border">
             <UserX className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* 3. Filter & Search Toolbar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-3 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+      <div className="bg-card rounded-xl p-3 sm:p-4 border border-border shadow-sm space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search Input */}
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
               type="text"
               placeholder="Search by name, email, employee ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-8 h-9 text-xs sm:text-sm bg-slate-50/70 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700 focus:bg-white"
+              className="pl-9 pr-8 h-9 text-xs sm:text-sm bg-slate-50/70 border-border focus:bg-card"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground p-0.5"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -436,15 +436,15 @@ export function TeamUsersPage() {
           </div>
 
           {/* Quick Status Tabs */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-lg self-start sm:self-auto overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-lg self-start sm:self-auto overflow-x-auto max-w-full">
             <button
               type="button"
               onClick={() => setStatusFilter('all')}
               className={cn(
                 'px-2.5 py-1 text-xs font-medium rounded-md transition-all whitespace-nowrap',
                 statusFilter === 'all'
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  ? 'bg-card text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               All ({kpis.total})
@@ -455,8 +455,8 @@ export function TeamUsersPage() {
               className={cn(
                 'px-2.5 py-1 text-xs font-medium rounded-md transition-all whitespace-nowrap',
                 statusFilter === 'active'
-                  ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  ? 'bg-card text-emerald-700 dark:text-emerald-400 shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               Active ({kpis.active})
@@ -467,8 +467,8 @@ export function TeamUsersPage() {
               className={cn(
                 'px-2.5 py-1 text-xs font-medium rounded-md transition-all whitespace-nowrap',
                 statusFilter === 'invited'
-                  ? 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               Invited ({kpis.invited})
@@ -479,8 +479,8 @@ export function TeamUsersPage() {
               className={cn(
                 'px-2.5 py-1 text-xs font-medium rounded-md transition-all whitespace-nowrap',
                 statusFilter === 'disabled'
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  ? 'bg-card text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               Disabled ({kpis.disabled})
@@ -489,8 +489,8 @@ export function TeamUsersPage() {
         </div>
 
         {/* Dropdown Filters: Role & Branch */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-500">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border text-xs">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <Filter className="w-3.5 h-3.5" />
             <span>Filters:</span>
           </div>
@@ -499,7 +499,7 @@ export function TeamUsersPage() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="h-8 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-8 rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="all">All Roles</option>
             {roles.map((r) => (
@@ -513,7 +513,7 @@ export function TeamUsersPage() {
           <select
             value={branchFilter}
             onChange={(e) => setBranchFilter(e.target.value)}
-            className="h-8 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-8 rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="all">All Branches</option>
             {branches.map((b) => (
@@ -543,35 +543,35 @@ export function TeamUsersPage() {
 
       {/* 4. Main User List / Table */}
       {isLoading ? (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8 space-y-4 shadow-sm">
+        <div className="bg-card rounded-xl border border-border p-8 space-y-4 shadow-sm">
           <div className="animate-pulse flex items-center justify-between">
-            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/4" />
-            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/6" />
+            <div className="h-4 bg-muted rounded w-1/4" />
+            <div className="h-4 bg-muted rounded w-1/6" />
           </div>
           <div className="space-y-3 pt-4">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="animate-pulse h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg" />
+              <div key={i} className="animate-pulse h-12 bg-muted rounded-lg" />
             ))}
           </div>
         </div>
       ) : error ? (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl p-6 text-center space-y-3">
           <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400 mx-auto" />
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">Failed to Load Team Users</h3>
+          <h3 className="font-semibold text-foreground text-sm">Failed to Load Team Users</h3>
           <p className="text-xs text-red-700 dark:text-red-300 max-w-md mx-auto">{error}</p>
           <Button variant="outline" size="sm" onClick={() => loadData(true)} className="h-8 text-xs">
             Retry
           </Button>
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center shadow-sm space-y-3">
-          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+        <div className="bg-card border border-border rounded-xl p-12 text-center shadow-sm space-y-3">
+          <div className="w-12 h-12 rounded-full bg-muted text-muted-foreground flex items-center justify-center mx-auto">
             <Users className="w-6 h-6" />
           </div>
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+          <h3 className="font-semibold text-foreground text-sm">
             {users.length === 0 ? 'No Team Users Yet' : 'No Matching Users Found'}
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             {users.length === 0
               ? 'Add your team members to grant them secure role-based access to invoices, jobs, and branch operations.'
               : 'Try clearing your search query or adjusting your status and role filters.'}
@@ -581,7 +581,7 @@ export function TeamUsersPage() {
               variant="default"
               size="sm"
               onClick={handleOpenCreateWizard}
-              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white"
+              className="mt-2 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <UserPlus className="w-4 h-4 mr-1.5" />
               Add First User

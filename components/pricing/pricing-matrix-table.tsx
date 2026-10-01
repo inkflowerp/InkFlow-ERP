@@ -56,12 +56,12 @@ export function PricingMatrixTable({
   })
 
   return (
-    <Card className="rounded-xl shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden">
+    <Card className="rounded-xl shadow-xs border-border overflow-hidden">
       {/* Header & Filter Bar */}
-      <CardHeader className="py-3 px-4 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+      <CardHeader className="py-3 px-4 bg-muted/50 border-b border-border dark:border-border">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+            <CardTitle className="text-sm font-bold text-foreground dark:text-white">
               {tBilingual('Commercial Customer-Type Pricing Matrix', 'গ্রাহক ক্যাটাগরি ভিত্তিক মূল্য তালিকা')}
             </CardTitle>
             <CardDescription className="text-xs">
@@ -74,7 +74,7 @@ export function PricingMatrixTable({
 
           <div className="flex items-center gap-2">
             <div className="relative w-48 sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 placeholder={tBilingual('Filter by product name, SKU...', 'পণ্যের নাম বা কোড দিয়ে খুঁজুন...')}
                 value={search}
@@ -86,7 +86,7 @@ export function PricingMatrixTable({
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="h-8 px-2.5 rounded-lg border border-input bg-card text-xs font-semibold"
             >
               <option value="all">{tBilingual('All Categories', 'সকল ক্যাটাগরি')}</option>
               {categories.map((c) => (
@@ -103,7 +103,7 @@ export function PricingMatrixTable({
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/90 dark:bg-slate-900/90 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+            <thead className="bg-slate-50/90 font-bold text-muted-foreground border-b border-border dark:border-border">
               <tr>
                 <th className="py-3 px-4 min-w-[200px]">{tBilingual('Product / Service', 'পণ্য / সেবা')}</th>
                 <th className="py-3 px-3 text-center">{tBilingual('Base Cost', 'মূল খরচ')}</th>
@@ -125,7 +125,7 @@ export function PricingMatrixTable({
                 <th className="py-3 px-4 text-right">{tBilingual('Action', 'অ্যাকশন')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-border dark:divide-border">
               {filteredProducts.map((p) => {
                 const baseSell = Number(p.selling_price) || Number((p as any).base_price) || 0
                 const baseCost = Number(p.base_cost) || Number((p as any).cost_price) || 0
@@ -145,17 +145,17 @@ export function PricingMatrixTable({
                 return (
                   <tr
                     key={p.id}
-                    className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors"
+                    className="hover:bg-muted/60 dark:hover:bg-muted/60 transition-colors"
                   >
                     {/* Name & Unit */}
                     <td className="py-3 px-4">
-                      <div className="font-bold text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="font-bold text-foreground dark:text-white">{p.name}</div>
                       {p.name_bn && (
                         <div className="text-2xs text-teal-700 dark:text-teal-400 font-medium bangla-text">
                           {p.name_bn}
                         </div>
                       )}
-                      <div className="flex items-center gap-2 text-2xs text-slate-400 tabular-nums mt-0.5">
+                      <div className="flex items-center gap-2 text-2xs text-muted-foreground tabular-nums mt-0.5">
                         <span className="uppercase">{p.unit || 'sft'}</span>
                         {p.category && <span>• {p.category}</span>}
                         {marginPct !== null && (
@@ -167,7 +167,7 @@ export function PricingMatrixTable({
                     </td>
 
                     {/* Cost */}
-                    <td className="py-3 px-3 text-center tabular-nums text-slate-500">
+                    <td className="py-3 px-3 text-center tabular-nums text-muted-foreground">
                       {baseCost > 0 ? formatBDT(baseCost) : '—'}
                     </td>
 

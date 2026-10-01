@@ -124,11 +124,11 @@ export default function Company360Page() {
   if (loading || !data) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-6 w-48 bg-slate-800 rounded-md" />
-        <div className="h-24 bg-slate-900 border border-slate-800 rounded-2xl" />
+        <div className="h-6 w-48 bg-secondary rounded-md" />
+        <div className="h-24 bg-foreground border border-border rounded-2xl" />
         <div className="grid grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 bg-slate-900 border border-slate-800 rounded-2xl" />
+            <div key={i} className="h-28 bg-foreground border border-border rounded-2xl" />
           ))}
         </div>
       </div>
@@ -146,7 +146,7 @@ export default function Company360Page() {
       <div className="space-y-4">
         <Link
           href="/platform/tenants"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-white transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to Tenants Directory</span>
@@ -161,11 +161,11 @@ export default function Company360Page() {
         )}
 
         {/* Company 360 Header Card */}
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+        <div className="p-5 rounded-2xl bg-foreground border border-border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1 className="text-2xl font-black text-white">{company.name}</h1>
-              <span className="text-xs text-slate-400 font-medium">({company.name_bn})</span>
+              <span className="text-xs text-muted-foreground font-medium">({company.name_bn})</span>
               <span className="text-2xs tabular-nums uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 {company.plan}
               </span>
@@ -182,14 +182,14 @@ export default function Company360Page() {
               </span>
             </div>
 
-            <div className="text-xs text-slate-400 flex items-center gap-3 flex-wrap">
+            <div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap">
               <span className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-slate-500" />
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                 {company.hub}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <Phone className="h-3.5 w-3.5 text-slate-500" />
+                <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                 {company.owner_phone}
               </span>
               <span>•</span>
@@ -211,7 +211,7 @@ export default function Company360Page() {
               size="sm"
               variant="outline"
               onClick={() => setPlanModalOpen(true)}
-              className="border-slate-700 text-slate-200 hover:bg-slate-800 text-xs h-9"
+              className="border-border text-foreground hover:bg-secondary text-xs h-9"
             >
               <CreditCard className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
               <span>Change Plan</span>
@@ -222,53 +222,53 @@ export default function Company360Page() {
 
       {/* KPI Overview Summary Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-        <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-2xs font-semibold text-slate-400">Users</div>
+        <Card className="bg-foreground border-border p-3 text-center">
+          <div className="text-2xs font-semibold text-muted-foreground">Users</div>
           <div className="text-lg font-black text-white mt-0.5">
-            {company.users_count} <span className="text-xs font-normal text-slate-500">/ {company.users_limit}</span>
+            {company.users_count} <span className="text-xs font-normal text-muted-foreground">/ {company.users_limit}</span>
           </div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-2xs font-semibold text-slate-400">Branches</div>
+        <Card className="bg-foreground border-border p-3 text-center">
+          <div className="text-2xs font-semibold text-muted-foreground">Branches</div>
           <div className="text-lg font-black text-white mt-0.5">
-            {company.branches_count} <span className="text-xs font-normal text-slate-500">/ {company.branches_limit}</span>
+            {company.branches_count} <span className="text-xs font-normal text-muted-foreground">/ {company.branches_limit}</span>
           </div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-2xs font-semibold text-slate-400">Customers</div>
+        <Card className="bg-foreground border-border p-3 text-center">
+          <div className="text-2xs font-semibold text-muted-foreground">Customers</div>
           <div className="text-lg font-black text-white mt-0.5">{usage.customers_count}</div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-2xs font-semibold text-slate-400">Monthly Orders</div>
+        <Card className="bg-foreground border-border p-3 text-center">
+          <div className="text-2xs font-semibold text-muted-foreground">Monthly Orders</div>
           <div className="text-lg font-black text-white mt-0.5">{usage.orders_this_month}</div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-2xs font-semibold text-slate-400">Storage Used</div>
+        <Card className="bg-foreground border-border p-3 text-center">
+          <div className="text-2xs font-semibold text-muted-foreground">Storage Used</div>
           <div className="text-lg font-black text-white mt-0.5">
-            {company.storage_used_gb.toFixed(1)} <span className="text-xs font-normal text-slate-500">GB</span>
+            {company.storage_used_gb.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">GB</span>
           </div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-2xs font-semibold text-slate-400">Monthly Fee</div>
+        <Card className="bg-foreground border-border p-3 text-center">
+          <div className="text-2xs font-semibold text-muted-foreground">Monthly Fee</div>
           <div className="text-lg font-black text-emerald-400 mt-0.5">
             <CurrencyDisplay amount={company.monthly_fee} />
           </div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-2xs font-semibold text-slate-400">Onboarding</div>
+        <Card className="bg-foreground border-border p-3 text-center">
+          <div className="text-2xs font-semibold text-muted-foreground">Onboarding</div>
           <div className="text-lg font-black text-indigo-400 mt-0.5">{onboarding.overall_progress_pct}%</div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-2xs font-semibold text-slate-400 flex items-center justify-center gap-1">
+        <Card className="bg-foreground border-border p-3 text-center">
+          <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-center gap-1">
             <span>Health</span>
-            <button onClick={() => setShowHealthWhy(true)} className="text-slate-500 hover:text-indigo-400" title="Why?">
+            <button onClick={() => setShowHealthWhy(true)} className="text-muted-foreground hover:text-indigo-400" title="Why?">
               <HelpCircle className="h-3 w-3" />
             </button>
           </div>
@@ -279,18 +279,18 @@ export default function Company360Page() {
       </div>
 
       {/* Onboarding Progress Card */}
-      <Card className="bg-slate-900 border-slate-800">
-        <CardHeader className="pb-3 border-b border-slate-800 flex flex-row items-center justify-between">
+      <Card className="bg-foreground border-border">
+        <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-sm text-white font-bold flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-indigo-400" />
               <span>Tenant Onboarding Progress ({onboarding.overall_progress_pct}% Complete)</span>
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">
+            <CardDescription className="text-xs text-muted-foreground">
               Verified against live database records and operational activity.
             </CardDescription>
           </div>
-          <div className="w-32 bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+          <div className="w-32 bg-foreground rounded-full h-2 overflow-hidden border border-border">
             <div
               className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full transition-all"
               style={{ width: `${onboarding.overall_progress_pct}%` }}
@@ -305,8 +305,8 @@ export default function Company360Page() {
                 key={step.id}
                 className={`p-2.5 rounded-xl border flex items-start gap-2.5 ${
                   step.is_completed
-                    ? 'bg-emerald-950/20 border-emerald-800/40 text-slate-300'
-                    : 'bg-slate-950/50 border-slate-800 text-slate-500'
+                    ? 'bg-emerald-950/20 border-emerald-800/40 text-muted-foreground'
+                    : 'bg-foreground border-border text-muted-foreground'
                 }`}
               >
                 <div className="mt-0.5 shrink-0">
@@ -317,10 +317,10 @@ export default function Company360Page() {
                   )}
                 </div>
                 <div>
-                  <div className={`font-semibold ${step.is_completed ? 'text-white' : 'text-slate-400'}`}>
+                  <div className={`font-semibold ${step.is_completed ? 'text-white' : 'text-muted-foreground'}`}>
                     {step.title}
                   </div>
-                  <div className="text-2xs text-slate-400 line-clamp-1">{step.description}</div>
+                  <div className="text-2xs text-muted-foreground line-clamp-1">{step.description}</div>
                 </div>
               </div>
             ))}
@@ -329,7 +329,7 @@ export default function Company360Page() {
       </Card>
 
       {/* 10 Navigation Tabs */}
-      <div className="border-b border-slate-800 flex items-center gap-1 overflow-x-auto text-xs pb-1">
+      <div className="border-b border-border flex items-center gap-1 overflow-x-auto text-xs pb-1">
         {[
           { id: 'overview', label: 'Overview', icon: Building2 },
           { id: 'users', label: 'Users', icon: Users, count: data.users.length },
@@ -353,7 +353,7 @@ export default function Company360Page() {
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
                 isActive
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  : 'text-muted-foreground hover:text-white hover:bg-secondary'
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
@@ -371,62 +371,62 @@ export default function Company360Page() {
       {/* Tab 1: Overview */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader className="pb-3 border-b border-slate-800">
+          <Card className="bg-foreground border-border">
+            <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-sm text-white font-bold">Organization Profile</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-2.5 text-xs text-slate-300">
-              <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-500">Legal Company Name:</span>
+            <CardContent className="p-4 space-y-2.5 text-xs text-muted-foreground">
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Legal Company Name:</span>
                 <span className="font-semibold text-white">{company.name}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-500">Bengali Name:</span>
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Bengali Name:</span>
                 <span className="font-semibold text-white">{company.name_bn}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-500">Tenant Slug:</span>
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Tenant Slug:</span>
                 <span className="tabular-nums text-indigo-400">{company.slug}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-500">Primary Printing Hub:</span>
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Primary Printing Hub:</span>
                 <span className="font-semibold text-white">{company.hub}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-500">Division / District:</span>
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Division / District:</span>
                 <span className="font-semibold text-white">{company.division} / {company.district}</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Account Created:</span>
-                <span className="tabular-nums text-slate-300">{formatDate(company.created_at)}</span>
+                <span className="text-muted-foreground">Account Created:</span>
+                <span className="tabular-nums text-muted-foreground">{formatDate(company.created_at)}</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader className="pb-3 border-b border-slate-800">
+          <Card className="bg-foreground border-border">
+            <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-sm text-white font-bold">Owner &amp; Billing Contact</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-2.5 text-xs text-slate-300">
-              <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-500">Owner Name:</span>
+            <CardContent className="p-4 space-y-2.5 text-xs text-muted-foreground">
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Owner Name:</span>
                 <span className="font-semibold text-white">{company.owner_name}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-500">Email Address:</span>
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Email Address:</span>
                 <span className="tabular-nums text-indigo-300">{company.owner_email}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-500">Mobile Number:</span>
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Mobile Number:</span>
                 <span className="tabular-nums text-emerald-400">{company.owner_phone}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-800">
-                <span className="text-slate-500">Last Meaningful Activity:</span>
+              <div className="flex justify-between py-1 border-b border-border">
+                <span className="text-muted-foreground">Last Meaningful Activity:</span>
                 <span className="font-semibold text-white">{company.last_meaningful_activity.action}</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Activity Timestamp:</span>
-                <span className="tabular-nums text-slate-400">{company.last_activity}</span>
+                <span className="text-muted-foreground">Activity Timestamp:</span>
+                <span className="tabular-nums text-muted-foreground">{company.last_activity}</span>
               </div>
             </CardContent>
           </Card>
@@ -435,15 +435,15 @@ export default function Company360Page() {
 
       {/* Tab 2: Users */}
       {activeTab === 'users' && (
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3 border-b border-slate-800">
+        <Card className="bg-foreground border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm text-white font-bold">
               Staff Users ({data.users.length} / {company.users_limit})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
+              <thead className="bg-foreground text-muted-foreground font-semibold uppercase text-2xs border-b border-border">
                 <tr>
                   <th className="py-3 px-4">User Name</th>
                   <th className="py-3 px-4">Email</th>
@@ -452,11 +452,11 @@ export default function Company360Page() {
                   <th className="py-3 px-4">Last Login</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-200">
+              <tbody className="divide-y divide-border text-foreground">
                 {data.users.map((u) => (
                   <tr key={u.id}>
                     <td className="py-3 px-4 font-bold text-white">{u.full_name}</td>
-                    <td className="py-3 px-4 tabular-nums text-slate-400">{u.email}</td>
+                    <td className="py-3 px-4 tabular-nums text-muted-foreground">{u.email}</td>
                     <td className="py-3 px-4">
                       <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 font-semibold border border-indigo-500/20">
                         {u.role}
@@ -466,10 +466,10 @@ export default function Company360Page() {
                       {u.mfa_enabled ? (
                         <span className="text-emerald-400 font-bold">Enabled</span>
                       ) : (
-                        <span className="text-slate-500">Disabled</span>
+                        <span className="text-muted-foreground">Disabled</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 tabular-nums text-slate-400">{u.last_login_at || 'Never'}</td>
+                    <td className="py-3 px-4 tabular-nums text-muted-foreground">{u.last_login_at || 'Never'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -482,7 +482,7 @@ export default function Company360Page() {
       {activeTab === 'branches' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {data.branches.map((br) => (
-            <Card key={br.id} className="bg-slate-900 border-slate-800 p-4 space-y-2 text-xs">
+            <Card key={br.id} className="bg-foreground border-border p-4 space-y-2 text-xs">
               <div className="flex items-center justify-between">
                 <div className="font-bold text-white text-sm">{br.name}</div>
                 {br.is_main && (
@@ -491,13 +491,13 @@ export default function Company360Page() {
                   </span>
                 )}
               </div>
-              <div className="text-slate-400 flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span>{br.address}</span>
               </div>
-              <div className="text-slate-400 flex items-center gap-1.5">
-                <Phone className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                <span className="tabular-nums text-slate-300">{br.phone}</span>
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <span className="tabular-nums text-muted-foreground">{br.phone}</span>
               </div>
             </Card>
           ))}
@@ -507,35 +507,35 @@ export default function Company360Page() {
       {/* Tab 4: Usage & Limits */}
       {activeTab === 'usage' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-slate-900 border-slate-800 p-4 space-y-2 text-xs">
-            <div className="font-bold text-slate-300 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 space-y-2 text-xs">
+            <div className="font-bold text-muted-foreground flex items-center justify-between">
               <span>User Accounts</span>
               <Users className="h-4 w-4 text-indigo-400" />
             </div>
             <div className="text-2xl font-black text-white">{usage.users_count} / {usage.users_limit}</div>
-            <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-foreground h-1.5 rounded-full overflow-hidden">
               <div className="bg-indigo-500 h-full" style={{ width: `${Math.min(100, (usage.users_count / usage.users_limit) * 100)}%` }} />
             </div>
           </Card>
 
-          <Card className="bg-slate-900 border-slate-800 p-4 space-y-2 text-xs">
-            <div className="font-bold text-slate-300 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 space-y-2 text-xs">
+            <div className="font-bold text-muted-foreground flex items-center justify-between">
               <span>Cloud Storage</span>
               <HardDrive className="h-4 w-4 text-pink-400" />
             </div>
             <div className="text-2xl font-black text-white">{usage.storage_used_gb.toFixed(1)} GB / {usage.storage_limit_gb} GB</div>
-            <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-foreground h-1.5 rounded-full overflow-hidden">
               <div className="bg-pink-500 h-full" style={{ width: `${Math.min(100, (usage.storage_used_gb / usage.storage_limit_gb) * 100)}%` }} />
             </div>
           </Card>
 
-          <Card className="bg-slate-900 border-slate-800 p-4 space-y-2 text-xs">
-            <div className="font-bold text-slate-300 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 space-y-2 text-xs">
+            <div className="font-bold text-muted-foreground flex items-center justify-between">
               <span>Orders this Month</span>
               <Layers className="h-4 w-4 text-purple-400" />
             </div>
             <div className="text-2xl font-black text-white">{usage.orders_this_month} / {usage.orders_limit}</div>
-            <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-foreground h-1.5 rounded-full overflow-hidden">
               <div className="bg-purple-500 h-full" style={{ width: `${Math.min(100, (usage.orders_this_month / usage.orders_limit) * 100)}%` }} />
             </div>
           </Card>
@@ -544,28 +544,28 @@ export default function Company360Page() {
 
       {/* Tab 5: Subscription */}
       {activeTab === 'subscription' && (
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3 border-b border-slate-800">
+        <Card className="bg-foreground border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm text-white font-bold">Subscription &amp; Invoicing Details</CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-3 text-xs">
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <div className="text-slate-500">Plan Tier:</div>
+              <div className="p-3 rounded-xl bg-foreground border border-border">
+                <div className="text-muted-foreground">Plan Tier:</div>
                 <div className="font-bold text-white text-base capitalize">{subscription.plan_name}</div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <div className="text-slate-500">Monthly Billing Rate:</div>
+              <div className="p-3 rounded-xl bg-foreground border border-border">
+                <div className="text-muted-foreground">Monthly Billing Rate:</div>
                 <div className="font-bold text-emerald-400 text-base">
                   <CurrencyDisplay amount={subscription.rate_bdt} /> / mo
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <div className="text-slate-500">Renewal Date:</div>
+              <div className="p-3 rounded-xl bg-foreground border border-border">
+                <div className="text-muted-foreground">Renewal Date:</div>
                 <div className="tabular-nums text-white font-bold">{formatDate(subscription.current_period_end)}</div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <div className="text-slate-500">Payment Method:</div>
+              <div className="p-3 rounded-xl bg-foreground border border-border">
+                <div className="text-muted-foreground">Payment Method:</div>
                 <div className="font-semibold text-white">{subscription.payment_method || 'bKash Merchant'}</div>
               </div>
             </div>
@@ -575,19 +575,19 @@ export default function Company360Page() {
 
       {/* Tab 6: Features */}
       {activeTab === 'features' && (
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3 border-b border-slate-800">
+        <Card className="bg-foreground border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm text-white font-bold">Feature Flags &amp; Tenant Overrides</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-slate-800 text-xs">
+          <CardContent className="p-0 divide-y divide-border text-xs">
             {data.features.map((f) => (
               <div key={f.flag_id} className="p-3.5 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-white">{f.name}</div>
-                  <div className="text-2xs text-slate-400 tabular-nums">{f.key}</div>
+                  <div className="text-2xs text-muted-foreground tabular-nums">{f.key}</div>
                   {f.notes && <div className="text-2xs text-indigo-400 mt-0.5">Note: {f.notes}</div>}
                 </div>
-                <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>
+                <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-secondary text-muted-foreground'}`}>
                   {f.is_enabled ? 'ACTIVE' : 'DISABLED'}
                 </span>
               </div>
@@ -598,18 +598,18 @@ export default function Company360Page() {
 
       {/* Tab 7: Activity */}
       {activeTab === 'activity' && (
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3 border-b border-slate-800">
+        <Card className="bg-foreground border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm text-white font-bold">Meaningful Tenant Operations Timeline</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-slate-800 text-xs">
+          <CardContent className="p-0 divide-y divide-border text-xs">
             {data.activity.map((a) => (
               <div key={a.id} className="p-3.5 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-white">{a.description}</div>
-                  <div className="text-2xs text-slate-400">By {a.actor_email}</div>
+                  <div className="text-2xs text-muted-foreground">By {a.actor_email}</div>
                 </div>
-                <span className="tabular-nums text-slate-400">{a.created_at}</span>
+                <span className="tabular-nums text-muted-foreground">{a.created_at}</span>
               </div>
             ))}
           </CardContent>
@@ -619,16 +619,16 @@ export default function Company360Page() {
       {/* Tab 8: Security */}
       {activeTab === 'security' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-slate-900 border-slate-800 p-4 text-center">
-            <div className="text-xs text-slate-400">Active Devices / Sessions</div>
+          <Card className="bg-foreground border-border p-4 text-center">
+            <div className="text-xs text-muted-foreground">Active Devices / Sessions</div>
             <div className="text-2xl font-black text-white mt-1">{data.security.active_sessions_count}</div>
           </Card>
-          <Card className="bg-slate-900 border-slate-800 p-4 text-center">
-            <div className="text-xs text-slate-400">Staff MFA Coverage</div>
+          <Card className="bg-foreground border-border p-4 text-center">
+            <div className="text-xs text-muted-foreground">Staff MFA Coverage</div>
             <div className="text-2xl font-black text-emerald-400 mt-1">{data.security.mfa_coverage_pct}%</div>
           </Card>
-          <Card className="bg-slate-900 border-slate-800 p-4 text-center">
-            <div className="text-xs text-slate-400">Failed Logins (7 Days)</div>
+          <Card className="bg-foreground border-border p-4 text-center">
+            <div className="text-xs text-muted-foreground">Failed Logins (7 Days)</div>
             <div className="text-2xl font-black text-white mt-1">{data.security.failed_logins_last_7d}</div>
           </Card>
         </div>
@@ -638,13 +638,13 @@ export default function Company360Page() {
       {activeTab === 'integrations' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data.integrations.map((it) => (
-            <Card key={it.service} className="bg-slate-900 border-slate-800 p-4 space-y-1.5 text-xs">
+            <Card key={it.service} className="bg-foreground border-border p-4 space-y-1.5 text-xs">
               <div className="font-bold text-white">{it.name}</div>
               <div className="text-2xs text-emerald-400 font-semibold flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 <span className="uppercase">{it.status}</span>
               </div>
-              <div className="text-2xs text-slate-500">Last event: {it.last_event_at || 'Recently'}</div>
+              <div className="text-2xs text-muted-foreground">Last event: {it.last_event_at || 'Recently'}</div>
             </Card>
           ))}
         </div>
@@ -652,20 +652,20 @@ export default function Company360Page() {
 
       {/* Tab 10: Support Sessions */}
       {activeTab === 'support' && (
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3 border-b border-slate-800">
+        <Card className="bg-foreground border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm text-white font-bold">Platform Support Mode History</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-slate-800 text-xs">
+          <CardContent className="p-0 divide-y divide-border text-xs">
             {data.support_history.map((s) => (
               <div key={s.id} className="p-3.5 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-white">{s.reason}</div>
-                  <div className="text-2xs text-slate-400">Officer: {s.platform_user_email}</div>
+                  <div className="text-2xs text-muted-foreground">Officer: {s.platform_user_email}</div>
                 </div>
                 <div className="text-right">
-                  <div className="tabular-nums text-slate-300">{formatDate(s.started_at)}</div>
-                  <div className="text-2xs text-slate-500">{s.duration_minutes} mins duration</div>
+                  <div className="tabular-nums text-muted-foreground">{formatDate(s.started_at)}</div>
+                  <div className="text-2xs text-muted-foreground">{s.duration_minutes} mins duration</div>
                 </div>
               </div>
             ))}
@@ -675,26 +675,26 @@ export default function Company360Page() {
 
       {/* "Why?" Health Transparency Modal */}
       {showHealthWhy && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm">
+          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <HeartHandshake className="h-4 w-4 text-indigo-400" />
                 <span>Tenant Health Breakdown: {health.status.toUpperCase()}</span>
               </div>
-              <button onClick={() => setShowHealthWhy(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setShowHealthWhy(false)} className="text-muted-foreground hover:text-white">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
-                <span className="text-slate-400">Overall Health Score:</span>
+              <div className="p-3 rounded-xl bg-foreground border border-border flex items-center justify-between">
+                <span className="text-muted-foreground">Overall Health Score:</span>
                 <span className="font-bold tabular-nums text-lg text-white">{health.score} / 100</span>
               </div>
 
               <div className="space-y-1.5 pt-2">
-                <div className="text-2xs font-bold text-slate-300 uppercase">Evaluated Factors:</div>
+                <div className="text-2xs font-bold text-muted-foreground uppercase">Evaluated Factors:</div>
                 {health.factors.map((f, i) => (
                   <div
                     key={i}
@@ -716,7 +716,7 @@ export default function Company360Page() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-slate-800">
+            <div className="flex justify-end pt-3 border-t border-border">
               <Button size="sm" onClick={() => setShowHealthWhy(false)} className="bg-indigo-600 text-white text-xs">
                 Close
               </Button>
@@ -727,14 +727,14 @@ export default function Company360Page() {
 
       {/* Support Mode Dialog */}
       {supportModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm">
+          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <Shield className="h-4 w-4 text-amber-400" />
                 <span>Enter Support Mode: {company.name}</span>
               </div>
-              <button onClick={() => setSupportModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setSupportModalOpen(false)} className="text-muted-foreground hover:text-white">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -745,20 +745,20 @@ export default function Company360Page() {
               </div>
 
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Investigation Reason *</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Investigation Reason *</label>
                 <textarea
                   required
                   rows={2}
                   value={supportReason}
                   onChange={(e) => setSupportReason(e.target.value)}
                   placeholder="e.g. Assisting owner with Mushak 6.3 VAT rounding calibration..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white text-xs"
+                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white text-xs"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-              <Button variant="outline" size="sm" onClick={() => setSupportModalOpen(false)} className="border-slate-700 text-xs">
+            <div className="flex justify-end gap-2 pt-3 border-t border-border">
+              <Button variant="outline" size="sm" onClick={() => setSupportModalOpen(false)} className="border-border text-xs">
                 Cancel
               </Button>
               <Button
@@ -776,25 +776,25 @@ export default function Company360Page() {
 
       {/* Change Plan Dialog */}
       {planModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm">
+          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-indigo-400" />
                 <span>Change Plan: {company.name}</span>
               </div>
-              <button onClick={() => setPlanModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setPlanModalOpen(false)} className="text-muted-foreground hover:text-white">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Target Plan</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Target Plan</label>
                 <select
                   value={targetPlan}
                   onChange={(e) => setTargetPlan(e.target.value as PlatformPlanCode)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-semibold"
+                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white font-semibold"
                 >
                   <option value="starter">Starter Press (৳1,999/mo)</option>
                   <option value="business">Business Signage (৳4,999/mo)</option>
@@ -803,20 +803,20 @@ export default function Company360Page() {
               </div>
 
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Reason *</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Reason *</label>
                 <textarea
                   required
                   rows={2}
                   value={planReason}
                   onChange={(e) => setPlanReason(e.target.value)}
                   placeholder="Reason for changing plan tier..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white text-xs"
+                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white text-xs"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-              <Button variant="outline" size="sm" onClick={() => setPlanModalOpen(false)} className="border-slate-700 text-xs">
+            <div className="flex justify-end gap-2 pt-3 border-t border-border">
+              <Button variant="outline" size="sm" onClick={() => setPlanModalOpen(false)} className="border-border text-xs">
                 Cancel
               </Button>
               <Button

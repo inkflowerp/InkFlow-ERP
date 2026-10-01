@@ -36,8 +36,8 @@ export function LanguageSwitcher({
       title={isBn ? 'Switch to English (1-click)' : 'বাংলায় পরিবর্তন করুন (১-ক্লিক)'}
       aria-label={isBn ? 'Switch to English' : 'Switch to Bangla'}
       className={cn(
-        'group inline-flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-100/80 hover:border-slate-300 text-slate-900',
-        'dark:border-slate-800 dark:bg-slate-900/90 dark:hover:bg-slate-800 dark:hover:border-slate-700 dark:text-white',
+        'group inline-flex items-center gap-2 rounded-xl border border-border bg-card hover:bg-muted hover:border-input text-foreground',
+        'dark:border-border dark:text-white',
         'shadow-2xs cursor-pointer select-none transition-all active:scale-95 shrink-0 whitespace-nowrap',
         size === 'sm' ? 'px-2.5 py-1 min-h-[30px] text-xs' : 'px-3 py-1.5 min-h-[36px] text-xs sm:text-sm',
         className

@@ -56,18 +56,18 @@ export default function ReportsPage() {
 
   return (
     <PanelAccessGuard module="hr" action="view" panelTitle="Workforce Reports" panelTitleBn="কর্মী ও বেতন রিপোর্ট">
-      <div className="min-h-screen bg-slate-50/60 pb-12">
+      <div className="min-h-screen bg-muted pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 Workforce Reports
               </h1>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm font-medium text-slate-500">কর্মী ও বেতন রিপোর্ট</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-xs text-slate-500">
+                <span className="text-sm font-medium text-muted-foreground">কর্মী ও বেতন রিপোর্ট</span>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-xs text-muted-foreground">
                   Analytical reporting across attendance, compensation, overtime, advances and total labor cost
                 </span>
               </div>
@@ -78,7 +78,7 @@ export default function ReportsPage() {
               size="sm"
               onClick={loadData}
               disabled={isLoading}
-              className="h-9 px-3 text-xs font-medium text-slate-700 bg-white border-slate-200 hover:bg-slate-50 self-start sm:self-auto min-h-[36px]"
+              className="h-9 px-3 text-xs font-medium text-foreground bg-card border-border hover:bg-muted self-start sm:self-auto min-h-[36px]"
             >
               <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>

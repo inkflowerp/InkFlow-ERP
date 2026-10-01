@@ -193,7 +193,7 @@ export function BranchManagerDashboard({
                 <Store className="h-3.5 w-3.5 text-emerald-400" />
                 <span>{tBilingual('Branch Command Center', 'ব্রাঞ্চ কমান্ড সেন্টার')}</span>
               </Badge>
-              <Badge className="bg-white/10 text-white border-white/15 text-xs tabular-nums font-medium">
+              <Badge className="bg-card/10 text-white border-white/15 text-xs tabular-nums font-medium">
                 {branch?.code || 'BR-01'}
               </Badge>
               <Badge className="bg-emerald-400/20 text-emerald-200 border-emerald-400/30 text-xs font-bold flex items-center gap-1">
@@ -228,7 +228,7 @@ export function BranchManagerDashboard({
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Button
               onClick={onOpenNewWork}
-              className="bg-white text-emerald-950 hover:bg-emerald-50 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 h-10 px-4"
+              className="bg-card text-emerald-950 hover:bg-emerald-50 font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 h-10 px-4"
             >
               <Plus className="h-4 w-4 text-emerald-700" />
               <span>{tBilingual('New Counter Order', 'নতুন কাউন্টার অর্ডার')}</span>
@@ -256,7 +256,7 @@ export function BranchManagerDashboard({
               onClick={handleRefresh}
               variant="ghost"
               disabled={isRefreshing}
-              className="h-10 w-10 p-0 text-emerald-200 hover:text-white hover:bg-white/10 rounded-xl"
+              className="h-10 w-10 p-0 text-emerald-200 hover:text-white hover:bg-card/10 rounded-xl"
               title="Refresh Queue"
             >
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -307,13 +307,13 @@ export function BranchManagerDashboard({
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <span>{tBilingual('Branch Scope & Security Governance', 'ব্রাঞ্চ এক্সেস সীমা ও নিরাপত্তা পলিসি')}</span>
                 <Badge variant="outline" className="text-2xs uppercase font-bold text-emerald-700 dark:text-emerald-400 border-emerald-300">
                   {branch?.name || 'Branch-Scoped'}
                 </Badge>
               </h2>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {tBilingual(
                   'Full operational control over branch counter sales, POS invoices, receipts, and staff roster. Strictly isolated from other branches and global tenant governance.',
                   'ব্রাঞ্চের সকল সেলস, পেমেন্ট, চালান ও হাজিরা পরিচালনার সম্পূর্ণ ক্ষমতা। অন্য ব্রাঞ্চের তথ্য ও মূল কোম্পানির পলিসি পরিবর্তন সম্পূর্ণ সংরক্ষিত।'
@@ -334,14 +334,14 @@ export function BranchManagerDashboard({
 
         {/* Collapsible Perimeter Details */}
         {showRestrictionsDetail && (
-          <div className="border-t border-emerald-100 dark:border-emerald-900/40 p-4 sm:p-5 bg-white/70 dark:bg-slate-950/70 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-in fade-in-50 duration-200">
+          <div className="border-t border-emerald-100 dark:border-emerald-900/40 p-4 sm:p-5 bg-card/70 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-in fade-in-50 duration-200">
             {/* Granted Authorities */}
             <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-2">
               <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-emerald-200">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 <span>{tBilingual('Branch Manager Permissions & Authorities', 'অনুমোদিত দায়িত্ব ও ক্ষমতা')}</span>
               </div>
-              <ul className="space-y-1.5 text-slate-700 dark:text-slate-300">
+              <ul className="space-y-1.5 text-foreground dark:text-muted-foreground">
                 <li className="flex items-start gap-1.5">
                   <span className="text-emerald-600 font-bold">✓</span>
                   <span><strong>Counter Sales & Quotes:</strong> Create and approve walk-in client quotations and work orders for {branchName}.</span>
@@ -371,7 +371,7 @@ export function BranchManagerDashboard({
                 <Lock className="h-4 w-4 text-rose-600" />
                 <span>{tBilingual('Security Safeguards & Governance Limitations', 'নিরাপত্তা নিয়ন্ত্রণ ও সিস্টেম সীমাবদ্ধতা')}</span>
               </div>
-              <ul className="space-y-1.5 text-slate-700 dark:text-slate-300">
+              <ul className="space-y-1.5 text-foreground dark:text-muted-foreground">
                 <li className="flex items-start gap-1.5">
                   <span className="text-rose-600 font-bold">🚫</span>
                   <span><strong>Cross-Branch Isolation:</strong> Cannot access or query customers, sales orders, invoices, or staff from other branches.</span>
@@ -408,7 +408,7 @@ export function BranchManagerDashboard({
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 activeFilterTab === 'all'
                   ? 'bg-emerald-700 text-white shadow-sm'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
               }`}
             >
               {tBilingual('All Branch Orders', 'সকল অর্ডার')} ({branchOrders.length})
@@ -419,7 +419,7 @@ export function BranchManagerDashboard({
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 activeFilterTab === 'pending'
                   ? 'bg-amber-600 text-white shadow-sm'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
               }`}
             >
               {tBilingual('Pending Confirmation', 'অনুমোদন বাকি')}
@@ -430,7 +430,7 @@ export function BranchManagerDashboard({
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 activeFilterTab === 'in_production'
                   ? 'bg-purple-700 text-white shadow-sm'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
               }`}
             >
               {tBilingual('In Production', 'প্রিন্টিং চলছে')}
@@ -441,7 +441,7 @@ export function BranchManagerDashboard({
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 activeFilterTab === 'ready'
                   ? 'bg-teal-600 text-white shadow-sm'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
               }`}
             >
               {tBilingual('Ready for Pickup', 'কাউন্টারে প্রস্তুত')} ({metrics.readyForPickupCount})
@@ -452,7 +452,7 @@ export function BranchManagerDashboard({
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 activeFilterTab === 'delivered'
                   ? 'bg-slate-700 text-white shadow-sm'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                  : 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
               }`}
             >
               {tBilingual('Completed & Delivered', 'সম্পন্ন ও ডেলিভার্ড')}
@@ -461,28 +461,28 @@ export function BranchManagerDashboard({
 
           {/* Search Input */}
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               type="text"
               placeholder={tBilingual('Search orders, customers...', 'অর্ডার খুঁজুন...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-xs bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+              className="pl-8 h-9 text-xs bg-card border-border dark:border-border"
             />
           </div>
         </div>
 
         {/* Orders Table */}
         {filteredOrders.length === 0 ? (
-          <Card className="border border-dashed border-slate-300 dark:border-slate-800 p-10 text-center bg-slate-50/50 dark:bg-slate-900/30">
+          <Card className="border border-dashed border-input p-10 text-center bg-muted dark:bg-card">
             <div className="flex flex-col items-center justify-center space-y-3 max-w-sm mx-auto">
               <div className="h-12 w-12 rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 flex items-center justify-center">
                 <FileText className="h-6 w-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              <h3 className="text-sm font-bold text-foreground dark:text-foreground">
                 {tBilingual('No orders found for this branch', 'এই ব্রাঞ্চে কোনো অর্ডার পাওয়া যায়নি')}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 {tBilingual(
                   'Orders created for this branch will appear here. Click below to register a new counter work order.',
                   'ব্রাঞ্চে নতুন কোনো কাজের অর্ডার এন্ট্রি করতে নিচের বাটনে চাপ দিন।'
@@ -498,10 +498,10 @@ export function BranchManagerDashboard({
             </div>
           </Card>
         ) : (
-          <Card className="border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs bg-white dark:bg-slate-900">
+          <Card className="border border-border overflow-hidden shadow-xs bg-card dark:bg-card">
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
+                <thead className="bg-muted text-muted-foreground border-b border-border uppercase text-2xs font-bold">
                   <tr>
                     <th className="px-4 py-3">Order #</th>
                     <th className="px-4 py-3">Customer</th>
@@ -512,25 +512,25 @@ export function BranchManagerDashboard({
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                <tbody className="divide-y divide-border font-medium">
                   {filteredOrders.map((ord) => {
                     const dueAmt = ord.due_amount !== undefined ? Number(ord.due_amount) : Math.max(0, Number(ord.final_price || 0) - Number(ord.advance_amount || 0))
                     const isDue = dueAmt > 0
                     const itemSummary = ord.items?.map((i) => i.item_name).join(', ') || 'Print Job'
 
                     return (
-                      <tr key={ord.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                      <tr key={ord.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                         <td className="px-4 py-3 tabular-nums font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                           #{ord.order_number || ord.id.slice(0, 8)}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-bold text-slate-900 dark:text-slate-100">{ord.customer_name || 'Walk-in Client'}</div>
-                          <div className="text-2xs text-slate-500 tabular-nums">{ord.customer_phone || '—'}</div>
+                          <div className="font-bold text-foreground dark:text-foreground">{ord.customer_name || 'Walk-in Client'}</div>
+                          <div className="text-2xs text-muted-foreground tabular-nums">{ord.customer_phone || '—'}</div>
                         </td>
-                        <td className="px-4 py-3 max-w-xs truncate text-slate-700 dark:text-slate-300">
+                        <td className="px-4 py-3 max-w-xs truncate text-foreground dark:text-muted-foreground">
                           {itemSummary}
                         </td>
-                        <td className="px-4 py-3 text-right tabular-nums font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                        <td className="px-4 py-3 text-right tabular-nums font-bold text-foreground whitespace-nowrap">
                           {formatBDT(ord.final_price || 0)}
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
@@ -548,7 +548,7 @@ export function BranchManagerDashboard({
                                 : ord.status === 'in_production' || ord.status === 'finishing'
                                 ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-300'
                                 : ord.status === 'delivered' || ord.status === 'completed'
-                                ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                                ? 'bg-muted text-foreground dark:text-muted-foreground'
                                 : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300'
                             }`}
                           >
@@ -561,7 +561,7 @@ export function BranchManagerDashboard({
                               size="sm"
                               variant="ghost"
                               onClick={() => router.push(getTenantNavHref(`/orders/${ord.id}`, pathname, tenantSlug))}
-                              className="h-8 w-8 p-0 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground dark:hover:text-slate-100"
                               title="View Order"
                             >
                               <Eye className="h-3.5 w-3.5" />

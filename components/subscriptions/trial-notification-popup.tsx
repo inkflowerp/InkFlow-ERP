@@ -98,7 +98,7 @@ export function TrialNotificationPopup() {
               ? 'bg-red-950/90 text-red-200 border-red-500/50 shadow-red-950/50'
               : isUrgent
               ? 'bg-amber-950/90 text-amber-200 border-amber-500/50 shadow-amber-950/50'
-              : 'bg-slate-900/90 text-indigo-200 border-indigo-500/50 shadow-slate-950/50'
+              : 'bg-foreground text-indigo-200 border-indigo-500/50 shadow-slate-950/50'
           )}
         >
           {isTrialExpired ? (
@@ -129,10 +129,10 @@ export function TrialNotificationPopup() {
         'rounded-2xl border shadow-2xl backdrop-blur-xl p-4 transition-all duration-300',
         'animate-in fade-in slide-in-from-bottom-4',
         isTrialExpired
-          ? 'bg-slate-950/95 text-slate-100 border-red-500/40 shadow-red-950/40'
+          ? 'bg-foreground text-slate-100 border-red-500/40 shadow-red-950/40'
           : isUrgent
-          ? 'bg-slate-950/95 text-slate-100 border-amber-500/40 shadow-amber-950/40'
-          : 'bg-slate-950/95 text-slate-100 border-indigo-500/40 shadow-indigo-950/40'
+          ? 'bg-foreground text-slate-100 border-amber-500/40 shadow-amber-950/40'
+          : 'bg-foreground text-slate-100 border-indigo-500/40 shadow-indigo-950/40'
       )}
     >
       {/* Background Accent Glow */}
@@ -185,7 +185,7 @@ export function TrialNotificationPopup() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsMinimized(true)}
-            className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1 text-muted-foreground hover:text-white rounded-lg hover:bg-secondary transition-colors cursor-pointer"
             title={tBilingual('Minimize', 'ছোট করুন')}
             aria-label="Minimize popup"
           >
@@ -193,7 +193,7 @@ export function TrialNotificationPopup() {
           </button>
           <button
             onClick={() => handleDismiss(4)}
-            className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1 text-muted-foreground hover:text-white rounded-lg hover:bg-secondary transition-colors cursor-pointer"
             title={tBilingual('Dismiss for 4 hours', 'বন্ধ করুন')}
             aria-label="Close popup"
           >
@@ -221,7 +221,7 @@ export function TrialNotificationPopup() {
               )}
         </h4>
 
-        <p className="text-xs text-slate-300 bangla-text leading-relaxed">
+        <p className="text-xs text-muted-foreground bangla-text leading-relaxed">
           {isTrialExpired
             ? tBilingual(
                 'New orders, challans, and customer creations are restricted. Upgrade now to unlock all unlimited features without interruption.',
@@ -241,13 +241,13 @@ export function TrialNotificationPopup() {
         {/* Progress Bar for Active Trial */}
         {!isTrialExpired && (
           <div className="space-y-1 pt-1">
-            <div className="flex justify-between text-2xs text-slate-400 font-medium">
+            <div className="flex justify-between text-2xs text-muted-foreground font-medium">
               <span className="bangla-text">{tBilingual('Trial Period', 'ট্রায়াল অগ্রগতি')}</span>
               <span className="bangla-text">
                 {locale === 'bn' ? toBengaliDigits(trialProgressPercent) : trialProgressPercent}%
               </span>
             </div>
-            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
               <div
                 className={cn(
                   'h-full rounded-full transition-all duration-500',
@@ -261,10 +261,10 @@ export function TrialNotificationPopup() {
       </div>
 
       {/* Footer Actions */}
-      <div className="mt-3.5 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 relative z-10">
+      <div className="mt-3.5 pt-3 border-t border-border flex items-center justify-between gap-2 relative z-10">
         <button
           onClick={() => handleDismiss(12)}
-          className="text-2xs text-slate-400 hover:text-slate-200 bangla-text cursor-pointer transition-colors"
+          className="text-2xs text-muted-foreground hover:text-foreground bangla-text cursor-pointer transition-colors"
         >
           {tBilingual('Remind me later', 'পরে মনে করান')}
         </button>

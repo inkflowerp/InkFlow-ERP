@@ -161,14 +161,14 @@ const variantStyles: Record<
     ping: 'bg-teal-400',
   },
   slate: {
-    icon: 'text-slate-400 dark:text-slate-500',
-    text: 'text-slate-800 dark:text-slate-100',
+    icon: 'text-muted-foreground dark:text-muted-foreground',
+    text: 'text-foreground dark:text-foreground',
     dot: 'bg-slate-400',
     ping: 'bg-slate-300',
   },
   primary: {
     icon: 'text-blue-500 dark:text-blue-400',
-    text: 'text-slate-900 dark:text-slate-50',
+    text: 'text-foreground dark:text-slate-50',
     dot: 'bg-blue-500',
     ping: 'bg-blue-400',
   },
@@ -389,7 +389,7 @@ export function KpiCard({
       onClick={onClick}
       className={cn(
         'bg-card text-card-foreground border border-border py-2 px-3 sm:py-2.5 sm:px-3.5 shadow-xs rounded-xl transition-colors duration-150 flex flex-col justify-between relative overflow-hidden',
-        onClick ? 'cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 active:scale-[0.99]' : '',
+        onClick ? 'cursor-pointer hover:border-primary/30 active:scale-[0.99]' : '',
         isSelected && 'ring-2 ring-primary/40 border-primary bg-blue-50/10 dark:bg-blue-950/20',
         className
       )}
@@ -476,17 +476,17 @@ export function KpiCard({
                 {direction === 'up' ? '↑' : direction === 'down' ? '↓' : '—'} {cleanTrendValue}
               </span>
               {comparisonText && (
-                <span className="font-normal text-slate-400 dark:text-slate-500 text-2xs truncate">
+                <span className="font-normal text-muted-foreground text-2xs truncate">
                   {comparisonText}
                 </span>
               )}
             </div>
           ) : subtitle ? (
-            <div className="text-2xs text-slate-400 dark:text-slate-500 font-medium truncate leading-tight">
+            <div className="text-2xs text-muted-foreground font-medium truncate leading-tight">
               {subtitle}
             </div>
           ) : comparisonText ? (
-            <div className="text-2xs text-slate-400 dark:text-slate-500 font-medium truncate leading-tight">
+            <div className="text-2xs text-muted-foreground font-medium truncate leading-tight">
               {comparisonText}
             </div>
           ) : (
@@ -505,7 +505,7 @@ export function KpiCard({
         </div>
       )}
 
-      {footer && <div className="mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">{footer}</div>}
+      {footer && <div className="mt-1.5 pt-1 border-t border-border">{footer}</div>}
     </div>
   )
 }

@@ -314,21 +314,21 @@ export function LogConsumptionModal({
                 {selectedActiveRoll.status} (1 Pcs)
               </Badge>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-blue-500/10 text-slate-700 dark:text-slate-300">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-blue-500/10 text-foreground dark:text-muted-foreground">
               <div>
-                <span className="text-slate-400 block text-2xs">Substrate</span>
+                <span className="text-muted-foreground block text-2xs">Substrate</span>
                 <span className="font-semibold truncate block">{selectedActiveRoll.material?.name || activeMat?.name || 'Roll Substrate'}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-2xs">Roll Width</span>
+                <span className="text-muted-foreground block text-2xs">Roll Width</span>
                 <span className="font-bold block">{selectedActiveRoll.width_ft} ft</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-2xs">Initial Spec</span>
+                <span className="text-muted-foreground block text-2xs">Initial Spec</span>
                 <span className="font-semibold block">{selectedActiveRoll.initial_length_ft} ft</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-2xs">Available Length</span>
+                <span className="text-muted-foreground block text-2xs">Available Length</span>
                 <span className="font-black text-emerald-600 dark:text-emerald-400 block">
                   {Number(selectedActiveRoll.current_length_ft ?? 0).toFixed(2)} ft — 1 Pcs
                 </span>
@@ -349,21 +349,21 @@ export function LogConsumptionModal({
                 {selectedFloorRecord.status.replace('_', ' ')}
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-amber-500/10 text-slate-700 dark:text-slate-300">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-amber-500/10 text-foreground dark:text-muted-foreground">
               <div>
-                <span className="text-slate-400 block text-2xs">Material</span>
+                <span className="text-muted-foreground block text-2xs">Material</span>
                 <span className="font-semibold truncate block">{selectedFloorRecord.material_name}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-2xs">Workstation</span>
+                <span className="text-muted-foreground block text-2xs">Workstation</span>
                 <span className="font-semibold block">{selectedFloorRecord.machine_name || 'Floor General'}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-2xs">Total Issued</span>
+                <span className="text-muted-foreground block text-2xs">Total Issued</span>
                 <span className="font-semibold block">{selectedFloorRecord.issued_quantity} {selectedFloorRecord.unit}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-2xs">Floor Balance</span>
+                <span className="text-muted-foreground block text-2xs">Floor Balance</span>
                 <span className="font-black text-amber-600 dark:text-amber-400 block">
                   {selectedFloorRecord.remaining_floor_balance} {selectedFloorRecord.unit}
                 </span>
@@ -374,15 +374,15 @@ export function LogConsumptionModal({
 
         {/* Active Floor Piece Selection Dropdown */}
         {availableRollsOnFloor.length > 0 && (
-          <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+          <div className="space-y-1.5 p-3 bg-muted rounded-xl border border-border dark:border-border">
+            <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
               <Disc className="w-3.5 h-3.5 text-blue-600" />
               Select Active Piece on Print Floor ({availableRollsOnFloor.length} active pieces)
             </Label>
             <select
               value={rollId || selectedActiveRoll?.id || ''}
               onChange={(e) => setRollId(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs tabular-nums font-semibold text-slate-900 dark:text-white"
+              className="w-full h-10 px-3 rounded-lg border border-input bg-card text-xs tabular-nums font-semibold text-foreground dark:text-white"
             >
               {availableRollsOnFloor.map((r: InventoryRollRecord) => (
                 <option key={r.id} value={r.id}>
@@ -403,7 +403,7 @@ export function LogConsumptionModal({
                 id="cTask"
                 value={taskId}
                 onChange={(e) => setTaskId(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
                 required
               >
                 <option value="">-- Choose Task --</option>
@@ -424,20 +424,20 @@ export function LogConsumptionModal({
               <Input
                 value={`${selectedFloorRecord.material_name} (${selectedFloorRecord.sku || selectedFloorRecord.material_id.slice(0, 8)})`}
                 disabled
-                className="bg-slate-100 dark:bg-slate-800 font-semibold text-xs"
+                className="bg-muted font-semibold text-xs"
               />
             ) : selectedActiveRoll ? (
               <Input
                 value={`${selectedActiveRoll.material?.name || activeMat?.name || 'Roll Substrate'} (${selectedActiveRoll.width_ft}ft Wide • Piece #${selectedActiveRoll.roll_code || selectedActiveRoll.roll_tag})`}
                 disabled
-                className="bg-slate-100 dark:bg-slate-800 font-semibold text-xs"
+                className="bg-muted font-semibold text-xs"
               />
             ) : (
               <select
                 id="cMat"
                 value={materialId}
                 onChange={(e) => setMaterialId(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
                 required
               >
                 <option value="">-- Choose Material --</option>
@@ -452,7 +452,7 @@ export function LogConsumptionModal({
         </div>
 
         {/* Consumption & Return Breakdown */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-muted rounded-lg border text-xs">
           <div className="space-y-1">
             <Label required>Actual Consumed ({floorUnit})</Label>
             <Input
@@ -507,7 +507,7 @@ export function LogConsumptionModal({
           <div className={`p-3 rounded-xl border text-xs space-y-1.5 ${
             isOverFloorBalance 
               ? 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300' 
-              : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+              : 'bg-muted border-border text-foreground dark:text-muted-foreground'
           }`}>
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-1.5 font-medium">
@@ -515,19 +515,19 @@ export function LogConsumptionModal({
                 <span>
                   Deducting: <strong>{totalActionQty.toFixed(2)}</strong> {floorUnit}
                   {selectedActiveRoll && (
-                    <span className="text-slate-500 ml-1 tabular-nums">
+                    <span className="text-muted-foreground ml-1 tabular-nums">
                       ({Math.round(totalActionQty * (selectedActiveRoll.width_ft || 3) * 100) / 100} sqft)
                     </span>
                   )}
                 </span>
               </div>
-              <div className="font-bold text-slate-900 dark:text-white">
+              <div className="font-bold text-foreground dark:text-white">
                 Remaining Length: {Math.max(0, floorMaxBalance - totalActionQty).toFixed(2)} {floorUnit} — 1 Pcs
               </div>
             </div>
 
             {selectedActiveRoll && (
-              <div className="pt-1 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-2xs text-slate-500 dark:text-slate-400 tabular-nums">
+              <div className="pt-1 border-t border-border dark:border-slate-700/60 flex items-center justify-between text-2xs text-muted-foreground tabular-nums">
                 <span>
                   Physical Spec: {selectedActiveRoll.width_ft}ft × {Math.max(0, floorMaxBalance - totalActionQty).toFixed(2)}ft
                 </span>
@@ -547,7 +547,7 @@ export function LogConsumptionModal({
             <select
               value={returnLocationId}
               onChange={(e) => setReturnLocationId(e.target.value)}
-              className="w-full h-9 px-2 rounded border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="w-full h-9 px-2 rounded border border-emerald-300 dark:border-emerald-700 bg-card text-xs font-semibold"
               required
             >
               {locations.map((loc) => (
@@ -567,7 +567,7 @@ export function LogConsumptionModal({
             <select
               value={wastageReason}
               onChange={(e) => setWastageReason(e.target.value)}
-              className="w-full h-9 px-2 rounded border border-red-300 dark:border-red-700 bg-white dark:bg-slate-900 text-xs font-semibold mb-1"
+              className="w-full h-9 px-2 rounded border border-red-300 dark:border-red-700 bg-card text-xs font-semibold mb-1"
               required
             >
               <option value="">-- Select Root Cause --</option>
@@ -588,11 +588,11 @@ export function LogConsumptionModal({
         )}
 
         {/* Reusable Remnants Section */}
-        <div className="space-y-2 pt-1 border-t border-slate-200 dark:border-slate-800">
+        <div className="space-y-2 pt-1 border-t border-border dark:border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Scissors className="h-4 w-4 text-purple-600" />
-              <span className="font-bold text-xs text-slate-800 dark:text-slate-200">
+              <span className="font-bold text-xs text-foreground dark:text-foreground">
                 Discrete Reusable Remnants ({remnants.length})
               </span>
             </div>
@@ -602,7 +602,7 @@ export function LogConsumptionModal({
           </div>
 
           {remnants.length === 0 ? (
-            <p className="text-2xs text-slate-400 italic">
+            <p className="text-2xs text-muted-foreground italic">
               No usable offcuts. Click &quot;Add Remnant&quot; to catalog usable roll/sheet leftovers for future small jobs.
             </p>
           ) : (
@@ -654,7 +654,7 @@ export function LogConsumptionModal({
                       <select
                         value={r.location_id}
                         onChange={(e) => handleRemnantChange(idx, 'location_id', e.target.value)}
-                        className="w-full h-8 px-2 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+                        className="w-full h-8 px-2 rounded border border-input bg-card text-xs"
                       >
                         {locations.map((loc) => (
                           <option key={loc.id} value={loc.id}>
@@ -668,7 +668,7 @@ export function LogConsumptionModal({
                       <select
                         value={r.condition}
                         onChange={(e) => handleRemnantChange(idx, 'condition', e.target.value)}
-                        className="w-full h-8 px-2 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold capitalize"
+                        className="w-full h-8 px-2 rounded border border-input bg-card text-xs font-semibold capitalize"
                       >
                         <option value="excellent">Excellent</option>
                         <option value="usable">Usable</option>
@@ -692,7 +692,7 @@ export function LogConsumptionModal({
           />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto min-h-[40px]">
             Cancel
           </Button>

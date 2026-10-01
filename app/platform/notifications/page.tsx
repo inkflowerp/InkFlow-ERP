@@ -293,7 +293,7 @@ export default function PlatformNotificationsPage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Top Header & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
@@ -308,7 +308,7 @@ export default function PlatformNotificationsPage() {
               </span>
             )}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Live database-backed stream: security events, tenant registration, quota thresholds, system telemetry, and administrative broadcasts.
           </p>
         </div>
@@ -342,7 +342,7 @@ export default function PlatformNotificationsPage() {
             variant="outline"
             disabled={actionInProgress !== null || notifications.every((n) => !n.is_read)}
             onClick={handleClearAllRead}
-            className="h-9 text-xs border-slate-800 bg-slate-900/80 text-slate-400 hover:text-rose-300 hover:bg-rose-950/40 hover:border-rose-900/50"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:text-rose-300 hover:bg-rose-950/40 hover:border-rose-900/50"
             title="Clear all read notifications"
           >
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
@@ -353,7 +353,7 @@ export default function PlatformNotificationsPage() {
             size="sm"
             variant="outline"
             onClick={handleExportCSV}
-            className="h-9 text-xs border-slate-800 bg-slate-900/80 text-slate-300 hover:bg-slate-800 hover:text-white"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white"
             title="Export notifications as CSV"
           >
             <Download className="h-3.5 w-3.5 mr-1.5" />
@@ -364,7 +364,7 @@ export default function PlatformNotificationsPage() {
             size="sm"
             variant="outline"
             onClick={() => refetch()}
-            className="h-9 text-xs border-slate-800 bg-slate-900/80 text-slate-300 hover:bg-slate-800 hover:text-white"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white"
             title="Refresh Feed"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
@@ -393,7 +393,7 @@ export default function PlatformNotificationsPage() {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-slate-400 hover:text-white"
+            className="text-muted-foreground hover:text-white"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -422,18 +422,18 @@ export default function PlatformNotificationsPage() {
 
       {/* Executive Metric Cards (4 KPIs from Database State) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="border-slate-800/80 bg-slate-900/60 p-4 rounded-2xl relative overflow-hidden">
+        <Card className="border-border bg-foreground p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Alerts</span>
-            <div className="h-8 w-8 rounded-xl bg-slate-800/80 flex items-center justify-center text-slate-300 border border-slate-700/60">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Alerts</span>
+            <div className="h-8 w-8 rounded-xl bg-slate-800/80 flex items-center justify-center text-muted-foreground border border-slate-700/60">
               <Bell className="h-4 w-4" />
             </div>
           </div>
           <div className="text-2xl font-black text-white mt-2">{totalCount}</div>
-          <div className="text-2xs text-slate-500 mt-1">Authoritative database records</div>
+          <div className="text-2xs text-muted-foreground mt-1">Authoritative database records</div>
         </Card>
 
-        <Card className="border-slate-800/80 bg-slate-900/60 p-4 rounded-2xl relative overflow-hidden">
+        <Card className="border-border bg-foreground p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-rose-400">Unread Alerts</span>
             <div className="h-8 w-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 border border-rose-500/20">
@@ -441,10 +441,10 @@ export default function PlatformNotificationsPage() {
             </div>
           </div>
           <div className="text-2xl font-black text-rose-300 mt-2">{unreadCount}</div>
-          <div className="text-2xs text-slate-500 mt-1">Require operator acknowledgment</div>
+          <div className="text-2xs text-muted-foreground mt-1">Require operator acknowledgment</div>
         </Card>
 
-        <Card className="border-slate-800/80 bg-slate-900/60 p-4 rounded-2xl relative overflow-hidden">
+        <Card className="border-border bg-foreground p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Warnings &amp; Quotas</span>
             <div className="h-8 w-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20">
@@ -452,10 +452,10 @@ export default function PlatformNotificationsPage() {
             </div>
           </div>
           <div className="text-2xl font-black text-amber-300 mt-2">{warningCount}</div>
-          <div className="text-2xs text-slate-500 mt-1">Storage, job retry &amp; billing notices</div>
+          <div className="text-2xs text-muted-foreground mt-1">Storage, job retry &amp; billing notices</div>
         </Card>
 
-        <Card className="border-slate-800/80 bg-slate-900/60 p-4 rounded-2xl relative overflow-hidden">
+        <Card className="border-border bg-foreground p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Broadcasts</span>
             <div className="h-8 w-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
@@ -463,12 +463,12 @@ export default function PlatformNotificationsPage() {
             </div>
           </div>
           <div className="text-2xl font-black text-indigo-300 mt-2">{broadcastCount}</div>
-          <div className="text-2xs text-slate-500 mt-1">System announcements &amp; advisories</div>
+          <div className="text-2xs text-muted-foreground mt-1">System announcements &amp; advisories</div>
         </Card>
       </div>
 
       {/* Filter Chips & Search Bar */}
-      <div className="bg-slate-900/70 p-4 rounded-2xl border border-slate-800 space-y-3">
+      <div className="bg-foreground p-4 rounded-2xl border border-border space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Category Filter Chips */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
@@ -489,7 +489,7 @@ export default function PlatformNotificationsPage() {
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer ${
                   filterType === tab.key
                     ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                    : 'bg-foreground border-border text-muted-foreground hover:text-white hover:bg-secondary'
                 }`}
               >
                 {tab.label}
@@ -502,7 +502,7 @@ export default function PlatformNotificationsPage() {
             <select
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-slate-300 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
+              className="bg-foreground border border-border text-muted-foreground text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
             >
               <option value="all">All Severities</option>
               <option value="critical">Critical Only</option>
@@ -510,12 +510,12 @@ export default function PlatformNotificationsPage() {
               <option value="info">Info Only</option>
             </select>
 
-            <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 hover:border-slate-700">
+            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer bg-foreground px-3 py-1.5 rounded-xl border border-border hover:border-border">
               <input
                 type="checkbox"
                 checked={showUnreadOnly}
                 onChange={(e) => setShowUnreadOnly(e.target.checked)}
-                className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-0 cursor-pointer"
+                className="rounded border-border bg-foreground text-indigo-600 focus:ring-0 cursor-pointer"
               />
               <span>Unread only</span>
             </label>
@@ -524,18 +524,18 @@ export default function PlatformNotificationsPage() {
 
         {/* Search Bar */}
         <div className="relative">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search notifications by title, details, tenant company, or service..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 text-xs bg-slate-950/80 border-slate-800 focus:border-indigo-500 text-slate-200"
+            className="pl-9 h-9 text-xs bg-foreground border-border focus:border-indigo-500 text-foreground"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white text-xs cursor-pointer"
             >
               Clear
             </button>
@@ -546,15 +546,15 @@ export default function PlatformNotificationsPage() {
       {/* Notification Stream Feed */}
       <div className="space-y-3">
         {loading && notifications.length === 0 ? (
-          <div className="py-16 text-center text-slate-500 text-xs bg-slate-900/40 rounded-2xl border border-slate-800">
+          <div className="py-16 text-center text-muted-foreground text-xs bg-foreground rounded-2xl border border-border">
             <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
             Loading live platform notifications...
           </div>
         ) : filteredNotifications.length === 0 ? (
-          <Card className="border-slate-800 bg-slate-900/40 p-12 text-center rounded-2xl">
-            <Bell className="h-10 w-10 mx-auto mb-3 text-slate-600 opacity-60" />
-            <p className="font-bold text-slate-200 text-sm">No notifications yet.</p>
-            <p className="text-xs text-slate-500 mt-1">
+          <Card className="border-border bg-foreground p-12 text-center rounded-2xl">
+            <Bell className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-60" />
+            <p className="font-bold text-foreground text-sm">No notifications yet.</p>
+            <p className="text-xs text-muted-foreground mt-1">
               {searchQuery || filterType !== 'all' || filterSeverity !== 'all' || showUnreadOnly
                 ? 'Try adjusting your filters or search query.'
                 : 'All platform systems and tenant environments are operating normally.'}
@@ -591,8 +591,8 @@ export default function PlatformNotificationsPage() {
                   key={item.id}
                   className={`border p-4 sm:p-5 rounded-2xl transition-all ${
                     !item.is_read
-                      ? 'bg-slate-900/95 border-indigo-500/40 ring-1 ring-indigo-500/30 shadow-lg shadow-indigo-950/20'
-                      : 'bg-slate-950/40 border-slate-800/80 opacity-85 hover:opacity-100 hover:border-slate-700'
+                      ? 'bg-foreground border-indigo-500/40 ring-1 ring-indigo-500/30 shadow-lg shadow-indigo-950/20'
+                      : 'bg-foreground border-border opacity-85 hover:opacity-100 hover:border-border'
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -614,7 +614,7 @@ export default function PlatformNotificationsPage() {
                             ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                             : isHealth
                             ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
-                            : 'bg-slate-800 text-slate-300 border-slate-700'
+                            : 'bg-secondary text-muted-foreground border-border'
                         }`}
                       >
                         {isCritical ? (
@@ -653,14 +653,14 @@ export default function PlatformNotificationsPage() {
                                 ? 'bg-rose-950/60 text-rose-300 border-rose-800'
                                 : isWarning
                                 ? 'bg-amber-950/60 text-amber-300 border-amber-800'
-                                : 'bg-slate-800 text-slate-300 border-slate-700'
+                                : 'bg-secondary text-muted-foreground border-border'
                             }`}
                           >
                             {item.severity}
                           </span>
 
                           {/* Category Tag */}
-                          <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700">
+                          <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-slate-800/80 text-muted-foreground border border-border">
                             {item.type}
                           </span>
 
@@ -677,16 +677,16 @@ export default function PlatformNotificationsPage() {
                           )}
                         </div>
 
-                        <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
+                        <p className="text-xs text-muted-foreground leading-relaxed max-w-3xl">
                           {item.message}
                         </p>
 
                         {/* Meta Footer */}
-                        <div className="flex items-center gap-3 sm:gap-4 text-2xs text-slate-500 pt-1 flex-wrap">
-                          <span className="flex items-center gap-1 text-slate-400">
-                            <Clock className="h-3 w-3 text-slate-500" />
+                        <div className="flex items-center gap-3 sm:gap-4 text-2xs text-muted-foreground pt-1 flex-wrap">
+                          <span className="flex items-center gap-1 text-muted-foreground">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
                             <span>{getRelativeTime(item.created_at)}</span>
-                            <span className="text-slate-600">({new Date(item.created_at).toLocaleString()})</span>
+                            <span className="text-muted-foreground">({new Date(item.created_at).toLocaleString()})</span>
                           </span>
 
                           {item.company_name && (
@@ -726,14 +726,14 @@ export default function PlatformNotificationsPage() {
                           Mark Read
                         </Button>
                       ) : (
-                        <span className="text-2xs text-slate-500 italic px-2">Acknowledged</span>
+                        <span className="text-2xs text-muted-foreground italic px-2">Acknowledged</span>
                       )}
 
                       <button
                         type="button"
                         disabled={actionInProgress === `del-${item.id}`}
                         onClick={() => handleDeleteNotification(item.id)}
-                        className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800/80 transition-colors cursor-pointer"
+                        className="p-2 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-slate-800/80 transition-colors cursor-pointer"
                         title="Dismiss notification"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -751,7 +751,7 @@ export default function PlatformNotificationsPage() {
                   variant="outline"
                   onClick={fetchMore}
                   disabled={loadingMore}
-                  className="bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-300 text-xs px-6 py-2 rounded-xl cursor-pointer"
+                  className="bg-foreground border-border hover:bg-secondary text-muted-foreground text-xs px-6 py-2 rounded-xl cursor-pointer"
                 >
                   {loadingMore ? (
                     <>
@@ -773,22 +773,22 @@ export default function PlatformNotificationsPage() {
 
       {/* Broadcast Modal */}
       {broadcastModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-lg bg-foreground border border-border rounded-3xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
                   <Megaphone className="h-5 w-5" />
                 </div>
                 <div>
                   <h3 className="font-bold text-base text-white">Broadcast Announcement</h3>
-                  <p className="text-xs text-slate-400">Send an administrative notice across tenant dashboards.</p>
+                  <p className="text-xs text-muted-foreground">Send an administrative notice across tenant dashboards.</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setBroadcastModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
+                className="p-1.5 text-muted-foreground hover:text-white rounded-lg hover:bg-secondary cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -796,7 +796,7 @@ export default function PlatformNotificationsPage() {
 
             <form onSubmit={handleBroadcastSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-muted-foreground mb-1">
                   Notice Title <span className="text-rose-400">*</span>
                 </label>
                 <Input
@@ -804,13 +804,13 @@ export default function PlatformNotificationsPage() {
                   placeholder="e.g., Scheduled Maintenance / System Upgrade Notice"
                   value={broadcastForm.title}
                   onChange={(e) => setBroadcastForm({ ...broadcastForm, title: e.target.value })}
-                  className="bg-slate-950 border-slate-800 text-xs text-white"
+                  className="bg-foreground border-border text-xs text-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Severity</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Severity</label>
                   <select
                     value={broadcastForm.severity}
                     onChange={(e) =>
@@ -819,7 +819,7 @@ export default function PlatformNotificationsPage() {
                         severity: e.target.value as 'info' | 'warning' | 'critical',
                       })
                     }
-                    className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-foreground border border-border text-foreground text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500"
                   >
                     <option value="info">Info (Blue/General)</option>
                     <option value="warning">Warning (Amber/Advisory)</option>
@@ -828,7 +828,7 @@ export default function PlatformNotificationsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Target Audience</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Target Audience</label>
                   <select
                     value={broadcastForm.target_audience}
                     onChange={(e) =>
@@ -837,7 +837,7 @@ export default function PlatformNotificationsPage() {
                         target_audience: e.target.value as 'all_tenants' | 'all_admins' | 'specific_tenant',
                       })
                     }
-                    className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-foreground border border-border text-foreground text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500"
                   >
                     <option value="all_tenants">All Tenant Environments</option>
                     <option value="all_admins">Platform Administrators Only</option>
@@ -848,18 +848,18 @@ export default function PlatformNotificationsPage() {
 
               {broadcastForm.target_audience === 'specific_tenant' && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Tenant Company ID</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1">Tenant Company ID</label>
                   <Input
                     placeholder="Enter UUID of target company"
                     value={broadcastForm.company_id}
                     onChange={(e) => setBroadcastForm({ ...broadcastForm, company_id: e.target.value })}
-                    className="bg-slate-950 border-slate-800 text-xs text-white tabular-nums"
+                    className="bg-foreground border-border text-xs text-white tabular-nums"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-muted-foreground mb-1">
                   Message Content <span className="text-rose-400">*</span>
                 </label>
                 <textarea
@@ -868,28 +868,28 @@ export default function PlatformNotificationsPage() {
                   placeholder="Enter detailed notice message, instructions, or maintenance window..."
                   value={broadcastForm.message}
                   onChange={(e) => setBroadcastForm({ ...broadcastForm, message: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:outline-none focus:border-indigo-500 leading-relaxed"
+                  className="w-full bg-foreground border border-border text-foreground text-xs rounded-xl p-3 focus:outline-none focus:border-indigo-500 leading-relaxed"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Action Link URL <span className="text-slate-500 font-normal">(Optional)</span>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                  Action Link URL <span className="text-muted-foreground font-normal">(Optional)</span>
                 </label>
                 <Input
                   placeholder="e.g., /platform/health or https://status.inkflow.io"
                   value={broadcastForm.action_url}
                   onChange={(e) => setBroadcastForm({ ...broadcastForm, action_url: e.target.value })}
-                  className="bg-slate-950 border-slate-800 text-xs text-white"
+                  className="bg-foreground border-border text-xs text-white"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setBroadcastModalOpen(false)}
-                  className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800"
+                  className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
                 >
                   Cancel
                 </Button>

@@ -130,7 +130,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black bangla-text leading-tight">
               {tBilingual('Welcome,', 'স্বাগতম,')} {operatorName}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {tBilingual(
                 'Direct machine task queue, approved artwork download, floor consumption, and personal workforce portal.',
                 'সরাসরি মেশিন টাস্ক কিউ, প্রিন্ট আর্টওয়ার্ক ডাউনলোড, কাঁচামাল খরচ এবং ব্যক্তিগত হাজিরা ও বেতন পোর্টাল।'
@@ -139,7 +139,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
           </div>
 
           {/* Quick Shift Punch Status */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-4 min-w-[240px] text-center md:text-right space-y-2 shrink-0">
+          <div className="bg-card/10 backdrop-blur-md border border-white/15 rounded-xl p-4 min-w-[240px] text-center md:text-right space-y-2 shrink-0">
             <div className="text-xs text-blue-200 flex items-center justify-center md:justify-end gap-1.5 font-medium">
               <Clock className="h-3.5 w-3.5 text-cyan-400" />
               <span>{tBilingual('Duty Attendance', 'হাজিরা ও শিফট')}</span>
@@ -202,61 +202,61 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
         <Button
           variant="outline"
           onClick={() => router.push(getTenantNavHref('/operator', pathname))}
-          className="h-auto py-3 px-3.5 justify-start border-slate-200 dark:border-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-300 cursor-pointer"
+          className="h-auto py-3 px-3.5 justify-start border-border hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-300 cursor-pointer"
         >
           <Cpu className="h-5 w-5 text-blue-600 mr-2.5 shrink-0" />
           <div className="text-left">
-            <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{tBilingual('Full Screen Terminal', 'ফুল টার্মিনাল')}</div>
-            <div className="text-2xs text-slate-500">{tBilingual('Touch station queue', 'টাচ কিউ')}</div>
+            <div className="text-xs font-bold text-foreground dark:text-foreground">{tBilingual('Full Screen Terminal', 'ফুল টার্মিনাল')}</div>
+            <div className="text-2xs text-muted-foreground">{tBilingual('Touch station queue', 'টাচ কিউ')}</div>
           </div>
         </Button>
 
         <Button
           variant="outline"
           onClick={() => router.push(getTenantNavHref('/production/floor-consumption', pathname))}
-          className="h-auto py-3 px-3.5 justify-start border-slate-200 dark:border-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:border-amber-300 cursor-pointer"
+          className="h-auto py-3 px-3.5 justify-start border-border hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:border-amber-300 cursor-pointer"
         >
           <Flame className="h-5 w-5 text-amber-600 mr-2.5 shrink-0" />
           <div className="text-left">
-            <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{tBilingual('Floor Consumptions', 'কাঁচামাল খরচ')}</div>
-            <div className="text-2xs text-slate-500">{tBilingual('Log media & wastage', 'মিডিয়া ও অপচয়')}</div>
+            <div className="text-xs font-bold text-foreground dark:text-foreground">{tBilingual('Floor Consumptions', 'কাঁচামাল খরচ')}</div>
+            <div className="text-2xs text-muted-foreground">{tBilingual('Log media & wastage', 'মিডিয়া ও অপচয়')}</div>
           </div>
         </Button>
 
         <Button
           variant="outline"
           onClick={() => router.push(getTenantNavHref('/production/machineries', pathname))}
-          className="h-auto py-3 px-3.5 justify-start border-slate-200 dark:border-slate-800 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:border-purple-300 cursor-pointer"
+          className="h-auto py-3 px-3.5 justify-start border-border hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:border-purple-300 cursor-pointer"
         >
           <Wrench className="h-5 w-5 text-purple-600 mr-2.5 shrink-0" />
           <div className="text-left">
-            <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{tBilingual('Machinery Fleet', 'মেশিন যন্ত্রপাতি')}</div>
-            <div className="text-2xs text-slate-500">{tBilingual('Log breakdown & repair', 'মেরামত ও রক্ষণাবেক্ষণ')}</div>
+            <div className="text-xs font-bold text-foreground dark:text-foreground">{tBilingual('Machinery Fleet', 'মেশিন যন্ত্রপাতি')}</div>
+            <div className="text-2xs text-muted-foreground">{tBilingual('Log breakdown & repair', 'মেরামত ও রক্ষণাবেক্ষণ')}</div>
           </div>
         </Button>
 
         <Button
           variant="outline"
           onClick={() => setActiveTab('workforce')}
-          className="h-auto py-3 px-3.5 justify-start border-slate-200 dark:border-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:border-emerald-300 cursor-pointer"
+          className="h-auto py-3 px-3.5 justify-start border-border hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:border-emerald-300 cursor-pointer"
         >
           <UserCheck className="h-5 w-5 text-emerald-600 mr-2.5 shrink-0" />
           <div className="text-left">
-            <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{tBilingual('My Attendance & Salary', 'আমার বেতন ও হাজিরা')}</div>
-            <div className="text-2xs text-slate-500">{tBilingual('Leaves, OT & payslips', 'ছুটি, ওটি ও স্লিপ')}</div>
+            <div className="text-xs font-bold text-foreground dark:text-foreground">{tBilingual('My Attendance & Salary', 'আমার বেতন ও হাজিরা')}</div>
+            <div className="text-2xs text-muted-foreground">{tBilingual('Leaves, OT & payslips', 'ছুটি, ওটি ও স্লিপ')}</div>
           </div>
         </Button>
       </div>
 
       {/* 3. OPERATOR TABS */}
-      <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-1">
+      <div className="flex items-center gap-1.5 border-b border-border overflow-x-auto pb-1">
         <button
           type="button"
           onClick={() => setActiveTab('queue')}
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'queue'
               ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           {tBilingual('Floor Production Queue', 'ফ্লোর প্রডাকশন কিউ')} ({safeTasks.length})
@@ -268,7 +268,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'workforce'
               ? 'bg-emerald-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           {tBilingual('My Attendance & Salary Portal', 'আমার হাজিরা ও বেতন পোর্টাল')}
@@ -280,7 +280,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'machinery'
               ? 'bg-purple-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           {tBilingual('Machine Stations & Fleet', 'মেশিন স্টেশন ও অবস্থা')}
@@ -292,7 +292,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'perimeter'
               ? 'bg-slate-700 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           {tBilingual('Permissions & Restrictions', 'অনুমতি ও সীমাবদ্ধতা')}
@@ -305,15 +305,15 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
       {activeTab === 'queue' && (
         <div className="space-y-5">
           {/* Station Selector Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted rounded-xl border border-border dark:border-border">
             <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">
+              <span className="text-xs font-bold text-muted-foreground shrink-0">
                 {tBilingual('Station Machine:', 'মেশিন স্টেশন:')}
               </span>
               <select
                 value={selectedMachine}
                 onChange={(e) => setSelectedMachine(e.target.value)}
-                className="h-8 text-xs px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-foreground"
+                className="h-8 text-xs px-2.5 rounded-lg border border-input bg-background text-foreground"
               >
                 {COMMON_MACHINES.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -337,7 +337,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
                 size="sm"
                 variant="ghost"
                 onClick={handleRefresh}
-                className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 cursor-pointer"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground cursor-pointer"
                 title="Refresh queue"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -361,7 +361,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
       {activeTab === 'machinery' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {COMMON_MACHINES.filter((m) => m.id !== 'all').map((m) => (
-            <Card key={m.id} className="border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-400 transition-colors">
+            <Card key={m.id} className="border-border shadow-xs hover:border-blue-400 transition-colors">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <Badge variant="outline" className="capitalize text-2xs font-bold">
@@ -374,12 +374,12 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
                 </div>
 
                 <div className="space-y-0.5">
-                  <div className="font-bold text-sm text-slate-900 dark:text-slate-100">{m.name}</div>
-                  <div className="text-xs text-slate-500">{m.nameBn}</div>
+                  <div className="font-bold text-sm text-foreground dark:text-foreground">{m.name}</div>
+                  <div className="text-xs text-muted-foreground">{m.nameBn}</div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <span className="text-xs text-slate-500">Speed: Normal</span>
+                <div className="pt-2 border-t border-border flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Speed: Normal</span>
                   <Button
                     size="sm"
                     variant="outline"
@@ -398,9 +398,9 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
 
       {/* TAB 4: PERMISSIONS & RESTRICTIONS */}
       {activeTab === 'perimeter' && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <Card className="border-border shadow-xs">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
+            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-blue-600" />
               <span>{tBilingual('Print Operator Security Perimeter & Role Matrix', 'প্রিন্ট অপারেটরের নিরাপত্তা ও অনুমোদনের পরিধি')}</span>
             </CardTitle>
@@ -412,7 +412,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
                   <Check className="h-4 w-4 text-emerald-600" />
                   {tBilingual('Granted Operational Authorities', 'অনুমোদিত কাজের অধিকারসমূহ')}
                 </span>
-                <ul className="space-y-1 text-slate-700 dark:text-slate-300 pl-5 list-disc">
+                <ul className="space-y-1 text-foreground pl-5 list-disc">
                   <li>{tBilingual('View assigned floor tasks and press production jobs', 'নির্ধারিত প্রেস টাস্ক ও জব দেখা')}</li>
                   <li>{tBilingual('1-tap Start, Pause, Resume, and Complete production tasks', 'কাজ শুরু, বিরতি ও সম্পন্ন করা')}</li>
                   <li>{tBilingual('Download approved prepress artwork proofs to RIP stations', 'অনুমোদিত আর্টওয়ার্ক ডাউনলোড করা')}</li>
@@ -427,7 +427,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
                   <AlertTriangle className="h-4 w-4 text-rose-600" />
                   {tBilingual('Strict Governance Restrictions & Limitations', 'কঠোর আর্থিক ও নিরাপত্তা সীমাবদ্ধতা')}
                 </span>
-                <ul className="space-y-1 text-slate-700 dark:text-slate-300 pl-5 list-disc">
+                <ul className="space-y-1 text-foreground pl-5 list-disc">
                   <li>{tBilingual('NO access to customer invoices, billing rates, or commercial prices', 'গ্রাহকের বিল, রেট ও আর্থিক হিসাব দেখার অনুমতি নেই')}</li>
                   <li>{tBilingual('NO access to payment collections, cash ledger, or company accounts', 'টাকা জমা ও ক্যাশবুক দেখার অনুমতি নেই')}</li>
                   <li>{tBilingual('NO access to profit margins or sales executive commissions', 'মুনাফা বা সেলস কমিশন দেখার অনুমতি নেই')}</li>

@@ -887,12 +887,12 @@ export default function QuotationsPage() {
         <div className="space-y-6 max-w-7xl mx-auto pb-20">
         {/* NOTIFICATION TOAST */}
         {notification && (
-          <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-slate-900/95 text-white dark:bg-slate-100 dark:text-slate-900 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
+          <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-foreground text-white backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
             <Sparkles className="h-4 w-4 text-emerald-400 dark:text-emerald-600 shrink-0" />
             <span>{notification}</span>
             <button
               onClick={() => setNotification(null)}
-              className="p-1 text-slate-400 hover:text-white dark:hover:text-black cursor-pointer ml-1"
+              className="p-1 text-muted-foreground hover:text-white dark:hover:text-black cursor-pointer ml-1"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -1011,7 +1011,7 @@ export default function QuotationsPage() {
               colorVariant="cyan"
               subtitle={healthTier.label}
             >
-              <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+              <div className="w-full bg-muted h-1.5 rounded-full mt-1.5 overflow-hidden">
                 <div
                   className={cn('h-full rounded-full transition-all duration-500', healthTier.bar)}
                   style={{ width: `${Math.min(100, Math.max(0, winRateNum))}%` }}
@@ -1028,24 +1028,24 @@ export default function QuotationsPage() {
           <div className="space-y-4">
 
               {/* Unified Single Row Toolbar: Search | Status Filter (Dropdown) | Selected Date | Date filter (dropdown) | Refresh */}
-              <Card className="p-2.5 sm:p-3 shadow-xs border-slate-200 dark:border-slate-800 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+              <Card className="p-2.5 sm:p-3 shadow-xs border-border rounded-2xl bg-card/80 backdrop-blur-md">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
                   {/* Left: Search & Status Filter Dropdown */}
                   <div className="flex flex-1 flex-wrap items-center gap-2.5 min-w-0">
                     {/* 1. Search */}
                     <div className="relative flex-1 min-w-[200px] max-w-sm">
-                      <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                      <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search quote #, customer, phone, item..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="pl-9 pr-8 text-xs h-9 font-medium rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xs"
+                        className="pl-9 pr-8 text-xs h-9 font-medium rounded-xl border-border bg-card shadow-2xs"
                       />
                       {search && (
                         <button
                           type="button"
                           onClick={() => setSearch('')}
-                          className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                          className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-muted-foreground cursor-pointer"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -1057,7 +1057,7 @@ export default function QuotationsPage() {
                       <select
                         value={selectedFilter}
                         onChange={(e) => setSelectedFilter(e.target.value)}
-                        className="h-9 pl-3 pr-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer appearance-none"
+                        className="h-9 pl-3 pr-8 rounded-xl border border-border bg-card text-xs font-semibold text-foreground shadow-2xs focus:ring-1 focus:ring-ring outline-none cursor-pointer appearance-none"
                       >
                         {directoryFilterTabs.map((tab) => (
                           <option key={tab.id} value={tab.id}>
@@ -1065,7 +1065,7 @@ export default function QuotationsPage() {
                           </option>
                         ))}
                       </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground">
                         <ChevronDown className="h-3.5 w-3.5" />
                       </div>
                     </div>
@@ -1075,33 +1075,33 @@ export default function QuotationsPage() {
                   <div className="flex flex-wrap items-center gap-2.5 shrink-0 justify-end">
                     {/* 3. Selected Date */}
                     {selectedPeriod === 'custom' ? (
-                      <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/90 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs shadow-2xs">
+                      <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-xl border border-border text-xs shadow-2xs">
                         <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                         <input
                           type="date"
                           value={customStartDate}
                           onChange={(e) => setCustomStartDate(e.target.value)}
-                          className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none h-7"
+                          className="px-2 py-0.5 rounded-lg bg-card border border-input dark:border-slate-600 text-foreground dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-ring outline-none h-7"
                           title="From Date"
                         />
-                        <span className="text-slate-400 font-bold px-0.5 text-xs">to</span>
+                        <span className="text-muted-foreground font-bold px-0.5 text-xs">to</span>
                         <input
                           type="date"
                           value={customEndDate}
                           onChange={(e) => setCustomEndDate(e.target.value)}
-                          className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none h-7"
+                          className="px-2 py-0.5 rounded-lg bg-card border border-input dark:border-slate-600 text-foreground dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-ring outline-none h-7"
                           title="To Date"
                         />
                         <Button
                           size="sm"
                           onClick={() => loadQuotationsData(false)}
-                          className="h-7 px-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer rounded-lg"
+                          className="h-7 px-2 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer rounded-lg"
                         >
                           Apply
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1.5 bg-slate-100/70 dark:bg-slate-800/70 px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs font-semibold text-slate-600 dark:text-slate-300 tabular-nums whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-xl border border-border dark:border-slate-700/60 text-xs font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
                         <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                         <span>
                           {effectiveMetrics?.startDate} to {effectiveMetrics?.endDate}
@@ -1114,7 +1114,7 @@ export default function QuotationsPage() {
                       <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value as QuotationPeriod)}
-                        className="h-9 pl-3 pr-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer appearance-none"
+                        className="h-9 pl-3 pr-8 rounded-xl border border-border bg-card text-xs font-semibold text-foreground shadow-2xs focus:ring-1 focus:ring-ring outline-none cursor-pointer appearance-none"
                       >
                         <option value="today">{tBilingual('Today', 'আজ')}</option>
                         <option value="this_week">{tBilingual('This Week', 'এই সপ্তাহ')}</option>
@@ -1122,7 +1122,7 @@ export default function QuotationsPage() {
                         <option value="all_time">{tBilingual('All Time', 'সর্বমোট')}</option>
                         <option value="custom">{tBilingual('Custom Date', 'কাস্টম তারিখ')}</option>
                       </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground">
                         <ChevronDown className="h-3.5 w-3.5" />
                       </div>
                     </div>
@@ -1131,7 +1131,7 @@ export default function QuotationsPage() {
                     <button
                       type="button"
                       onClick={() => loadQuotationsData(false)}
-                      className="h-9 w-9 flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer shrink-0"
+                      className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted transition-colors shadow-2xs cursor-pointer shrink-0"
                       title="Refresh quotations data"
                     >
                       <RefreshCw className={cn('h-3.5 w-3.5', (isLoading || isRefreshing) && 'animate-spin text-blue-600')} />
@@ -1141,10 +1141,10 @@ export default function QuotationsPage() {
               </Card>
 
               {/* Quotation Directory Table */}
-              <Card className="shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
-                <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+              <Card className="shadow-xs border-border overflow-hidden rounded-2xl bg-card/80 backdrop-blur-md">
+                <CardHeader className="py-3 px-4 border-b border-border flex flex-row items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                    <CardTitle className="text-sm font-bold text-foreground dark:text-white">
                       Quotation Directory
                     </CardTitle>
                     <Badge variant="outline" className="text-xs tabular-nums">
@@ -1166,20 +1166,20 @@ export default function QuotationsPage() {
                   {isLoading ? (
                     <div className="p-12 text-center space-y-3">
                       <RefreshCw className="h-7 w-7 animate-spin text-blue-600 mx-auto" />
-                      <p className="text-xs text-slate-500 font-medium">Loading quotations pipeline...</p>
+                      <p className="text-xs text-muted-foreground font-medium">Loading quotations pipeline...</p>
                     </div>
                   ) : filteredQuotations.length === 0 ? (
                     <div className="p-12 text-center space-y-3">
-                      <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+                      <div className="h-12 w-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mx-auto">
                         <FileSpreadsheet className="h-6 w-6" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                        <h3 className="text-sm font-bold text-foreground dark:text-foreground">
                           {search || selectedFilter !== 'all'
                             ? 'No quotations match current filter'
                             : 'No quotations created yet'}
                         </h3>
-                        <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                        <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
                           {search || selectedFilter !== 'all'
                             ? 'Try clearing the search query or changing active filter tabs.'
                             : 'Generate formal commercial proposals with custom rates and dimensional pricing in under 60 seconds.'}
@@ -1189,7 +1189,7 @@ export default function QuotationsPage() {
                         <Button
                           size="sm"
                           onClick={() => setIsNewOpen(true)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold mt-2 rounded-xl"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold mt-2 rounded-xl"
                         >
                           <Plus className="h-3.5 w-3.5 mr-1" />
                           Create First Quotation

@@ -78,14 +78,14 @@ export function CustomerSelector({
           onClick={() => setOpen(!open)}
           className={cn(
             'w-full justify-between font-normal text-left h-10 px-3 rounded-xl',
-            !selected && 'text-slate-400',
+            !selected && 'text-muted-foreground',
             error && 'border-red-500'
           )}
         >
           <div className="flex items-center gap-2 truncate">
-            <User className="h-4 w-4 text-slate-400 shrink-0" />
+            <User className="h-4 w-4 text-muted-foreground shrink-0" />
             {selected ? (
-              <span className="truncate font-medium text-slate-900 dark:text-slate-100">
+              <span className="truncate font-medium text-foreground dark:text-foreground">
                 {tBilingual(selected.name, selected.nameBn || selected.name)} (
                 {selected.phone})
               </span>
@@ -93,7 +93,7 @@ export function CustomerSelector({
               <span>{placeholder || t('common.select_option')}</span>
             )}
           </div>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 text-slate-400" />
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
         </Button>
 
         {showAddNew && (
@@ -116,11 +116,11 @@ export function CustomerSelector({
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-11 z-40 w-full rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
+          <div className="absolute left-0 top-11 z-40 w-full rounded-2xl border border-border bg-card p-2 shadow-2xl animate-in fade-in-0 zoom-in-95">
             <div className="flex items-center gap-2 pb-1">
               <input
                 type="text"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-800"
+                className="w-full rounded-xl border border-border bg-muted px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder={t('common.type_to_search')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -135,7 +135,7 @@ export function CustomerSelector({
                     if (onAddNew) onAddNew()
                     else setIsModalOpen(true)
                   }}
-                  className="flex items-center gap-1 shrink-0 h-8 px-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors"
+                  className="flex items-center gap-1 shrink-0 h-8 px-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shadow-xs transition-colors"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>New</span>
@@ -146,7 +146,7 @@ export function CustomerSelector({
             <div className="mt-2 max-h-56 overflow-y-auto space-y-1">
               {filtered.length === 0 ? (
                 <div className="p-4 text-center space-y-2">
-                  <div className="text-xs text-slate-400">
+                  <div className="text-xs text-muted-foreground">
                     {t('common.no_data')}
                   </div>
                   {showAddNew && (
@@ -158,7 +158,7 @@ export function CustomerSelector({
                         if (onAddNew) onAddNew()
                         else setIsModalOpen(true)
                       }}
-                      className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                      className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
                     >
                       <Plus className="h-3.5 w-3.5 mr-1" />
                       Create &quot;{searchTerm}&quot; as New Customer
@@ -176,16 +176,16 @@ export function CustomerSelector({
                         setOpen(false)
                       }}
                       className={cn(
-                        'flex items-center justify-between rounded-xl p-2.5 text-xs cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors',
+                        'flex items-center justify-between rounded-xl p-2.5 text-xs cursor-pointer hover:bg-muted transition-colors',
                         isSelected && 'bg-blue-50 text-blue-900 dark:bg-blue-950/50'
                       )}
                     >
                       <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">
+                        <span className="font-semibold text-foreground truncate">
                           {tBilingual(cust.name, cust.nameBn || cust.name)}
                           {cust.company ? ` (${cust.company})` : ''}
                         </span>
-                        <span className="flex items-center gap-1 text-slate-400 text-2xs">
+                        <span className="flex items-center gap-1 text-muted-foreground text-2xs">
                           <Phone className="h-3 w-3 shrink-0" />
                           {cust.phone}
                         </span>
@@ -212,7 +212,7 @@ export function CustomerSelector({
           </div>
         </>
       )}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
 
       {/* Built-in New Customer Modal */}
       <NewCustomerModal

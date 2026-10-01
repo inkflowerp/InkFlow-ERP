@@ -130,11 +130,11 @@ export function ReportProblemModal({
               <Badge className="bg-rose-600 text-white text-2xs font-bold">
                 {tBilingual(`Job #${task.job_number || 'N/A'}`, `কাজ #${task.job_number || 'N/A'}`)}
               </Badge>
-              <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+              <span className="text-xs font-bold text-foreground truncate">
                 {task.task_name}
               </span>
             </div>
-            <p className="text-2xs text-slate-500">
+            <p className="text-2xs text-muted-foreground">
               {task.customer_name} • {task.quantity} {task.unit}
             </p>
           </div>
@@ -164,10 +164,10 @@ export function ReportProblemModal({
                   className={`p-2.5 rounded-xl border-2 text-xs cursor-pointer transition-all flex items-center gap-2.5 ${
                     isSelected
                       ? 'border-rose-500 bg-rose-50/70 text-rose-950 dark:bg-rose-950/50 dark:text-rose-100 font-bold shadow-xs'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                      : 'border-border bg-card text-foreground hover:border-input'
                   }`}
                 >
-                  <IconComp className={`h-4 w-4 shrink-0 ${isSelected ? 'text-rose-600' : 'text-slate-400'}`} />
+                  <IconComp className={`h-4 w-4 shrink-0 ${isSelected ? 'text-rose-600' : 'text-muted-foreground'}`} />
                   <div className="min-w-0">
                     <div className="truncate font-semibold">{tBilingual(r.labelEn, r.labelBn)}</div>
                   </div>
@@ -184,7 +184,7 @@ export function ReportProblemModal({
           </Label>
 
           {photoPreview ? (
-            <div className="relative rounded-xl border-2 border-slate-200 overflow-hidden max-h-36 flex items-center justify-center bg-slate-900">
+            <div className="relative rounded-xl border-2 border-border overflow-hidden max-h-36 flex items-center justify-center bg-foreground">
               <img src={photoPreview} alt="Problem preview" className="max-h-36 object-contain" />
               <button
                 type="button"
@@ -195,12 +195,12 @@ export function ReportProblemModal({
               </button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all text-center">
-              <Camera className="h-6 w-6 text-slate-400 mb-1" />
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-input rounded-xl cursor-pointer hover:bg-muted dark:hover:bg-muted/60 transition-all text-center">
+              <Camera className="h-6 w-6 text-muted-foreground mb-1" />
+              <span className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                 {tBilingual('Take Photo or Upload Image', 'ক্যামেরা দিয়ে ছবি তুলুন বা আপলোড করুন')}
               </span>
-              <span className="text-2xs text-slate-500">JPG, PNG up to 10MB</span>
+              <span className="text-2xs text-muted-foreground">JPG, PNG up to 10MB</span>
               <input type="file" accept="image/*" capture="environment" onChange={handleFileChange} className="hidden" />
             </label>
           )}
@@ -220,7 +220,7 @@ export function ReportProblemModal({
         </div>
 
         {/* Warning Explanation */}
-        <p className="text-2xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 p-2.5 rounded-lg">
+        <p className="text-2xs text-muted-foreground bg-muted p-2.5 rounded-lg">
           {tBilingual(
             'Submitting this will pause this job, mark it as blocked, and immediately alert the Production Floor Manager.',
             'এটি জমা দিলে কাজ সাময়িকভাবে স্থগিত হবে এবং প্রোডাকশন ম্যানেজারের কাছে তাৎক্ষণিক সতর্কতা চলে যাবে।'
@@ -228,7 +228,7 @@ export function ReportProblemModal({
         </p>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting} className="text-xs">
             {tBilingual('Cancel', 'বাতিল')}
           </Button>

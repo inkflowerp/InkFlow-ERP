@@ -39,7 +39,7 @@ export function InventoryActionBar({
   const isBn = locale === 'bn'
 
   return (
-    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 bg-card rounded-xl border border-border shadow-xs">
       {/* Primary Operations (Left) */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Receive Stock (GRN) */}
@@ -111,11 +111,11 @@ export function InventoryActionBar({
           size="sm"
           onClick={onRefresh}
           disabled={loading}
-          className="text-xs h-9 w-9 p-0 flex items-center justify-center cursor-pointer font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
+          className="text-xs h-9 w-9 p-0 flex items-center justify-center cursor-pointer font-medium text-muted-foreground hover:bg-muted shrink-0"
           title={isBn ? 'ইনভেন্টরি রিফ্রেশ করুন' : 'Refresh live inventory data'}
           aria-label={isBn ? 'ইনভেন্টরি রিফ্রেশ করুন' : 'Refresh live inventory data'}
         >
-          <RefreshCw className={cn('h-3.5 w-3.5 text-slate-500', loading && 'animate-spin')} />
+          <RefreshCw className={cn('h-3.5 w-3.5 text-muted-foreground', loading && 'animate-spin')} />
         </Button>
       </div>
     </div>

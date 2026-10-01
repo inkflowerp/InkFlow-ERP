@@ -142,7 +142,7 @@ export function FinanceDashboardView({
   return (
     <div className="space-y-6">
       {/* 1. HERO LIQUID ACCOUNTS CARD & BALANCE BAR */}
-      <div className="rounded-3xl bg-linear-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 text-white shadow-xl border border-slate-800 relative overflow-hidden">
+      <div className="rounded-3xl bg-linear-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 text-white shadow-xl border border-border relative overflow-hidden">
         {/* Signature CMYK Top Accent Strip */}
         <div className="absolute top-0 inset-x-0 h-1 cmyk-rainbow-bar" />
 
@@ -157,7 +157,7 @@ export function FinanceDashboardView({
               <span className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
                 <Wallet className="w-4 h-4" />
               </span>
-              <span className="text-xs font-semibold tracking-wider uppercase text-slate-300">
+              <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
                 {tBilingual('Total Available Cash & Bank', 'মোট উপলব্ধ নগদ ও ব্যাংক তহবিল')}
               </span>
             </div>
@@ -170,7 +170,7 @@ export function FinanceDashboardView({
                 {tBilingual('100% Liquid', 'তাৎক্ষণিক ব্যবহারযোগ্য')}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1 bangla-text">
+            <p className="text-xs text-muted-foreground mt-1 bangla-text">
               {tBilingual(
                 'Ready cash across all cash drawers, company bank accounts, and mobile wallets.',
                 'দোকানের ক্যাশ ড্রয়ার, ব্যাংক একাউন্ট এবং বিকাশ/নগদ ওয়ালেটে থাকা মোট টাকা।'
@@ -201,7 +201,7 @@ export function FinanceDashboardView({
             <Button
               variant="outline"
               onClick={onOpenTransferModal}
-              className="border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-semibold text-xs h-10 px-3.5 rounded-xl cursor-pointer"
+              className="border-border bg-slate-800/80 hover:bg-slate-700 text-foreground font-semibold text-xs h-10 px-3.5 rounded-xl cursor-pointer"
             >
               <ArrowLeftRight className="w-4 h-4" />
               <span>{tBilingual('Transfer', 'ট্রান্সফার')}</span>
@@ -210,7 +210,7 @@ export function FinanceDashboardView({
             <Button
               variant="outline"
               onClick={onOpenCashClosingModal}
-              className="border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-purple-300 font-semibold text-xs h-10 px-3.5 rounded-xl cursor-pointer"
+              className="border-border bg-slate-800/80 hover:bg-slate-700 text-purple-300 font-semibold text-xs h-10 px-3.5 rounded-xl cursor-pointer"
             >
               <Clock className="w-4 h-4" />
               <span>{tBilingual('Daily Closing', 'ক্যাশ ক্লোজিং')}</span>
@@ -219,18 +219,18 @@ export function FinanceDashboardView({
         </div>
 
         {/* 3-Way Account Balance Split Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-slate-800/80">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-border">
           {/* Cash Balance */}
           <div
             onClick={() => onNavigateTab('cash-bank')}
-            className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all cursor-pointer flex items-center justify-between"
+            className="p-3.5 rounded-2xl bg-card/5 hover:bg-card/10 border border-white/10 transition-all cursor-pointer flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                 <Wallet className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-2xs font-semibold text-slate-400 block uppercase tracking-wider">
+                <span className="text-2xs font-semibold text-muted-foreground block uppercase tracking-wider">
                   {tBilingual('Cash Balance', 'নগদ ক্যাশ ব্যালেন্স')}
                 </span>
                 <span className="text-base sm:text-lg font-black tabular-nums text-white">
@@ -238,20 +238,20 @@ export function FinanceDashboardView({
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-500" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </div>
 
           {/* Bank Balance */}
           <div
             onClick={() => onNavigateTab('cash-bank')}
-            className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all cursor-pointer flex items-center justify-between"
+            className="p-3.5 rounded-2xl bg-card/5 hover:bg-card/10 border border-white/10 transition-all cursor-pointer flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-2xs font-semibold text-slate-400 block uppercase tracking-wider">
+                <span className="text-2xs font-semibold text-muted-foreground block uppercase tracking-wider">
                   {tBilingual('Bank Balance', 'ব্যাংক অ্যাকাউন্ট ব্যালেন্স')}
                 </span>
                 <span className="text-base sm:text-lg font-black tabular-nums text-white">
@@ -259,20 +259,20 @@ export function FinanceDashboardView({
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-500" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </div>
 
           {/* MFS Balance */}
           <div
             onClick={() => onNavigateTab('cash-bank')}
-            className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all cursor-pointer flex items-center justify-between"
+            className="p-3.5 rounded-2xl bg-card/5 hover:bg-card/10 border border-white/10 transition-all cursor-pointer flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0">
                 <Smartphone className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-2xs font-semibold text-slate-400 block uppercase tracking-wider">
+                <span className="text-2xs font-semibold text-muted-foreground block uppercase tracking-wider">
                   {tBilingual('bKash / Nagad / MFS', 'বিকাশ / নগদ ওয়ালেট')}
                 </span>
                 <span className="text-base sm:text-lg font-black tabular-nums text-white">
@@ -280,7 +280,7 @@ export function FinanceDashboardView({
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-500" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </div>
         </div>
       </div>
@@ -343,17 +343,17 @@ export function FinanceDashboardView({
       {/* 3. TWO-COLUMN OPERATIONAL STREAM: OVERDUE CUSTOMERS & SUPPLIER DUES */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Overdue Customers Alert Table */}
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center">
                 <Users className="w-4 h-4" />
               </div>
               <div>
-                <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                   {tBilingual('Overdue Customers', 'বকেয়া গ্রাহকের তালিকা')}
                 </CardTitle>
-                <p className="text-2xs text-slate-400">
+                <p className="text-2xs text-muted-foreground">
                   {tBilingual('Top clients with unpaid invoices needing payment reminder', 'জরুরি বাকি তাগাদা দেওয়ার তালিকা')}
                 </p>
               </div>
@@ -368,14 +368,14 @@ export function FinanceDashboardView({
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+            <div className="divide-y divide-border dark:divide-border/60">
               {overdueCustomers.map((cust) => (
-                <div key={cust.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                <div key={cust.id} className="p-3.5 flex items-center justify-between hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                   <div className="min-w-0 pr-2">
-                    <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 block truncate">
+                    <span className="font-semibold text-xs text-foreground block truncate">
                       {cust.name}
                     </span>
-                    <div className="flex items-center gap-2 mt-0.5 text-2xs text-slate-400">
+                    <div className="flex items-center gap-2 mt-0.5 text-2xs text-muted-foreground">
                       {cust.phone && <span>{cust.phone}</span>}
                       <span className="text-rose-500 font-semibold">
                         {cust.daysOverdue > 0 ? `${cust.daysOverdue} days overdue` : 'Due today'}
@@ -419,7 +419,7 @@ export function FinanceDashboardView({
               ))}
 
               {overdueCustomers.length === 0 && (
-                <div className="p-6 text-center text-xs text-slate-400">
+                <div className="p-6 text-center text-xs text-muted-foreground">
                   <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80" />
                   <p>{tBilingual('No overdue customer payments. Excellent collection!', 'কোনো বকেয়া গ্রাহক নেই। চমৎকার কালেকশন!')}</p>
                 </div>
@@ -429,17 +429,17 @@ export function FinanceDashboardView({
         </Card>
 
         {/* Supplier Dues Alert Table */}
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950/50 text-rose-600 flex items-center justify-center">
                 <ShoppingBag className="w-4 h-4" />
               </div>
               <div>
-                <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                   {tBilingual('Supplier Dues (Payables)', 'সরবরাহকারী মহাজন পাওনা')}
                 </CardTitle>
-                <p className="text-2xs text-slate-400">
+                <p className="text-2xs text-muted-foreground">
                   {tBilingual('Outstanding supplier raw material & paper bills', 'কাঁচামাল ও কাগজের বকেয়া বিল')}
                 </p>
               </div>
@@ -454,14 +454,14 @@ export function FinanceDashboardView({
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+            <div className="divide-y divide-border dark:divide-border/60">
               {supplierDues.map((supp) => (
-                <div key={supp.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                <div key={supp.id} className="p-3.5 flex items-center justify-between hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                   <div className="min-w-0 pr-2">
-                    <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 block truncate">
+                    <span className="font-semibold text-xs text-foreground block truncate">
                       {supp.name}
                     </span>
-                    <div className="flex items-center gap-2 mt-0.5 text-2xs text-slate-400">
+                    <div className="flex items-center gap-2 mt-0.5 text-2xs text-muted-foreground">
                       {supp.phone && <span>{supp.phone}</span>}
                       <span>{supp.status}</span>
                     </div>
@@ -487,7 +487,7 @@ export function FinanceDashboardView({
               ))}
 
               {supplierDues.length === 0 && (
-                <div className="p-6 text-center text-xs text-slate-400">
+                <div className="p-6 text-center text-xs text-muted-foreground">
                   <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80" />
                   <p>{tBilingual('All supplier accounts are settled!', 'সকল মহাজন বিল পরিশোধিত রয়েছে!')}</p>
                 </div>
@@ -498,17 +498,17 @@ export function FinanceDashboardView({
       </div>
 
       {/* 4. RECENT TRANSACTIONS (ONE UNIFIED LEDGER STREAM) */}
-      <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+      <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+        <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center">
               <Receipt className="w-4 h-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                 {tBilingual('Recent Transactions', 'সাম্প্রতিক লেনদেন লেজার')}
               </CardTitle>
-              <p className="text-2xs text-slate-400">
+              <p className="text-2xs text-muted-foreground">
                 {tBilingual('Authoritative log of all cash, bank, and MFS entries', 'নগদ, ব্যাংক ও ওয়ালেট লেনদেনের সর্বশেষ বিবরণী')}
               </p>
             </div>
@@ -525,7 +525,7 @@ export function FinanceDashboardView({
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
                 <tr>
                   <th className="p-3">{tBilingual('Date', 'তারিখ')}</th>
                   <th className="p-3">{tBilingual('Type', 'ধরন')}</th>
@@ -534,10 +534,10 @@ export function FinanceDashboardView({
                   <th className="p-3 text-right">{tBilingual('Amount', 'পরিমাণ')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+              <tbody className="divide-y divide-border dark:divide-border/50">
                 {txnsList.map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="p-3 tabular-nums text-slate-500 whitespace-nowrap">{t.date || t.time}</td>
+                  <tr key={t.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                    <td className="p-3 tabular-nums text-muted-foreground whitespace-nowrap">{t.date || t.time}</td>
                     <td className="p-3">
                       <Badge
                         variant={t.isCredit ? 'success' : t.type === 'ACCOUNT_TRANSFER' ? 'info' : 'destructive'}
@@ -546,11 +546,11 @@ export function FinanceDashboardView({
                         {t.isCredit ? 'Money In' : t.type === 'ACCOUNT_TRANSFER' ? 'Transfer' : 'Money Out'}
                       </Badge>
                     </td>
-                    <td className="p-3 font-medium text-slate-800 dark:text-slate-200">
+                    <td className="p-3 font-medium text-foreground dark:text-foreground">
                       <div>{t.title}</div>
-                      {t.subtitle && <div className="text-2xs text-slate-400 truncate max-w-xs">{t.subtitle}</div>}
+                      {t.subtitle && <div className="text-2xs text-muted-foreground truncate max-w-xs">{t.subtitle}</div>}
                     </td>
-                    <td className="p-3 text-slate-600 dark:text-slate-400 tabular-nums text-2xs">
+                    <td className="p-3 text-muted-foreground tabular-nums text-2xs">
                       {t.type === 'ACCOUNT_TRANSFER' ? 'Cash → Bank' : t.isCredit ? 'Cash / MFS' : 'Main Account'}
                     </td>
                     <td className="p-3 text-right tabular-nums font-bold">
@@ -563,7 +563,7 @@ export function FinanceDashboardView({
 
                 {txnsList.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-slate-400 text-xs">
+                    <td colSpan={5} className="p-8 text-center text-muted-foreground text-xs">
                       {tBilingual('No recent transactions found.', 'কোনো লেনদেন রেকর্ড পাওয়া যায়নি।')}
                     </td>
                   </tr>

@@ -44,7 +44,7 @@ export function CustomerTimeline({
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="h-16 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900/60 animate-pulse"
+            className="h-16 rounded-xl border border-border bg-muted animate-pulse"
           />
         ))}
       </div>
@@ -53,12 +53,12 @@ export function CustomerTimeline({
 
   if (events.length === 0) {
     return (
-      <Card className="border-slate-200 dark:border-slate-800 p-8 text-center bg-white dark:bg-slate-950">
-        <Clock className="h-8 w-8 mx-auto mb-2 text-slate-300 dark:text-slate-700" />
-        <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+      <Card className="border-border p-8 text-center bg-card dark:bg-background">
+        <Clock className="h-8 w-8 mx-auto mb-2 text-muted-foreground dark:text-foreground" />
+        <div className="text-sm font-semibold text-foreground dark:text-muted-foreground">
           No Activity Logged Yet
         </div>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Invoices, payments, quotations, and communications will appear chronologically here.
         </p>
       </Card>
@@ -84,7 +84,7 @@ export function CustomerTimeline({
       case 'rate_overridden':
         return <Tag className="h-4 w-4 text-purple-600" />
       default:
-        return <Clock className="h-4 w-4 text-slate-400" />
+        return <Clock className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -180,34 +180,34 @@ export function CustomerTimeline({
     }
 
     return (
-      <span className="tabular-nums text-2xs font-medium text-slate-600 dark:text-slate-400">
+      <span className="tabular-nums text-2xs font-medium text-muted-foreground dark:text-muted-foreground">
         Ref: {refNum}
       </span>
     )
   }
 
   return (
-    <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+    <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-muted dark:before:bg-secondary">
       {events.map((evt) => (
         <div key={evt.id} className="relative group">
           {/* Node Icon */}
-          <div className="absolute -left-6 top-1 h-5 w-5 rounded-full border-2 border-white dark:border-slate-950 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-xs">
+          <div className="absolute -left-6 top-1 h-5 w-5 rounded-full border-2 border-white dark:border-slate-950 bg-muted flex items-center justify-center shadow-xs">
             {getEventIcon(evt.type)}
           </div>
 
           {/* Event Content Card */}
-          <Card className="border-slate-200 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+          <Card className="border-border shadow-xs hover:border-input transition-colors">
             <CardContent className="p-3 text-xs space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-900 dark:text-white">
+                  <span className="font-semibold text-foreground dark:text-white">
                     {evt.title}
                   </span>
                   {getEventBadge(evt.type)}
                   {renderReferenceLink(evt)}
                 </div>
 
-                <div className="text-2xs text-slate-400 font-medium shrink-0">
+                <div className="text-2xs text-muted-foreground font-medium shrink-0">
                   {new Date(evt.timestamp).toLocaleDateString('en-GB', {
                     day: 'numeric',
                     month: 'short',
@@ -217,19 +217,19 @@ export function CustomerTimeline({
               </div>
 
               {evt.description && (
-                <div className="text-slate-600 dark:text-slate-400 text-2xs leading-relaxed">
+                <div className="text-muted-foreground text-2xs leading-relaxed">
                   {evt.description}
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-1 text-2xs text-slate-400">
+              <div className="flex items-center justify-between pt-1 text-2xs text-muted-foreground">
                 {evt.actorName && (
                   <span>
-                    By: <strong className="text-slate-600 dark:text-slate-300 font-medium">{evt.actorName}</strong>
+                    By: <strong className="text-muted-foreground font-medium">{evt.actorName}</strong>
                   </span>
                 )}
                 {evt.amount !== undefined && evt.amount !== null && (
-                  <span className="font-bold text-slate-700 dark:text-slate-300 ml-auto">
+                  <span className="font-bold text-foreground ml-auto">
                     Amount: ৳{evt.amount.toLocaleString('en-IN')}
                   </span>
                 )}

@@ -239,7 +239,7 @@ function QuotationDetailContent() {
       <FeatureGate feature="quotation_pdf">
         <div className="space-y-6 max-w-6xl py-12 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto" />
-          <p className="text-xs text-slate-500 font-medium">Loading quotation cockpit...</p>
+          <p className="text-xs text-muted-foreground font-medium">Loading quotation cockpit...</p>
         </div>
       </FeatureGate>
     )
@@ -251,15 +251,15 @@ function QuotationDetailContent() {
         <div className="space-y-6 max-w-6xl">
           <Link
             href={getTenantNavHref('/quotations', pathname, slug)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Quotations Directory
           </Link>
           <Card className="p-12 text-center border-dashed">
-            <FileSpreadsheet className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Quotation Not Found</h2>
-            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+            <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <h2 className="text-base font-bold text-foreground dark:text-foreground">Quotation Not Found</h2>
+            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
               The quotation you are trying to view does not exist or has been removed.
             </p>
             <Button asChild className="mt-4" size="sm">
@@ -489,7 +489,7 @@ function QuotationDetailContent() {
 
   return (
     <FeatureGate feature="quotation_pdf">
-      <div className="space-y-6 max-w-6xl pb-16 print:max-w-none print:w-full print:bg-white print:text-slate-900 print:m-0 print:p-0">
+      <div className="space-y-6 max-w-6xl pb-16 print:max-w-none print:w-full print:bg-white print:text-foreground print:m-0 print:p-0">
         {/* =========================================================================
             NON-PRINT CONTROLS: ACTION HIERARCHY HEADER
            ========================================================================= */}
@@ -497,7 +497,7 @@ function QuotationDetailContent() {
           <div className="flex items-center justify-between">
             <Link
               href={getTenantNavHref('/quotations', pathname, slug)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               Back to Quotations Directory
@@ -508,7 +508,7 @@ function QuotationDetailContent() {
               variant="ghost"
               onClick={() => fetchQuotationDetail(false)}
               disabled={isRefreshing}
-              className="h-7 w-7 p-0 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground cursor-pointer"
               title="Sync / Refresh quotation data"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -516,7 +516,7 @@ function QuotationDetailContent() {
           </div>
 
           {/* Cockpit Command Center Card */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 text-white dark:bg-slate-950 shadow-xl space-y-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-foreground text-white shadow-xl space-y-4">
             {/* Top Row: Identification & Badges */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
               <div className="space-y-1">
@@ -524,7 +524,7 @@ function QuotationDetailContent() {
                   <span className="tabular-nums font-black text-cyan-300 text-xl tracking-tight">
                     {quote.quotation_number}
                   </span>
-                  <Badge variant="outline" className="bg-white/10 text-white border-white/20 text-xs font-bold capitalize">
+                  <Badge variant="outline" className="bg-card/10 text-white border-white/20 text-xs font-bold capitalize">
                     {quote.status}
                   </Badge>
                   {quote.converted_order_id && (
@@ -542,7 +542,7 @@ function QuotationDetailContent() {
                   )}
                 </div>
 
-                <div className="text-xs text-slate-300 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span>Customer: <strong className="text-white">{quote.customer_name}</strong> {quote.customer_company && `(${quote.customer_company})`}</span>
                   <span>•</span>
                   <span>Sales: <strong className="text-white">{quote.salesperson_name}</strong></span>
@@ -554,14 +554,14 @@ function QuotationDetailContent() {
               {/* Next Action & Status Dropdown */}
               <div className="flex items-center gap-2 shrink-0">
                 <div className="text-right hidden sm:block">
-                  <span className="text-2xs text-slate-400 uppercase font-semibold block">Recommended Next Action</span>
+                  <span className="text-2xs text-muted-foreground uppercase font-semibold block">Recommended Next Action</span>
                   <span className="text-xs font-bold text-amber-300">{nextAction}</span>
                 </div>
 
                 <select
                   value={quote.status}
                   onChange={(e) => handleStatusChange(e.target.value as QuotationStatus)}
-                  className="h-9 px-2.5 rounded-lg bg-white/10 text-white text-xs border border-white/20 font-semibold focus:ring-1 focus:ring-cyan-400"
+                  className="h-9 px-2.5 rounded-lg bg-card/10 text-white text-xs border border-white/20 font-semibold focus:ring-1 focus:ring-cyan-400"
                 >
                   <option value="draft" className="text-black">Draft</option>
                   <option value="sent" className="text-black">Sent</option>
@@ -578,7 +578,7 @@ function QuotationDetailContent() {
             {/* Commercial Advance Terms HUD Banner */}
             <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <span className="text-2xs uppercase font-bold text-slate-400 block">Total Quoted Value</span>
+                <span className="text-2xs uppercase font-bold text-muted-foreground block">Total Quoted Value</span>
                 <span className="text-sm font-black tabular-nums text-white">{formatBDT(quote.grand_total)}</span>
               </div>
               <div>
@@ -588,11 +588,11 @@ function QuotationDetailContent() {
                 <span className="text-sm font-black tabular-nums text-amber-400">{formatBDT(advanceAmt)}</span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-slate-400 block">Balance on Delivery</span>
-                <span className="text-sm font-black tabular-nums text-slate-200">{formatBDT(dueOnDeliv)}</span>
+                <span className="text-2xs uppercase font-bold text-muted-foreground block">Balance on Delivery</span>
+                <span className="text-sm font-black tabular-nums text-foreground">{formatBDT(dueOnDeliv)}</span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-slate-400 block">Internal Margin Floor</span>
+                <span className="text-2xs uppercase font-bold text-muted-foreground block">Internal Margin Floor</span>
                 <span className={`text-sm font-black tabular-nums ${quote.margin_percent && quote.margin_percent >= 30 ? 'text-emerald-400' : 'text-amber-400'}`}>
                   {quote.margin_percent || 40}% ({formatBDT(quote.total_cost || Math.round(quote.subtotal * 0.55))})
                 </span>
@@ -607,7 +607,7 @@ function QuotationDetailContent() {
                 <Button
                   size="sm"
                   onClick={() => setIsFollowUpOpen(true)}
-                  className="h-9 text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 shadow-md gap-1.5 cursor-pointer"
+                  className="h-9 text-xs bg-amber-500 hover:bg-amber-600 text-foreground font-black px-4 shadow-md gap-1.5 cursor-pointer"
                 >
                   <Clock className="h-4 w-4" />
                   Follow Up
@@ -643,7 +643,7 @@ function QuotationDetailContent() {
                   size="sm"
                   variant="outline"
                   onClick={() => setIsNegotiationOpen(true)}
-                  className="h-9 text-xs bg-white/10 text-white border-white/20 hover:bg-white/20 gap-1.5 cursor-pointer"
+                  className="h-9 text-xs bg-card/10 text-white border-white/20 hover:bg-card/20 gap-1.5 cursor-pointer"
                 >
                   <Sliders className="h-3.5 w-3.5 text-cyan-300" />
                   Negotiate Margin
@@ -654,7 +654,7 @@ function QuotationDetailContent() {
                   size="sm"
                   variant="outline"
                   onClick={handleDuplicate}
-                  className="h-9 text-xs bg-white/10 text-white border-white/20 hover:bg-white/20 gap-1.5 cursor-pointer"
+                  className="h-9 text-xs bg-card/10 text-white border-white/20 hover:bg-card/20 gap-1.5 cursor-pointer"
                 >
                   <Copy className="h-3.5 w-3.5" />
                   Duplicate
@@ -722,10 +722,10 @@ function QuotationDetailContent() {
           </div>
 
           {/* Document Presentation Language Switcher */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs border border-slate-200 dark:border-slate-800">
-            <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-muted text-xs border border-border dark:border-border">
+            <span className="font-semibold text-foreground flex items-center gap-2">
               <span>Document Presentation Language:</span>
-              <span className="text-2xs text-slate-400 font-normal">
+              <span className="text-2xs text-muted-foreground font-normal">
                 (Changes print/view typography between English and বাংলা)
               </span>
             </span>
@@ -762,27 +762,27 @@ function QuotationDetailContent() {
             PROFESSIONAL PRINT & PDF QUOTATION DOCUMENT
             Standard A4 layout with print-optimized styling
            ========================================================================= */}
-        <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 p-8 sm:p-12 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
+        <div className="bg-card text-foreground dark:text-white print:bg-white print:text-foreground print:dark:bg-card print:dark:text-foreground p-8 sm:p-12 rounded-2xl shadow-xl border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
           {/* Document Header */}
-          <div className="flex justify-between items-start border-b-2 border-slate-900 dark:border-slate-700 print:border-slate-900 pb-6">
+          <div className="flex justify-between items-start border-b-2 border-slate-900 print:border-slate-900 pb-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2.5">
                 <div className="h-11 w-11 rounded-xl bg-blue-700 text-white font-black text-2xl flex items-center justify-center shadow-xs">
                   {(company?.name || 'I').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-white print:text-slate-900">
+                  <h2 className="text-xl font-black tracking-tight text-foreground dark:text-white print:text-foreground">
                     {company?.name || 'InkFlow Printing & Signage Solutions'}
                   </h2>
                   {company?.name_bn && (
-                    <div className="text-xs text-slate-600 dark:text-slate-400 print:text-slate-600 font-semibold">{company.name_bn}</div>
+                    <div className="text-xs text-muted-foreground print:text-muted-foreground font-semibold">{company.name_bn}</div>
                   )}
                 </div>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 print:text-slate-600 pt-1">
+              <p className="text-xs text-muted-foreground print:text-muted-foreground pt-1">
                 42 Fakirapool Main Road, Motijheel Commercial Area, Dhaka-1000, Bangladesh
               </p>
-              <div className="text-xs text-slate-600 dark:text-slate-400 print:text-slate-600 flex flex-wrap gap-3 pt-0.5">
+              <div className="text-xs text-muted-foreground print:text-muted-foreground flex flex-wrap gap-3 pt-0.5">
                 <span>Phone: +880 1711-000000</span>
                 <span>•</span>
                 <span>BIN / মূসক: 004819284-0101</span>
@@ -795,17 +795,17 @@ function QuotationDetailContent() {
               <div className="text-2xl font-black text-blue-800 dark:text-blue-400 uppercase tracking-wide print:text-blue-800">
                 {languageMode === 'bn' ? 'উদ্ধৃতিপত্র / প্রাক্কলন' : 'OFFICIAL QUOTATION'}
               </div>
-              <div className="text-sm tabular-nums font-bold text-slate-900 dark:text-slate-100 print:text-slate-900">
+              <div className="text-sm tabular-nums font-bold text-foreground print:text-foreground">
                 {quote.quotation_number}
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 print:text-slate-500">
+              <div className="text-xs text-muted-foreground print:text-muted-foreground">
                 Date: <strong>{quote.quotation_date}</strong>
               </div>
               <div className="text-xs text-red-600 dark:text-red-400 font-semibold print:text-red-600">
                 Valid Until: <strong>{quote.valid_until}</strong>
               </div>
               {quote.reference_no && (
-                <div className="text-xs text-slate-700 dark:text-slate-300 print:text-slate-700 tabular-nums">
+                <div className="text-xs text-foreground print:text-foreground tabular-nums">
                   Ref / PO: <strong>{quote.reference_no}</strong>
                 </div>
               )}
@@ -813,51 +813,51 @@ function QuotationDetailContent() {
           </div>
 
           {/* Customer & Project Meta Box */}
-          <div className="grid grid-cols-2 gap-6 my-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs print:bg-slate-50 print:border-slate-200">
+          <div className="grid grid-cols-2 gap-6 my-6 p-4 rounded-xl bg-muted border border-border text-xs print:bg-muted print:border-border">
             <div className="space-y-1">
-              <span className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 print:text-slate-500">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'গ্রাহকের তথ্য (বিল প্রাপক)' : 'Bill To / Client Details'}
               </span>
-              <div className="text-sm font-bold text-slate-900 dark:text-white print:text-slate-900">
+              <div className="text-sm font-bold text-foreground dark:text-white print:text-foreground">
                 {languageMode === 'bn' && quote.customer_name_bn ? quote.customer_name_bn : quote.customer_name}
                 {quote.customer_company && (
-                  <span className="font-normal text-xs text-slate-600 dark:text-slate-400 print:text-slate-600 ml-1">({quote.customer_company})</span>
+                  <span className="font-normal text-xs text-muted-foreground print:text-muted-foreground ml-1">({quote.customer_company})</span>
                 )}
               </div>
-              {quote.customer_address && <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">{quote.customer_address}</div>}
-              <div className="text-slate-600 dark:text-slate-400 print:text-slate-600 tabular-nums">Mobile: {quote.customer_phone}</div>
-              {quote.customer_email && <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">Email: {quote.customer_email}</div>}
+              {quote.customer_address && <div className="text-muted-foreground print:text-muted-foreground">{quote.customer_address}</div>}
+              <div className="text-muted-foreground print:text-muted-foreground tabular-nums">Mobile: {quote.customer_phone}</div>
+              {quote.customer_email && <div className="text-muted-foreground print:text-muted-foreground">Email: {quote.customer_email}</div>}
               {quote.customer_type && (
-                <div className="text-slate-500 dark:text-slate-400 print:text-slate-500 uppercase text-2xs font-bold pt-0.5">
+                <div className="text-muted-foreground print:text-muted-foreground uppercase text-2xs font-bold pt-0.5">
                   Category: {quote.customer_type}
                 </div>
               )}
             </div>
 
             <div className="space-y-1 text-right sm:text-left">
-              <span className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 print:text-slate-500">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'প্রকল্প ও ডেলিভারি বিবরণ' : 'Quotation Specifics'}
               </span>
-              <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">
+              <div className="text-foreground print:text-foreground">
                 Sales Representative: <strong>{quote.salesperson_name}</strong>
               </div>
               {quote.delivery_date && (
-                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">
+                <div className="text-foreground print:text-foreground">
                   Target Delivery: <strong>{quote.delivery_date}</strong>
                 </div>
               )}
               {quote.delivery_method && (
-                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700 capitalize">
+                <div className="text-foreground print:text-foreground capitalize">
                   Delivery Method: <strong>{quote.delivery_method.replace('_', ' ')}</strong>
                 </div>
               )}
               {quote.delivery_location && (
-                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">
+                <div className="text-foreground print:text-foreground">
                   Delivery Location: <strong>{quote.delivery_location}</strong>
                 </div>
               )}
               {quote.customer_bin && (
-                <div className="text-slate-700 dark:text-slate-300 print:text-slate-700 tabular-nums">
+                <div className="text-foreground print:text-foreground tabular-nums">
                   Customer BIN: <strong>{quote.customer_bin}</strong>
                 </div>
               )}
@@ -868,7 +868,7 @@ function QuotationDetailContent() {
           <div className="my-6">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-900 dark:bg-slate-800 text-white print:bg-slate-900">
+                <tr className="bg-foreground text-white print:bg-foreground">
                   <th className="py-2.5 px-3 font-bold w-12 text-center">#</th>
                   <th className="py-2.5 px-3 font-bold">
                     {languageMode === 'bn' ? 'পণ্যের বিবরণ ও স্পেসিফিকেশন' : 'Item Description & Specifications'}
@@ -887,24 +887,24 @@ function QuotationDetailContent() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 print:divide-slate-200 print:border-slate-200">
+              <tbody className="divide-y divide-border border-b border-border print:divide-border print:border-border">
                 {quote.items.map((item, idx) => {
                   const catPreset = (item as any).category_preset
                   const offsetSpecs = (item as any).offset_specs
                   const signageSpecs = (item as any).signage_specs
 
                   return (
-                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 print:hover:bg-transparent">
-                      <td className="py-3 px-3 text-center tabular-nums font-bold text-slate-500 dark:text-slate-400 print:text-slate-500">
+                    <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 print:hover:bg-transparent">
+                      <td className="py-3 px-3 text-center tabular-nums font-bold text-muted-foreground print:text-muted-foreground">
                         {idx + 1}
                       </td>
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-bold text-slate-900 dark:text-white print:text-slate-900">
+                          <span className="font-bold text-foreground dark:text-white print:text-foreground">
                             {languageMode === 'bn' && item.description_bn ? item.description_bn : item.description}
                           </span>
                           {catPreset && (
-                            <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 print:border-slate-300">
+                            <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 print:border-input">
                               {catPreset === 'digital'
                                 ? 'Digital Flex/Vinyl'
                                 : catPreset === 'offset'
@@ -919,7 +919,7 @@ function QuotationDetailContent() {
                         </div>
 
                         {item.material_spec && (
-                          <div className="text-2xs text-slate-600 dark:text-slate-400 print:text-slate-600">
+                          <div className="text-2xs text-muted-foreground print:text-muted-foreground">
                             <strong>Material:</strong> {item.material_spec}
                           </div>
                         )}
@@ -960,7 +960,7 @@ function QuotationDetailContent() {
                       <td className="py-3 px-3 text-right tabular-nums font-medium">
                         {formatBDT(item.unit_rate)}
                       </td>
-                      <td className="py-3 px-3 text-right tabular-nums font-bold text-slate-900 dark:text-white print:text-slate-900">
+                      <td className="py-3 px-3 text-right tabular-nums font-bold text-foreground dark:text-white print:text-foreground">
                         {formatBDT(item.item_total)}
                       </td>
                     </tr>
@@ -975,17 +975,17 @@ function QuotationDetailContent() {
             {/* Terms, Notes & Bank Accounts */}
             <div className="space-y-3 text-xs">
               <div>
-                <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-2xs print:text-slate-900">
+                <span className="font-bold text-foreground dark:text-white uppercase tracking-wider text-2xs print:text-foreground">
                   {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Commercial Terms & Conditions:'}
                 </span>
-                <pre className="font-sans whitespace-pre-line text-slate-600 dark:text-slate-400 print:text-slate-600 text-2xs leading-relaxed mt-1">
+                <pre className="font-sans whitespace-pre-line text-muted-foreground print:text-muted-foreground text-2xs leading-relaxed mt-1">
                   {quote.terms_and_conditions || (languageMode === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS)}
                 </pre>
               </div>
 
               {/* Payment Remittance Details */}
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 print:bg-slate-50 print:border-slate-200 print:text-slate-700 space-y-1">
-                <span className="font-bold block text-2xs uppercase text-slate-900 dark:text-white print:text-slate-900">
+              <div className="p-3 rounded-xl bg-muted border border-border text-foreground print:bg-muted print:border-border print:text-foreground space-y-1">
+                <span className="font-bold block text-2xs uppercase text-foreground dark:text-white print:text-foreground">
                   {languageMode === 'bn' ? 'পেমেন্ট ও ব্যাংক হিসাব (Payment Details):' : 'Official Payment Accounts:'}
                 </span>
                 <div className="text-2xs space-y-0.5">
@@ -996,15 +996,15 @@ function QuotationDetailContent() {
               </div>
 
               {quote.notes && (
-                <div className="p-2.5 rounded-lg bg-amber-50/50 dark:bg-slate-900 border border-amber-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 print:bg-slate-50 print:border-slate-200 print:text-slate-700">
+                <div className="p-2.5 rounded-lg bg-amber-50/50 border border-amber-200 text-foreground print:bg-muted print:border-border print:text-foreground">
                   <strong>Special Note:</strong> {quote.notes}
                 </div>
               )}
             </div>
 
             {/* Subtotal, Discount, VAT, Grand Total & Advance Breakdown */}
-            <div className="space-y-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 print:border-slate-200">
-              <div className="flex justify-between py-1 text-slate-600 dark:text-slate-400 print:text-slate-600">
+            <div className="space-y-2 text-xs border border-border rounded-xl p-4 bg-muted print:bg-muted print:border-border">
+              <div className="flex justify-between py-1 text-muted-foreground print:text-muted-foreground">
                 <span>{languageMode === 'bn' ? 'উপমোট (Subtotal):' : 'Subtotal:'}</span>
                 <span className="tabular-nums font-semibold">{formatBDT(quote.subtotal)}</span>
               </div>
@@ -1016,29 +1016,29 @@ function QuotationDetailContent() {
                 </div>
               )}
 
-              <div className="flex justify-between py-1 text-slate-600 dark:text-slate-400 print:text-slate-600">
+              <div className="flex justify-between py-1 text-muted-foreground print:text-muted-foreground">
                 <span>{languageMode === 'bn' ? `ভ্যাট / মূসক (${quote.vat_rate}% - Mushak 6.3):` : `NBR VAT (${quote.vat_rate}%):`}</span>
                 <span className="tabular-nums">+ {formatBDT(quote.vat_amount)}</span>
               </div>
 
-              <div className="flex justify-between py-2 border-t-2 border-slate-900 dark:border-slate-700 print:border-slate-900 font-black text-sm text-slate-900 dark:text-white print:text-slate-900">
+              <div className="flex justify-between py-2 border-t-2 border-slate-900 print:border-slate-900 font-black text-sm text-foreground dark:text-white print:text-foreground">
                 <span>{languageMode === 'bn' ? 'সর্বমোট প্রাক্কলন (Grand Total):' : 'Grand Total (BDT):'}</span>
                 <span className="tabular-nums text-base text-blue-700 dark:text-blue-400 print:text-blue-700">{formatBDT(quote.grand_total)}</span>
               </div>
 
               {/* Advance & Due Breakdown */}
-              <div className="border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 pt-2 space-y-1">
+              <div className="border-t border-dashed border-input print:border-input pt-2 space-y-1">
                 <div className="flex justify-between py-0.5 text-amber-700 dark:text-amber-400 font-bold print:text-amber-800">
                   <span>{languageMode === 'bn' ? `প্রয়োজনীয় অগ্রিম (${advancePct}% Advance Required):` : `Advance Required (${advancePct}%):`}</span>
                   <span className="tabular-nums">{formatBDT(advanceAmt)}</span>
                 </div>
-                <div className="flex justify-between py-0.5 text-slate-600 dark:text-slate-400 font-semibold print:text-slate-600">
+                <div className="flex justify-between py-0.5 text-muted-foreground font-semibold print:text-muted-foreground">
                   <span>{languageMode === 'bn' ? 'ডেলিভারির সময় প্রদেয় (Balance on Delivery):' : 'Balance on Delivery:'}</span>
                   <span className="tabular-nums">{formatBDT(dueOnDeliv)}</span>
                 </div>
               </div>
 
-              <div className="text-2xs text-slate-500 dark:text-slate-400 print:text-slate-500 pt-1.5 italic border-t border-slate-200 dark:border-slate-800">
+              <div className="text-2xs text-muted-foreground print:text-muted-foreground pt-1.5 italic border-t border-border dark:border-border">
                 {languageMode === 'bn'
                   ? `কথায়: ${numberToWordsBangla(quote.grand_total)}`
                   : `In Words: ${numberToWordsBDT(quote.grand_total)}`}
@@ -1047,17 +1047,17 @@ function QuotationDetailContent() {
           </div>
 
           {/* Signature Block */}
-          <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 text-xs">
+          <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-input print:border-input text-xs">
             <div className="text-center space-y-1">
-              <div className="font-bold text-slate-900 dark:text-white print:text-slate-900">{quote.salesperson_name}</div>
-              <div className="text-2xs text-slate-500 dark:text-slate-400 print:text-slate-500">
+              <div className="font-bold text-foreground dark:text-white print:text-foreground">{quote.salesperson_name}</div>
+              <div className="text-2xs text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'প্রস্তুতকারক (বিক্রয় বিভাগ)' : 'Prepared By (Sales Dept)'}
               </div>
             </div>
 
             <div className="text-center space-y-1">
-              <div className="font-bold text-slate-900 dark:text-white print:text-slate-900">Authorized Signatory</div>
-              <div className="text-2xs text-slate-500 dark:text-slate-400 print:text-slate-500">
+              <div className="font-bold text-foreground dark:text-white print:text-foreground">Authorized Signatory</div>
+              <div className="text-2xs text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'InkFlow Solutions'}`}
               </div>
             </div>
@@ -1069,7 +1069,7 @@ function QuotationDetailContent() {
            ========================================================================= */}
         <div className="print:hidden">
           <Card>
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <CardHeader className="pb-3 border-b border-border dark:border-border">
               <CardTitle className="text-base font-bold flex items-center gap-2">
                 <History className="h-4 w-4 text-purple-600" />
                 Quotation Activity & Negotiation Timeline
@@ -1080,7 +1080,7 @@ function QuotationDetailContent() {
             </CardHeader>
             <CardContent className="p-5">
               {activities.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-400">
+                <div className="p-6 text-center text-xs text-muted-foreground">
                   No recorded activity yet.
                 </div>
               ) : (
@@ -1088,21 +1088,21 @@ function QuotationDetailContent() {
                   {activities.map((act) => (
                     <div key={act.id} className="flex items-start gap-3 text-xs">
                       <div className="h-2.5 w-2.5 rounded-full bg-blue-600 mt-1 shrink-0" />
-                      <div className="flex-1 border-b border-slate-100 dark:border-slate-800 pb-3">
+                      <div className="flex-1 border-b border-border pb-3">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold capitalize text-slate-900 dark:text-white">
+                          <span className="font-bold capitalize text-foreground dark:text-white">
                             {act.action.replace('_', ' ')}
                           </span>
-                          <span className="text-slate-400 tabular-nums text-2xs">
+                          <span className="text-muted-foreground tabular-nums text-2xs">
                             {new Date(act.created_at).toLocaleString('en-BD')}
                           </span>
                         </div>
                         {act.details && (
-                          <p className="text-slate-600 dark:text-slate-300 mt-1 font-normal">
+                          <p className="text-muted-foreground mt-1 font-normal">
                             {act.details}
                           </p>
                         )}
-                        <div className="text-2xs text-slate-400 mt-0.5">By {act.actor_name}</div>
+                        <div className="text-2xs text-muted-foreground mt-0.5">By {act.actor_name}</div>
                       </div>
                     </div>
                   ))}
@@ -1153,7 +1153,7 @@ export default function QuotationDetailPage() {
         fallback={
           <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
             <FileSpreadsheet className="h-6 w-6 text-indigo-500 animate-pulse" />
-            <p className="text-xs text-slate-500">Loading Quotation...</p>
+            <p className="text-xs text-muted-foreground">Loading Quotation...</p>
           </div>
         }
       >

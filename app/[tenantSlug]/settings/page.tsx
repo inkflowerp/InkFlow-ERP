@@ -301,11 +301,11 @@ export default function CompanySettingsPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-5xl animate-pulse">
-        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-20 bg-muted rounded-2xl w-full" />
+        <div className="h-12 bg-muted rounded-xl w-3/4" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="h-28 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+            <div key={i} className="h-28 bg-muted rounded-2xl" />
           ))}
         </div>
       </div>
@@ -456,7 +456,7 @@ export default function CompanySettingsPage() {
             <Link
               key={item.path}
               href={targetHref}
-              className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-blue-400 dark:hover:border-blue-600 transition-all flex flex-col justify-between group min-h-[120px]"
+              className="p-4 rounded-2xl bg-card border border-border shadow-xs hover:shadow-md hover:border-blue-400 dark:hover:border-blue-600 transition-all flex flex-col justify-between group min-h-[120px]"
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -468,12 +468,12 @@ export default function CompanySettingsPage() {
                   </Badge>
                 </div>
                 <div>
-                  <div className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
+                  <div className="font-bold text-sm text-foreground dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
                     <span>{item.title}</span>
                     <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-blue-600" />
                   </div>
-                  <div className="text-2xs text-slate-400 mt-0.5">{item.titleBn}</div>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">{item.desc}</p>
+                  <div className="text-2xs text-muted-foreground mt-0.5">{item.titleBn}</div>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{item.desc}</p>
                 </div>
               </div>
             </Link>
@@ -482,18 +482,18 @@ export default function CompanySettingsPage() {
       </div>
 
       {/* Quick Settings Tabs */}
-      <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+      <div className="pt-4 border-t border-border dark:border-border">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-sm font-bold text-foreground dark:text-white uppercase tracking-wider flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-blue-600" />
             <span>{tBilingual('Quick Settings Editor', 'কুইক সেটিংস এডিটর')}</span>
           </h2>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-muted-foreground">
             {tBilingual('Inline General & Tax Configuration', 'সাধারণ ও ট্যাক্স কনফিগারেশন')}
           </span>
         </div>
 
-        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto touch-scroll">
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-border gap-1 overflow-x-auto touch-scroll">
           {[
             { id: 'general', labelEn: 'General Identity', labelBn: 'সাধারণ তথ্য', icon: Building2 },
             { id: 'schedule', labelEn: 'Office Hours & Holidays', labelBn: 'অফিস সময় ও ছুটি', icon: Clock },
@@ -511,7 +511,7 @@ export default function CompanySettingsPage() {
                 className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap h-10 sm:h-9 shrink-0 ${
                   isActive
                     ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400 font-bold'
-                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -576,7 +576,7 @@ export default function CompanySettingsPage() {
                     placeholder="e.g. Rapid Print Solutions Limited"
                     {...register('legal_name')}
                   />
-                  <p className="text-2xs text-slate-500">
+                  <p className="text-2xs text-muted-foreground">
                     {tBilingual(
                       'Official registered company name used for formal contracts, legal tender submissions, and NBR Mushak forms.',
                       'অফিসিয়াল নিবন্ধিত নাম যা সরকারি চুক্তি, টেন্ডার এবং এনবিআর মূসক ফর্মে ব্যবহৃত হয়।'
@@ -585,12 +585,12 @@ export default function CompanySettingsPage() {
                 </div>
 
                 {/* Company Logo with Live Preview */}
-                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="space-y-2 pt-2 border-t border-border dark:border-border">
                   <Label htmlFor="logo_url">
                     {tBilingual('Company Logo URL', 'কোম্পানির লোগোর লিংক')}
                   </Label>
                   <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                    <div className="h-16 w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex items-center justify-center overflow-hidden shrink-0">
+                    <div className="h-16 w-24 rounded-lg border border-border bg-muted flex items-center justify-center overflow-hidden shrink-0">
                       {watchedLogoUrl ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
@@ -603,8 +603,8 @@ export default function CompanySettingsPage() {
                         />
                       ) : (
                         <div className="text-center p-2">
-                          <ImageIcon className="h-5 w-5 mx-auto text-slate-400" />
-                          <span className="text-2xs text-slate-400 block mt-0.5">
+                          <ImageIcon className="h-5 w-5 mx-auto text-muted-foreground" />
+                          <span className="text-2xs text-muted-foreground block mt-0.5">
                             {tBilingual('No Logo', 'লোগো নেই')}
                           </span>
                         </div>
@@ -616,7 +616,7 @@ export default function CompanySettingsPage() {
                         placeholder="https://example.com/logo.png"
                         {...register('logo_url')}
                       />
-                      <span className="text-2xs text-slate-500 block">
+                      <span className="text-2xs text-muted-foreground block">
                         {tBilingual(
                           'Will appear on header of printed quotations, job challans, and customer receipts.',
                           'প্রিন্টকৃত কোটেশন, ডেলিভারি চালান ও মানি রসিদের শীর্ষে প্রদর্শিত হবে।'
@@ -733,13 +733,13 @@ export default function CompanySettingsPage() {
                   {...register('office_hours')}
                 />
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="text-xs text-slate-500">{tBilingual('Quick Presets:', 'কুইক প্রিসেট:')}</span>
+                  <span className="text-xs text-muted-foreground">{tBilingual('Quick Presets:', 'কুইক প্রিসেট:')}</span>
                   {OFFICE_HOURS_PRESETS.map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => setValue('office_hours', preset, { shouldDirty: true })}
-                      className="text-2xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 min-h-[32px]"
+                      className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-border min-h-[32px]"
                     >
                       {preset}
                     </button>
@@ -747,7 +747,7 @@ export default function CompanySettingsPage() {
                 </div>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="space-y-3 pt-4 border-t border-border dark:border-border">
                 <Label htmlFor="holidays" className="text-sm font-semibold">
                   {tBilingual('Weekly Holiday & Closed Days', 'সাপ্তাহিক ছুটি ও বন্ধের দিন')}
                 </Label>
@@ -757,13 +757,13 @@ export default function CompanySettingsPage() {
                   {...register('holidays')}
                 />
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="text-xs text-slate-500">{tBilingual('Quick Presets:', 'কুইক প্রিসেট:')}</span>
+                  <span className="text-xs text-muted-foreground">{tBilingual('Quick Presets:', 'কুইক প্রিসেট:')}</span>
                   {HOLIDAY_PRESETS.map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => setValue('holidays', preset, { shouldDirty: true })}
-                      className="text-2xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 min-h-[32px]"
+                      className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-border min-h-[32px]"
                     >
                       {preset}
                     </button>
@@ -803,7 +803,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('BIN (Business Identification Number)', 'ভ্যাট নিবন্ধন নম্বর (বিআইএন)')}
                   </Label>
                   <Input id="bin_no" placeholder="e.g. 004819284-0101" {...register('bin_no')} />
-                  <span className="text-2xs text-slate-500">
+                  <span className="text-2xs text-muted-foreground">
                     {tBilingual('NBR 9 or 13-digit registration', 'এনবিআর ৯ বা ১৩ ডিজিট নিবন্ধন')}
                   </span>
                 </div>
@@ -816,13 +816,13 @@ export default function CompanySettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 space-y-4 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="rounded-xl border border-border p-4 space-y-4 bg-muted dark:bg-card">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-semibold text-sm text-slate-900 dark:text-white">
+                    <div className="font-semibold text-sm text-foreground dark:text-white">
                       {tBilingual('Automated VAT Calculation', 'স্বয়ংক্রিয় ভ্যাট গণনা')}
                     </div>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {tBilingual(
                         'Automatically calculate VAT on printing jobs and customer billings.',
                         'প্রিন্ট জব ও কাস্টমার বিলে স্বয়ংক্রিয়ভাবে ভ্যাট যুক্ত করুন।'
@@ -832,13 +832,13 @@ export default function CompanySettingsPage() {
                   <input
                     type="checkbox"
                     id="vat_enabled"
-                    className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    className="h-5 w-5 rounded border-input text-blue-600 focus:ring-ring"
                     {...register('vat_enabled')}
                   />
                 </div>
 
                 {watchedVatEnabled && (
-                  <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="pt-3 border-t border-border flex flex-col sm:flex-row sm:items-center gap-3">
                     <div className="w-full sm:w-48 space-y-1">
                       <Label htmlFor="vat_rate">
                         {tBilingual('Default VAT Rate (%)', 'ডিফল্ট ভ্যাট হার (%)')}
@@ -850,10 +850,10 @@ export default function CompanySettingsPage() {
                           step="0.1"
                           {...register('vat_rate', { valueAsNumber: true })}
                         />
-                        <Percent className="absolute right-3 top-2.5 h-4 w-4 text-slate-400" />
+                        <Percent className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
                       </div>
                     </div>
-                    <p className="text-xs text-slate-500 sm:mt-5">
+                    <p className="text-xs text-muted-foreground sm:mt-5">
                       {tBilingual(
                         'Standard VAT in Bangladesh: 7.5% for printing services, 15% standard rate.',
                         'বাংলাদেশে প্রিন্টিং সার্ভিসের জন্য স্ট্যান্ডার্ড ভ্যাট ৭.৫%, সাধারণ হার ১৫%।'
@@ -888,7 +888,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Quotation Prefix', 'কোটেশন প্রিফিক্স')}
                   </Label>
                   <Input id="quotation_prefix" placeholder="QT" {...register('quotation_prefix')} />
-                  <span className="text-2xs text-slate-500">Example: QT-2026-0012</span>
+                  <span className="text-2xs text-muted-foreground">Example: QT-2026-0012</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -896,7 +896,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Invoice Prefix', 'ইনভয়েস প্রিফিক্স')}
                   </Label>
                   <Input id="invoice_prefix" placeholder="INV" {...register('invoice_prefix')} />
-                  <span className="text-2xs text-slate-500">Example: INV-2026-0482</span>
+                  <span className="text-2xs text-muted-foreground">Example: INV-2026-0482</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -904,7 +904,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Challan Prefix', 'চালান প্রিফিক্স')}
                   </Label>
                   <Input id="challan_prefix" placeholder="CH" {...register('challan_prefix')} />
-                  <span className="text-2xs text-slate-500">Example: CH-2026-0091</span>
+                  <span className="text-2xs text-muted-foreground">Example: CH-2026-0091</span>
                 </div>
               </div>
             </CardContent>
@@ -932,7 +932,7 @@ export default function CompanySettingsPage() {
                   <Label htmlFor="default_currency">
                     {tBilingual('Default Currency', 'ডিফল্ট কারেন্সি')}
                   </Label>
-                  <Input id="default_currency" value="BDT (৳)" readOnly className="bg-slate-50 dark:bg-slate-900" />
+                  <Input id="default_currency" value="BDT (৳)" readOnly className="bg-muted dark:bg-card" />
                 </div>
 
                 <div className="space-y-1.5">
@@ -941,7 +941,7 @@ export default function CompanySettingsPage() {
                   </Label>
                   <select
                     id="default_language"
-                    className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-blue-500"
+                    className="w-full h-10 px-3 rounded-md border border-input bg-card text-sm focus:ring-2 focus:ring-ring"
                     {...register('default_language')}
                   >
                     <option value="bn">বাংলা (Bengali)</option>

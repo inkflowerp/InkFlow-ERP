@@ -65,8 +65,8 @@ export function JobTicketPrintModal({
     >
       <div className="space-y-4 pt-1">
         {/* Print Toolbar */}
-        <div className="print:hidden flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <div className="text-xs text-slate-500">
+        <div className="print:hidden flex items-center justify-between p-3 rounded-lg bg-muted border border-border dark:border-border">
+          <div className="text-xs text-muted-foreground">
             {isBn
               ? 'মেশিন অপারেটরের ক্লিপবোর্ডে যুক্ত করার জন্য প্রিন্ট করুন'
               : 'Print official 1-page shop floor routing card for machine operator'}
@@ -74,7 +74,7 @@ export function JobTicketPrintModal({
           <Button
             size="sm"
             onClick={handlePrint}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-8 gap-1.5 shadow-xs"
+            className="bg-foreground hover:bg-secondary text-white font-bold text-xs h-8 gap-1.5 shadow-xs"
           >
             <Printer className="h-3.5 w-3.5" />
             <span>{isBn ? 'জব কার্ড প্রিন্ট' : 'Print Job Card'}</span>
@@ -84,25 +84,25 @@ export function JobTicketPrintModal({
         {/* =========================================================================
             OFFICIAL PRINTABLE PRESS JOB TICKET (জব কার্ড)
            ========================================================================= */}
-        <div className="bg-white text-slate-900 p-6 sm:p-8 rounded-xl border border-slate-300 dark:border-slate-700 text-xs space-y-4 shadow-xs print:border-none print:shadow-none print:p-0">
+        <div className="bg-card text-foreground p-6 sm:p-8 rounded-xl border border-input text-xs space-y-4 shadow-xs print:border-none print:shadow-none print:p-0">
           {/* Header */}
           <div className="text-center space-y-1 pb-3 border-b-2 border-slate-900 relative">
-            <div className="absolute right-0 top-0 text-2xs tabular-nums px-2 py-0.5 rounded bg-slate-100 font-bold border border-slate-400">
+            <div className="absolute right-0 top-0 text-2xs tabular-nums px-2 py-0.5 rounded bg-muted font-bold border border-input">
               TASK: {task.task_number}
             </div>
             <h1 className="text-lg font-black tracking-tight uppercase">
               {company?.name || 'InkFlow Digital Printing & Signage'}
             </h1>
             {company?.address && (
-              <p className="text-slate-600 text-2xs">{company.address}</p>
+              <p className="text-muted-foreground text-2xs">{company.address}</p>
             )}
-            <div className="inline-block mt-1 px-4 py-0.5 rounded-full bg-slate-900 text-white font-black text-xs tracking-wider uppercase">
+            <div className="inline-block mt-1 px-4 py-0.5 rounded-full bg-foreground text-white font-black text-xs tracking-wider uppercase">
               PRODUCTION JOB TICKET • কারখানা কাজের নির্দেশিকা
             </div>
           </div>
 
           {/* Job & Client Meta Matrix */}
-          <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-slate-50 border border-slate-300 tabular-nums text-xs">
+          <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-muted border border-input tabular-nums text-xs">
             <div className="space-y-1">
               <div>Job / Order No: <strong className="text-sm font-black text-blue-700">{task.job_number || 'JOB-0000'}</strong></div>
               <div>Customer Name: <strong className="font-sans font-bold">{task.customer_name || 'Direct Client'}</strong></div>
@@ -118,61 +118,61 @@ export function JobTicketPrintModal({
           </div>
 
           {/* Core Technical Specifications Table */}
-          <table className="w-full text-left border-collapse border border-slate-300 text-xs">
-            <thead className="bg-slate-100 font-bold text-2xs">
+          <table className="w-full text-left border-collapse border border-input text-xs">
+            <thead className="bg-muted font-bold text-2xs">
               <tr>
-                <th className="p-2 border border-slate-300">Product / Job Item</th>
-                <th className="p-2 border border-slate-300 text-center">Dimensions</th>
-                <th className="p-2 border border-slate-300 text-center">Quantity</th>
-                <th className="p-2 border border-slate-300">Media / Substrate Specs</th>
+                <th className="p-2 border border-input">Product / Job Item</th>
+                <th className="p-2 border border-input text-center">Dimensions</th>
+                <th className="p-2 border border-input text-center">Quantity</th>
+                <th className="p-2 border border-input">Media / Substrate Specs</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="p-2.5 border border-slate-300 font-bold">
+                <td className="p-2.5 border border-input font-bold">
                   {task.task_name}
                 </td>
-                <td className="p-2.5 border border-slate-300 text-center tabular-nums">
+                <td className="p-2.5 border border-input text-center tabular-nums">
                   {task.width && task.height ? (
                     <div>
                       {task.width} × {task.height} {task.unit || 'inch'}
-                      {sftArea && <div className="text-2xs text-slate-500">({sftArea} SFT)</div>}
+                      {sftArea && <div className="text-2xs text-muted-foreground">({sftArea} SFT)</div>}
                     </div>
                   ) : (
                     'Standard Size'
                   )}
                 </td>
-                <td className="p-2.5 border border-slate-300 text-center tabular-nums font-black text-sm">
+                <td className="p-2.5 border border-input text-center tabular-nums font-black text-sm">
                   {task.quantity || 1} {task.unit || 'pcs'}
                 </td>
-                <td className="p-2.5 border border-slate-300">
-                  <div className="font-bold text-slate-800">{task.required_material || 'Press Standard Material'}</div>
-                  {task.notes && <div className="text-2xs text-slate-500 mt-0.5">Note: {task.notes}</div>}
+                <td className="p-2.5 border border-input">
+                  <div className="font-bold text-foreground">{task.required_material || 'Press Standard Material'}</div>
+                  {task.notes && <div className="text-2xs text-muted-foreground mt-0.5">Note: {task.notes}</div>}
                 </td>
               </tr>
             </tbody>
           </table>
 
           {/* Quality Assurance & Finishing Checklist */}
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-300 space-y-2">
-            <span className="font-bold text-2xs uppercase tracking-wider text-slate-700 block">
+          <div className="p-3 bg-muted rounded-lg border border-input space-y-2">
+            <span className="font-bold text-2xs uppercase tracking-wider text-foreground block">
               Quality Assurance & Finishing Checklist (কোয়ালিটি চেক):
             </span>
             <div className="grid grid-cols-2 gap-2 text-2xs">
               <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded border border-slate-400 bg-white inline-block" />
+                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block" />
                 <span>মিডিয়া ও সারফেস কোয়ালিটি চেক (No scratches/banding)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded border border-slate-400 bg-white inline-block" />
+                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block" />
                 <span>সাইজ ও কাটিং ডাইমেনশন সঠিকতা (Exact Cut Check)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded border border-slate-400 bg-white inline-block" />
+                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block" />
                 <span>লেমিনেশন / ফিনিশিং নিখুঁত (No bubble/crease)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded border border-slate-400 bg-white inline-block" />
+                <span className="h-3.5 w-3.5 rounded border border-input bg-card inline-block" />
                 <span>প্যাকেজিং ও চালান হস্তান্তর রেডি (Packaged & Sealed)</span>
               </div>
             </div>
@@ -181,18 +181,18 @@ export function JobTicketPrintModal({
           {/* Dual Signatures Block */}
           <div className="pt-8 flex justify-between items-end text-xs">
             <div className="text-center space-y-1">
-              <div className="tabular-nums text-slate-500 text-2xs">{task.operator_name || 'Machine Operator'}</div>
-              <div className="border-t border-slate-400 w-48 pt-1 font-bold">
+              <div className="tabular-nums text-muted-foreground text-2xs">{task.operator_name || 'Machine Operator'}</div>
+              <div className="border-t border-input w-48 pt-1 font-bold">
                 মেশিন অপারেটরের স্বাক্ষর
-                <div className="text-2xs font-normal text-slate-500">(Operator Signature)</div>
+                <div className="text-2xs font-normal text-muted-foreground">(Operator Signature)</div>
               </div>
             </div>
 
             <div className="text-center space-y-1">
-              <div className="tabular-nums text-slate-500 text-2xs">Production Manager</div>
-              <div className="border-t border-slate-400 w-48 pt-1 font-bold">
+              <div className="tabular-nums text-muted-foreground text-2xs">Production Manager</div>
+              <div className="border-t border-input w-48 pt-1 font-bold">
                 ফ্লোর ইন-চার্জ / কিউসি স্বাক্ষর
-                <div className="text-2xs font-normal text-slate-500">(QC & Floor Supervisor)</div>
+                <div className="text-2xs font-normal text-muted-foreground">(QC & Floor Supervisor)</div>
               </div>
             </div>
           </div>

@@ -350,7 +350,7 @@ export function PrintFloorConsumptionUnit({
               <Badge
                 key={r.id}
                 variant="outline"
-                className="bg-white/90 dark:bg-slate-900/90 shrink-0 font-bold border-blue-300 text-blue-900 dark:text-blue-200 text-2xs py-0.5"
+                className="bg-card/90 shrink-0 font-bold border-blue-300 text-blue-900 dark:text-blue-200 text-2xs py-0.5"
               >
                 {formatFloorPieceDisplay(r)}
               </Badge>
@@ -359,7 +359,7 @@ export function PrintFloorConsumptionUnit({
         )}
 
         {activeFloorRolls.length === 0 ? (
-          <div className="p-4 text-center text-xs text-slate-500 border border-dashed rounded-lg bg-white/60 dark:bg-slate-900/60">
+          <div className="p-4 text-center text-xs text-muted-foreground border border-dashed rounded-lg bg-card/60 dark:bg-card">
             <span>No master rolls currently mounted or active on the floor. Click &quot;Issue Master Roll to Floor&quot; to mount a roll.</span>
           </div>
         ) : (
@@ -373,22 +373,22 @@ export function PrintFloorConsumptionUnit({
               return (
                 <div
                   key={roll.id}
-                  className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-2.5 hover:border-blue-400 transition-colors"
+                  className="p-3 bg-card rounded-xl border border-border shadow-xs flex flex-col justify-between space-y-2.5 hover:border-blue-400 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-black text-xs text-slate-900 dark:text-white tabular-nums">
+                        <span className="font-black text-xs text-foreground dark:text-white tabular-nums">
                           {roll.roll_code || roll.roll_tag}
                         </span>
                         <Badge className="text-2xs bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold py-0">
                           {roll.width_ft} ft Wide
                         </Badge>
-                        <Badge variant="outline" className="text-2xs tabular-nums font-bold py-0 text-slate-600 dark:text-slate-400">
+                        <Badge variant="outline" className="text-2xs tabular-nums font-bold py-0 text-muted-foreground dark:text-muted-foreground">
                           1 Pcs
                         </Badge>
                       </div>
-                      <span className="text-2xs text-slate-600 dark:text-slate-400 block mt-0.5 font-medium">
+                      <span className="text-2xs text-muted-foreground block mt-0.5 font-medium">
                         {roll.material?.name || 'Raw Material Roll'}
                       </span>
                     </div>
@@ -406,28 +406,28 @@ export function PrintFloorConsumptionUnit({
                   </div>
 
                   {/* Machine Mount / Staging */}
-                  <div className="flex items-center gap-1.5 text-2xs text-slate-600 dark:text-slate-400">
-                    <Cpu className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-2xs text-muted-foreground dark:text-muted-foreground">
+                    <Cpu className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span className="truncate font-medium">
                       {roll.mounted_machine_name || roll.location_name || 'General Press Workstation'}
                     </span>
                   </div>
 
                   {/* Length Ticker & Progress Bar */}
-                  <div className="space-y-1 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                  <div className="space-y-1 pt-1.5 border-t border-border dark:border-border">
                     <div className="flex items-center justify-between text-xs tabular-nums">
-                      <span className="text-slate-500 text-2xs">Available Length:</span>
+                      <span className="text-muted-foreground text-2xs">Available Length:</span>
                       <strong className="text-emerald-600 dark:text-emerald-400 font-black">
                         {currentLen.toFixed(2)} ft — 1 Pcs
                       </strong>
                     </div>
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                       <div
                         className={`h-full ${percentLeft < 20 ? 'bg-rose-500' : percentLeft < 50 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                         style={{ width: `${percentLeft}%` }}
                       />
                     </div>
-                    <div className="flex items-center justify-between text-2xs tabular-nums text-slate-400 pt-0.5">
+                    <div className="flex items-center justify-between text-2xs tabular-nums text-muted-foreground pt-0.5">
                       <span>Area: <strong>{remainingArea.toFixed(2)} SFT</strong></span>
                       <span>{percentLeft}% remaining ({initialLen}ft initial)</span>
                     </div>
@@ -476,7 +476,7 @@ export function PrintFloorConsumptionUnit({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Search Input */}
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={tBilingual(
                 'Search material substrate, SKU, issue #, operator, machine, or job reference...',
@@ -504,8 +504,8 @@ export function PrintFloorConsumptionUnit({
                 className={cn(
                   'text-2xs h-7 px-2 font-medium cursor-pointer',
                   selectedStatus === st.id
-                    ? 'font-bold bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                    ? 'font-bold bg-muted text-foreground dark:text-foreground'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-slate-100'
                 )}
               >
                 {st.label}
@@ -518,10 +518,10 @@ export function PrintFloorConsumptionUnit({
       {/* ========================================================= */}
       {/* MAIN TRACKER TABLE */}
       {/* ========================================================= */}
-      <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+      <Card className="overflow-hidden border border-border shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 border-b font-bold">
+            <thead className="bg-muted text-muted-foreground border-b font-bold">
               <tr>
                 <th className="p-3">Issue Ref & Date</th>
                 <th className="p-3">Material Substrate</th>
@@ -535,13 +535,13 @@ export function PrintFloorConsumptionUnit({
                 <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-border dark:divide-border">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="p-8 text-center text-slate-500">
-                    <Flame className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                  <td colSpan={10} className="p-8 text-center text-muted-foreground">
+                    <Flame className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="font-bold">No print floor consumption records match your filter.</p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Issue raw materials from the store to the floor or click below to log direct consumption.
                     </p>
                     <Button
@@ -570,8 +570,8 @@ export function PrintFloorConsumptionUnit({
                     <tr
                       key={rec.id}
                       className={cn(
-                        'hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors',
-                        balance > 0 ? 'bg-white dark:bg-slate-950/20' : 'opacity-85'
+                        'hover:bg-muted dark:hover:bg-muted/30 transition-colors',
+                        balance > 0 ? 'bg-card dark:bg-background' : 'opacity-85'
                       )}
                     >
                       {/* Issue Ref & Date */}
@@ -580,7 +580,7 @@ export function PrintFloorConsumptionUnit({
                           <FileText className="h-3.5 w-3.5 text-indigo-500" />
                           <span>{rec.issue_number || 'DIR-FLOOR'}</span>
                         </div>
-                        <span className="text-2xs text-slate-400 block mt-0.5">
+                        <span className="text-2xs text-muted-foreground block mt-0.5">
                           {new Date(rec.created_at).toLocaleDateString('en-GB', {
                             day: 'numeric',
                             month: 'short',
@@ -591,7 +591,7 @@ export function PrintFloorConsumptionUnit({
 
                       {/* Material Substrate */}
                       <td className="p-3">
-                        <div className="font-bold text-slate-900 dark:text-white">
+                        <div className="font-bold text-foreground dark:text-white">
                           {rec.material_name}
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
@@ -610,12 +610,12 @@ export function PrintFloorConsumptionUnit({
 
                       {/* Machine & Operator */}
                       <td className="p-3">
-                        <div className="flex items-center gap-1 text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[160px]">
-                          <Printer className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <div className="flex items-center gap-1 text-foreground font-semibold truncate max-w-[160px]">
+                          <Printer className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                           <span className="truncate">{rec.machine_name || 'General Floor'}</span>
                         </div>
-                        <div className="flex items-center gap-1 text-2xs text-slate-500 mt-0.5">
-                          <User className="h-3 w-3 text-slate-400 shrink-0" />
+                        <div className="flex items-center gap-1 text-2xs text-muted-foreground mt-0.5">
+                          <User className="h-3 w-3 text-muted-foreground shrink-0" />
                           <span className="truncate">{rec.operator_name || 'Press Operator'}</span>
                           {rec.job_reference && (
                             <span className="text-2xs tabular-nums text-indigo-600 ml-1 truncate">
@@ -627,7 +627,7 @@ export function PrintFloorConsumptionUnit({
 
                       {/* Issued Qty */}
                       <td className="p-3 text-right">
-                        <div className="font-bold tabular-nums text-slate-900 dark:text-white">
+                        <div className="font-bold tabular-nums text-foreground dark:text-white">
                           {issued.toLocaleString()} {rec.unit}
                         </div>
                       </td>
@@ -653,20 +653,20 @@ export function PrintFloorConsumptionUnit({
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-400 tabular-nums">0 {rec.unit}</span>
+                          <span className="text-muted-foreground tabular-nums">0 {rec.unit}</span>
                         )}
                       </td>
 
                       {/* Remaining Floor Balance */}
                       <td className="p-3 text-right tabular-nums">
-                        <div className={cn('font-bold', balance > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-slate-400')}>
+                        <div className={cn('font-bold', balance > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-muted-foreground')}>
                           {balance.toLocaleString()} {rec.unit}
                         </div>
                       </td>
 
                       {/* Visual Progress Bar */}
                       <td className="p-3 w-28">
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 flex overflow-hidden">
+                        <div className="w-full bg-muted rounded-full h-2 flex overflow-hidden">
                           <div
                             className="bg-emerald-500 h-full"
                             style={{ width: `${consumedPercent}%` }}
@@ -683,7 +683,7 @@ export function PrintFloorConsumptionUnit({
                             title={`On Floor: ${balancePercent}%`}
                           />
                         </div>
-                        <div className="flex justify-between text-2xs tabular-nums text-slate-400 mt-1">
+                        <div className="flex justify-between text-2xs tabular-nums text-muted-foreground mt-1">
                           <span>{consumedPercent}%</span>
                           <span>{balance > 0 ? `${balancePercent}% rem` : 'Done'}</span>
                         </div>
@@ -725,7 +725,7 @@ export function PrintFloorConsumptionUnit({
                               size="sm"
                               variant="ghost"
                               onClick={() => handleOpenReturnModal(rec)}
-                              className="h-7 text-2xs font-semibold text-slate-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer px-1.5"
+                              className="h-7 text-2xs font-semibold text-muted-foreground hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer px-1.5"
                               title="Return leftover stock to store"
                             >
                               <RotateCcw className="h-3 w-3" />
@@ -746,10 +746,10 @@ export function PrintFloorConsumptionUnit({
       {/* ROOT CAUSE SCRAP & WASTAGE BREAKDOWN DIAGNOSTICS */}
       {/* ========================================================= */}
       {scrapReasonsBreakdown.length > 0 && (
-        <Card className="p-4 border-slate-200 dark:border-slate-800">
+        <Card className="p-4 border-border dark:border-border">
           <div className="flex items-center gap-2 mb-3">
             <ShieldAlert className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
               {tBilingual('Print Floor Scrap & Root Cause Analysis', 'ফ্লোর অপচয়ের কারণ ও বিশ্লেষণ')}
             </h3>
           </div>
@@ -761,7 +761,7 @@ export function PrintFloorConsumptionUnit({
                 className="p-3 bg-rose-50/50 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900/50 text-xs flex flex-col justify-between space-y-1"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-800 dark:text-slate-200 truncate">{reason}</span>
+                  <span className="font-bold text-foreground truncate">{reason}</span>
                   <Badge variant="outline" className="text-2xs tabular-nums bg-rose-100 text-rose-800 border-rose-300">
                     {stats.count} events
                   </Badge>
@@ -770,7 +770,7 @@ export function PrintFloorConsumptionUnit({
                   <span className="text-sm font-black text-rose-700 dark:text-rose-400 tabular-nums">
                     {stats.qty.toLocaleString()} units
                   </span>
-                  <span className="text-2xs tabular-nums text-slate-500 font-semibold">
+                  <span className="text-2xs tabular-nums text-muted-foreground font-semibold">
                     {stats.count} {tBilingual('records', 'লগ')}
                   </span>
                 </div>
@@ -805,7 +805,7 @@ export function PrintFloorConsumptionUnit({
               </div>
             )}
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border space-y-1 text-xs">
+            <div className="p-3 bg-muted rounded-lg border space-y-1 text-xs">
               <div>
                 Item: <strong>{returnItem.material_name}</strong> ({returnItem.sku})
               </div>
@@ -837,7 +837,7 @@ export function PrintFloorConsumptionUnit({
                 <select
                   value={returnLocationId}
                   onChange={(e) => setReturnLocationId(e.target.value)}
-                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                   required
                 >
                   {locations.map((loc) => (
@@ -862,7 +862,7 @@ export function PrintFloorConsumptionUnit({
               <Button type="button" variant="outline" onClick={() => setReturnItem(null)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={returnLoading} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+              <Button type="submit" disabled={returnLoading} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
                 {returnLoading ? 'Returning...' : 'Confirm Return to Store'}
               </Button>
             </div>

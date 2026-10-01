@@ -115,18 +115,18 @@ export default function EmployeesPage() {
 
   return (
     <PanelAccessGuard module="hr" action="view" panelTitle="Employees" panelTitleBn="কর্মী তালিকা">
-      <div className="min-h-screen bg-slate-50/60 pb-12">
+      <div className="min-h-screen bg-muted pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 Employees
               </h1>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm font-medium text-slate-500">কর্মী তালিকা</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-xs text-slate-500">
+                <span className="text-sm font-medium text-muted-foreground">কর্মী তালিকা</span>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-xs text-muted-foreground">
                   Directory of shop-floor, design, sales & management staff
                 </span>
               </div>

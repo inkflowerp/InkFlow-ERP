@@ -83,7 +83,7 @@ function RegisterForm() {
   }
 
   return (
-    <Card className="border-slate-200/80 shadow-xl dark:border-slate-800">
+    <Card className="border-border shadow-xl dark:border-border">
       <CardHeader className="space-y-1 text-left pb-4">
         <CardTitle className="text-xl font-bold tracking-tight">
           {t('auth.register_title')}
@@ -154,7 +154,7 @@ function RegisterForm() {
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col gap-3.5 border-t border-slate-100 dark:border-slate-800 pt-4">
+        <CardFooter className="flex flex-col gap-3.5 border-t border-border pt-4">
           <Button
             type="submit"
             className="w-full justify-center gap-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
@@ -167,10 +167,10 @@ function RegisterForm() {
           {/* Divider */}
           <div className="relative my-1">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200 dark:border-slate-800" />
+              <span className="w-full border-t border-border dark:border-border" />
             </div>
             <div className="relative flex justify-center text-2xs uppercase font-bold tracking-wider">
-              <span className="bg-white px-2.5 text-slate-400 dark:bg-slate-900">
+              <span className="bg-card px-2.5 text-muted-foreground dark:bg-card">
                 {locale === 'bn' ? 'অথবা' : 'Or'}
               </span>
             </div>
@@ -183,7 +183,7 @@ function RegisterForm() {
             onClick={handleGoogleSignUp}
             isLoading={isGoogleLoading}
             disabled={isGoogleLoading || isLoading}
-            className="w-full text-xs font-semibold cursor-pointer h-10 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="w-full text-xs font-semibold cursor-pointer h-10 border-border hover:bg-muted dark:hover:bg-muted"
           >
             <svg className="mr-2 h-4 w-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -214,7 +214,7 @@ function RegisterForm() {
             </span>
           </Button>
 
-          <p className="text-center text-xs text-slate-500 dark:text-slate-400 pt-1">
+          <p className="text-center text-xs text-muted-foreground pt-1">
             {t('auth.already_account')}{' '}
             <Link
               href="/login"
@@ -231,7 +231,7 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-400 text-sm">Loading registration...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground text-sm">Loading registration...</div>}>
       <RegisterForm />
     </Suspense>
   )

@@ -55,7 +55,7 @@ export function AttendanceCorrectionTable({
 
   if (isLoading) {
     return (
-      <Card className="bg-white border-slate-200 p-6">
+      <Card className="bg-card border-border p-6">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full rounded-lg" />
@@ -70,19 +70,19 @@ export function AttendanceCorrectionTable({
       {/* Header and Filter */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold text-slate-900">Attendance Corrections Inbox</h3>
-          <p className="text-xs text-slate-500">Employee punch adjustment requests requiring manager sign-off</p>
+          <h3 className="text-base font-semibold text-foreground">Attendance Corrections Inbox</h3>
+          <p className="text-xs text-muted-foreground">Employee punch adjustment requests requiring manager sign-off</p>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg text-xs">
+        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-lg text-xs">
           {(['pending', 'approved', 'rejected', 'all'] as const).map((st) => (
             <button
               key={st}
               onClick={() => setFilterStatus(st)}
               className={`px-3 py-1 rounded-md capitalize font-medium transition-colors ${
                 filterStatus === st
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-card text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {st}
@@ -92,15 +92,15 @@ export function AttendanceCorrectionTable({
       </div>
 
       {filteredCorrections.length === 0 ? (
-        <Card className="bg-white border-slate-200 py-12 text-center">
-          <p className="text-sm font-medium text-slate-600">No {filterStatus} correction requests</p>
-          <p className="text-xs text-slate-400 mt-1">All employee punch corrections are up to date.</p>
+        <Card className="bg-card border-border py-12 text-center">
+          <p className="text-sm font-medium text-muted-foreground">No {filterStatus} correction requests</p>
+          <p className="text-xs text-muted-foreground mt-1">All employee punch corrections are up to date.</p>
         </Card>
       ) : (
-        <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
+        <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
                   <th className="py-3 px-4">Employee</th>
                   <th className="py-3 px-3">Date</th>
@@ -111,24 +111,24 @@ export function AttendanceCorrectionTable({
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {filteredCorrections.map((corr) => {
                   const isProcessing = processingId === corr.id
                   return (
-                    <tr key={corr.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-4 font-semibold text-slate-900">
+                    <tr key={corr.id} className="hover:bg-muted transition-colors">
+                      <td className="py-3 px-4 font-semibold text-foreground">
                         {corr.employee_name || 'Staff Member'}
                       </td>
-                      <td className="py-3 px-3 font-mono text-slate-600">
+                      <td className="py-3 px-3 font-mono text-muted-foreground">
                         {corr.attendance_date}
                       </td>
-                      <td className="py-3 px-3 capitalize font-medium text-slate-700">
+                      <td className="py-3 px-3 capitalize font-medium text-foreground">
                         {corr.requested_type.replace('_', ' ')}
                       </td>
                       <td className="py-3 px-3 font-mono font-semibold text-blue-600">
                         {corr.requested_time}
                       </td>
-                      <td className="py-3 px-4 text-slate-600 max-w-xs truncate" title={corr.reason}>
+                      <td className="py-3 px-4 text-muted-foreground max-w-xs truncate" title={corr.reason}>
                         {corr.reason || '—'}
                       </td>
                       <td className="py-3 px-3 text-center">
@@ -165,7 +165,7 @@ export function AttendanceCorrectionTable({
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-400 capitalize">
+                          <span className="text-[11px] text-muted-foreground capitalize">
                             Reviewed by {corr.reviewed_by_name || 'Manager'}
                           </span>
                         )}

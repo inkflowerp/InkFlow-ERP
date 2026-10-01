@@ -44,7 +44,7 @@ const STATUS_DICTIONARY: Record<string, StatusConfig> = {
   draft: {
     labelEn: 'Draft',
     labelBn: 'খসড়া',
-    containerClasses: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    containerClasses: 'bg-muted text-foreground border-border dark:border-border',
     dotClasses: 'bg-slate-400 dark:bg-slate-500',
   },
   quotation: {
@@ -164,7 +164,7 @@ const STATUS_DICTIONARY: Record<string, StatusConfig> = {
   inactive: {
     labelEn: 'Inactive',
     labelBn: 'নিষ্ক্রিয়',
-    containerClasses: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    containerClasses: 'bg-muted text-foreground border-border dark:border-border',
     dotClasses: 'bg-slate-400 dark:bg-slate-500',
   },
 }

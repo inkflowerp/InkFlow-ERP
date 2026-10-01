@@ -1342,7 +1342,7 @@ function UnifiedInventoryContent() {
       )
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-medium bg-muted text-foreground dark:text-muted-foreground">
         {type || 'General Transaction'}
       </span>
     )
@@ -1351,16 +1351,16 @@ function UnifiedInventoryContent() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-7xl pb-16 p-4 sm:p-6 animate-pulse">
-        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="h-10 bg-muted rounded-xl w-1/3" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-20 bg-muted rounded-xl" />
           ))}
         </div>
-        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
+        <div className="h-10 bg-muted rounded-xl w-full" />
         <div className="space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-16 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-16 bg-muted rounded-xl" />
           ))}
         </div>
       </div>
@@ -1466,7 +1466,7 @@ function UnifiedInventoryContent() {
             <Card className="p-3.5 space-y-3">
               <div className="flex flex-col md:flex-row items-center justify-between gap-3">
                 <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={isBn ? "কাঁচামাল গ্রুপ, মাপ (যেমন ২.২৫ft, ১৬৪ft), SKU, স্পেসিফিকেশন খুঁজুন..." : "Search material group, size (e.g. 2.25ft, 164ft), SKU, brand, GSM, specs..."}
                     value={search}
@@ -1499,8 +1499,8 @@ function UnifiedInventoryContent() {
               </div>
 
               {/* Status Filter Quick Tabs */}
-              <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs flex-wrap">
-                <span className="text-2xs font-semibold text-slate-500 mr-1">
+              <div className="flex items-center gap-2 pt-1 border-t border-border text-xs flex-wrap">
+                <span className="text-2xs font-semibold text-muted-foreground mr-1">
                   {isBn ? 'স্টক স্ট্যাটাস:' : 'Stock Status:'}
                 </span>
                 {[
@@ -1521,13 +1521,13 @@ function UnifiedInventoryContent() {
                           : st.id === 'low_stock'
                           ? 'bg-amber-500 text-white border-amber-600 shadow-xs'
                           : 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
-                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                        : 'bg-card text-muted-foreground border-border hover:bg-muted dark:hover:bg-slate-700'
                     )}
                   >
                     <span>{st.label}</span>
                     <span className={cn(
                       'text-2xs px-1.5 py-0.2 rounded-full tabular-nums font-black',
-                      stockStatusFilter === st.id ? 'bg-white/25 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+                      stockStatusFilter === st.id ? 'bg-card/25 text-white' : 'bg-muted text-foreground dark:text-foreground'
                     )}>
                       {st.count}
                     </span>
@@ -1537,10 +1537,10 @@ function UnifiedInventoryContent() {
             </Card>
 
             {/* Stock Items Table */}
-            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+            <Card className="overflow-hidden border border-border shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                  <thead className="bg-muted text-muted-foreground border-b border-border font-semibold text-xs">
                     <tr>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'কাঁচামাল গ্রুপ ও এসকেইউ' : 'Material Group & SKU'}</th>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'ক্যাটাগরি ও স্পেক' : 'Category & Spec'}</th>
@@ -1553,11 +1553,11 @@ function UnifiedInventoryContent() {
                       <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredInventoryGroupRows.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="p-8 text-center text-slate-500">
-                          <Layers className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                        <td colSpan={9} className="p-8 text-center text-muted-foreground">
+                          <Layers className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                           <p className="font-bold">{isBn ? 'কোনো কাঁচামাল গ্রুপ পাওয়া যায়নি।' : 'No inventory groups match your search.'}</p>
                           <Button
                             size="sm"
@@ -1575,18 +1575,18 @@ function UnifiedInventoryContent() {
                         const isLow = row.status === 'low_stock'
 
                         return (
-                          <tr key={row.key} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
+                          <tr key={row.key} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                             <td className="py-3.5 px-4">
                               <Link
                                 href={getTenantNavHref(`/inventory/${row.material_id}`, pathname, slug)}
-                                className="font-bold text-slate-900 dark:text-white hover:text-emerald-600 flex items-center gap-1.5 transition-colors"
+                                className="font-bold text-foreground dark:text-white hover:text-emerald-600 flex items-center gap-1.5 transition-colors"
                               >
                                 <span>{row.display_title}</span>
                                 <ExternalLink className="h-3 w-3 opacity-60" />
                               </Link>
-                              {row.name_bn && <div className="text-2xs text-slate-400 font-bengali mt-0.5">{row.name_bn}</div>}
+                              {row.name_bn && <div className="text-2xs text-muted-foreground font-bengali mt-0.5">{row.name_bn}</div>}
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                <span className="text-2xs text-slate-500 tabular-nums font-medium">SKU: {row.sku}</span>
+                                <span className="text-2xs text-muted-foreground tabular-nums font-medium">SKU: {row.sku}</span>
                                 {row.width_ft > 0 && row.length_ft > 0 && (
                                   <span className="inline-flex items-center px-1.5 py-0.2 rounded text-2xs font-bold tabular-nums bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                                     {row.width_ft}ft × {row.length_ft}ft
@@ -1610,21 +1610,21 @@ function UnifiedInventoryContent() {
                               </div>
                             </td>
                             <td className="py-3.5 px-4">
-                              <span className="capitalize px-2 py-0.5 rounded text-2xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                              <span className="capitalize px-2 py-0.5 rounded text-2xs font-bold bg-muted text-foreground border border-border dark:border-border">
                                 {row.category?.replace('_', ' ') || 'Substrate'}
                               </span>
                               {row.is_roll && row.width_ft * row.length_ft > 0 && (
-                                <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 tabular-nums">
+                                <div className="text-2xs text-muted-foreground mt-1 tabular-nums">
                                   {(row.width_ft * row.length_ft).toLocaleString()} SFT / roll
                                 </div>
                               )}
                               {!row.is_roll && row.width_ft * row.length_ft > 0 && (
-                                <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 tabular-nums">
+                                <div className="text-2xs text-muted-foreground mt-1 tabular-nums">
                                   {(row.width_ft * row.length_ft).toLocaleString()} SFT / unit
                                 </div>
                               )}
                               {row.specification && (
-                                <div className="text-2xs text-slate-400 mt-0.5 line-clamp-1">{row.specification}</div>
+                                <div className="text-2xs text-muted-foreground mt-0.5 line-clamp-1">{row.specification}</div>
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-right font-black tabular-nums text-sm whitespace-nowrap">
@@ -1640,22 +1640,22 @@ function UnifiedInventoryContent() {
                                   {row.stock_display_primary}
                                 </span>
                                 {row.stock_display_secondary && (
-                                  <div className="text-2xs font-medium text-slate-500 font-sans mt-0.5">
+                                  <div className="text-2xs font-medium text-muted-foreground font-sans mt-0.5">
                                     {row.stock_display_secondary}
                                   </div>
                                 )}
                               </div>
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 tabular-nums font-bold uppercase text-2xs border border-slate-200 dark:border-slate-700">
+                              <span className="inline-block px-2 py-0.5 rounded bg-muted text-muted-foreground tabular-nums font-bold uppercase text-2xs border border-border dark:border-border">
                                 {row.is_roll ? 'ROLL' : row.stock_unit.toUpperCase()}
                               </span>
                             </td>
-                            <td className="py-3.5 px-4 text-right tabular-nums text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
+                            <td className="py-3.5 px-4 text-right tabular-nums text-muted-foreground whitespace-nowrap font-medium">
                               <div>
-                                <span className="font-semibold text-slate-900 dark:text-white">{row.cost_display_primary}</span>
+                                <span className="font-semibold text-foreground dark:text-white">{row.cost_display_primary}</span>
                                 {row.cost_display_secondary && (
-                                  <div className="text-2xs text-slate-400 font-sans font-normal mt-0.5">
+                                  <div className="text-2xs text-muted-foreground font-sans font-normal mt-0.5">
                                     {row.cost_display_secondary}
                                   </div>
                                 )}
@@ -1663,14 +1663,14 @@ function UnifiedInventoryContent() {
                             </td>
                             <td className="py-3.5 px-4 text-right tabular-nums whitespace-nowrap">
                               {row.total_valuation > 0 ? (
-                                <span className="font-extrabold text-slate-900 dark:text-white">
+                                <span className="font-extrabold text-foreground dark:text-white">
                                   <CurrencyDisplay amount={row.total_valuation} />
                                 </span>
                               ) : (
-                                <span className="text-slate-400 font-medium"><CurrencyDisplay amount={0} /></span>
+                                <span className="text-muted-foreground font-medium"><CurrencyDisplay amount={0} /></span>
                               )}
                             </td>
-                            <td className="py-3.5 px-4 tabular-nums text-xs text-slate-500 text-center whitespace-nowrap">
+                            <td className="py-3.5 px-4 tabular-nums text-xs text-muted-foreground text-center whitespace-nowrap">
                               {row.reorder_level > 0 ? `${row.reorder_level} ${row.stock_unit}` : '—'}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -1709,7 +1709,7 @@ function UnifiedInventoryContent() {
                                   className={cn(
                                     'h-7 px-2 text-2xs font-medium transition-all',
                                     isOut
-                                      ? 'opacity-40 text-slate-400 border-slate-200 dark:border-slate-800 cursor-not-allowed'
+                                      ? 'opacity-40 text-muted-foreground border-border cursor-not-allowed'
                                       : 'text-indigo-600 hover:bg-indigo-50 border-indigo-200 dark:border-indigo-800 cursor-pointer'
                                   )}
                                   title={isOut ? (isBn ? 'স্টকে মাল নেই' : 'No stock available to issue') : (isBn ? 'ফ্লোরে ইস্যু করুন' : 'Issue to floor')}
@@ -1749,7 +1749,7 @@ function UnifiedInventoryContent() {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => handleTrashMaterial(row.material)}
-                                  className="h-7 px-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                  className="h-7 px-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                                   title={isBn ? 'ট্র্যাশে পাঠান' : 'Move to Trash'}
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
@@ -1775,7 +1775,7 @@ function UnifiedInventoryContent() {
             {/* Filter & Search Bar */}
             <Card className="p-3.5 shadow-xs">
               <div className="relative flex-1 w-full">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder={isBn ? 'রেডি পণ্য, ডিসপ্লে স্ট্যান্ড, স্টেন্ডি, পিওপি হার্ডওয়্যার খুঁজুন...' : 'Search ready products, display hardware, standees, POP displays...'}
                   value={search}
@@ -1786,10 +1786,10 @@ function UnifiedInventoryContent() {
             </Card>
 
             {/* Ready Products Table */}
-            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+            <Card className="overflow-hidden border border-border shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                  <thead className="bg-muted text-muted-foreground border-b border-border font-semibold text-xs">
                     <tr>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'পণ্যের নাম ও এসকেইউ' : 'Product Name & SKU'}</th>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'প্যাকেজিং ও স্পেক্স' : 'Packaging & Specs'}</th>
@@ -1802,13 +1802,13 @@ function UnifiedInventoryContent() {
                       <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredReadyProducts.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="p-8 text-center text-slate-500">
-                          <Package className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                        <td colSpan={9} className="p-8 text-center text-muted-foreground">
+                          <Package className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                           <p className="font-bold">{isBn ? 'কোনো রেডি পণ্যের স্টক রেকর্ড পাওয়া যায়নি।' : 'No ready products stock recorded.'}</p>
-                          <p className="text-2xs text-slate-400 mt-1">
+                          <p className="text-2xs text-muted-foreground mt-1">
                             {isBn ? 'রোল-আপ স্ট্যান্ডি, এক্স-স্ট্যান্ড এবং ডিসপ্লে হার্ডওয়্যার এখানে স্টক হিসাব করা হয়।' : 'Ready products like roll-up standees, X-stands, and POP hardware are managed here.'}
                           </p>
                           <Button
@@ -1902,33 +1902,33 @@ function UnifiedInventoryContent() {
                         const isLow = !isOut && reorderPoint > 0 && stockQty <= reorderPoint
 
                         return (
-                          <tr key={p.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                            <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                              <div className="font-bold text-slate-900 dark:text-white">{p.name}</div>
-                              {p.name_bn && <div className="text-2xs text-slate-400 font-bengali font-normal mt-0.5">{p.name_bn}</div>}
-                              <div className="text-2xs text-slate-500 tabular-nums mt-0.5 font-medium">SKU: {p.sku}</div>
+                          <tr key={p.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                            <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
+                              <div className="font-bold text-foreground dark:text-white">{p.name}</div>
+                              {p.name_bn && <div className="text-2xs text-muted-foreground font-bengali font-normal mt-0.5">{p.name_bn}</div>}
+                              <div className="text-2xs text-muted-foreground tabular-nums mt-0.5 font-medium">SKU: {p.sku}</div>
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                              <div className="text-xs text-foreground font-medium">
                                 {p.dimensions_spec || p.material_spec || 'Standard Spec'}
                               </div>
                               {(p.min_order_quantity || (p as any).moq) && (
-                                <div className="text-2xs text-slate-400 tabular-nums mt-0.5">MOQ: {p.min_order_quantity || (p as any).moq}</div>
+                                <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">MOQ: {p.min_order_quantity || (p as any).moq}</div>
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-right font-black tabular-nums text-sm whitespace-nowrap">
                               {stockQty <= 0 ? (
-                                <span className="text-slate-400 font-bold">0</span>
+                                <span className="text-muted-foreground font-bold">0</span>
                               ) : (
-                                <span className="text-slate-900 dark:text-white font-extrabold">{stockQty.toLocaleString()}</span>
+                                <span className="text-foreground dark:text-white font-extrabold">{stockQty.toLocaleString()}</span>
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 tabular-nums font-bold uppercase text-2xs border border-slate-200 dark:border-slate-700">
+                              <span className="inline-block px-2 py-0.5 rounded bg-muted text-muted-foreground tabular-nums font-bold uppercase text-2xs border border-border dark:border-border">
                                 {p.selling_unit || p.unit || 'pcs'}
                               </span>
                             </td>
-                            <td className="py-3.5 px-4 text-right tabular-nums text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
+                            <td className="py-3.5 px-4 text-right tabular-nums text-muted-foreground whitespace-nowrap font-medium">
                               <CurrencyDisplay amount={cost} />
                             </td>
                             <td className="py-3.5 px-4 text-right tabular-nums font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
@@ -1936,9 +1936,9 @@ function UnifiedInventoryContent() {
                             </td>
                             <td className="py-3.5 px-4 text-right tabular-nums whitespace-nowrap">
                               {totalValuation > 0 ? (
-                                <span className="font-extrabold text-slate-900 dark:text-white"><CurrencyDisplay amount={totalValuation} /></span>
+                                <span className="font-extrabold text-foreground dark:text-white"><CurrencyDisplay amount={totalValuation} /></span>
                               ) : (
-                                <span className="text-slate-400 font-medium"><CurrencyDisplay amount={0} /></span>
+                                <span className="text-muted-foreground font-medium"><CurrencyDisplay amount={0} /></span>
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -1990,8 +1990,8 @@ function UnifiedInventoryContent() {
                                   {isBn ? 'রিসিভ' : 'Receive'}
                                 </Button>
                                 <Link href={getTenantNavHref(`/products/${p.id}`, pathname, slug)}>
-                                  <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold cursor-pointer">
-                                    <Eye className="h-3.5 w-3.5 mr-1 text-slate-400" />
+                                  <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs text-foreground hover:bg-muted font-semibold cursor-pointer">
+                                    <Eye className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                                     {isBn ? 'দেখুন' : 'View'}
                                   </Button>
                                 </Link>
@@ -2017,7 +2017,7 @@ function UnifiedInventoryContent() {
             <Card className="p-3.5">
               <div className="flex flex-col md:flex-row items-center justify-between gap-3">
                 <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={isBn ? 'এসকেইউ, মেটেরিয়াল, সাইজ (উদাঃ 2ft, 5.25ft, 164ft) বা লোকেশন খুঁজুন...' : 'Search SKU, material, width (e.g. 2ft, 5.25ft, 3ft), length or location...'}
                     value={search}
@@ -2028,15 +2028,15 @@ function UnifiedInventoryContent() {
 
                 <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
                   {/* View Mode Toggle: Grouped vs Serialized */}
-                  <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+                  <div className="flex items-center bg-muted p-0.5 rounded-lg border border-border shrink-0">
                     <button
                       type="button"
                       onClick={() => setRollViewMode('grouped')}
                       className={cn(
                         'px-2.5 py-1 rounded-md font-bold transition-all text-xs cursor-pointer',
                         rollViewMode === 'grouped'
-                          ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-2xs'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                          ? 'bg-card text-indigo-700 dark:text-indigo-400 shadow-2xs'
+                          : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                       )}
                     >
                       {isBn ? 'গ্রুপ অনুযায়ী সাইজ' : 'Grouped by Size'}
@@ -2047,8 +2047,8 @@ function UnifiedInventoryContent() {
                       className={cn(
                         'px-2.5 py-1 rounded-md font-bold transition-all text-xs cursor-pointer',
                         rollViewMode === 'serialized'
-                          ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-2xs'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                          ? 'bg-card text-indigo-700 dark:text-indigo-400 shadow-2xs'
+                          : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                       )}
                     >
                       {isBn ? 'সিরিয়ালাইজড রোল' : 'Serialized Rolls'}
@@ -2096,10 +2096,10 @@ function UnifiedInventoryContent() {
 
             {/* ROLLS TABLE: GROUPED BY WIDTH & LENGTH (Default View) */}
             {rollViewMode === 'grouped' ? (
-              <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+              <Card className="overflow-hidden border border-border shadow-xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                    <thead className="bg-muted text-muted-foreground border-b border-border font-semibold text-xs">
                       <tr>
                         <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল ও এসকেইউ' : 'Material & SKU'}</th>
                         <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'প্রস্থ (Width)' : 'Width'}</th>
@@ -2111,13 +2111,13 @@ function UnifiedInventoryContent() {
                         <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-border dark:divide-border">
                       {filteredGroupedRolls.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="p-8 text-center text-slate-500">
-                            <Disc className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                          <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                            <Disc className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                             <p className="font-bold">{isBn ? 'কোনো রোল পাওয়া যায়নি।' : 'No physical roll stock found.'}</p>
-                            <p className="text-2xs text-slate-400 mt-1">
+                            <p className="text-2xs text-muted-foreground mt-1">
                               {isBn ? 'নতুন রোল মেটেরিয়াল তৈরি করুন অথবা জিআরএন দিয়ে রিসিভ করুন।' : 'Add roll media materials with configured sizes or receive rolls via GRN.'}
                             </p>
                             <div className="flex items-center justify-center gap-2 mt-3">
@@ -2155,8 +2155,8 @@ function UnifiedInventoryContent() {
 
                           return (
                             <React.Fragment key={group.key}>
-                              <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
-                                <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
+                              <tr className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
+                                <td className="py-3.5 px-4 font-bold text-foreground dark:text-foreground">
                                   <div className="flex items-start gap-2">
                                     <div className="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
                                       <Disc className="h-3.5 w-3.5" />
@@ -2164,10 +2164,10 @@ function UnifiedInventoryContent() {
                                     <div className="space-y-0.5">
                                       <div className="font-bold text-xs">{isBn && group.material_name_bn ? group.material_name_bn : group.material_name}</div>
                                       {group.material_name_bn && !isBn && (
-                                        <div className="text-2xs text-slate-400 font-normal">{group.material_name_bn}</div>
+                                        <div className="text-2xs text-muted-foreground font-normal">{group.material_name_bn}</div>
                                       )}
                                       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                                        <span className="text-2xs text-slate-500 tabular-nums font-medium">SKU: {group.sku}</span>
+                                        <span className="text-2xs text-muted-foreground tabular-nums font-medium">SKU: {group.sku}</span>
                                         {group.gsm > 0 && (
                                           <span className="inline-flex items-center px-1.5 py-0.2 rounded text-2xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                                             {group.gsm} GSM
@@ -2187,13 +2187,13 @@ function UnifiedInventoryContent() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap text-xs">
                                   {group.width_ft}ft
                                 </td>
-                                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap text-xs">
                                   {group.length_ft}ft
                                 </td>
-                                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap text-xs">
                                   <CurrencyDisplay amount={group.purchase_price} />
                                 </td>
                                 <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -2205,13 +2205,13 @@ function UnifiedInventoryContent() {
                                   <div className="font-black text-emerald-600 dark:text-emerald-400">
                                     {Math.round(group.total_area_sft).toLocaleString()} Sft
                                   </div>
-                                  <div className="text-2xs text-slate-400 font-semibold">
+                                  <div className="text-2xs text-muted-foreground font-semibold">
                                     <CurrencyDisplay amount={group.total_valuation} />
                                   </div>
                                 </td>
-                                <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap text-xs">
+                                <td className="py-3.5 px-4 font-medium text-foreground whitespace-nowrap text-xs">
                                   <div className="flex items-center gap-1.5">
-                                    <Building className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                    <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                     <span>{group.location_name}</span>
                                   </div>
                                 </td>
@@ -2247,7 +2247,7 @@ function UnifiedInventoryContent() {
                                             return next
                                           })
                                         }}
-                                        className="h-7 px-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                                        className="h-7 px-1.5 text-muted-foreground hover:text-foreground dark:hover:text-foreground"
                                         title={isExpanded ? 'Collapse serialized rolls' : 'Expand serialized rolls'}
                                       >
                                         {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -2259,17 +2259,17 @@ function UnifiedInventoryContent() {
 
                               {/* EXPANDABLE SERIALIZED ROLLS SUB-TABLE */}
                               {isExpanded && hasSerializedRolls && (
-                                <tr className="bg-slate-50/80 dark:bg-slate-900/60">
+                                <tr className="bg-muted dark:bg-card">
                                   <td colSpan={8} className="py-3 px-6">
-                                    <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-2">
-                                      <div className="flex items-center justify-between text-2xs font-bold text-slate-600 dark:text-slate-400">
+                                    <div className="rounded-lg border border-border bg-card p-3 space-y-2">
+                                      <div className="flex items-center justify-between text-2xs font-bold text-muted-foreground dark:text-muted-foreground">
                                         <span>Serialized Master Rolls ({group.rolls.length} items registered):</span>
                                         <span className="tabular-nums text-emerald-600 dark:text-emerald-400">{group.width_ft}ft × {group.length_ft}ft</span>
                                       </div>
                                       <div className="overflow-x-auto">
                                         <table className="w-full text-2xs">
                                           <thead>
-                                            <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 text-left">
+                                            <tr className="border-b border-border text-muted-foreground text-left">
                                               <th className="py-1 px-2 font-semibold">Roll Code / Tag</th>
                                               <th className="py-1 px-2 text-right font-semibold">Remaining Length</th>
                                               <th className="py-1 px-2 text-right font-semibold">Current Area</th>
@@ -2278,13 +2278,13 @@ function UnifiedInventoryContent() {
                                               <th className="py-1 px-2 text-right font-semibold">Action</th>
                                             </tr>
                                           </thead>
-                                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 tabular-nums">
+                                          <tbody className="divide-y divide-border tabular-nums">
                                             {group.rolls.map((r) => {
                                               const curLen = Number(r.current_length_ft ?? r.remaining_area_sft / (r.width_ft || 1))
                                               const area = Number(r.remaining_area_sft || curLen * r.width_ft)
                                               return (
-                                                <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-900">
-                                                  <td className="py-1.5 px-2 font-bold text-slate-900 dark:text-white">
+                                                <tr key={r.id} className="hover:bg-muted dark:hover:bg-muted">
+                                                  <td className="py-1.5 px-2 font-bold text-foreground dark:text-white">
                                                     {r.roll_code || r.roll_tag || r.id.slice(0, 8)}
                                                   </td>
                                                   <td className="py-1.5 px-2 text-right">
@@ -2357,10 +2357,10 @@ function UnifiedInventoryContent() {
               </Card>
             ) : (
               /* SERIALIZED INDIVIDUAL ROLLS TABLE */
-              <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+              <Card className="overflow-hidden border border-border shadow-xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                    <thead className="bg-muted text-muted-foreground border-b border-border font-semibold text-xs">
                       <tr>
                         <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'রোল আইডি / কোড' : 'Roll ID / Code'}</th>
                         <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল নাম' : 'Material Name'}</th>
@@ -2372,11 +2372,11 @@ function UnifiedInventoryContent() {
                         <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-border dark:divide-border">
                       {filteredRolls.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="p-8 text-center text-slate-500">
-                            <Disc className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                          <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                            <Disc className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                             <p className="font-bold">{isBn ? 'কোনো সিরিয়ালাইজড রোল পাওয়া যায়নি।' : 'No individual serialized rolls registered yet.'}</p>
                             <div className="flex items-center justify-center gap-2 mt-3">
                               <Button
@@ -2403,20 +2403,20 @@ function UnifiedInventoryContent() {
                           const area = Number(roll.remaining_area_sft || currentLen * roll.width_ft)
 
                           return (
-                            <tr key={roll.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                              <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                            <tr key={roll.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                              <td className="py-3.5 px-4 tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                                 {roll.roll_code || roll.roll_tag || roll.id.slice(0, 8)}
                               </td>
-                              <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-200">
+                              <td className="py-3.5 px-4 font-medium text-foreground dark:text-foreground">
                                 <div>{isBn && roll.material?.name_bn ? roll.material.name_bn : (roll.material?.name || 'Roll Media')}</div>
-                                {roll.material?.sku && <div className="text-2xs text-slate-400 tabular-nums font-normal">{roll.material.sku}</div>}
+                                {roll.material?.sku && <div className="text-2xs text-muted-foreground tabular-nums font-normal">{roll.material.sku}</div>}
                               </td>
-                              <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                              <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                                 {roll.width_ft} ft
                               </td>
-                              <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                              <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                                 <div>{currentLen.toFixed(2)} ft <span className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400 font-sans">— 1 Pcs</span></div>
-                                <div className="text-2xs text-slate-400 font-normal font-sans">Initial: {roll.initial_length_ft} ft</div>
+                                <div className="text-2xs text-muted-foreground font-normal font-sans">Initial: {roll.initial_length_ft} ft</div>
                               </td>
                               <td className="py-3.5 px-4 text-right tabular-nums text-emerald-600 font-black whitespace-nowrap">
                                 {area.toFixed(1)} SFT
@@ -2428,7 +2428,7 @@ function UnifiedInventoryContent() {
                                     {roll.mounted_machine_name || roll.mounted_press_name}
                                   </span>
                                 ) : (
-                                  <span className="text-slate-600 dark:text-slate-400 font-medium">
+                                  <span className="text-muted-foreground font-medium">
                                     {roll.location_name || 'Main Warehouse'}
                                   </span>
                                 )}
@@ -2450,7 +2450,7 @@ function UnifiedInventoryContent() {
                                     <span>{isBn ? 'শেষ হয়েছে' : 'Depleted'}</span>
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-bold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 whitespace-nowrap shadow-2xs">
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-bold bg-muted text-foreground border border-border whitespace-nowrap shadow-2xs">
                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
                                     <span>{roll.status}</span>
                                   </span>
@@ -2518,7 +2518,7 @@ function UnifiedInventoryContent() {
             <Card className="p-3.5 shadow-xs">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={isBn ? 'রিকোয়েস্ট নম্বর, টাস্ক নাম, আবেদনকারীর নাম খুঁজুন...' : 'Search request number, task title, requested by...'}
                     value={search}
@@ -2537,10 +2537,10 @@ function UnifiedInventoryContent() {
               </div>
             </Card>
 
-            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+            <Card className="overflow-hidden border border-border shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                  <thead className="bg-muted text-muted-foreground border-b border-border font-semibold text-xs">
                     <tr>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'রিকোয়েস্ট #' : 'Request #'}</th>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'প্রোডাকশন টাস্ক' : 'Production Task'}</th>
@@ -2552,29 +2552,29 @@ function UnifiedInventoryContent() {
                       <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredRequests.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-slate-500">
-                          <Send className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                        <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                          <Send className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                           <p className="font-bold">{isBn ? 'কোনো মেটেরিয়াল রিক্যুইজিশন পাওয়া যায়নি।' : 'No material requisitions found.'}</p>
                         </td>
                       </tr>
                     ) : (
                       filteredRequests.map((req) => (
-                        <tr key={req.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                          <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                        <tr key={req.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                          <td className="py-3.5 px-4 tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                             {req.request_number}
                           </td>
                           <td className="py-3.5 px-4">
-                            <div className="font-semibold text-slate-800 dark:text-slate-200">
+                            <div className="font-semibold text-foreground dark:text-foreground">
                               {req.production_task?.title || 'Production Task'}
                             </div>
                             {req.production_task?.task_code && (
-                              <div className="text-2xs text-slate-400 tabular-nums mt-0.5">{req.production_task.task_code}</div>
+                              <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">{req.production_task.task_code}</div>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-medium">
+                          <td className="py-3.5 px-4 text-muted-foreground font-medium">
                             {req.requested_by_name}
                           </td>
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -2586,7 +2586,7 @@ function UnifiedInventoryContent() {
                                   ? 'bg-rose-50 text-rose-700 border-rose-300'
                                   : req.priority === 'high'
                                   ? 'bg-amber-50 text-amber-700 border-amber-300'
-                                  : 'bg-slate-50 text-slate-600'
+                                  : 'bg-muted text-muted-foreground'
                               )}
                             >
                               {req.priority}
@@ -2595,7 +2595,7 @@ function UnifiedInventoryContent() {
                           <td className="py-3.5 px-4 tabular-nums text-xs text-center whitespace-nowrap">
                             {req.items?.length || 1} items
                           </td>
-                          <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-muted-foreground tabular-nums text-2xs whitespace-nowrap">
                             {new Date(req.created_at).toLocaleDateString()}
                           </td>
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -2687,7 +2687,7 @@ function UnifiedInventoryContent() {
           <div className="space-y-4">
             <Card className="p-3.5 shadow-xs">
               <div className="relative flex-1 w-full">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder={isBn ? 'রেমন্যান্ট কোড, প্যারেন্ট সাবস্ট্রেট, লোকেশন খুঁজুন...' : 'Search remnant code, parent substrate, location...'}
                   value={search}
@@ -2697,10 +2697,10 @@ function UnifiedInventoryContent() {
               </div>
             </Card>
 
-            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+            <Card className="overflow-hidden border border-border shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                  <thead className="bg-muted text-muted-foreground border-b border-border font-semibold text-xs">
                     <tr>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'রেমন্যান্ট কোড' : 'Remnant Code'}</th>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'প্যারেন্ট সাবস্ট্রেট' : 'Parent Substrate'}</th>
@@ -2712,13 +2712,13 @@ function UnifiedInventoryContent() {
                       <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredRemnants.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-slate-500">
-                          <Scissors className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                        <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                          <Scissors className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                           <p className="font-bold">{isBn ? 'কোনো অফ-কাট বা রেমন্যান্ট রেকর্ড নেই।' : 'No off-cuts or remnants currently logged.'}</p>
-                          <p className="text-2xs text-slate-400 mt-1">
+                          <p className="text-2xs text-muted-foreground mt-1">
                             {isBn ? 'কাটিং সাইন-অফ করার সময় স্বয়ংক্রিয়ভাবে রেমন্যান্ট সেভ হয়।' : 'Remnants are automatically saved when logging large format cutting sign-offs.'}
                           </p>
                         </td>
@@ -2728,20 +2728,20 @@ function UnifiedInventoryContent() {
                         const area = Number(rem.area_sft || (rem.width * rem.length))
 
                         return (
-                          <tr key={rem.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                            <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <tr key={rem.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                            <td className="py-3.5 px-4 tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                               {rem.remnant_code}
                             </td>
-                            <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
+                            <td className="py-3.5 px-4 font-semibold text-foreground dark:text-foreground">
                               {rem.parent_material?.name || 'Raw Material'}
                             </td>
-                            <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                               {rem.width} {rem.dimension_unit} × {rem.length} {rem.dimension_unit}
                             </td>
                             <td className="py-3.5 px-4 text-right tabular-nums font-black text-purple-600 whitespace-nowrap">
                               {area.toFixed(1)} SFT
                             </td>
-                            <td className="py-3.5 px-4 text-slate-500 font-medium">
+                            <td className="py-3.5 px-4 text-muted-foreground font-medium">
                               {rem.location?.location_name || 'Remnant Rack'}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -2810,7 +2810,7 @@ function UnifiedInventoryContent() {
             <Card className="p-3.5 shadow-xs">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={isBn ? 'লোকেশন কোড, নাম, ধরন খুঁজুন...' : 'Search location code, name, type...'}
                     value={search}
@@ -2821,7 +2821,7 @@ function UnifiedInventoryContent() {
                 <Button
                   size="sm"
                   onClick={() => setIsNewLocationOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shrink-0 cursor-pointer"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shrink-0 cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" />
                   {isBn ? '+ স্টোর লোকেশন যোগ করুন' : '+ Add Store Location'}
@@ -2831,8 +2831,8 @@ function UnifiedInventoryContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredLocations.length === 0 ? (
-                <div className="col-span-full p-12 text-center text-slate-500">
-                  <MapPin className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                <div className="col-span-full p-12 text-center text-muted-foreground">
+                  <MapPin className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                   <p className="font-bold">{isBn ? 'কোনো স্টোর লোকেশন পাওয়া যায়নি।' : 'No store locations found.'}</p>
                 </div>
               ) : (
@@ -2841,15 +2841,15 @@ function UnifiedInventoryContent() {
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="tabular-nums text-xs font-bold text-blue-600">{loc.location_code}</div>
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-0.5">{loc.location_name}</h4>
+                        <h4 className="font-bold text-sm text-foreground dark:text-white mt-0.5">{loc.location_name}</h4>
                       </div>
                       <Badge variant="outline" className="capitalize text-2xs">
                         {loc.location_type?.replace('_', ' ')}
                       </Badge>
                     </div>
-                    {loc.description && <p className="text-xs text-slate-500">{loc.description}</p>}
+                    {loc.description && <p className="text-xs text-muted-foreground">{loc.description}</p>}
                     <div className="flex items-center justify-between pt-2 border-t text-xs">
-                      <span className="text-slate-400">{isBn ? 'স্ট্যাটাস:' : 'Status:'}</span>
+                      <span className="text-muted-foreground">{isBn ? 'স্ট্যাটাস:' : 'Status:'}</span>
                       <span className="font-bold text-emerald-600">{isBn ? 'সক্রিয় লোকেশন' : 'Active Location'}</span>
                     </div>
                   </Card>
@@ -2868,7 +2868,7 @@ function UnifiedInventoryContent() {
             <Card className="p-3.5 shadow-xs">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={isBn ? 'পিও নম্বর, সরবরাহকারীর নাম, নোট খুঁজুন...' : 'Search PO number, supplier name, notes...'}
                     value={search}
@@ -2899,10 +2899,10 @@ function UnifiedInventoryContent() {
             </Card>
 
             {/* POs Table */}
-            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+            <Card className="overflow-hidden border border-border shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                  <thead className="bg-muted text-muted-foreground border-b border-border font-semibold text-xs">
                     <tr>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'পিও নম্বর' : 'PO Number'}</th>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'সরবরাহকারী' : 'Supplier Name'}</th>
@@ -2914,11 +2914,11 @@ function UnifiedInventoryContent() {
                       <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredOrders.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-slate-500">
-                          <ShoppingBag className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                        <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                          <ShoppingBag className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                           <p className="font-bold">{isBn ? 'কোনো পারচেজ অর্ডার পাওয়া যায়নি।' : 'No purchase orders found.'}</p>
                           <Button
                             size="sm"
@@ -2932,21 +2932,21 @@ function UnifiedInventoryContent() {
                       </tr>
                     ) : (
                       filteredOrders.map((po) => (
-                        <tr key={po.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                          <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                        <tr key={po.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                          <td className="py-3.5 px-4 tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                             <Link href={getTenantNavHref(`/purchases/${po.id}`, pathname, slug)} className="hover:underline text-indigo-600 dark:text-indigo-400">
                               {po.po_number}
                             </Link>
                           </td>
-                          <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-200">
+                          <td className="py-3.5 px-4 font-medium text-foreground dark:text-foreground">
                             {po.supplier_name}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">{po.po_date}</td>
-                          <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">{po.expected_delivery_date || '—'}</td>
-                          <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-muted-foreground tabular-nums text-2xs whitespace-nowrap">{po.po_date}</td>
+                          <td className="py-3.5 px-4 text-muted-foreground tabular-nums text-2xs whitespace-nowrap">{po.expected_delivery_date || '—'}</td>
+                          <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                             <CurrencyDisplay amount={po.grand_total} />
                           </td>
-                          <td className="py-3.5 px-4 text-right tabular-nums text-slate-500 whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-right tabular-nums text-muted-foreground whitespace-nowrap">
                             <CurrencyDisplay amount={po.due_amount} />
                           </td>
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -3010,7 +3010,7 @@ function UnifiedInventoryContent() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Truck className="h-4 w-4 text-blue-600" />
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-foreground dark:text-white">
                     {isBn ? `অপেক্ষমান ডেলিভারি চালান (${pendingInwardPOs.length})` : `Pending Inward Shipments (${pendingInwardPOs.length})`}
                   </h3>
                 </div>
@@ -3025,18 +3025,18 @@ function UnifiedInventoryContent() {
               </div>
 
               {pendingInwardPOs.length === 0 ? (
-                <p className="text-xs text-slate-500 py-3 text-center">{isBn ? 'রিসিভের জন্য কোনো অপেক্ষমান পিও নেই।' : 'No pending POs awaiting receipt.'}</p>
+                <p className="text-xs text-muted-foreground py-3 text-center">{isBn ? 'রিসিভের জন্য কোনো অপেক্ষমান পিও নেই।' : 'No pending POs awaiting receipt.'}</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {pendingInwardPOs.map((po) => (
                     <div
                       key={po.id}
-                      className="p-3 rounded-lg border bg-white dark:bg-slate-900 flex items-center justify-between gap-2 shadow-xs"
+                      className="p-3 rounded-lg border bg-card flex items-center justify-between gap-2 shadow-xs"
                     >
                       <div className="space-y-0.5">
                         <div className="tabular-nums font-bold text-xs text-indigo-600">{po.po_number}</div>
-                        <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">{po.supplier_name}</div>
-                        <div className="text-2xs text-slate-500">
+                        <div className="font-semibold text-xs text-foreground dark:text-foreground">{po.supplier_name}</div>
+                        <div className="text-2xs text-muted-foreground">
                           {po.items?.length || 0} line items • Expected: {po.expected_delivery_date || 'ASAP'}
                         </div>
                       </div>
@@ -3058,14 +3058,14 @@ function UnifiedInventoryContent() {
             </Card>
 
             {/* Posted Goods Received Notes History */}
-            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
-              <div className="p-3.5 border-b bg-slate-50 dark:bg-slate-900/60 font-bold text-xs flex items-center justify-between">
+            <Card className="overflow-hidden border border-border shadow-xs">
+              <div className="p-3.5 border-b bg-muted font-bold text-xs flex items-center justify-between">
                 <span>{isBn ? 'সাম্প্রতিক রিসিভকৃত গুডস রিসিভড নোট (GRN)' : 'Recent Posted Goods Received Notes (GRN)'}</span>
-                <span className="text-slate-400 font-normal">{goodsReceivedNotes.length} GRNs logged</span>
+                <span className="text-muted-foreground font-normal">{goodsReceivedNotes.length} GRNs logged</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                  <thead className="bg-muted text-muted-foreground border-b border-border font-semibold text-xs">
                     <tr>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'জিআরএন নম্বর' : 'GRN Number'}</th>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'পিও রেফারেন্স' : 'PO Reference'}</th>
@@ -3077,32 +3077,32 @@ function UnifiedInventoryContent() {
                       <th className="py-3.5 px-4 text-center whitespace-nowrap font-bold">{isBn ? 'স্ট্যাটাস' : 'Status'}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {goodsReceivedNotes.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-slate-500">
-                          <Truck className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                        <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                          <Truck className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                           <p className="font-bold">{isBn ? 'কোনো জিআরএন পোস্ট করা হয়নি।' : 'No Goods Received Notes posted yet.'}</p>
                         </td>
                       </tr>
                     ) : (
                       goodsReceivedNotes.map((grn) => (
-                        <tr key={grn.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                          <td className="py-3.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                        <tr key={grn.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                          <td className="py-3.5 px-4 tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                             {grn.grn_number}
                           </td>
                           <td className="py-3.5 px-4 tabular-nums text-indigo-600 whitespace-nowrap">
                             {grn.purchase_order_id ? 'PO' : 'Direct'}
                           </td>
-                          <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-200">
+                          <td className="py-3.5 px-4 font-medium text-foreground dark:text-foreground">
                             {grn.supplier_name}
                           </td>
-                          <td className="py-3.5 px-4 tabular-nums text-slate-500 whitespace-nowrap">
+                          <td className="py-3.5 px-4 tabular-nums text-muted-foreground whitespace-nowrap">
                             {grn.challan_number || '—'}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">{grn.received_date}</td>
-                          <td className="py-3.5 px-4 text-slate-500 font-medium">{grn.received_by_name}</td>
-                          <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-muted-foreground tabular-nums text-2xs whitespace-nowrap">{grn.received_date}</td>
+                          <td className="py-3.5 px-4 text-muted-foreground font-medium">{grn.received_by_name}</td>
+                          <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                             <CurrencyDisplay amount={grn.accepted_total || 0} />
                           </td>
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
@@ -3130,7 +3130,7 @@ function UnifiedInventoryContent() {
             <Card className="p-3.5 shadow-xs">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={isBn ? 'মেটেরিয়াল, ইউজার, জব অর্ডার, রেফারেন্স আইডি খুঁজুন...' : 'Search material, user, job order, reference ID, notes...'}
                     value={search}
@@ -3164,10 +3164,10 @@ function UnifiedInventoryContent() {
             </Card>
 
             {/* Ledger Table */}
-            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+            <Card className="overflow-hidden border border-border shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                  <thead className="bg-muted text-muted-foreground border-b border-border font-semibold text-xs">
                     <tr>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'সময়' : 'Timestamp'}</th>
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল / আইটেম' : 'Material / Item'}</th>
@@ -3179,11 +3179,11 @@ function UnifiedInventoryContent() {
                       <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'নোট' : 'Notes'}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredLedger.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-slate-500">
-                          <FileText className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                        <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                          <FileText className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                           <p className="font-bold">{isBn ? 'কোনো খতিয়ান রেকর্ড পাওয়া যায়নি।' : 'No stock ledger mutations found.'}</p>
                         </td>
                       </tr>
@@ -3193,11 +3193,11 @@ function UnifiedInventoryContent() {
                         const isPositive = qtyChange > 0
 
                         return (
-                          <tr key={entry.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                            <td className="py-3.5 px-4 text-slate-500 tabular-nums text-2xs whitespace-nowrap">
+                          <tr key={entry.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                            <td className="py-3.5 px-4 text-muted-foreground tabular-nums text-2xs whitespace-nowrap">
                               {entry.created_at ? new Date(entry.created_at).toLocaleString() : '—'}
                             </td>
-                            <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                            <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
                               {entry.material_name || entry.material?.name || 'Stock Item'}
                             </td>
                             <td className="py-3.5 px-4">
@@ -3206,28 +3206,28 @@ function UnifiedInventoryContent() {
                             <td
                               className={cn(
                                 'py-3.5 px-4 text-right font-black tabular-nums text-sm whitespace-nowrap',
-                                isPositive ? 'text-emerald-600' : 'text-slate-900 dark:text-white'
+                                isPositive ? 'text-emerald-600' : 'text-foreground dark:text-white'
                               )}
                             >
                               {isPositive ? `+${qtyChange.toLocaleString()}` : qtyChange.toLocaleString()}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                              <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 tabular-nums font-bold uppercase text-2xs border border-slate-200 dark:border-slate-700">
+                              <span className="inline-block px-2 py-0.5 rounded bg-muted text-muted-foreground tabular-nums font-bold uppercase text-2xs border border-border dark:border-border">
                                 {entry.unit || 'pcs'}
                               </span>
                             </td>
-                            <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground whitespace-nowrap">
                               {Number(entry.balance_after || 0).toLocaleString()}
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="tabular-nums text-2xs text-slate-600 dark:text-slate-400">
+                              <div className="tabular-nums text-2xs text-muted-foreground dark:text-muted-foreground">
                                 {entry.reference_id || '—'}
                               </div>
-                              <div className="text-2xs text-slate-400">
+                              <div className="text-2xs text-muted-foreground">
                                 {entry.performed_by_name || 'System'}
                               </div>
                             </td>
-                            <td className="py-3.5 px-4 text-slate-500 max-w-xs truncate" title={entry.notes || ''}>
+                            <td className="py-3.5 px-4 text-muted-foreground max-w-xs truncate" title={entry.notes || ''}>
                               {entry.notes || '—'}
                             </td>
                           </tr>
@@ -3364,8 +3364,8 @@ function UnifiedInventoryContent() {
         {/* Mount Physical Roll to Machine Modal */}
         {isMountModalOpen && rollToMount && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <Card className="w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <Card className="w-full max-w-md bg-card shadow-2xl border border-border dark:border-border">
+              <CardHeader className="pb-3 border-b border-border dark:border-border">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Cpu className="h-5 w-5 text-blue-600" />
@@ -3391,17 +3391,17 @@ function UnifiedInventoryContent() {
               </CardHeader>
               <CardContent className="pt-4 space-y-4">
                 {/* Roll Specs Summary */}
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700 text-xs space-y-1">
-                  <div className="font-bold text-slate-900 dark:text-white flex justify-between">
+                <div className="p-3 bg-muted rounded-lg border border-border text-xs space-y-1">
+                  <div className="font-bold text-foreground dark:text-white flex justify-between">
                     <span>{rollToMount.roll_code || rollToMount.roll_tag || `Roll #${rollToMount.id.slice(0, 8)}`}</span>
                     <Badge variant="outline" className="text-2xs bg-emerald-50 text-emerald-700 border-emerald-300">
                       {rollToMount.width_ft} ft Width
                     </Badge>
                   </div>
-                  <div className="text-slate-600 dark:text-slate-400 font-medium">
+                  <div className="text-muted-foreground font-medium">
                     {rollToMount.material?.name || 'Roll Media'}
                   </div>
-                  <div className="text-2xs text-slate-500 tabular-nums">
+                  <div className="text-2xs text-muted-foreground tabular-nums">
                     Remaining: {Number(rollToMount.remaining_area_sft || 0).toFixed(1)} SFT ({Number(rollToMount.current_length_ft || (rollToMount.remaining_area_sft / (rollToMount.width_ft || 1))).toFixed(1)} LF)
                   </div>
                 </div>
@@ -3417,7 +3417,7 @@ function UnifiedInventoryContent() {
                     <select
                       value={selectedMachineForMount}
                       onChange={(e) => setSelectedMachineForMount(e.target.value)}
-                      className="w-full text-xs h-9 px-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md focus:ring-1 focus:ring-blue-500"
+                      className="w-full text-xs h-9 px-3 bg-card border border-input rounded-md focus:ring-1 focus:ring-ring"
                     >
                       <option value="">-- Choose Machine / Press --</option>
                       {machines.map((m) => (
@@ -3430,7 +3430,7 @@ function UnifiedInventoryContent() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
                   <Button
                     variant="outline"
                     size="sm"
@@ -3446,7 +3446,7 @@ function UnifiedInventoryContent() {
                     size="sm"
                     disabled={!selectedMachineForMount || isMounting}
                     onClick={handleMountRoll}
-                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                    className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
                   >
                     {isMounting ? 'Mounting...' : 'Confirm & Mount Roll'}
                   </Button>
@@ -3506,7 +3506,7 @@ export default function UnifiedInventoryPage() {
         fallback={
           <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
             <Package className="h-6 w-6 text-indigo-500 animate-pulse" />
-            <p className="text-xs text-slate-500">Loading Inventory...</p>
+            <p className="text-xs text-muted-foreground">Loading Inventory...</p>
           </div>
         }
       >

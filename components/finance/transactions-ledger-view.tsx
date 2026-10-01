@@ -182,62 +182,62 @@ export function TransactionsLedgerView({
     <div className="space-y-6">
       {/* 1. TOP SUMMARY METRICS STRIP */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-semibold">{tBilingual('Total Money In (Income)', 'মোট জমা (ইনকাম)')}</span>
             <ArrowDownLeft className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="text-xl sm:text-2xl font-black tabular-nums text-emerald-600 dark:text-emerald-400">
             +৳{totals.income.toLocaleString()}
           </div>
-          <span className="text-3xs text-slate-400 block mt-1">{tBilingual('Collections & receipts', 'আদায় ও জমা')}</span>
+          <span className="text-3xs text-muted-foreground block mt-1">{tBilingual('Collections & receipts', 'আদায় ও জমা')}</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-semibold">{tBilingual('Total Money Out (Expense)', 'মোট খরচ (ব্যয়)')}</span>
             <ArrowUpRight className="w-4 h-4 text-rose-500" />
           </div>
           <div className="text-xl sm:text-2xl font-black tabular-nums text-rose-600 dark:text-rose-400">
             -৳{totals.expense.toLocaleString()}
           </div>
-          <span className="text-3xs text-slate-400 block mt-1">{tBilingual('Overheads & payouts', 'পরিচালন ও মহাজন বিল')}</span>
+          <span className="text-3xs text-muted-foreground block mt-1">{tBilingual('Overheads & payouts', 'পরিচালন ও মহাজন বিল')}</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-semibold">{tBilingual('Total Transfers', 'অ্যাকাউন্ট ট্রান্সফার')}</span>
             <ArrowLeftRight className="w-4 h-4 text-blue-500" />
           </div>
           <div className="text-xl sm:text-2xl font-black tabular-nums text-blue-600 dark:text-blue-400">
             ৳{totals.transfer.toLocaleString()}
           </div>
-          <span className="text-3xs text-slate-400 block mt-1">{tBilingual('Internal movements', 'অভ্যন্তরীণ স্থানান্তর')}</span>
+          <span className="text-3xs text-muted-foreground block mt-1">{tBilingual('Internal movements', 'অভ্যন্তরীণ স্থানান্তর')}</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span className="font-semibold">{tBilingual('Net Cash Movement', 'নিট নগদ প্রবাহ')}</span>
-            <Receipt className="w-4 h-4 text-slate-400" />
+            <Receipt className="w-4 h-4 text-muted-foreground" />
           </div>
           <div className={`text-xl sm:text-2xl font-black tabular-nums ${totals.net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
             {totals.net >= 0 ? '+' : ''}৳{totals.net.toLocaleString()}
           </div>
-          <span className="text-3xs text-slate-400 block mt-1">{totals.net >= 0 ? tBilingual('Net surplus', 'নগদ উদ্বৃত্ত') : tBilingual('Net deficit', 'ঘাটতি')}</span>
+          <span className="text-3xs text-muted-foreground block mt-1">{totals.net >= 0 ? tBilingual('Net surplus', 'নগদ উদ্বৃত্ত') : tBilingual('Net deficit', 'ঘাটতি')}</span>
         </div>
       </div>
 
       {/* 2. FILTER PILLS: ALL · MONEY IN · MONEY OUT · TRANSFER & SEARCH */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         {/* Type Filter Pills */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl w-fit">
+        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-2xl w-fit">
           <button
             type="button"
             onClick={() => setFilterType('ALL')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               filterType === 'ALL'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('All', 'সকল লেনদেন')} ({normalizedEntries.length})
@@ -248,8 +248,8 @@ export function TransactionsLedgerView({
             onClick={() => setFilterType('INCOME')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               filterType === 'INCOME'
-                ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-emerald-600 dark:text-emerald-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-500" />
@@ -261,8 +261,8 @@ export function TransactionsLedgerView({
             onClick={() => setFilterType('EXPENSE')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               filterType === 'EXPENSE'
-                ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-rose-600 dark:text-rose-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <ArrowUpRight className="w-3.5 h-3.5 text-rose-500" />
@@ -274,8 +274,8 @@ export function TransactionsLedgerView({
             onClick={() => setFilterType('TRANSFER')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               filterType === 'TRANSFER'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <ArrowLeftRight className="w-3.5 h-3.5 text-blue-500" />
@@ -289,7 +289,7 @@ export function TransactionsLedgerView({
           <select
             value={selectedAccountId}
             onChange={(e) => setSelectedAccountId(e.target.value)}
-            className="h-8.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 text-slate-700 dark:text-slate-300 font-medium"
+            className="h-8.5 text-xs rounded-xl bg-card border border-border px-3 text-foreground font-medium"
           >
             <option value="ALL">{tBilingual('All Accounts (ক্যাশ/ব্যাংক)', 'সকল হিসাব')}</option>
             {accounts
@@ -303,12 +303,12 @@ export function TransactionsLedgerView({
 
           {/* Search Box */}
           <div className="relative w-full sm:w-56">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={tBilingual('Search description, voucher...', 'বিবরণ বা ভাউচার খুঁজুন...')}
-              className="h-8.5 pl-8 text-xs rounded-xl bg-white dark:bg-slate-900"
+              className="h-8.5 pl-8 text-xs rounded-xl bg-card dark:bg-card"
             />
           </div>
 
@@ -316,7 +316,7 @@ export function TransactionsLedgerView({
           <Button
             onClick={handleExportCSV}
             variant="outline"
-            className="h-8.5 px-3 text-xs rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-semibold flex items-center gap-1.5 cursor-pointer"
+            className="h-8.5 px-3 text-xs rounded-xl border-border bg-card font-semibold flex items-center gap-1.5 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>CSV</span>
@@ -325,11 +325,11 @@ export function TransactionsLedgerView({
       </div>
 
       {/* 3. ONE UNIFIED LEDGER TABLE */}
-      <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+      <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
                 <tr>
                   <th className="p-3 w-28">{tBilingual('Date', 'তারিখ')}</th>
                   <th className="p-3 w-32">{tBilingual('Type', 'ধরন')}</th>
@@ -339,15 +339,15 @@ export function TransactionsLedgerView({
                   <th className="p-3 text-center w-24">{tBilingual('Status', 'অবস্থা')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+              <tbody className="divide-y divide-border dark:divide-border/50">
                 {filteredEntries.map((entry) => {
                   const isIncome = entry.entryType === 'INCOME'
                   const isExpense = entry.entryType === 'EXPENSE'
                   const isTransfer = entry.entryType === 'TRANSFER'
 
                   return (
-                    <tr key={entry.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 tabular-nums text-slate-500 whitespace-nowrap">
+                    <tr key={entry.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                      <td className="p-3 tabular-nums text-muted-foreground whitespace-nowrap">
                         {entry.date}
                       </td>
                       <td className="p-3">
@@ -364,16 +364,16 @@ export function TransactionsLedgerView({
                           {isIncome ? 'Money In' : isExpense ? 'Money Out' : 'Transfer'}
                         </Badge>
                       </td>
-                      <td className="p-3 font-medium text-slate-800 dark:text-slate-200">
-                        <div className="font-semibold text-slate-900 dark:text-white">
+                      <td className="p-3 font-medium text-foreground dark:text-foreground">
+                        <div className="font-semibold text-foreground dark:text-white">
                           {entry.description}
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5 text-3xs text-slate-400 tabular-nums">
+                        <div className="flex items-center gap-2 mt-0.5 text-3xs text-muted-foreground tabular-nums">
                           <span>{entry.number}</span>
                           {entry.referenceId && <span>• Ref: {entry.referenceId}</span>}
                         </div>
                       </td>
-                      <td className="p-3 tabular-nums text-2xs text-slate-600 dark:text-slate-400">
+                      <td className="p-3 tabular-nums text-2xs text-muted-foreground dark:text-muted-foreground">
                         {entry.accountDisplay}
                       </td>
                       <td className="p-3 text-right tabular-nums font-bold text-sm">
@@ -404,7 +404,7 @@ export function TransactionsLedgerView({
 
                 {filteredEntries.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-12 text-center text-slate-400 text-xs">
+                    <td colSpan={6} className="p-12 text-center text-muted-foreground text-xs">
                       {tBilingual('No transactions found matching your filters.', 'কোনো লেনদেন রেকর্ড পাওয়া যায়নি।')}
                     </td>
                   </tr>

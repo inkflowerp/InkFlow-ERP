@@ -71,7 +71,7 @@ function ResetPasswordForm() {
   }
 
   return (
-    <Card className="border-slate-200/80 shadow-2xl dark:border-slate-800">
+    <Card className="border-border shadow-2xl dark:border-border">
       <CardHeader className="space-y-1 text-left pb-4">
         <CardTitle className="text-xl font-bold tracking-tight">
           {locale === 'bn' ? 'নতুন পাসওয়ার্ড সেট করুন' : 'Set New Password'}
@@ -88,10 +88,10 @@ function ResetPasswordForm() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
             <CheckCircle2 className="h-7 w-7" />
           </div>
-          <h4 className="font-bold text-slate-800 dark:text-slate-100 text-lg">
+          <h4 className="font-bold text-foreground text-lg">
             {t('auth.password_updated_title') || 'Password updated successfully'}
           </h4>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             {locale === 'bn' ? 'লগইন পেজে রিডাইরেক্ট করা হচ্ছে...' : 'Redirecting to login page...'}
           </p>
           <div className="pt-2">
@@ -150,7 +150,7 @@ function ResetPasswordForm() {
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+          <CardFooter className="flex flex-col gap-3 border-t border-border pt-4">
             <Button
               type="submit"
               className="w-full justify-center gap-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
@@ -168,7 +168,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-400 text-sm">Loading reset form...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground text-sm">Loading reset form...</div>}>
       <ResetPasswordForm />
     </Suspense>
   )

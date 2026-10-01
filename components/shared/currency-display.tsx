@@ -34,7 +34,7 @@ export function CurrencyDisplay({
     success: 'text-emerald-600 dark:text-emerald-400 font-semibold',
     danger: 'text-rose-600 dark:text-rose-400 font-semibold',
     warning: 'text-amber-600 dark:text-amber-400 font-semibold',
-    muted: 'text-slate-500 dark:text-slate-400',
+    muted: 'text-muted-foreground dark:text-muted-foreground',
   }
 
   return (

@@ -316,7 +316,7 @@ function CatalogItemCombobox({
                 setKeyword('')
                 if (onCustomSelect) onCustomSelect()
               }}
-              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded cursor-pointer"
+              className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer"
               title="Clear to Custom Item"
             >
               <X className="h-3.5 w-3.5" />
@@ -325,7 +325,7 @@ function CatalogItemCombobox({
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded cursor-pointer"
+            className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer"
           >
             <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")} />
           </button>
@@ -333,7 +333,7 @@ function CatalogItemCombobox({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-card rounded-xl border border-border shadow-xl divide-y divide-border text-xs">
           {/* Custom Item option (Index 0) */}
           <div
             ref={(el) => {
@@ -348,7 +348,7 @@ function CatalogItemCombobox({
                 ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
                 : !selectedProductId
                 ? "bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                : "hover:bg-muted text-muted-foreground dark:text-muted-foreground"
             )}
           >
             <span>✨ -- Custom Item (No Catalog) --</span>
@@ -386,9 +386,9 @@ function CatalogItemCombobox({
                     )}
                   >
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                       </div>
                     </div>
@@ -432,9 +432,9 @@ function CatalogItemCombobox({
                     )}
                   >
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
                       </div>
                     </div>
@@ -478,9 +478,9 @@ function CatalogItemCombobox({
                     )}
                   >
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        {p.sku && <span className="tabular-nums bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <div className="font-semibold text-foreground dark:text-white">{p.name}</div>
+                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="tabular-nums bg-muted px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
                       </div>
                     </div>
@@ -497,7 +497,7 @@ function CatalogItemCombobox({
           )}
 
           {filteredProducts.length === 0 && (
-            <div className="p-4 text-center text-slate-400">
+            <div className="p-4 text-center text-muted-foreground">
               No catalog items match &quot;{keyword}&quot;. You can use it as a custom item description.
             </div>
           )}
@@ -529,7 +529,7 @@ function CustomerSuggestionsDropdown({
   }, [highlightedIndex])
 
   return (
-    <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl divide-y divide-slate-100 dark:divide-slate-800 text-xs animate-in fade-in-0">
+    <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-card rounded-xl border border-border shadow-2xl divide-y divide-border text-xs animate-in fade-in-0">
       {results.map((cust, idx) => {
         const isHighlighted = idx === highlightedIndex
         return (
@@ -545,26 +545,26 @@ function CustomerSuggestionsDropdown({
               'p-2.5 cursor-pointer transition-colors flex items-center justify-between gap-2',
               isHighlighted
                 ? 'bg-blue-50 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100'
-                : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200'
+                : 'hover:bg-muted dark:hover:bg-muted/60 text-foreground dark:text-foreground'
             )}
           >
             <div className="min-w-0">
               <div className="font-bold flex items-center gap-1.5 truncate">
                 <span>{cust.name}</span>
                 {cust.company_name && (
-                  <span className="text-2xs font-normal text-slate-500 dark:text-slate-400 truncate">
+                  <span className="text-2xs font-normal text-muted-foreground truncate">
                     • {cust.company_name}
                   </span>
                 )}
               </div>
-              <div className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
+              <div className="text-2xs text-muted-foreground tabular-nums flex flex-wrap items-center gap-2 mt-0.5">
                 <span>📞 {cust.mobile}</span>
                 {cust.email && <span className="truncate">✉️ {cust.email}</span>}
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground dark:text-muted-foreground">
                 {cust.customer_type || 'Retail'}
               </span>
               {isHighlighted && (
@@ -1660,7 +1660,7 @@ export function NewInvoiceModal({
     if (source === 'manual') {
       return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-2xs py-0">Manual</Badge>
     }
-    return <Badge variant="outline" className="text-slate-500 text-2xs py-0">Default</Badge>
+    return <Badge variant="outline" className="text-muted-foreground text-2xs py-0">Default</Badge>
   }
 
   return (
@@ -1675,7 +1675,7 @@ export function NewInvoiceModal({
               <Receipt className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-black text-slate-900 dark:text-white">
+              <h2 className="text-base font-black text-foreground dark:text-white">
                 {locale === 'bn' ? 'নতুন চালান / ইনভয়েস' : 'New Invoice'}
               </h2>
             </div>
@@ -1689,7 +1689,7 @@ export function NewInvoiceModal({
                 'text-xs font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5',
                 isAdvancedMode
                   ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900 dark:text-slate-400'
+                  : 'bg-muted text-muted-foreground border-border dark:text-muted-foreground'
               )}
             >
               <Layers className="h-3.5 w-3.5" />
@@ -1698,7 +1698,7 @@ export function NewInvoiceModal({
           </div>
         </div>
       }
-      footerClassName="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3"
+      footerClassName="bg-card border-border px-4 sm:px-6 py-3"
       footer={
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
           <Button
@@ -1706,7 +1706,7 @@ export function NewInvoiceModal({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted cursor-pointer"
           >
             Cancel
           </Button>
@@ -1718,7 +1718,7 @@ export function NewInvoiceModal({
               variant="outline"
               onClick={handleSaveAndPrint}
               disabled={isSubmitting}
-              className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+              className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer"
             >
               <Printer className="h-4 w-4" />
               <span>Save & Print PDF</span>
@@ -1739,11 +1739,11 @@ export function NewInvoiceModal({
               </Button>
 
               {showSendMenu && (
-                <div className="absolute right-0 bottom-full mb-1.5 w-52 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl py-1 z-50 text-xs">
+                <div className="absolute right-0 bottom-full mb-1.5 w-52 bg-card rounded-xl border border-border shadow-xl py-1 z-50 text-xs">
                   <button
                     type="button"
                     onClick={() => handleSaveAndSend('whatsapp')}
-                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer"
+                    className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer"
                   >
                     <Smartphone className="h-4 w-4 text-emerald-600" />
                     <span>Send via WhatsApp</span>
@@ -1751,7 +1751,7 @@ export function NewInvoiceModal({
                   <button
                     type="button"
                     onClick={() => handleSaveAndSend('email')}
-                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer"
+                    className="w-full text-left px-3.5 py-2 hover:bg-muted flex items-center gap-2 text-foreground font-semibold cursor-pointer"
                   >
                     <Mail className="h-4 w-4 text-blue-600" />
                     <span>Send PDF via Email</span>
@@ -1765,7 +1765,7 @@ export function NewInvoiceModal({
               type="button"
               onClick={handleSaveOnly}
               disabled={isSubmitting}
-              className="h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 cursor-pointer"
+              className="h-10 px-5 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs flex items-center gap-2 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -1820,13 +1820,13 @@ export function NewInvoiceModal({
         {/* =========================================================================
             SECTION 1: CUSTOMER SEARCH & DETAILS
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 1
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 Customer Information
               </h3>
             </div>
@@ -1840,7 +1840,7 @@ export function NewInvoiceModal({
               )}
 
               {/* Customer Type Tabs */}
-              <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
+              <div className="inline-flex items-center p-0.5 rounded-lg bg-muted border border-border dark:border-border">
                 {[
                   { value: 'retail', label: isBn ? 'খুচরা' : 'Retail' },
                   { value: 'reseller', label: isBn ? 'রিসেলার' : 'Reseller' },
@@ -1854,8 +1854,8 @@ export function NewInvoiceModal({
                     className={cn(
                       'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
                       customerType === tab.value
-                        ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                        ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
+                        : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                     )}
                   >
                     {tab.label}
@@ -2007,13 +2007,13 @@ export function NewInvoiceModal({
 
           {/* Save Customer Checkbox */}
           {!isExistingCustomerSelected && (
-            <div className="pt-1 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80">
-              <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-700 dark:text-slate-300">
+            <div className="pt-1 flex items-center justify-between border-t border-border dark:border-border/80">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-foreground dark:text-muted-foreground">
                 <input
                   type="checkbox"
                   checked={saveCustomer}
                   onChange={(e) => setSaveCustomer(e.target.checked)}
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                  className="rounded border-input text-blue-600 focus:ring-ring h-4 w-4"
                 />
                 <span>Save customer details to directory for future invoices</span>
               </label>
@@ -2022,25 +2022,25 @@ export function NewInvoiceModal({
 
           {/* CUSTOMER CREDIT HUD */}
           {selectedCustomer && (
-            <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs animate-in fade-in-0">
+            <div className="p-3 bg-muted border border-border rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs animate-in fade-in-0">
               <div>
-                <span className="text-2xs uppercase font-bold text-slate-400 block">Outstanding Balance</span>
+                <span className="text-2xs uppercase font-bold text-muted-foreground block">Outstanding Balance</span>
                 <span className="tabular-nums font-bold text-rose-600 text-sm">{formatBDT(customerOutstanding)}</span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-slate-400 block">Credit Limit</span>
-                <span className="tabular-nums font-bold text-slate-700 dark:text-slate-300 text-sm">
+                <span className="text-2xs uppercase font-bold text-muted-foreground block">Credit Limit</span>
+                <span className="tabular-nums font-bold text-foreground text-sm">
                   {customerCreditLimit > 0 ? `${formatBDT(customerCreditLimit)}` : 'No Limit'}
                 </span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-slate-400 block">Available Credit</span>
+                <span className="text-2xs uppercase font-bold text-muted-foreground block">Available Credit</span>
                 <span className={cn('tabular-nums font-bold text-sm', availableCredit > 0 ? 'text-emerald-600' : 'text-rose-600')}>
                   {customerCreditLimit > 0 ? `${formatBDT(Math.max(0, availableCredit))}` : 'Unlimited'}
                 </span>
               </div>
               <div>
-                <span className="text-2xs uppercase font-bold text-slate-400 block">Customer Category</span>
+                <span className="text-2xs uppercase font-bold text-muted-foreground block">Customer Category</span>
                 <Badge variant="outline" className="text-2xs uppercase font-bold py-0 h-4">
                   {selectedCustomer.customer_type || 'Retail'}
                 </Badge>
@@ -2076,7 +2076,7 @@ export function NewInvoiceModal({
                     placeholder="Enter authorization reason (e.g. Approved by CFO / Owner)..."
                     value={creditOverrideReason}
                     onChange={(e) => setCreditOverrideReason(e.target.value)}
-                    className="h-8 text-xs bg-white dark:bg-slate-900 font-medium"
+                    className="h-8 text-xs bg-card font-medium"
                   />
                 )}
               </div>
@@ -2087,17 +2087,17 @@ export function NewInvoiceModal({
         {/* =========================================================================
             SECTION 2: INVOICE ITEMS & SPECS (PRODUCT & SERVICE AWARE)
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 2
               </div>
               <div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Invoice Items & Specs
                 </h3>
-                <p className="text-2xs text-slate-400">
+                <p className="text-2xs text-muted-foreground">
                   Billing & Fulfillment: Supports Printing Services, Ready Products & Hardware, and Materials.
                 </p>
               </div>
@@ -2128,12 +2128,12 @@ export function NewInvoiceModal({
               return (
                 <div
                   key={item.id}
-                  className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5 transition-all"
+                  className="p-4 rounded-xl bg-muted border border-border shadow-xs space-y-3.5 transition-all"
                 >
                   {/* Item Header & Badges */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800 pb-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2.5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="tabular-nums text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
+                      <span className="tabular-nums text-xs font-bold text-muted-foreground bg-muted/80 px-2 py-0.5 rounded">
                         Item #{index + 1}
                       </span>
 
@@ -2184,7 +2184,7 @@ export function NewInvoiceModal({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleAdvanced(index)}
-                        className="h-7 px-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 text-xs font-semibold cursor-pointer"
+                        className="h-7 px-2 text-muted-foreground hover:text-foreground text-xs font-semibold cursor-pointer"
                       >
                         {item.showAdvanced ? 'Simple Specs' : 'More Specs'}
                       </Button>
@@ -2223,13 +2223,13 @@ export function NewInvoiceModal({
                         </Label>
                         {isCustom && (
                           <div className="flex items-center gap-1">
-                            <span className="text-2xs text-slate-400 mr-1">Mode:</span>
+                            <span className="text-2xs text-muted-foreground mr-1">Mode:</span>
                             <button
                               type="button"
                               onClick={() => handleToggleItemKind(index, 'service')}
                               className={cn(
                                 'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
-                                isService ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
+                                isService ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📐 Sqft Area
@@ -2239,7 +2239,7 @@ export function NewInvoiceModal({
                               onClick={() => handleToggleItemKind(index, 'ready_product')}
                               className={cn(
                                 'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
-                                isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
+                                isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📦 Unit
@@ -2323,7 +2323,7 @@ export function NewInvoiceModal({
                   {/* Dimension Presets for Services */}
                   {isService && item.available_dimension_presets && item.available_dimension_presets.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                      <span className="text-2xs font-bold text-slate-400 mr-1">Standard Sizes:</span>
+                      <span className="text-2xs font-bold text-muted-foreground mr-1">Standard Sizes:</span>
                       {item.available_dimension_presets.map((preset, pIdx) => (
                         <button
                           key={pIdx}
@@ -2333,7 +2333,7 @@ export function NewInvoiceModal({
                             'px-2 py-0.5 rounded-md text-2xs font-semibold border transition-all cursor-pointer',
                             item.width === String(preset.width) && item.height === String(preset.length)
                               ? 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                              : 'bg-card border-input text-foreground hover:border-blue-400'
                           )}
                         >
                           {preset.label || `${preset.width} × ${preset.length} ${preset.unit || 'ft'}`}
@@ -2380,7 +2380,7 @@ export function NewInvoiceModal({
                         <select
                           value={item.dimension_unit || 'ft'}
                           onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
-                          className="w-full h-9 px-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-1 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="ft">ft</option>
                           <option value="inch">inch</option>
@@ -2414,7 +2414,7 @@ export function NewInvoiceModal({
                         <select
                           value={item.finishing || 'None'}
                           onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="None">None (+৳0)</option>
                           {item.available_finishing_options && item.available_finishing_options.length > 0 ? (
@@ -2445,7 +2445,7 @@ export function NewInvoiceModal({
                         <select
                           value={item.add_on || 'None'}
                           onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="None">None (+৳0)</option>
                           {item.available_additional_options && item.available_additional_options.length > 0 ? (
@@ -2470,7 +2470,7 @@ export function NewInvoiceModal({
                             Rate ({item.dimension_unit || 'sft'})
                           </Label>
                           {((item.finishing_rate ?? 0) > 0 || (item.add_on_rate ?? 0) > 0) && (
-                            <span className="text-2xs text-slate-400 tabular-nums whitespace-nowrap shrink-0" title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
+                            <span className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap shrink-0" title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
                               Base ৳{item.base_rate ?? 0}
                             </span>
                           )}
@@ -2489,24 +2489,24 @@ export function NewInvoiceModal({
 
                   {/* READY PRODUCT CONTROLS (Physical Spec + Discrete Unit + Qty + Rate) */}
                   {isReadyProduct && (
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-card rounded-xl border border-border dark:border-border">
                       <div className="sm:col-span-5 flex flex-col justify-center">
-                        <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">Physical Specs & Packaging</span>
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                        <span className="text-2xs uppercase font-bold text-muted-foreground block mb-0.5">Physical Specs & Packaging</span>
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-foreground font-medium">
                           {item.dimensions_spec ? (
-                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums text-2xs">
+                            <span className="bg-muted px-2 py-0.5 rounded tabular-nums text-2xs">
                               📐 {item.dimensions_spec}
                             </span>
                           ) : (
-                            <span className="text-slate-400 italic text-2xs">Standard Factory Size</span>
+                            <span className="text-muted-foreground italic text-2xs">Standard Factory Size</span>
                           )}
                           {item.pcs_per_carton ? (
-                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-2xs">
+                            <span className="bg-muted px-2 py-0.5 rounded text-2xs">
                               📦 {item.pcs_per_carton} pcs/box
                             </span>
                           ) : null}
                           {item.moq ? (
-                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-2xs">
+                            <span className="bg-muted px-2 py-0.5 rounded text-2xs">
                               Min Order: {item.moq} {item.unit}
                             </span>
                           ) : null}
@@ -2530,7 +2530,7 @@ export function NewInvoiceModal({
                         <select
                           value={item.unit}
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
                           <option value="set">{tBilingual('set', 'সেট')}</option>
@@ -2589,7 +2589,7 @@ export function NewInvoiceModal({
                         <select
                           value={item.unit}
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="sft">{tBilingual('sft', 'বর্গফুট')}</option>
                           <option value="rft">{tBilingual('rft', 'রানিং ফুট')}</option>
@@ -2627,7 +2627,7 @@ export function NewInvoiceModal({
 
                   {/* Substrate / Printable Material pill for service */}
                   {isService && item.printable_material_name && (
-                    <div className="flex items-center gap-2 text-2xs text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2 text-2xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border dark:border-border">
                       <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
                       <span>Linked Substrate: <strong>{item.printable_material_name}</strong></span>
                     </div>
@@ -2657,13 +2657,13 @@ export function NewInvoiceModal({
                         </Badge>
                       </div>
                     ) : (
-                      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-slate-100/80 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800">
+                      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-muted rounded-xl border border-border dark:border-border">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                             <Palette className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                             Design Status:
                           </span>
-                          <div className="inline-flex p-0.5 bg-slate-200/80 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700">
+                          <div className="inline-flex p-0.5 bg-muted/80 rounded-lg border border-input dark:border-border">
                             <button
                               type="button"
                               onClick={() => {
@@ -2675,7 +2675,7 @@ export function NewInvoiceModal({
                                 'px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
                                 item.workflow_routing === 'design_required' || (item.design_required !== false && item.workflow_routing !== 'design_ok')
                                   ? 'bg-indigo-600 text-white shadow-xs'
-                                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                                  : 'text-muted-foreground hover:text-foreground'
                               )}
                             >
                               <span>🎨 Design Required</span>
@@ -2691,7 +2691,7 @@ export function NewInvoiceModal({
                                 'px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
                                 item.workflow_routing === 'design_ok' || item.design_required === false
                                   ? 'bg-cyan-600 text-white shadow-xs'
-                                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                                  : 'text-muted-foreground hover:text-foreground'
                               )}
                             >
                               <span>🔍 Design OK</span>
@@ -2718,9 +2718,9 @@ export function NewInvoiceModal({
 
                   {/* Dedicated Domain Production Specs (Offset / Signage / Custom) */}
                   {(item.showAdvanced || isAdvancedMode || item.category_preset === 'offset_print' || item.category_preset === 'signage_fabrication') && (
-                    <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 text-xs animate-in fade-in-0">
+                    <div className="p-3.5 rounded-xl bg-card border border-border space-y-3 text-xs animate-in fade-in-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xs uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <span className="text-2xs uppercase font-bold text-muted-foreground flex items-center gap-1.5">
                           <Layers className="h-3.5 w-3.5 text-blue-600" />
                           {item.category_preset === 'offset_print'
                             ? tBilingual('Offset Printing Specifications', 'অফসেট প্রিন্টিং বিবরণ')
@@ -2729,7 +2729,7 @@ export function NewInvoiceModal({
                             : tBilingual('Advanced Domain & Material Specs', 'অ্যাডভান্সড স্পেসিফিকেশন')}
                         </span>
                         {item.description_bn && (
-                          <span className="text-2xs font-medium text-slate-500 dark:text-slate-400">
+                          <span className="text-2xs font-medium text-muted-foreground dark:text-muted-foreground">
                             {item.description_bn}
                           </span>
                         )}
@@ -2737,7 +2737,7 @@ export function NewInvoiceModal({
 
                       {/* Offset Commercial Specific Inputs */}
                       {(item.category_preset === 'offset_print' || item.offset_specs) && (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-950/70 rounded-lg border border-slate-200/80 dark:border-slate-800">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-muted rounded-lg border border-border dark:border-border">
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Paper GSM', 'কাগজের জিএসএম')}</Label>
                             <select
@@ -2748,7 +2748,7 @@ export function NewInvoiceModal({
                                   paper_gsm: e.target.value,
                                 })
                               }
-                              className="w-full h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                              className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-medium"
                             >
                               <option value="">{tBilingual('Select GSM', 'জিএসএম নির্বাচন')}</option>
                               <option value="55">{tBilingual('55 GSM (NCR Carbonless)', '৫৫ জিএসএম (এনসিআর)')}</option>
@@ -2772,7 +2772,7 @@ export function NewInvoiceModal({
                                   color_mode: e.target.value,
                                 })
                               }
-                              className="w-full h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                              className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-medium"
                             >
                               <option value="1/0 Single Color">{tBilingual('1/0 Single Color', '১ রঙ (একপাশ)')}</option>
                               <option value="2/0 Two Color">{tBilingual('2/0 Two Color', '২ রঙ (একপাশ)')}</option>
@@ -2791,7 +2791,7 @@ export function NewInvoiceModal({
                                   binding_type: e.target.value,
                                 })
                               }
-                              className="w-full h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                              className="w-full h-8 px-2 rounded-md border border-input bg-card text-xs font-medium"
                             >
                               <option value="Bundle Pack">{tBilingual('Bundle Pack', 'বান্ডিল')}</option>
                               <option value="Top Gumming">{tBilingual('Top Gumming Pad', 'গাম প্যাড')}</option>
@@ -2822,7 +2822,7 @@ export function NewInvoiceModal({
 
                       {/* 3D Signage Specific Inputs */}
                       {(item.category_preset === 'signage_fabrication' || item.signage_specs) && (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-950/70 rounded-lg border border-slate-200/80 dark:border-slate-800">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-muted rounded-lg border border-border dark:border-border">
                           <div>
                             <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Letter Height (inch)', 'অক্ষরের উচ্চতা (ইঞ্চি)')}</Label>
                             <Input
@@ -2915,7 +2915,7 @@ export function NewInvoiceModal({
                   )}
 
                   {/* Line Calculation Summary HUD */}
-                  <div className="flex flex-wrap items-center justify-between text-xs pt-1.5 px-1 text-slate-500 font-medium border-t border-slate-200/50 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between text-xs pt-1.5 px-1 text-muted-foreground font-medium border-t border-border dark:border-border">
                     <div className="flex items-center gap-3">
                       {(calc?.area || 0) > 0 ? (
                         <span>
@@ -2928,15 +2928,15 @@ export function NewInvoiceModal({
                       )}
 
                       {estimatedDirectCost > 0 && (
-                        <span className="text-2xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums">
+                        <span className="text-2xs text-muted-foreground bg-muted px-2 py-0.5 rounded tabular-nums">
                           Est. Cost: ৳{Math.round(estimatedDirectCost)} • Margin: {estMarginPercent}%
                         </span>
                       )}
                     </div>
 
                     <div className="text-right">
-                      <span className="text-2xs text-slate-400 mr-2">Line Total:</span>
-                      <span className="tabular-nums font-bold text-slate-900 dark:text-white text-sm">
+                      <span className="text-2xs text-muted-foreground mr-2">Line Total:</span>
+                      <span className="tabular-nums font-bold text-foreground dark:text-white text-sm">
                         {formatBDT(calc?.lineTotal || 0)}
                       </span>
                     </div>
@@ -2963,13 +2963,13 @@ export function NewInvoiceModal({
         {/* =========================================================================
             SECTION 3: FINANCIAL TOTALS & BANGLADESHI COMMERCIAL SETTLEMENT
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 3
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Financial Totals & Commercial Settlement', 'চালান ও মূল্য পরিশোধের হিসাব')}
               </h3>
             </div>
@@ -2979,7 +2979,7 @@ export function NewInvoiceModal({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch text-xs">
             {/* Column 1: Note */}
             <div className="lg:col-span-4 flex flex-col">
-              <Label className="text-xs font-semibold mb-1.5 block text-slate-700 dark:text-slate-300">
+              <Label className="text-xs font-semibold mb-1.5 block text-foreground dark:text-muted-foreground">
                 {tBilingual('Note', 'নোট')}
               </Label>
               <textarea
@@ -2989,7 +2989,7 @@ export function NewInvoiceModal({
                   'Write special instructions, delivery notes, or terms here...',
                   'বিশেষ নির্দেশনা, ডেলিভারি নোট বা শর্তাবলী লিখুন...'
                 )}
-                className="w-full flex-1 min-h-[190px] p-2.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none font-sans"
+                className="w-full flex-1 min-h-[190px] p-2.5 text-xs rounded-lg border border-input bg-card text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none font-sans"
               />
             </div>
 
@@ -2998,7 +2998,7 @@ export function NewInvoiceModal({
               <div className="space-y-2">
                 {/* Ref/PO no. */}
                 <div className="grid grid-cols-12 items-center gap-2">
-                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                  <Label className="col-span-5 text-xs font-semibold text-muted-foreground truncate">
                     {tBilingual('Ref/PO no.', 'রেফারেন্স / পিও')}
                   </Label>
                   <div className="col-span-7">
@@ -3013,7 +3013,7 @@ export function NewInvoiceModal({
 
                 {/* Due Date */}
                 <div className="grid grid-cols-12 items-center gap-2">
-                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                  <Label className="col-span-5 text-xs font-semibold text-muted-foreground truncate">
                     {tBilingual('Due Date', 'পরিশোধের তারিখ')}
                   </Label>
                   <div className="col-span-7">
@@ -3029,7 +3029,7 @@ export function NewInvoiceModal({
 
                 {/* Delivery Date */}
                 <div className="grid grid-cols-12 items-center gap-2">
-                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                  <Label className="col-span-5 text-xs font-semibold text-muted-foreground truncate">
                     {tBilingual('Delivery Date', 'ডেলিভারি তারিখ')}
                   </Label>
                   <div className="col-span-7">
@@ -3044,14 +3044,14 @@ export function NewInvoiceModal({
 
                 {/* Delivery Method */}
                 <div className="grid grid-cols-12 items-center gap-2">
-                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                  <Label className="col-span-5 text-xs font-semibold text-muted-foreground truncate">
                     {tBilingual('Delivery Method', 'ডেলিভারি মাধ্যম')}
                   </Label>
                   <div className="col-span-7">
                     <select
                       value={deliveryMethod}
                       onChange={(e) => setDeliveryMethod(e.target.value as any)}
-                      className="w-full h-8.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                      className="w-full h-8.5 px-2 rounded-md border border-input bg-card text-xs font-medium"
                     >
                       <option value="customer_pickup">{tBilingual('Customer Pickup', 'কাস্টমার পিকআপ')}</option>
                       <option value="company_delivery">{tBilingual('Company Delivery', 'কোম্পানি ডেলিভারি')}</option>
@@ -3064,14 +3064,14 @@ export function NewInvoiceModal({
               {/* Payment Method at bottom */}
               <div className="pt-1 mt-auto space-y-1">
                 <div className="grid grid-cols-12 items-center gap-2">
-                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                  <Label className="col-span-5 text-xs font-semibold text-muted-foreground truncate">
                     {tBilingual('Payment Method', 'পরিশোধের মাধ্যম')}
                   </Label>
                   <div className="col-span-7">
                     <select
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value as any)}
-                      className="w-full h-8.5 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                      className="w-full h-8.5 text-xs rounded-md border border-input bg-card px-2 font-medium"
                     >
                       <option value="cash">{tBilingual('Cash Counter', 'ক্যাশ কাউন্টার')}</option>
                       <option value="bkash">{tBilingual('bKash Merchant', 'বিকাশ')}</option>
@@ -3084,7 +3084,7 @@ export function NewInvoiceModal({
                 </div>
                 {paymentMethod !== 'cash' && (
                   <div className="grid grid-cols-12 items-center gap-2 pt-0.5">
-                    <span className="col-span-5 text-2xs text-slate-400 truncate">
+                    <span className="col-span-5 text-2xs text-muted-foreground truncate">
                       {tBilingual('Trx Note', 'নোট')}
                     </span>
                     <div className="col-span-7">
@@ -3104,17 +3104,17 @@ export function NewInvoiceModal({
             <div className="lg:col-span-4 flex flex-col justify-between space-y-2">
               {/* Subtotal */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                <span className="col-span-5 text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
                   {tBilingual('Subtotal', 'মোট বিল')}
                 </span>
-                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-slate-100 dark:bg-slate-800 rounded-md tabular-nums font-bold text-slate-900 dark:text-white">
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-muted rounded-md tabular-nums font-bold text-foreground dark:text-white">
                   {formatBDT(subtotal)}
                 </div>
               </div>
 
               {/* Discount */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                <span className="col-span-5 text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
                   {tBilingual('Discount', 'ছাড় (৳)')}
                 </span>
                 <div className="col-span-7">
@@ -3132,10 +3132,10 @@ export function NewInvoiceModal({
               {/* Vat []% */}
               <div className="grid grid-cols-12 items-center gap-2">
                 <div className="col-span-5 flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  <span className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
                     {tBilingual('Vat', 'ভ্যাট')}
                   </span>
-                  <div className="inline-flex items-center border border-slate-300 dark:border-slate-700 rounded-md overflow-hidden bg-white dark:bg-slate-900">
+                  <div className="inline-flex items-center border border-input rounded-md overflow-hidden bg-card dark:bg-card">
                     <input
                       type="number"
                       value={vatPercentage || ''}
@@ -3145,17 +3145,17 @@ export function NewInvoiceModal({
                       min={0}
                       max={100}
                     />
-                    <span className="pr-1 text-2xs text-slate-400 font-medium">%</span>
+                    <span className="pr-1 text-2xs text-muted-foreground font-medium">%</span>
                   </div>
                 </div>
-                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-slate-100 dark:bg-slate-800 rounded-md tabular-nums font-semibold text-slate-700 dark:text-slate-300">
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-muted rounded-md tabular-nums font-semibold text-foreground dark:text-muted-foreground">
                   {formatBDT(vatAmount)}
                 </div>
               </div>
 
               {/* Grand Total */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-bold text-slate-900 dark:text-white">
+                <span className="col-span-5 text-xs font-bold text-foreground dark:text-white">
                   {tBilingual('Grand Total', 'সর্বমোট বিল')}
                 </span>
                 <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md tabular-nums font-black text-blue-700 dark:text-blue-300">
@@ -3165,7 +3165,7 @@ export function NewInvoiceModal({
 
               {/* Advance */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                <span className="col-span-5 text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
                   {tBilingual('Advance', 'অগ্রিম')}
                 </span>
                 <div className="col-span-7">
@@ -3189,7 +3189,7 @@ export function NewInvoiceModal({
 
               {/* Due */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <span className="col-span-5 text-xs font-bold text-slate-900 dark:text-white">
+                <span className="col-span-5 text-xs font-bold text-foreground dark:text-white">
                   {tBilingual('Due', 'বাকি')}
                 </span>
                 <div className={cn(
@@ -3206,7 +3206,7 @@ export function NewInvoiceModal({
 
           {/* Advanced collapsible fields */}
           {isAdvancedMode && (
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs animate-in fade-in-0">
+            <div className="pt-3 border-t border-border text-xs animate-in fade-in-0">
               <Label className="text-xs font-semibold mb-1 block">Terms & Conditions</Label>
               <Input
                 placeholder="Delivery upon full payment, no return on custom prints..."

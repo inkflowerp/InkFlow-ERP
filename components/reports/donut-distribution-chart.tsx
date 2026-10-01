@@ -53,11 +53,11 @@ export function DonutDistributionChart({
     <div className="flex flex-col h-full justify-between">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate pr-2">
+        <h3 className="text-sm font-bold text-foreground dark:text-white truncate pr-2">
           {title}
         </h3>
         {periodLabel && (
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
             {periodLabel}
           </span>
         )}
@@ -75,7 +75,7 @@ export function DonutDistributionChart({
               r={R}
               fill="transparent"
               stroke="currentColor"
-              className="text-slate-100 dark:text-slate-800"
+              className="text-slate-100 dark:text-foreground"
               strokeWidth="14"
             />
 
@@ -105,7 +105,7 @@ export function DonutDistributionChart({
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2 pointer-events-none">
             {activeItem ? (
               <>
-                <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white tabular-nums truncate max-w-[85px] 2xl:max-w-[100px]">
+                <span className="text-xs 2xl:text-sm font-black text-foreground dark:text-white tabular-nums truncate max-w-[85px] 2xl:max-w-[100px]">
                   ৳ {activeItem.amount.toLocaleString()}
                 </span>
                 <span className="text-2xs text-blue-600 dark:text-blue-400 font-bold truncate max-w-[85px]">
@@ -114,10 +114,10 @@ export function DonutDistributionChart({
               </>
             ) : (
               <>
-                <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white tabular-nums truncate max-w-[85px] 2xl:max-w-[100px]">
+                <span className="text-xs 2xl:text-sm font-black text-foreground dark:text-white tabular-nums truncate max-w-[85px] 2xl:max-w-[100px]">
                   ৳ {totalAmount.toLocaleString()}
                 </span>
-                <span className="text-2xs text-slate-400 font-medium">
+                <span className="text-2xs text-muted-foreground font-medium">
                   {centerSubtext}
                 </span>
               </>
@@ -128,7 +128,7 @@ export function DonutDistributionChart({
         {/* Legend & Breakdown values matching Finance Dashboard */}
         <div className="flex-1 w-full space-y-1.5 2xl:space-y-2 text-xs">
           {isAllZero ? (
-            <div className="text-center py-4 text-xs text-slate-400">
+            <div className="text-center py-4 text-xs text-muted-foreground">
               No sales records in this period
             </div>
           ) : (
@@ -140,7 +140,7 @@ export function DonutDistributionChart({
                   onMouseEnter={() => setHoveredId(item.id)}
                   onMouseLeave={() => setHoveredId(null)}
                   className={`flex items-center justify-between py-0.5 px-1.5 rounded-lg transition-colors cursor-pointer ${
-                    isHovered ? 'bg-slate-50 dark:bg-slate-800/60' : ''
+                    isHovered ? 'bg-muted dark:bg-muted' : ''
                   }`}
                 >
                   <div className="flex items-center gap-1.5 2xl:gap-2 min-w-0">
@@ -148,15 +148,15 @@ export function DonutDistributionChart({
                       className="h-2.5 w-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: item.color }}
                     />
-                    <span className="font-medium text-slate-700 dark:text-slate-300 truncate">
+                    <span className="font-medium text-foreground truncate">
                       {item.label}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="tabular-nums font-bold text-slate-900 dark:text-white">
+                    <span className="tabular-nums font-bold text-foreground dark:text-white">
                       ৳ {item.amount.toLocaleString()}
                     </span>
-                    <span className="text-slate-400 text-2xs w-7 text-right font-medium">
+                    <span className="text-muted-foreground text-2xs w-7 text-right font-medium">
                       {item.sharePercent}%
                     </span>
                   </div>

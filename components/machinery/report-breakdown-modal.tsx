@@ -128,7 +128,7 @@ export function ReportBreakdownModal({
               id="rbSev"
               value={severity}
               onChange={(e) => setSeverity(e.target.value as BreakdownSeverity)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
             >
               {SEVERITIES.map((s) => (
                 <option key={s.value} value={s.value}>{s.label}</option>
@@ -142,7 +142,7 @@ export function ReportBreakdownModal({
               id="rbImp"
               value={productionImpact}
               onChange={(e) => setProductionImpact(e.target.value as ProductionImpact)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
             >
               {IMPACTS.map((i) => (
                 <option key={i.value} value={i.value}>{i.label}</option>
@@ -160,7 +160,7 @@ export function ReportBreakdownModal({
             value={problemDescription}
             onChange={(e) => setProblemDescription(e.target.value)}
             required
-            className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+            className="w-full p-2.5 rounded-md border border-input bg-card text-xs font-medium"
           />
         </div>
 
@@ -174,7 +174,7 @@ export function ReportBreakdownModal({
           />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

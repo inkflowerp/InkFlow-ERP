@@ -69,7 +69,7 @@ export function ConfirmDialog({
             <HelpCircle className="h-5 w-5" />
           </div>
         )}
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed bangla-text">
+        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">
           {displayMessage}
         </p>
       </div>

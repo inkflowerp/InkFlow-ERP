@@ -1032,7 +1032,7 @@ export function NewPurchaseModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-black text-slate-900 dark:text-white">
+              <h2 className="text-base font-black text-foreground dark:text-white">
                 {tBilingual('Issue Purchase Order', 'নতুন ক্রয় আদেশ তৈরি করুন')}
               </h2>
               <Badge
@@ -1042,7 +1042,7 @@ export function NewPurchaseModal({
                 Procurement
               </Badge>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual(
                 'Formal procurement commitment with agreed rates, specifications & delivery schedule',
                 'মহাজনের দরপত্র, কাঁচামালের স্পেসিফিকেশন ও ডেলিভারি তারিখে অফিশিয়াল পারচেজ অর্ডার'
@@ -1069,7 +1069,7 @@ export function NewPurchaseModal({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="w-full sm:w-auto min-h-[40px] text-xs font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+              className="w-full sm:w-auto min-h-[40px] text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
             >
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
@@ -1110,15 +1110,15 @@ export function NewPurchaseModal({
     >
       <div className="space-y-4 pt-1 pb-2">
         {/* STEP PROGRESS NAVIGATION TABS */}
-        <div className="grid grid-cols-3 gap-2 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+        <div className="grid grid-cols-3 gap-2 bg-muted p-1.5 rounded-xl border border-border text-xs">
           <button
             type="button"
             onClick={() => setActiveStep(1)}
             className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
               activeStep === 1
-                ? 'bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-400 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <div
@@ -1126,7 +1126,7 @@ export function NewPurchaseModal({
                 'h-5 w-5 rounded-full flex items-center justify-center text-2xs tabular-nums',
                 activeStep === 1
                   ? 'bg-amber-600 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                  : 'bg-muted text-foreground dark:text-muted-foreground'
               )}
             >
               1
@@ -1140,8 +1140,8 @@ export function NewPurchaseModal({
             className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
               activeStep === 2
-                ? 'bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-400 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <div
@@ -1149,7 +1149,7 @@ export function NewPurchaseModal({
                 'h-5 w-5 rounded-full flex items-center justify-center text-2xs tabular-nums',
                 activeStep === 2
                   ? 'bg-amber-600 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                  : 'bg-muted text-foreground dark:text-muted-foreground'
               )}
             >
               2
@@ -1165,8 +1165,8 @@ export function NewPurchaseModal({
             className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
               activeStep === 3
-                ? 'bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-400 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <div
@@ -1174,7 +1174,7 @@ export function NewPurchaseModal({
                 'h-5 w-5 rounded-full flex items-center justify-center text-2xs tabular-nums',
                 activeStep === 3
                   ? 'bg-amber-600 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                  : 'bg-muted text-foreground dark:text-muted-foreground'
               )}
             >
               3
@@ -1187,24 +1187,24 @@ export function NewPurchaseModal({
         {activeStep === 1 && (
           <div className="space-y-4 animate-in fade-in-50 duration-200">
             {/* Supplier Mode Selector */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Building className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                     {tBilingual('Vendor & Supplier Intelligence', 'সরবরাহকারী নির্বাচন')}
                   </h3>
                 </div>
 
-                <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs">
+                <div className="flex items-center gap-1.5 bg-muted p-1 rounded-lg text-xs">
                   <button
                     type="button"
                     onClick={() => setSupplierMode('existing')}
                     className={cn(
                       'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-2xs',
                       supplierMode === 'existing'
-                        ? 'bg-white dark:bg-slate-700 text-amber-700 dark:text-amber-300 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800'
+                        ? 'bg-card text-amber-700 dark:text-amber-300 shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
                     {tBilingual('Registered Supplier', 'তালিকাভুক্ত সাপ্লায়ার')}
@@ -1215,8 +1215,8 @@ export function NewPurchaseModal({
                     className={cn(
                       'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-2xs',
                       supplierMode === 'new'
-                        ? 'bg-white dark:bg-slate-700 text-amber-700 dark:text-amber-300 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800'
+                        ? 'bg-card text-amber-700 dark:text-amber-300 shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
                     {tBilingual('Spot / New Supplier', 'নতুন / স্পট সাপ্লায়ার')}
@@ -1237,7 +1237,7 @@ export function NewPurchaseModal({
                         if (fieldErrors.supplier) setFieldErrors((prev) => ({ ...prev, supplier: '' }))
                       }}
                       className={cn(
-                        "w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium",
+                        "w-full h-10 rounded-lg border border-input bg-card px-3 text-xs font-medium",
                         fieldErrors.supplier && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
                       )}
                       required
@@ -1261,22 +1261,22 @@ export function NewPurchaseModal({
                   {currentSupplier && (
                     <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                       <div>
-                        <span className="text-2xs text-slate-500 dark:text-slate-400 block">Contact Person:</span>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mt-0.5">
+                        <span className="text-2xs text-muted-foreground block">Contact Person:</span>
+                        <div className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5">
                           <User className="h-3.5 w-3.5 text-amber-600" />
                           <span>{currentSupplier.contact_person || 'Managing Director'}</span>
                         </div>
                       </div>
                       <div>
-                        <span className="text-2xs text-slate-500 dark:text-slate-400 block">Phone & Email:</span>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mt-0.5">
+                        <span className="text-2xs text-muted-foreground block">Phone & Email:</span>
+                        <div className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5">
                           <Phone className="h-3.5 w-3.5 text-amber-600" />
                           <span>{currentSupplier.mobile}</span>
                         </div>
                       </div>
                       <div>
-                        <span className="text-2xs text-slate-500 dark:text-slate-400 block">Warehouse Address:</span>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mt-0.5 truncate">
+                        <span className="text-2xs text-muted-foreground block">Warehouse Address:</span>
+                        <div className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5 truncate">
                           <MapPin className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                           <span className="truncate">{currentSupplier.address || '-'}</span>
                         </div>
@@ -1367,10 +1367,10 @@ export function NewPurchaseModal({
             </div>
 
             {/* Logistics & Delivery Specifications */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   {tBilingual('Logistics, Destination & Schedule', 'ডেলিভারি লজিস্টিক ও গন্তব্য')}
                 </h3>
               </div>
@@ -1383,7 +1383,7 @@ export function NewPurchaseModal({
                   <select
                     value={targetLocationId}
                     onChange={(e) => setTargetLocationId(e.target.value)}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                     required
                   >
                     {Array.isArray(locations) && locations.length > 0 ? (
@@ -1447,7 +1447,7 @@ export function NewPurchaseModal({
                   <select
                     value={deliveryMethod}
                     onChange={(e) => setDeliveryMethod(e.target.value)}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                   >
                     {DELIVERY_METHODS.map((m) => (
                       <option key={m.value} value={m.value}>
@@ -1464,7 +1464,7 @@ export function NewPurchaseModal({
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value as any)}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                   >
                     <option value="normal">Normal Priority (সাধারণ)</option>
                     <option value="high">High Priority (জরুরি)</option>
@@ -1495,7 +1495,7 @@ export function NewPurchaseModal({
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2">
                 <Package className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   {tBilingual('Purchasable Items & Roll Configurations', 'কাঁচামাল ও আইটেম সংযোজন')}
                 </h3>
               </div>
@@ -1519,14 +1519,14 @@ export function NewPurchaseModal({
               {items.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 shadow-xs space-y-2.5 text-xs"
+                  className="p-3.5 rounded-xl border border-border bg-card shadow-xs space-y-2.5 text-xs"
                 >
-                  <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between gap-2 pb-1 border-b border-border dark:border-border">
                     <div className="flex items-center gap-2">
                       <span className="h-5 w-5 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 tabular-nums font-bold flex items-center justify-center text-2xs">
                         #{idx + 1}
                       </span>
-                      <span className="font-bold text-slate-800 dark:text-slate-200">
+                      <span className="font-bold text-foreground dark:text-foreground">
                         {item.material_name || 'Select Material or Hardware Item'}
                       </span>
                       {item.category && (
@@ -1540,7 +1540,7 @@ export function NewPurchaseModal({
                       <button
                         type="button"
                         onClick={() => handleDuplicateItem(idx)}
-                        className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted cursor-pointer"
                         title="Duplicate line"
                       >
                         <Copy className="h-3.5 w-3.5" />
@@ -1561,7 +1561,7 @@ export function NewPurchaseModal({
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                     {/* Item Selector */}
                     <div className="sm:col-span-5">
-                      <Label className="text-2xs text-slate-500 mb-0.5 block">
+                      <Label className="text-2xs text-muted-foreground mb-0.5 block">
                         Item / Substrate / Hardware <span className="text-rose-500">*</span>
                       </Label>
                       <select
@@ -1576,7 +1576,7 @@ export function NewPurchaseModal({
                             : `mat:${item.material_id}`)
                         }
                         onChange={(e) => handleItemSelect(idx, e.target.value)}
-                        className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-medium"
+                        className="w-full h-8.5 rounded-lg border border-input bg-card px-2 text-xs font-medium"
                         required
                       >
                         <option value="">-- Choose Item from Catalog --</option>
@@ -1646,7 +1646,7 @@ export function NewPurchaseModal({
 
                     {/* Quantity */}
                     <div className="sm:col-span-2">
-                      <Label className="text-2xs text-slate-500 mb-0.5 block">
+                      <Label className="text-2xs text-muted-foreground mb-0.5 block">
                         Qty <span className="text-rose-500">*</span>
                       </Label>
                       <Input
@@ -1662,7 +1662,7 @@ export function NewPurchaseModal({
 
                     {/* Unit */}
                     <div className="sm:col-span-2">
-                      <Label className="text-2xs text-slate-500 mb-0.5 block">Unit</Label>
+                      <Label className="text-2xs text-muted-foreground mb-0.5 block">Unit</Label>
                       <Input
                         type="text"
                         value={item.unit}
@@ -1674,7 +1674,7 @@ export function NewPurchaseModal({
 
                     {/* Unit Cost */}
                     <div className="sm:col-span-3">
-                      <Label className="text-2xs text-slate-500 mb-0.5 block">
+                      <Label className="text-2xs text-muted-foreground mb-0.5 block">
                         Unit Rate (৳) <span className="text-rose-500">*</span>
                       </Label>
                       <Input
@@ -1690,16 +1690,16 @@ export function NewPurchaseModal({
                   </div>
 
                   {/* Line Detail Calculation & Stock Hints */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-2xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-2xs text-muted-foreground bg-muted p-2 rounded-lg border border-border dark:border-border">
                     <div className="flex items-center gap-3">
                       {item.config_description && (
-                        <span className="tabular-nums text-slate-700 dark:text-slate-300">
+                        <span className="tabular-nums text-foreground dark:text-muted-foreground">
                           {item.config_description}
                         </span>
                       )}
                       {item.current_stock_hint !== undefined && (
                         <span className="text-2xs">
-                          Store Stock: <strong className="text-slate-700 dark:text-slate-200">{item.current_stock_hint}</strong> (Min: {item.reorder_level_hint || 0})
+                          Store Stock: <strong className="text-foreground dark:text-foreground">{item.current_stock_hint}</strong> (Min: {item.reorder_level_hint || 0})
                         </span>
                       )}
                     </div>
@@ -1708,7 +1708,7 @@ export function NewPurchaseModal({
                       <span>
                         {item.quantity} {item.unit} × {formatBDT(item.unit_cost)}
                       </span>
-                      <span className="tabular-nums font-black text-slate-900 dark:text-white text-xs">
+                      <span className="tabular-nums font-black text-foreground dark:text-white text-xs">
                         {formatBDT(item.total_cost)}
                       </span>
                     </div>
@@ -1723,10 +1723,10 @@ export function NewPurchaseModal({
                 <Badge variant="outline" className="tabular-nums text-2xs">
                   {items.length} Order Line(s)
                 </Badge>
-                <span className="text-slate-500 dark:text-slate-400">Total Quantities Configured</span>
+                <span className="text-muted-foreground dark:text-muted-foreground">Total Quantities Configured</span>
               </div>
               <div className="text-right">
-                <span className="text-2xs text-slate-400 uppercase font-bold tracking-wider">Subtotal:</span>{' '}
+                <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider">Subtotal:</span>{' '}
                 <span className="text-lg font-black text-amber-700 dark:text-amber-400 tabular-nums">
                   {formatBDT(itemsSubtotal)}
                 </span>
@@ -1739,10 +1739,10 @@ export function NewPurchaseModal({
         {activeStep === 3 && (
           <div className="space-y-4 animate-in fade-in-50 duration-200">
             {/* Commercial Adjustments & Taxes */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <Receipt className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   {tBilingual('Discounts, NBR VAT & Freight Surcharge', 'ছাড়, মূসক/ভ্যাট ও পরিবহন খরচ')}
                 </h3>
               </div>
@@ -1757,7 +1757,7 @@ export function NewPurchaseModal({
                     <select
                       value={discountType}
                       onChange={(e) => setDiscountType(e.target.value as any)}
-                      className="h-9 w-20 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-semibold"
+                      className="h-9 w-20 rounded-lg border border-input bg-card px-2 text-xs font-semibold"
                     >
                       <option value="fixed">৳ BDT</option>
                       <option value="percent">% Pct</option>
@@ -1781,7 +1781,7 @@ export function NewPurchaseModal({
                   <select
                     value={vatType}
                     onChange={(e) => setVatType(e.target.value as any)}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                   >
                     <option value="none">{tBilingual('0% Exempted / Nil VAT', '০% ভ্যাট প্রযোজ্য নয়')}</option>
                     <option value="15">{tBilingual('15% Standard VAT', '১৫% আদর্শ মূসক')}</option>
@@ -1824,10 +1824,10 @@ export function NewPurchaseModal({
             </div>
 
             {/* Payment Terms & Advance Commitment */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   {tBilingual('Agreed Payment Terms & Advance Disbursement', 'পেমেন্ট শর্তাবলী ও অগ্রিম')}
                 </h3>
               </div>
@@ -1840,7 +1840,7 @@ export function NewPurchaseModal({
                   <select
                     value={paymentTerms}
                     onChange={(e) => setPaymentTerms(e.target.value)}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                   >
                     {PAYMENT_TERMS_PRESETS.map((p) => (
                       <option key={p.value} value={p.value}>
@@ -1871,7 +1871,7 @@ export function NewPurchaseModal({
                   <select
                     value={advancePaymentMethod}
                     onChange={(e) => setAdvancePaymentMethod(e.target.value as any)}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                   >
                     <option value="bank">Bank Transfer / EFT / RTGS</option>
                     <option value="cash">Cash Counter / Petty Cash</option>
@@ -1897,7 +1897,7 @@ export function NewPurchaseModal({
             </div>
 
             {/* Special Inspection Instructions & Notes */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-2.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-2.5 shadow-xs">
               <Label className="text-xs font-semibold block">
                 {tBilingual('Special Delivery & Quality Terms (Optional)', 'বিশেষ ডেলিভারি ও মান নিয়ন্ত্রণ শর্তাবলী')}
               </Label>
@@ -1908,7 +1908,7 @@ export function NewPurchaseModal({
                     key={idx}
                     type="button"
                     onClick={() => setNotes((prev) => (prev ? `${prev}\n${tmpl}` : tmpl))}
-                    className="text-2xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                    className="text-2xs font-medium bg-muted hover:bg-amber-100 dark:hover:bg-amber-950/60 text-foreground px-2 py-1 rounded-md border border-border transition-colors cursor-pointer"
                   >
                     + {tmpl.split(' ')[0]} {tmpl.split(' ')[1]} {tmpl.split(' ')[2]}...
                   </button>
@@ -1920,26 +1920,26 @@ export function NewPurchaseModal({
                 placeholder="e.g. Deliver to Gate 2; inspect roll grammage before unloading; include Mushak 6.3 Challan..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
             {/* Final Financial Commitment Summary */}
             <div className="p-4 rounded-xl bg-linear-to-br from-amber-500/10 via-amber-500/5 to-slate-900/5 dark:from-amber-950/40 dark:to-slate-900 border border-amber-300 dark:border-amber-800 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold uppercase">
+                <span className="text-2xs text-muted-foreground block font-semibold uppercase">
                   Items Subtotal
                 </span>
-                <div className="text-sm font-bold tabular-nums text-slate-800 dark:text-slate-200 mt-0.5">
+                <div className="text-sm font-bold tabular-nums text-foreground mt-0.5">
                   {formatBDT(itemsSubtotal)}
                 </div>
               </div>
 
               <div>
-                <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold uppercase">
+                <span className="text-2xs text-muted-foreground block font-semibold uppercase">
                   VAT & Freight
                 </span>
-                <div className="text-sm font-bold tabular-nums text-slate-800 dark:text-slate-200 mt-0.5">
+                <div className="text-sm font-bold tabular-nums text-foreground mt-0.5">
                   +{formatBDT(calculatedVatAmount + (Number(shippingCost) || 0))}
                 </div>
               </div>

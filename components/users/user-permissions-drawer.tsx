@@ -367,9 +367,9 @@ export function UserPermissionsDrawer({
   return (
     <>
       <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in-0">
-        <div className="w-full max-w-2xl bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800 animate-in slide-in-from-right duration-200">
+        <div className="w-full max-w-2xl bg-card h-full shadow-2xl flex flex-col border-l border-border animate-in slide-in-from-right duration-200">
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/90 shrink-0">
+          <div className="p-4 sm:p-5 border-b border-border bg-slate-50/80 shrink-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-base shadow-xs">
@@ -377,7 +377,7 @@ export function UserPermissionsDrawer({
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
+                    <h2 className="text-base font-bold text-foreground dark:text-white leading-tight">
                       {user.profile?.full_name || user.invited_email}
                     </h2>
                     {user.status === 'active' ? (
@@ -390,7 +390,7 @@ export function UserPermissionsDrawer({
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {user.profile?.email || user.invited_email} • {user.profile?.phone || 'No phone'}
                   </p>
                 </div>
@@ -401,7 +401,7 @@ export function UserPermissionsDrawer({
                   variant="outline"
                   size="sm"
                   onClick={handleOpenAudit}
-                  className="h-8 text-xs text-slate-600 dark:text-slate-300"
+                  className="h-8 text-xs text-muted-foreground dark:text-muted-foreground"
                   title="View Permission Audit Log"
                 >
                   <History className="mr-1 h-3.5 w-3.5" />
@@ -410,7 +410,7 @@ export function UserPermissionsDrawer({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-muted-foreground hover:bg-muted cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -418,9 +418,9 @@ export function UserPermissionsDrawer({
             </div>
 
             {/* Department & Branch Meta */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3.5 pt-3 border-t border-slate-200/60 dark:border-slate-800 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3.5 pt-3 border-t border-border text-xs">
               <div>
-                <label className="text-2xs font-semibold text-slate-500 block mb-1">
+                <label className="text-2xs font-semibold text-muted-foreground block mb-1">
                   Department / Floor
                 </label>
                 <Input
@@ -432,13 +432,13 @@ export function UserPermissionsDrawer({
               </div>
 
               <div>
-                <label className="text-2xs font-semibold text-slate-500 block mb-1">
+                <label className="text-2xs font-semibold text-muted-foreground block mb-1">
                   Assigned Primary Branch
                 </label>
                 <select
                   value={branchId || ''}
                   onChange={(e) => setBranchId(e.target.value || null)}
-                  className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-slate-800 dark:text-slate-200"
+                  className="w-full h-8 px-2.5 text-xs bg-card border border-border rounded-md text-foreground dark:text-foreground"
                 >
                   <option value="">All Branches / Central HQ</option>
                   {(Array.isArray(allBranches) ? allBranches : []).map((b) => (
@@ -459,7 +459,7 @@ export function UserPermissionsDrawer({
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
                   activeTab === 'summary'
                     ? 'bg-primary text-white shadow-xs'
-                    : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
+                    : 'bg-muted/70 text-foreground hover:bg-muted'
                 )}
               >
                 <Shield className="h-3.5 w-3.5" />
@@ -472,7 +472,7 @@ export function UserPermissionsDrawer({
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap',
                   activeTab === 'permissions'
                     ? 'bg-primary text-white shadow-xs'
-                    : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
+                    : 'bg-muted/70 text-foreground hover:bg-muted'
                 )}
               >
                 Module Permissions & Scopes
@@ -484,11 +484,11 @@ export function UserPermissionsDrawer({
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
                   activeTab === 'responsibilities'
                     ? 'bg-primary text-white shadow-xs'
-                    : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
+                    : 'bg-muted/70 text-foreground hover:bg-muted'
                 )}
               >
                 <span>Responsibilities</span>
-                <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-2xs">
+                <span className="px-1.5 py-0.2 bg-card/20 rounded-full text-2xs">
                   {selectedResponsibilities.length}
                 </span>
               </button>
@@ -499,13 +499,13 @@ export function UserPermissionsDrawer({
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
                   activeTab === 'branches'
                     ? 'bg-primary text-white shadow-xs'
-                    : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
+                    : 'bg-muted/70 text-foreground hover:bg-muted'
                 )}
               >
                 <Building className="h-3.5 w-3.5" />
                 <span>Branch Scopes</span>
                 {authorizedBranchIds.length > 0 && (
-                  <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-2xs">
+                  <span className="px-1.5 py-0.2 bg-card/20 rounded-full text-2xs">
                     {authorizedBranchIds.length}
                   </span>
                 )}
@@ -534,9 +534,9 @@ export function UserPermissionsDrawer({
               /* TAB 0: OWNER ACCESS SUMMARY */
               <div className="space-y-4">
                 {/* 1. Responsibilities & Branch Card */}
-                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3">
+                <div className="p-4 rounded-xl border border-border bg-muted/50 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wide">
                       Assigned Responsibilities
                     </span>
                     <button
@@ -562,21 +562,21 @@ export function UserPermissionsDrawer({
                       )
                     })}
                   </div>
-                  <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+                  <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <Building className="h-3.5 w-3.5 text-slate-400" />
+                      <Building className="h-3.5 w-3.5 text-muted-foreground" />
                       Primary Branch:
                     </span>
-                    <span className="font-semibold text-slate-900 dark:text-white">
+                    <span className="font-semibold text-foreground dark:text-white">
                       {branchId ? allBranches.find((b) => b.id === branchId)?.name || 'Branch' : 'All Branches (Company-Wide)'}
                     </span>
                   </div>
                 </div>
 
                 {/* 2. Data Scope Matrix Breakdown */}
-                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+                <div className="p-4 rounded-xl border border-border bg-card space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wide">
                       Data Scope per Module
                     </span>
                     <button
@@ -608,14 +608,14 @@ export function UserPermissionsDrawer({
                           ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                           : scope === 'assigned'
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          : 'bg-muted text-foreground dark:text-muted-foreground'
 
                       return (
                         <div
                           key={mod}
-                          className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800"
+                          className="flex items-center justify-between p-2 rounded-lg bg-muted border border-border dark:border-border"
                         >
-                          <span className="text-slate-700 dark:text-slate-300 font-medium">{label}</span>
+                          <span className="text-foreground font-medium">{label}</span>
                           <span className={cn('text-2xs font-bold px-2 py-0.5 rounded capitalize', scopeColor)}>
                             {scope}
                           </span>
@@ -626,8 +626,8 @@ export function UserPermissionsDrawer({
                 </div>
 
                 {/* 3. High-Risk Security & Dangerous Actions */}
-                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wide">
                     Security & Sensitive Action Capabilities
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -658,23 +658,23 @@ export function UserPermissionsDrawer({
                             'flex items-center justify-between p-2.5 rounded-lg border text-xs',
                             isGranted
                               ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/50'
-                              : 'bg-slate-50/30 border-slate-200/70 dark:bg-slate-900 dark:border-slate-800 opacity-80'
+                              : 'bg-slate-50/30 border-border opacity-80'
                           )}
                         >
                           <div className="flex items-center gap-1.5">
                             {isGranted ? (
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                             ) : (
-                              <X className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                              <X className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                             )}
-                            <span className="font-medium text-slate-800 dark:text-slate-200">{label}</span>
+                            <span className="font-medium text-foreground dark:text-foreground">{label}</span>
                           </div>
                           <span
                             className={cn(
                               'text-2xs font-bold px-1.5 py-0.5 rounded',
                               isGranted
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
-                                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                                : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                             )}
                           >
                             {isGranted ? 'Allowed' : 'Denied'}
@@ -710,7 +710,7 @@ export function UserPermissionsDrawer({
                           'p-3.5 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-3',
                           isSelected
                             ? 'border-primary bg-sky-50/40 dark:bg-sky-950/30 shadow-xs'
-                            : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                            : 'border-border hover:border-input dark:hover:border-border'
                         )}
                       >
                         <div className="flex items-start gap-3">
@@ -719,21 +719,21 @@ export function UserPermissionsDrawer({
                               'mt-0.5 h-4 w-4 rounded border flex items-center justify-center transition-colors',
                               isSelected
                                 ? 'bg-primary border-primary text-white'
-                                : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800'
+                                : 'border-input bg-card dark:bg-muted'
                             )}
                           >
                             {isSelected && <CheckCircle2 className="h-3 w-3" />}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-xs text-slate-900 dark:text-white">
+                              <span className="font-semibold text-xs text-foreground dark:text-white">
                                 {r.name}
                               </span>
-                              <span className="text-2xs text-slate-400">
+                              <span className="text-2xs text-muted-foreground">
                                 ({r.nameBn})
                               </span>
                             </div>
-                            <p className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            <p className="text-2xs text-muted-foreground mt-0.5">
                               {r.desc}
                             </p>
                           </div>
@@ -752,11 +752,11 @@ export function UserPermissionsDrawer({
             ) : activeTab === 'branches' ? (
               /* TAB 3: AUTHORIZED BRANCHES */
               <div className="space-y-3">
-                <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2.5">
+                <div className="bg-muted border border-border rounded-xl p-3 text-xs text-foreground flex items-start gap-2.5">
                   <Building className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold">Multi-Branch Scoping</p>
-                    <p className="text-2xs text-slate-500 mt-0.5">
+                    <p className="text-2xs text-muted-foreground mt-0.5">
                       Select which operational branches this team member is authorized to access when branch-scoped data rules apply.
                     </p>
                   </div>
@@ -775,7 +775,7 @@ export function UserPermissionsDrawer({
                           'p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between',
                           isChecked
                             ? 'border-sky-300 bg-sky-50/40 dark:border-sky-800 dark:bg-sky-950/30'
-                            : 'border-slate-200 dark:border-slate-800'
+                            : 'border-border dark:border-border'
                         )}
                       >
                         <div className="flex items-center gap-2.5">
@@ -783,11 +783,11 @@ export function UserPermissionsDrawer({
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => {}}
-                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+                            className="h-4 w-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
                           />
                           <div>
                             <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-xs text-slate-900 dark:text-white">
+                              <span className="font-semibold text-xs text-foreground dark:text-white">
                                 {b.name}
                               </span>
                               <Badge variant="outline" className="text-2xs tabular-nums py-0 px-1.5">
@@ -799,7 +799,7 @@ export function UserPermissionsDrawer({
                                 </Badge>
                               )}
                             </div>
-                            <span className="text-2xs text-slate-400">{b.address || 'No address specified'}</span>
+                            <span className="text-2xs text-muted-foreground">{b.address || 'No address specified'}</span>
                           </div>
                         </div>
                       </div>
@@ -813,7 +813,7 @@ export function UserPermissionsDrawer({
                 {/* Search Bar & Category Filter */}
                 <div className="space-y-2">
                   <div className="relative">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <Input
                       placeholder="Search module (e.g. Customers, Invoices, Production)..."
                       value={searchQuery}
@@ -835,7 +835,7 @@ export function UserPermissionsDrawer({
                             'px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap',
                             isCatSelected
                               ? 'bg-primary text-white shadow-2xs'
-                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                              : 'bg-muted text-muted-foreground hover:bg-muted'
                           )}
                         >
                           {cat.label}
@@ -846,8 +846,8 @@ export function UserPermissionsDrawer({
                 </div>
 
                 {/* Precedence Legend */}
-                <div className="flex flex-wrap items-center gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg text-2xs text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800">
-                  <span className="font-bold text-slate-700 dark:text-slate-300">Legend:</span>
+                <div className="flex flex-wrap items-center gap-2.5 p-2.5 bg-muted rounded-lg text-2xs text-muted-foreground border border-border dark:border-border">
+                  <span className="font-bold text-foreground dark:text-muted-foreground">Legend:</span>
                   <span className="inline-flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
                     Inherited Allowed
@@ -878,7 +878,7 @@ export function UserPermissionsDrawer({
                     return (
                       <div
                         key={modName}
-                        className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 shadow-xs"
+                        className="rounded-xl border border-border overflow-hidden bg-card shadow-xs"
                       >
                         {/* Module Card Header */}
                         <div
@@ -888,20 +888,20 @@ export function UserPermissionsDrawer({
                               [modName]: !isExpanded,
                             })
                           }
-                          className="p-3.5 bg-slate-50/70 dark:bg-slate-800/50 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800/80 transition-colors"
+                          className="p-3.5 bg-slate-50/70 flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/70 dark:hover:bg-muted/80 transition-colors"
                         >
                           <div className="flex items-center gap-2.5">
                             <Layers className="h-4 w-4 text-primary shrink-0" />
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-xs text-slate-900 dark:text-white">
+                                <span className="font-bold text-xs text-foreground dark:text-white">
                                   {spec.label}
                                 </span>
-                                <span className="text-2xs text-slate-400">
+                                <span className="text-2xs text-muted-foreground">
                                   ({spec.labelBn})
                                 </span>
                               </div>
-                              <p className="text-2xs text-slate-500 dark:text-slate-400">
+                              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
                                 {spec.description}
                               </p>
                             </div>
@@ -914,30 +914,30 @@ export function UserPermissionsDrawer({
                                 'text-2xs px-2 py-0 h-5 font-semibold',
                                 grantedCount > 0
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                  : 'bg-slate-100 text-slate-500'
+                                  : 'bg-muted text-muted-foreground'
                               )}
                             >
                               {grantedCount}/{spec.actions.length} Allowed
                             </Badge>
 
                             {isExpanded ? (
-                              <ChevronUp className="h-4 w-4 text-slate-400" />
+                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
                             ) : (
-                              <ChevronDown className="h-4 w-4 text-slate-400" />
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
                             )}
                           </div>
                         </div>
 
                         {/* Module Expanded Settings */}
                         {isExpanded && (
-                          <div className="p-4 space-y-4 border-t border-slate-100 dark:border-slate-800/80">
+                          <div className="p-4 space-y-4 border-t border-border dark:border-border/80">
                             {/* Data Scope Selector & Quick Overrides Bar */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-xs">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-muted border border-border text-xs">
                               <div>
-                                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                                <span className="font-semibold text-foreground dark:text-foreground">
                                   Data Scope for {spec.label}:
                                 </span>
-                                <p className="text-2xs text-slate-500">
+                                <p className="text-2xs text-muted-foreground">
                                   Controls record visibility within this module.
                                 </p>
                               </div>
@@ -951,7 +951,7 @@ export function UserPermissionsDrawer({
                                       [modName]: e.target.value as DataScope,
                                     })
                                   }
-                                  className="h-7 px-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
+                                  className="h-7 px-2 text-xs font-semibold bg-card border border-border rounded-md text-foreground dark:text-foreground"
                                 >
                                   <option value="own">Own (Created by user)</option>
                                   <option value="assigned">Assigned (Assigned or own)</option>
@@ -964,7 +964,7 @@ export function UserPermissionsDrawer({
 
                             {/* Quick Action Overrides */}
                             <div className="flex items-center justify-between pt-1 text-xs">
-                              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                              <span className="font-semibold text-foreground dark:text-muted-foreground">
                                 Specific Action Overrides:
                               </span>
                               <div className="flex items-center gap-1.5">
@@ -975,7 +975,7 @@ export function UserPermissionsDrawer({
                                 >
                                   Allow All
                                 </button>
-                                <span className="text-slate-300">|</span>
+                                <span className="text-muted-foreground">|</span>
                                 <button
                                   type="button"
                                   onClick={() => denyAllModuleActions(modName)}
@@ -983,11 +983,11 @@ export function UserPermissionsDrawer({
                                 >
                                   Deny All
                                 </button>
-                                <span className="text-slate-300">|</span>
+                                <span className="text-muted-foreground">|</span>
                                 <button
                                   type="button"
                                   onClick={() => resetModuleOverrides(modName)}
-                                  className="text-2xs text-slate-500 hover:underline font-semibold"
+                                  className="text-2xs text-muted-foreground hover:underline font-semibold"
                                 >
                                   Reset
                                 </button>
@@ -1021,7 +1021,7 @@ export function UserPermissionsDrawer({
                                   )
                                 } else {
                                   sourceBadge = (
-                                    <span className="text-2xs text-slate-400">
+                                    <span className="text-2xs text-muted-foreground">
                                       Denied
                                     </span>
                                   )
@@ -1035,7 +1035,7 @@ export function UserPermissionsDrawer({
                                       'p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2',
                                       isGranted
                                         ? 'border-sky-200 dark:border-sky-900/60 bg-sky-50/20 dark:bg-sky-950/20'
-                                        : 'border-slate-200/80 dark:border-slate-800 bg-slate-50/30'
+                                        : 'border-border bg-slate-50/30'
                                     )}
                                   >
                                     <div className="flex items-center gap-2">
@@ -1043,13 +1043,13 @@ export function UserPermissionsDrawer({
                                         type="checkbox"
                                         checked={isGranted}
                                         onChange={() => {}}
-                                        className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
+                                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary cursor-pointer"
                                       />
                                       <div>
-                                        <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                                        <div className="text-xs font-semibold text-foreground dark:text-foreground">
                                           {ACTION_LABELS[act]?.label || act}
                                         </div>
-                                        <div className="text-2xs text-slate-400">
+                                        <div className="text-2xs text-muted-foreground">
                                           {ACTION_LABELS[act]?.labelBn || ''}
                                         </div>
                                       </div>
@@ -1071,7 +1071,7 @@ export function UserPermissionsDrawer({
           </div>
 
           {/* Sticky Bottom Save / Action Bar */}
-          <div className="p-3.5 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/95 dark:bg-slate-900/95 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+          <div className="p-3.5 sm:p-4 border-t border-border bg-slate-50/95 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
             <div>
               {isDirty ? (
                 <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold animate-pulse">
@@ -1079,7 +1079,7 @@ export function UserPermissionsDrawer({
                   <span>Unsaved permission changes</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                   <span>All permissions synced</span>
                 </div>
@@ -1132,32 +1132,32 @@ export function UserPermissionsDrawer({
       >
         <div className="max-h-96 overflow-y-auto space-y-3 pt-2">
           {isAuditLoading ? (
-            <div className="p-8 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
+            <div className="p-8 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
               <RotateCcw className="w-4 h-4 animate-spin text-primary" />
               Loading user audit trail...
             </div>
           ) : !Array.isArray(auditLogs) || auditLogs.length === 0 ? (
-            <div className="p-6 text-center text-xs text-slate-400 italic">
+            <div className="p-6 text-center text-xs text-muted-foreground italic">
               No previous security or permission modifications recorded for this user.
             </div>
           ) : (
             (Array.isArray(auditLogs) ? auditLogs : []).map((log) => (
               <div
                 key={log.id}
-                className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-xs space-y-1"
+                className="p-3 rounded-xl border border-border bg-muted/50 text-xs space-y-1"
               >
-                <div className="flex items-center justify-between text-slate-500 text-2xs">
-                  <span>Actor: <strong className="text-slate-700 dark:text-slate-300">{log.user_email || 'System'}</strong></span>
+                <div className="flex items-center justify-between text-muted-foreground text-2xs">
+                  <span>Actor: <strong className="text-foreground dark:text-muted-foreground">{log.user_email || 'System'}</strong></span>
                   <span>{formatDateTime(log.timestamp || log.created_at)}</span>
                 </div>
-                <div className="font-semibold text-slate-900 dark:text-white tabular-nums">
+                <div className="font-semibold text-foreground dark:text-white tabular-nums">
                   {log.action}
                 </div>
                 {log.description && (
-                  <p className="text-slate-600 dark:text-slate-300 text-2xs">{log.description}</p>
+                  <p className="text-muted-foreground text-2xs">{log.description}</p>
                 )}
                 {(log.previous_value || log.new_value) && (
-                  <pre className="text-2xs bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto text-slate-300 tabular-nums">
+                  <pre className="text-2xs bg-foreground p-2 rounded border border-border overflow-x-auto text-muted-foreground tabular-nums">
                     {JSON.stringify({ previous: log.previous_value, next: log.new_value }, null, 2)}
                   </pre>
                 )}

@@ -169,7 +169,7 @@ export function InvoiceRequestsPanel({
     }
 
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-400">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold bg-muted text-foreground border border-input dark:text-muted-foreground">
         <Ban className="h-3 w-3" />
         <span>Cancelled / বাতিল</span>
       </span>
@@ -181,19 +181,19 @@ export function InvoiceRequestsPanel({
       {/* 1. TOP KPI STAT CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* Total Requests */}
-        <Card className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center justify-between">
+        <Card className="p-3.5 bg-card border-border shadow-xs">
+          <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
             <span>Total Requests</span>
-            <FileText className="h-3.5 w-3.5 text-slate-400" />
+            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <div className="text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
+          <div className="text-xl font-bold font-numeric tabular-nums text-foreground dark:text-white mt-1">
             {metrics.total}
           </div>
-          <div className="text-xs text-slate-500 mt-0.5">All billing requests</div>
+          <div className="text-xs text-muted-foreground mt-0.5">All billing requests</div>
         </Card>
 
         {/* Pending Action (Commercial Hold) */}
-        <Card className="p-3.5 bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-900/80 shadow-xs bg-amber-50/20">
+        <Card className="p-3.5 bg-card border-amber-300 dark:border-amber-900/80 shadow-xs bg-amber-50/20">
           <div className="text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center justify-between">
             <span>Pending Action</span>
             {metrics.pendingCount > 0 && (
@@ -207,7 +207,7 @@ export function InvoiceRequestsPanel({
         </Card>
 
         {/* Fulfilled / Invoiced */}
-        <Card className="p-3.5 bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-900/60 shadow-xs">
+        <Card className="p-3.5 bg-card border-emerald-200 dark:border-emerald-900/60 shadow-xs">
           <div className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center justify-between">
             <span>Invoices Created</span>
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
@@ -219,7 +219,7 @@ export function InvoiceRequestsPanel({
         </Card>
 
         {/* Estimated Pipeline Value */}
-        <Card className="p-3.5 bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-900/60 shadow-xs">
+        <Card className="p-3.5 bg-card border-blue-200 dark:border-blue-900/60 shadow-xs">
           <div className="text-2xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider flex items-center justify-between">
             <span>Estimated Value</span>
             <Sparkles className="h-3.5 w-3.5 text-blue-500" />
@@ -232,25 +232,25 @@ export function InvoiceRequestsPanel({
       </div>
 
       {/* 2. MAIN REQUESTS CONTROL HUB */}
-      <Card className="border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-        <CardHeader className="p-4 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <Card className="border-border shadow-xs overflow-hidden">
+        <CardHeader className="p-4 bg-muted border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 📋
               </div>
-              <CardTitle className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+              <CardTitle className="text-sm font-black text-foreground dark:text-white uppercase tracking-wider">
                 Invoice Requests — Prepress & Floor Billing Queue
               </CardTitle>
             </div>
-            <CardDescription className="text-xs text-slate-500 mt-0.5">
+            <CardDescription className="text-xs text-muted-foreground mt-0.5">
               Requests sent by designers and floor staff when artwork is ready but official billing is missing
             </CardDescription>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Filter Pills */}
-            <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold">
+            <div className="flex items-center gap-1 bg-card p-1 rounded-lg border border-border text-xs font-semibold">
               {[
                 { id: 'all', label: 'All Requests', count: metrics.total },
                 { id: 'pending', label: 'Pending Hold', count: metrics.pendingCount, alert: metrics.pendingCount > 0 },
@@ -265,8 +265,8 @@ export function InvoiceRequestsPanel({
                     activeSubFilter === tab.id
                       ? tab.id === 'pending'
                         ? 'bg-amber-600 text-white shadow-xs font-bold'
-                        : 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs font-bold'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                        : 'bg-foreground text-white shadow-xs font-bold'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   <span>{tab.label}</span>
@@ -274,10 +274,10 @@ export function InvoiceRequestsPanel({
                     className={cn(
                       'text-2xs px-1 py-0.2 rounded-full tabular-nums font-bold',
                       activeSubFilter === tab.id
-                        ? 'bg-white/20 text-white'
+                        ? 'bg-card/20 text-white'
                         : tab.alert
                         ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                     )}
                   >
                     {tab.count}
@@ -301,9 +301,9 @@ export function InvoiceRequestsPanel({
         </CardHeader>
 
         {/* Search Bar */}
-        <div className="p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="p-3 bg-card border-b border-border dark:border-border">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -313,7 +313,7 @@ export function InvoiceRequestsPanel({
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground text-xs font-bold"
               >
                 Clear
               </button>
@@ -325,35 +325,35 @@ export function InvoiceRequestsPanel({
         <CardContent className="p-0">
           {filteredRequests.length === 0 ? (
             <div className="p-12 text-center space-y-2">
-              <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+              <div className="h-12 w-12 rounded-full bg-muted text-muted-foreground flex items-center justify-center mx-auto">
                 <FileCheck2 className="h-6 w-6" />
               </div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              <p className="text-sm font-bold text-foreground dark:text-foreground">
                 {activeSubFilter === 'pending'
                   ? 'No pending invoice requests!'
                   : 'No invoice requests found matching your filters.'}
               </p>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
                 {activeSubFilter === 'pending'
                   ? 'All designer and prepress billing requests have been resolved or invoiced.'
                   : 'When a designer marks artwork ready without an existing invoice, their request will appear here.'}
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="divide-y divide-border dark:divide-border">
               {filteredRequests.map((req) => (
                 <div
                   key={req.id}
-                  className="p-4 hover:bg-slate-50/70 dark:hover:bg-slate-900/40 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs transition-colors"
+                  className="p-4 hover:bg-muted dark:hover:bg-muted/40 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs transition-colors"
                 >
                   {/* Left Column: Request Header & Customer Details */}
                   <div className="space-y-2 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="tabular-nums font-bold text-sm text-slate-900 dark:text-white">
+                      <span className="tabular-nums font-bold text-sm text-foreground dark:text-white">
                         #{req.request_number}
                       </span>
                       {getStatusBadge(req.status, req.invoice_number)}
-                      <span className="text-2xs text-slate-400 flex items-center gap-1">
+                      <span className="text-2xs text-muted-foreground flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         <span>{timeAgo(req.created_at)}</span>
                       </span>
@@ -363,19 +363,19 @@ export function InvoiceRequestsPanel({
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
                       {/* Customer Info */}
                       <div className="space-y-0.5">
-                        <div className="text-2xs font-bold uppercase tracking-wider text-slate-400">Customer</div>
-                        <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">Customer</div>
+                        <div className="font-bold text-foreground dark:text-white flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                           <span>{req.customer_name}</span>
                         </div>
                         {req.company_name && (
-                          <div className="text-2xs text-slate-600 dark:text-slate-300 font-medium">
+                          <div className="text-2xs text-muted-foreground font-medium">
                             {req.company_name}
                           </div>
                         )}
                         {req.customer_phone && (
-                          <div className="text-2xs text-slate-500 tabular-nums flex items-center gap-1">
-                            <Phone className="h-3 w-3 text-slate-400 shrink-0" />
+                          <div className="text-2xs text-muted-foreground tabular-nums flex items-center gap-1">
+                            <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
                             <a
                               href={`tel:${req.customer_phone}`}
                               className="hover:underline hover:text-blue-600"
@@ -385,7 +385,7 @@ export function InvoiceRequestsPanel({
                           </div>
                         )}
                         {req.customer_address && (
-                          <div className="text-2xs text-slate-400 truncate max-w-xs" title={req.customer_address}>
+                          <div className="text-2xs text-muted-foreground truncate max-w-xs" title={req.customer_address}>
                             📍 {req.customer_address}
                           </div>
                         )}
@@ -393,20 +393,20 @@ export function InvoiceRequestsPanel({
 
                       {/* Linked Orders / Design */}
                       <div className="space-y-0.5">
-                        <div className="text-2xs font-bold uppercase tracking-wider text-slate-400">
+                        <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                           Linked Documents
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5">
                           {req.order_number && (
                             <Link href={getTenantNavHref(`/orders/${req.sales_order_id || ''}`, pathname, tenantSlug)}>
-                              <Badge variant="outline" className="text-2xs tabular-nums hover:bg-slate-100 dark:hover:bg-slate-800">
+                              <Badge variant="outline" className="text-2xs tabular-nums hover:bg-muted dark:hover:bg-muted">
                                 Order #{req.order_number}
                               </Badge>
                             </Link>
                           )}
                           {req.design_number && (
                             <Link href={getTenantNavHref(`/design/${req.design_job_id || ''}`, pathname, tenantSlug)}>
-                              <Badge variant="outline" className="text-2xs tabular-nums hover:bg-slate-100 dark:hover:bg-slate-800">
+                              <Badge variant="outline" className="text-2xs tabular-nums hover:bg-muted dark:hover:bg-muted">
                                 Design #{req.design_number}
                               </Badge>
                             </Link>
@@ -417,17 +417,17 @@ export function InvoiceRequestsPanel({
                             </Badge>
                           )}
                           {!req.order_number && !req.design_number && !req.job_number && (
-                            <span className="text-slate-400 italic">Direct Artwork</span>
+                            <span className="text-muted-foreground italic">Direct Artwork</span>
                           )}
                         </div>
                       </div>
 
                       {/* Requested By & Value */}
                       <div className="space-y-0.5">
-                        <div className="text-2xs font-bold uppercase tracking-wider text-slate-400">
+                        <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                           Requested By
                         </div>
-                        <div className="font-medium text-slate-700 dark:text-slate-300">
+                        <div className="font-medium text-foreground dark:text-muted-foreground">
                           {req.requested_by_name || 'Prepress Designer'}
                         </div>
                         {Number(req.estimated_amount) > 0 && (
@@ -440,15 +440,15 @@ export function InvoiceRequestsPanel({
 
                     {/* Notes & Summary Callout */}
                     {(req.items_summary || req.notes) && (
-                      <div className="p-2.5 bg-slate-50 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-300 space-y-0.5 tabular-nums">
+                      <div className="p-2.5 bg-muted rounded-xl border border-border text-2xs text-muted-foreground space-y-0.5 tabular-nums">
                         {req.items_summary && (
                           <div>
-                            <strong className="text-slate-900 dark:text-white">Items:</strong> {req.items_summary}
+                            <strong className="text-foreground dark:text-white">Items:</strong> {req.items_summary}
                           </div>
                         )}
                         {req.notes && (
-                          <div className="text-slate-500">
-                            <strong className="text-slate-700 dark:text-slate-400">Notes:</strong> {req.notes}
+                          <div className="text-muted-foreground">
+                            <strong className="text-foreground dark:text-muted-foreground">Notes:</strong> {req.notes}
                           </div>
                         )}
                       </div>
@@ -456,13 +456,13 @@ export function InvoiceRequestsPanel({
                   </div>
 
                   {/* Right Column: Action Buttons */}
-                  <div className="flex md:flex-col items-center md:items-end justify-between sm:justify-end gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
+                  <div className="flex md:flex-col items-center md:items-end justify-between sm:justify-end gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border dark:border-border">
                     {req.status === 'pending' ? (
                       <>
                         <Button
                           size="sm"
                           onClick={() => onCreateInvoice(req)}
-                          className="h-8.5 px-3.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs gap-1.5 cursor-pointer"
+                          className="h-8.5 px-3.5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs gap-1.5 cursor-pointer"
                         >
                           <Receipt className="h-3.5 w-3.5" />
                           <span>Generate Invoice</span>
@@ -475,7 +475,7 @@ export function InvoiceRequestsPanel({
                             setSelectedRequestForCancel(req)
                             setCancelReason('')
                           }}
-                          className="h-8 px-2.5 text-xs text-slate-600 hover:text-rose-600 hover:border-rose-300 dark:text-slate-400 dark:hover:text-rose-400 gap-1 cursor-pointer"
+                          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-rose-600 hover:border-rose-300 dark:hover:text-rose-400 gap-1 cursor-pointer"
                         >
                           <Ban className="h-3 w-3" />
                           <span>Cancel</span>
@@ -501,7 +501,7 @@ export function InvoiceRequestsPanel({
                         )}
                       </div>
                     ) : (
-                      <Badge variant="outline" className="text-slate-400">
+                      <Badge variant="outline" className="text-muted-foreground">
                         Cancelled
                       </Badge>
                     )}
@@ -523,11 +523,11 @@ export function InvoiceRequestsPanel({
           hideFooter
         >
           <form onSubmit={handleConfirmCancel} className="space-y-4 pt-1">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               Are you sure you want to cancel this invoice request? This will mark the request as cancelled without creating an invoice.
             </p>
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs tabular-nums space-y-1">
+            <div className="p-3 bg-muted rounded-xl border border-border text-xs tabular-nums space-y-1">
               <div>Request: <strong>#{selectedRequestForCancel.request_number}</strong></div>
               <div>Customer: <strong>{selectedRequestForCancel.customer_name}</strong></div>
               {selectedRequestForCancel.order_number && (

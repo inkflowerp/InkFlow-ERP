@@ -203,7 +203,7 @@ export function EditUserAccessDialog({
       <div className="space-y-5 pt-1">
         {/* 1. Primary Role Selection */}
         <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Role Template
           </Label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -217,11 +217,11 @@ export function EditUserAccessDialog({
                   className={`p-2.5 rounded-lg border text-left transition-all ${
                     isSelected
                       ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/30 text-blue-950 dark:text-blue-200 ring-1 ring-blue-600'
-                      : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-800 dark:text-slate-200'
+                      : 'border-border hover:bg-muted dark:hover:bg-muted/50 text-foreground dark:text-foreground'
                   }`}
                 >
                   <div className="text-xs font-semibold truncate">{r.name}</div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                  <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
                     {r.name_bn || r.slug}
                   </div>
                 </button>
@@ -240,13 +240,13 @@ export function EditUserAccessDialog({
         {/* 2. Responsibilities Multi-select */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Assigned Responsibilities ({selectedResponsibilities.length})
             </Label>
-            <span className="text-[11px] text-slate-400">Select all duties performed</span>
+            <span className="text-[11px] text-muted-foreground">Select all duties performed</span>
           </div>
 
-          <div className="flex flex-wrap gap-1.5 p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-900/20">
+          <div className="flex flex-wrap gap-1.5 p-3 border border-border rounded-lg bg-muted/50 dark:bg-card">
             {PRACTICAL_RESPONSIBILITIES.map((resp) => {
               const isChecked = selectedResponsibilities.includes(resp)
               return (
@@ -257,7 +257,7 @@ export function EditUserAccessDialog({
                   className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
                     isChecked
                       ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                      : 'bg-card text-foreground border border-border hover:border-input'
                   }`}
                 >
                   {isChecked && <Check className="h-3 w-3" />}
@@ -271,13 +271,13 @@ export function EditUserAccessDialog({
         {/* 3. Branch Access */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Primary Branch
             </Label>
             <select
               value={primaryBranchId}
               onChange={(e) => setPrimaryBranchId(e.target.value)}
-              className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full text-sm rounded-lg border border-input bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -288,13 +288,13 @@ export function EditUserAccessDialog({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Data Scope
             </Label>
             <select
               value={selectedScope}
               onChange={(e) => setSelectedScope(e.target.value as DataScope)}
-              className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full text-sm rounded-lg border border-input bg-card px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600"
             >
               {DATA_SCOPE_OPTIONS.map((opt) => (
                 <option key={opt.id} value={opt.id}>
@@ -318,7 +318,7 @@ export function EditUserAccessDialog({
         {/* Additional Branches (if more than 1 branch in company) */}
         {branches.length > 1 && (
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Additional Authorized Branches
             </Label>
             <div className="flex flex-wrap gap-2">
@@ -334,7 +334,7 @@ export function EditUserAccessDialog({
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 ${
                         isChecked
                           ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 font-semibold'
-                          : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                          : 'border-border text-muted-foreground hover:bg-muted'
                       }`}
                     >
                       {isChecked && <Check className="h-3 w-3 text-blue-600" />}
@@ -347,12 +347,12 @@ export function EditUserAccessDialog({
         )}
 
         {/* Permission Preview & Customize Link */}
-        <div className="p-3 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-lg flex items-center justify-between text-xs">
+        <div className="p-3 bg-muted border border-border rounded-lg flex items-center justify-between text-xs">
           <div>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
+            <span className="font-semibold text-foreground dark:text-foreground">
               {defaultPermissionsCount} Default Permissions
             </span>
-            <span className="text-slate-500 dark:text-slate-400 ml-1.5">
+            <span className="text-muted-foreground ml-1.5">
               based on {selectedRole?.name || 'role'}
             </span>
           </div>
@@ -375,7 +375,7 @@ export function EditUserAccessDialog({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-border">
           <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
@@ -383,7 +383,7 @@ export function EditUserAccessDialog({
             size="sm"
             onClick={handleSave}
             disabled={isSubmitting || !selectedRoleId}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium gap-1.5"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium gap-1.5"
           >
             {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             Save Changes

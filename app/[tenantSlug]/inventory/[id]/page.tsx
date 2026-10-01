@@ -92,13 +92,13 @@ export default function MaterialDetailPage() {
   if (!mounted || loading) {
     return (
       <div className="space-y-6 max-w-6xl p-6 animate-pulse">
-        <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/3" />
+        <div className="h-8 bg-muted rounded w-1/3" />
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-24 bg-muted rounded-xl" />
           ))}
         </div>
-        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+        <div className="h-48 bg-muted rounded-xl" />
       </div>
     )
   }
@@ -106,7 +106,7 @@ export default function MaterialDetailPage() {
   if (!material) {
     return (
       <div className="p-8 text-center space-y-3">
-        <p className="text-sm font-bold text-slate-700">Material not found.</p>
+        <p className="text-sm font-bold text-foreground">Material not found.</p>
         <Link href={getTenantNavHref('/inventory', pathname, slug)}>
           <Button size="sm" variant="outline">
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to Inventory Hub
@@ -134,10 +134,10 @@ export default function MaterialDetailPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-black text-slate-900 dark:text-white">{material.name}</h1>
-              {material.name_bn && <p className="text-xs text-slate-500 font-normal">{material.name_bn}</p>}
+              <h1 className="text-xl font-black text-foreground dark:text-white">{material.name}</h1>
+              {material.name_bn && <p className="text-xs text-muted-foreground font-normal">{material.name_bn}</p>}
               <div className="flex items-center gap-2 mt-1">
-                <span className="tabular-nums text-2xs text-slate-500 dark:text-slate-400 font-medium">SKU: {material.sku}</span>
+                <span className="tabular-nums text-2xs text-muted-foreground font-medium">SKU: {material.sku}</span>
                 <Badge variant="outline" className="capitalize text-2xs">
                   {material.category.replace('_', ' ')}
                 </Badge>
@@ -172,8 +172,8 @@ export default function MaterialDetailPage() {
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <Card className="p-4 border-l-4 border-l-emerald-600">
-            <span className="text-xs text-slate-500 font-semibold">Total Stock Available</span>
-            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+            <span className="text-xs text-muted-foreground font-semibold">Total Stock Available</span>
+            <div className="text-2xl font-black text-foreground dark:text-white mt-1">
               {breakdown.purchase_unit_display || `${material.current_stock} ${material.unit}`}
             </div>
             {breakdown.consumption_unit_display && breakdown.purchase_unit_display !== breakdown.consumption_unit_display && (
@@ -181,38 +181,38 @@ export default function MaterialDetailPage() {
                 {breakdown.consumption_unit_display}
               </span>
             )}
-            <span className="text-2xs text-slate-400 block mt-0.5">
+            <span className="text-2xs text-muted-foreground block mt-0.5">
               Reorder threshold: {material.reorder_level || material.min_stock_level || 0} {material.unit}
             </span>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-blue-600">
-            <span className="text-xs text-slate-500 font-semibold">Asset Valuation</span>
+            <span className="text-xs text-muted-foreground font-semibold">Asset Valuation</span>
             <div className="text-2xl font-black text-emerald-600 mt-1">
               <CurrencyDisplay amount={breakdown.total_valuation} />
             </div>
-            <span className="text-2xs text-slate-400 tabular-nums block mt-0.5">
+            <span className="text-2xs text-muted-foreground tabular-nums block mt-0.5">
               {breakdown.cost_display_primary || `Avg Cost: ৳ ${material.average_cost} / ${material.unit}`}
             </span>
             {breakdown.cost_display_secondary && (
-              <span className="text-2xs text-slate-400 font-sans block">
+              <span className="text-2xs text-muted-foreground font-sans block">
                 {breakdown.cost_display_secondary}
               </span>
             )}
           </Card>
 
           <Card className="p-4 border-l-4 border-l-purple-600">
-            <span className="text-xs text-slate-500 font-semibold">Active Remnants</span>
+            <span className="text-xs text-muted-foreground font-semibold">Active Remnants</span>
             <div className="text-2xl font-black text-purple-600 mt-1">{remnants.length}</div>
-            <span className="text-2xs text-slate-400">Reusable offcut rolls/sheets</span>
+            <span className="text-2xs text-muted-foreground">Reusable offcut rolls/sheets</span>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-amber-600">
-            <span className="text-xs text-slate-500 font-semibold">Specifications</span>
-            <div className="text-sm font-bold text-slate-900 dark:text-white mt-1">
+            <span className="text-xs text-muted-foreground font-semibold">Specifications</span>
+            <div className="text-sm font-bold text-foreground dark:text-white mt-1">
               {material.thickness || 'Standard'} {material.color ? `(${material.color})` : ''}
             </div>
-            <span className="text-2xs text-slate-400">
+            <span className="text-2xs text-muted-foreground">
               {material.brand ? `Brand: ${material.brand}` : 'Generic Spec'}
             </span>
           </Card>
@@ -227,18 +227,18 @@ export default function MaterialDetailPage() {
           </CardHeader>
           <CardContent className="p-0">
             {balances.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-400">
+              <div className="p-6 text-center text-xs text-muted-foreground">
                 No specific location balances recorded. Stock is currently tracked globally.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              <div className="divide-y divide-border dark:divide-border">
                 {balances.map((bal) => (
                   <div key={bal.id} className="p-3.5 flex items-center justify-between text-xs">
                     <div>
-                      <strong className="text-slate-900 dark:text-white">
+                      <strong className="text-foreground dark:text-white">
                         {bal.location?.location_name || 'Warehouse Location'}
                       </strong>
-                      <div className="text-2xs text-slate-400 tabular-nums">{bal.location?.location_code}</div>
+                      <div className="text-2xs text-muted-foreground tabular-nums">{bal.location?.location_code}</div>
                     </div>
                     <div className="tabular-nums font-bold text-sm text-emerald-600">
                       {bal.available_quantity} {bal.unit}
@@ -259,14 +259,14 @@ export default function MaterialDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              <div className="divide-y divide-border dark:divide-border">
                 {remnants.map((rem) => (
                   <div key={rem.id} className="p-3.5 flex items-center justify-between text-xs">
                     <div>
                       <span className="tabular-nums text-purple-700 dark:text-purple-300 font-bold">
                         {rem.remnant_code}
                       </span>
-                      <div className="font-medium text-slate-800 dark:text-slate-200">
+                      <div className="font-medium text-foreground dark:text-foreground">
                         {rem.width} × {rem.length} {rem.dimension_unit} ({rem.area_sft || rem.width * rem.length} SFT)
                       </div>
                     </div>
@@ -287,16 +287,16 @@ export default function MaterialDetailPage() {
         <Card>
           <CardHeader className="pb-3 border-b">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <History className="h-4 w-4 text-slate-600" /> Stock Movement History ({ledger.length})
+              <History className="h-4 w-4 text-muted-foreground" /> Stock Movement History ({ledger.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {ledger.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-400">No stock movement recorded yet.</div>
+              <div className="p-6 text-center text-xs text-muted-foreground">No stock movement recorded yet.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 dark:bg-slate-900 font-semibold text-slate-500 border-b">
+                  <thead className="bg-muted font-semibold text-muted-foreground border-b">
                     <tr>
                       <th className="py-2.5 px-4">Date & Time</th>
                       <th className="py-2.5 px-4">Event Type</th>
@@ -305,22 +305,22 @@ export default function MaterialDetailPage() {
                       <th className="py-2.5 px-4">Performed By / Remarks</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {ledger.map((l) => (
-                      <tr key={l.id} className="hover:bg-slate-50/50">
-                        <td className="py-2.5 px-4 text-slate-500">{new Date(l.created_at).toLocaleString()}</td>
+                      <tr key={l.id} className="hover:bg-muted">
+                        <td className="py-2.5 px-4 text-muted-foreground">{new Date(l.created_at).toLocaleString()}</td>
                         <td className="py-2.5 px-4 font-bold uppercase">{l.transaction_type}</td>
                         <td className="py-2.5 px-4 tabular-nums font-bold">
                           <span className={l.quantity_change >= 0 ? 'text-emerald-600' : 'text-red-600'}>
                             {l.quantity_change >= 0 ? `+${l.quantity_change}` : l.quantity_change} {l.unit}
                           </span>
                         </td>
-                        <td className="py-2.5 px-4 tabular-nums font-bold text-slate-900 dark:text-white">
+                        <td className="py-2.5 px-4 tabular-nums font-bold text-foreground dark:text-white">
                           {l.balance_after} {l.unit}
                         </td>
-                        <td className="py-2.5 px-4 text-slate-500">
+                        <td className="py-2.5 px-4 text-muted-foreground">
                           <div>{l.performed_by_name}</div>
-                          {l.notes && <div className="text-2xs text-slate-400 italic">{l.notes}</div>}
+                          {l.notes && <div className="text-2xs text-muted-foreground italic">{l.notes}</div>}
                         </td>
                       </tr>
                     ))}

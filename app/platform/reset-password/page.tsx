@@ -95,7 +95,7 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-foreground text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 font-sans selection:bg-indigo-500 selection:text-white">
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
@@ -111,16 +111,16 @@ function ResetPasswordForm() {
           <h1 className="text-2xl font-black tracking-tight text-white">
             Set New Password
           </h1>
-          <p className="text-xs text-slate-400">Secure your Platform Owner credentials.</p>
+          <p className="text-xs text-muted-foreground">Secure your Platform Owner credentials.</p>
         </div>
 
-        <Card className="bg-slate-900/90 border-slate-800 shadow-2xl backdrop-blur-xl text-slate-100">
+        <Card className="bg-foreground border-border shadow-2xl backdrop-blur-xl text-slate-100">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-bold text-slate-200 flex items-center gap-2">
+            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <Shield className="h-4 w-4 text-indigo-400" />
               <span>Update Credentials</span>
             </CardTitle>
-            <CardDescription className="text-slate-400 text-xs">
+            <CardDescription className="text-muted-foreground text-xs">
               Choose a strong password to protect your root platform account.
             </CardDescription>
           </CardHeader>
@@ -158,7 +158,7 @@ function ResetPasswordForm() {
                 )}
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="new-password" className="text-xs text-slate-300">New Password</Label>
+                  <Label htmlFor="new-password" className="text-xs text-muted-foreground">New Password</Label>
                   <Input
                     id="new-password"
                     type={showPassword ? 'text' : 'password'}
@@ -166,14 +166,14 @@ function ResetPasswordForm() {
                     autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    icon={<Lock className="h-4 w-4 text-slate-400" />}
+                    icon={<Lock className="h-4 w-4 text-muted-foreground" />}
                     placeholder="••••••••••••"
-                    className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
                     rightElement={
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="p-2 text-slate-400 hover:text-slate-200 transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                        className="p-2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -183,7 +183,7 @@ function ResetPasswordForm() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="confirm-password" className="text-xs text-slate-300">Confirm New Password</Label>
+                  <Label htmlFor="confirm-password" className="text-xs text-muted-foreground">Confirm New Password</Label>
                   <Input
                     id="confirm-password"
                     type={showConfirmPassword ? 'text' : 'password'}
@@ -191,14 +191,14 @@ function ResetPasswordForm() {
                     autoComplete="new-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    icon={<Lock className="h-4 w-4 text-slate-400" />}
+                    icon={<Lock className="h-4 w-4 text-muted-foreground" />}
                     placeholder="••••••••••••"
-                    className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
                     rightElement={
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="p-2 text-slate-400 hover:text-slate-200 transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                        className="p-2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                         aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -208,8 +208,8 @@ function ResetPasswordForm() {
                 </div>
 
                 {/* Password strength criteria */}
-                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-2xs space-y-1.5">
-                  <div className="font-semibold text-slate-400 text-2xs uppercase tracking-wider">
+                <div className="p-3 rounded-xl bg-foreground border border-border text-2xs space-y-1.5">
+                  <div className="font-semibold text-muted-foreground text-2xs uppercase tracking-wider">
                     Password Requirements:
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -217,7 +217,7 @@ function ResetPasswordForm() {
                       <div
                         key={idx}
                         className={`flex items-center gap-1.5 ${
-                          rule.met ? 'text-emerald-400' : 'text-slate-500'
+                          rule.met ? 'text-emerald-400' : 'text-muted-foreground'
                         }`}
                       >
                         {rule.met ? (
@@ -240,7 +240,7 @@ function ResetPasswordForm() {
                 </Button>
               </CardContent>
 
-              <CardFooter className="pt-2 pb-5 text-center text-xs text-slate-500 border-t border-slate-800/60 justify-center">
+              <CardFooter className="pt-2 pb-5 text-center text-xs text-muted-foreground border-t border-border justify-center">
                 <Link href="/platform/login" className="text-indigo-400 hover:underline font-semibold min-h-[36px] flex items-center">
                   Cancel and Return to Sign In
                 </Link>
@@ -255,7 +255,7 @@ function ResetPasswordForm() {
 
 export default function PlatformResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading reset console...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-foreground flex items-center justify-center text-muted-foreground">Loading reset console...</div>}>
       <ResetPasswordForm />
     </Suspense>
   )

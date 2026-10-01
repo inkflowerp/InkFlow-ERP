@@ -453,13 +453,13 @@ function AccountingContent() {
   if (!mounted) {
     return (
       <div className="space-y-6 pb-20 animate-pulse">
-        <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="h-10 bg-muted rounded-xl w-1/3" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+            <div key={i} className="h-24 bg-muted rounded-2xl" />
           ))}
         </div>
-        <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+        <div className="h-96 bg-muted rounded-2xl" />
       </div>
     )
   }
@@ -546,7 +546,7 @@ function AccountingContent() {
     <div className="space-y-6 pb-20">
       {/* Toast Notification */}
       {notification && (
-        <div className="fixed top-20 right-6 z-50 p-4 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2">
+        <div className="fixed top-20 right-6 z-50 p-4 bg-foreground text-white text-xs font-semibold rounded-2xl shadow-xl border border-border flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{notification}</span>
         </div>
@@ -569,10 +569,10 @@ function AccountingContent() {
                 <span>{tBilingual('Finance Dashboard', 'ফাইন্যান্স ড্যাশবোর্ড')}</span>
               </button>
             )}
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight bangla-text">
+            <h1 className="text-2xl font-black text-foreground dark:text-white tracking-tight bangla-text">
               {tBilingual(currentHeader.title, currentHeader.titleBn)}
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 bangla-text">
+            <p className="text-xs text-muted-foreground bangla-text">
               {tBilingual(currentHeader.description, currentHeader.descriptionBn)}
             </p>
           </div>
@@ -581,8 +581,8 @@ function AccountingContent() {
         {/* Header Controls: Timeframe selector, Export, and Refresh */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Date Range Display */}
-          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card border border-border text-xs font-semibold text-foreground shadow-2xs">
+            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
             <span>{activeRange.label}</span>
           </div>
 
@@ -591,10 +591,10 @@ function AccountingContent() {
             <button
               type="button"
               onClick={() => setIsTimeframeMenuOpen(!isTimeframeMenuOpen)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-card border border-border text-xs font-semibold text-foreground shadow-2xs hover:bg-muted dark:hover:bg-muted/60 cursor-pointer transition-colors"
             >
               <span>{activeRange.title}</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 ml-1 transition-transform ${isTimeframeMenuOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground ml-1 transition-transform ${isTimeframeMenuOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isTimeframeMenuOpen && (
@@ -603,7 +603,7 @@ function AccountingContent() {
                   className="fixed inset-0 z-20"
                   onClick={() => setIsTimeframeMenuOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-30 py-1 text-xs">
+                <div className="absolute right-0 top-full mt-1.5 w-44 bg-card border border-border rounded-xl shadow-xl z-30 py-1 text-xs">
                   {[
                     { id: 'this_month', label: 'This Month' },
                     { id: 'last_month', label: 'Last Month' },
@@ -618,10 +618,10 @@ function AccountingContent() {
                         setTimeframe(item.id as any)
                         setIsTimeframeMenuOpen(false)
                       }}
-                      className={`w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium ${
+                      className={`w-full text-left px-3.5 py-2 hover:bg-muted dark:hover:bg-muted/60 transition-colors font-medium ${
                         timeframe === item.id
                           ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/50 dark:bg-blue-950/20'
-                          : 'text-slate-700 dark:text-slate-300'
+                          : 'text-foreground dark:text-muted-foreground'
                       }`}
                     >
                       {item.label}
@@ -641,20 +641,20 @@ function AccountingContent() {
               loadAllData(r.startDate, r.endDate)
             }}
             disabled={isLoading}
-            className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 text-xs font-semibold h-9 w-9 p-0 rounded-xl cursor-pointer flex items-center justify-center shrink-0"
+            className="border-border bg-card hover:bg-muted text-xs font-semibold h-9 w-9 p-0 rounded-xl cursor-pointer flex items-center justify-center shrink-0"
             title="Refresh Finance Data"
             aria-label="Refresh Finance Data"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : 'text-muted-foreground'}`} />
           </Button>
         </div>
       </div>
 
       {/* Mobile-Only Quick Tab Selector (when sidebar is hidden on small screens) */}
-      <div className="lg:hidden flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+      <div className="lg:hidden flex items-center justify-between p-2.5 rounded-xl bg-card border border-border shadow-2xs">
         <div className="flex items-center gap-2">
           <HeaderIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bangla-text">
+          <span className="text-xs font-bold text-foreground bangla-text">
             {tBilingual('Active Module:', 'বর্তমান বিভাগ:')}
           </span>
         </div>
@@ -662,7 +662,7 @@ function AccountingContent() {
           value={activeTab}
           onChange={(e) => handleTabChange(e.target.value)}
           aria-label={tBilingual('Select Finance Module', 'ফাইন্যান্স মডিউল নির্বাচন করুন')}
-          className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bangla-text max-w-[200px]"
+          className="bg-muted border border-border rounded-lg px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer bangla-text max-w-[200px]"
         >
           <option value="overview">{tBilingual('Dashboard', 'ফাইন্যান্স ড্যাশবোর্ড')}</option>
           <option value="cash-bank">{tBilingual('Cash & Bank', 'ক্যাশ ও ব্যাংক')}</option>

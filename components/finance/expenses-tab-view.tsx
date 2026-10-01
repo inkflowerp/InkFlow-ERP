@@ -48,7 +48,7 @@ const PRESET_CATEGORIES = [
   { id: 'tea_snacks', labelEn: 'Office Expense & Tea', labelBn: 'অফিস খরচ ও আপ্যায়ন', icon: FileText, color: 'text-purple-500 bg-purple-50' },
   { id: 'staff_salary', labelEn: 'Salary & Daily Wages', labelBn: 'স্টাফ বেতন ও মজুরি', icon: Users2, color: 'text-indigo-500 bg-indigo-50' },
   { id: 'marketing_promo', labelEn: 'Marketing & Promotion', labelBn: 'মার্কেটিং ও বিজ্ঞাপন', icon: Megaphone, color: 'text-pink-500 bg-pink-50' },
-  { id: 'miscellaneous', labelEn: 'Miscellaneous / Other', labelBn: 'অন্যান্য বিবিধ খরচ', icon: FolderOpen, color: 'text-slate-500 bg-slate-100' },
+  { id: 'miscellaneous', labelEn: 'Miscellaneous / Other', labelBn: 'অন্যান্য বিবিধ খরচ', icon: FolderOpen, color: 'text-muted-foreground bg-muted' },
 ]
 
 // Preset Recurring Bills for print shops
@@ -111,7 +111,7 @@ export function ExpensesTabView({
   return (
     <div className="space-y-6">
       {/* 1. TOP STATS BAR & + ADD EXPENSE BUTTON */}
-      <div className="p-5 rounded-3xl bg-linear-to-r from-rose-950 via-slate-900 to-indigo-950 text-white shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="p-5 rounded-3xl bg-linear-to-r from-rose-950 via-slate-900 to-indigo-950 text-white shadow-xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Badge className="bg-rose-500/20 text-rose-300 border-none text-2xs uppercase tracking-wider">
@@ -122,11 +122,11 @@ export function ExpensesTabView({
             <span className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight">
               ৳{totalExpenses.toLocaleString()}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-muted-foreground">
               ({items.length} {tBilingual('Vouchers Logged', 'টি ভাউচার')})
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {tBilingual(
               'Simple expense entry: Category, Amount, Payment Account, Reference, Notes & Receipt photo.',
               'সহজ খরচ এন্ট্রি: ক্যাটাগরি, টাকার পরিমাণ, যে অ্যাকাউন্ট থেকে দেওয়া হলো, রেফারেন্স ও রসিদের ছবি।'
@@ -146,14 +146,14 @@ export function ExpensesTabView({
 
       {/* 2. SUB-NAVIGATION TABS & CONTROLS */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl w-fit">
+        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-2xl w-fit">
           <button
             type="button"
             onClick={() => setActiveSubTab('entries')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeSubTab === 'entries'
-                ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-rose-600 dark:text-rose-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Expense Entries', 'খরচের তালিকা')} ({items.length})
@@ -164,8 +164,8 @@ export function ExpensesTabView({
             onClick={() => setActiveSubTab('categories')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeSubTab === 'categories'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Expense Categories', 'খরচের খাত')}
@@ -176,8 +176,8 @@ export function ExpensesTabView({
             onClick={() => setActiveSubTab('recurring')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeSubTab === 'recurring'
-                ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-purple-600 dark:text-purple-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Recurring Expenses', 'মাসিক নিয়মিত বিল')}
@@ -186,12 +186,12 @@ export function ExpensesTabView({
 
         {activeSubTab === 'entries' && (
           <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={tBilingual('Search memo, category, payee...', 'বিবরণ বা খাত খুঁজুন...')}
-              className="h-8.5 pl-8 text-xs rounded-xl bg-white dark:bg-slate-900"
+              className="h-8.5 pl-8 text-xs rounded-xl bg-card dark:bg-card"
             />
           </div>
         )}
@@ -201,11 +201,11 @@ export function ExpensesTabView({
 
       {/* Sub-tab A: Expense Entries Table */}
       {activeSubTab === 'entries' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
                   <tr>
                     <th className="p-3">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="p-3">{tBilingual('Voucher #', 'ভাউচার')}</th>
@@ -216,10 +216,10 @@ export function ExpensesTabView({
                     <th className="p-3 text-center">{tBilingual('Receipt', 'রসিদ')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                <tbody className="divide-y divide-border dark:divide-border/50">
                   {filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 tabular-nums text-slate-500 whitespace-nowrap">
+                    <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                      <td className="p-3 tabular-nums text-muted-foreground whitespace-nowrap">
                         {item.transaction_date}
                       </td>
                       <td className="p-3 tabular-nums font-medium text-rose-600 dark:text-rose-400">
@@ -230,20 +230,20 @@ export function ExpensesTabView({
                           {item.category_label || item.category}
                         </Badge>
                       </td>
-                      <td className="p-3 font-medium text-slate-800 dark:text-slate-200 max-w-xs truncate">
+                      <td className="p-3 font-medium text-foreground max-w-xs truncate">
                         {item.description}
                         {item.employee_name && (
-                          <span className="text-3xs text-slate-400 block font-normal">
+                          <span className="text-3xs text-muted-foreground block font-normal">
                             Payee: {item.employee_name}
                           </span>
                         )}
                         {item.vendor_name && (
-                          <span className="text-3xs text-slate-400 block font-normal">
+                          <span className="text-3xs text-muted-foreground block font-normal">
                             Vendor: {item.vendor_name}
                           </span>
                         )}
                       </td>
-                      <td className="p-3 tabular-nums text-2xs text-slate-600 dark:text-slate-400">
+                      <td className="p-3 tabular-nums text-2xs text-muted-foreground dark:text-muted-foreground">
                         {item.payment_account_name} ({item.payment_account_code})
                       </td>
                       <td className="p-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
@@ -255,13 +255,13 @@ export function ExpensesTabView({
                             href={item.attachment_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="p-1 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 hover:text-blue-700 inline-flex items-center"
+                            className="p-1 rounded bg-muted text-blue-600 hover:text-blue-700 inline-flex items-center"
                             title="View attachment / receipt"
                           >
                             <Paperclip className="w-3.5 h-3.5" />
                           </a>
                         ) : (
-                          <span className="text-3xs text-slate-300">-</span>
+                          <span className="text-3xs text-muted-foreground">-</span>
                         )}
                       </td>
                     </tr>
@@ -269,7 +269,7 @@ export function ExpensesTabView({
 
                   {filteredItems.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="p-10 text-center text-slate-400 text-xs">
+                      <td colSpan={7} className="p-10 text-center text-muted-foreground text-xs">
                         {tBilingual('No expense vouchers found matching criteria.', 'কোনো খরচের ভাউচার পাওয়া যায়নি।')}
                       </td>
                     </tr>
@@ -292,7 +292,7 @@ export function ExpensesTabView({
             return (
               <Card
                 key={cat.id}
-                className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-300 dark:hover:border-slate-700 transition-all p-4 bg-white dark:bg-slate-900 flex flex-col justify-between"
+                className="rounded-2xl border-border shadow-xs hover:border-blue-300 transition-all p-4 bg-card flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -301,10 +301,10 @@ export function ExpensesTabView({
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <span className="font-bold text-xs text-slate-900 dark:text-white block">
+                        <span className="font-bold text-xs text-foreground dark:text-white block">
                           {tBilingual(cat.labelEn, cat.labelBn)}
                         </span>
-                        <span className="text-3xs text-slate-400">
+                        <span className="text-3xs text-muted-foreground">
                           {stats.count} {tBilingual('entries logged', 'টি ভাউচার')}
                         </span>
                       </div>
@@ -316,7 +316,7 @@ export function ExpensesTabView({
                   </div>
 
                   <div className="flex items-baseline justify-between mb-2">
-                    <span className="text-3xs text-slate-400 uppercase font-semibold">
+                    <span className="text-3xs text-muted-foreground uppercase font-semibold">
                       {tBilingual('Total Spent', 'মোট ব্যয়')}
                     </span>
                     <span className="text-lg tabular-nums font-black text-rose-600 dark:text-rose-400">
@@ -325,7 +325,7 @@ export function ExpensesTabView({
                   </div>
 
                   {/* Visual Progress Bar */}
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
                     <div
                       className="bg-rose-500 h-full rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(100, percentage)}%` }}
@@ -333,7 +333,7 @@ export function ExpensesTabView({
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 mt-3 flex items-center justify-between">
+                <div className="pt-3 border-t border-border dark:border-border/80 mt-3 flex items-center justify-between">
                   <Button
                     size="sm"
                     variant="ghost"
@@ -341,7 +341,7 @@ export function ExpensesTabView({
                       setSelectedCategoryFilter(cat.id)
                       setActiveSubTab('entries')
                     }}
-                    className="h-7 text-2xs text-slate-600 dark:text-slate-400 hover:text-slate-900 p-0 font-medium"
+                    className="h-7 text-2xs text-muted-foreground hover:text-foreground p-0 font-medium"
                   >
                     {tBilingual('Filter vouchers →', 'ভাউচার দেখুন →')}
                   </Button>
@@ -363,13 +363,13 @@ export function ExpensesTabView({
       {/* Sub-tab C: Recurring Expenses */}
       {activeSubTab === 'recurring' && (
         <div className="space-y-4">
-          <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+          <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
+            <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                   {tBilingual('Fixed Monthly Overheads & Bills', 'মাসিক নির্দিষ্ট পরিচালন খরচ ও বিল')}
                 </CardTitle>
-                <p className="text-3xs text-slate-400">
+                <p className="text-3xs text-muted-foreground">
                   {tBilingual(
                     'Track recurrent print shop commitments (Rent, Electricity, Internet, AMC)',
                     'প্রতি মাসের নিয়মিত ভাড়া, বিদ্যুৎ, ইন্টারনেট এবং সার্ভিস ফি ট্র্যাকিং'
@@ -378,18 +378,18 @@ export function ExpensesTabView({
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
+              <div className="divide-y divide-border dark:divide-border/50">
                 {DEFAULT_RECURRING_BILLS.map((bill) => (
-                  <div key={bill.id} className="p-4 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                  <div key={bill.id} className="p-4 flex items-center justify-between hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 flex items-center justify-center shrink-0">
                         <Clock className="w-5 h-5" />
                       </div>
                       <div>
-                        <span className="font-bold text-xs text-slate-800 dark:text-slate-200 block">
+                        <span className="font-bold text-xs text-foreground block">
                           {tBilingual(bill.titleEn, bill.titleBn)}
                         </span>
-                        <span className="text-3xs text-slate-400">
+                        <span className="text-3xs text-muted-foreground">
                           {tBilingual(`Due day: ${bill.dueDay}th of month`, `মাসের ${bill.dueDay} তারিখের মধ্যে প্রদেয়`)}
                         </span>
                       </div>
@@ -397,7 +397,7 @@ export function ExpensesTabView({
 
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <span className="tabular-nums font-bold text-sm text-slate-900 dark:text-white block">
+                        <span className="tabular-nums font-bold text-sm text-foreground dark:text-white block">
                           ৳{bill.amount.toLocaleString()}
                         </span>
                         <Badge
@@ -417,7 +417,7 @@ export function ExpensesTabView({
                         onClick={() => onOpenSpendModal(bill.category)}
                         className={`h-8 px-3 text-xs rounded-xl font-semibold ${
                           bill.status === 'PAID'
-                            ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                            ? 'bg-muted hover:bg-muted text-foreground dark:text-muted-foreground'
                             : 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
                         }`}
                       >

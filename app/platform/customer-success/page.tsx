@@ -46,10 +46,10 @@ export default function CustomerSuccessPage() {
   if (loading || !data) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-10 w-72 bg-slate-800 rounded-xl" />
+        <div className="h-10 w-72 bg-secondary rounded-xl" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-slate-900 border border-slate-800 rounded-2xl" />
+            <div key={i} className="h-32 bg-foreground border border-border rounded-2xl" />
           ))}
         </div>
       </div>
@@ -59,7 +59,7 @@ export default function CustomerSuccessPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-amber-400" />
@@ -69,7 +69,7 @@ export default function CustomerSuccessPage() {
             <Zap className="h-7 w-7 text-amber-400" />
             Customer Success &amp; Lifecycle
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Monitor printing tenant onboarding, identify churn risks before cancellation, and guide trial conversions.
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function CustomerSuccessPage() {
           size="sm"
           variant="outline"
           onClick={loadData}
-          className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9"
+          className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
         >
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
           Refresh
@@ -87,8 +87,8 @@ export default function CustomerSuccessPage() {
 
       {/* Summary KPI Highlights */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-slate-900 border-slate-800 p-4">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Active Trials</span>
             <Clock className="h-4 w-4 text-cyan-400" />
           </div>
@@ -96,8 +96,8 @@ export default function CustomerSuccessPage() {
           <div className="text-2xs text-cyan-400 mt-1">In trial evaluation window</div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-4">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Inactive (&gt;7 Days)</span>
             <UserX className="h-4 w-4 text-amber-400" />
           </div>
@@ -105,8 +105,8 @@ export default function CustomerSuccessPage() {
           <div className="text-2xs text-amber-400 mt-1">No orders or invoices logged</div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-4">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>At-Risk Accounts</span>
             <AlertTriangle className="h-4 w-4 text-red-400" />
           </div>
@@ -114,8 +114,8 @@ export default function CustomerSuccessPage() {
           <div className="text-2xs text-red-400 mt-1">Billing or storage alerts</div>
         </Card>
 
-        <Card className="bg-slate-900 border-slate-800 p-4">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>High-Growth Accounts</span>
             <TrendingUp className="h-4 w-4 text-emerald-400" />
           </div>
@@ -125,18 +125,18 @@ export default function CustomerSuccessPage() {
       </div>
 
       {/* 1. Trial Ending Soon Section */}
-      <Card className="bg-slate-900 border-slate-800">
-        <CardHeader className="pb-3 border-b border-slate-800">
+      <Card className="bg-foreground border-border">
+        <CardHeader className="pb-3 border-b border-border">
           <CardTitle className="text-base text-white font-bold flex items-center gap-2">
             <Clock className="h-4 w-4 text-cyan-400" />
             <span>Free Evaluation Trials ({data.trials_ending_soon.length})</span>
           </CardTitle>
-          <CardDescription className="text-xs text-slate-400">
+          <CardDescription className="text-xs text-muted-foreground">
             Tenants evaluating PrintERP. Check feature adoption and assist conversion to paid plans.
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="p-0 divide-y divide-slate-800">
+        <CardContent className="p-0 divide-y divide-border">
           {data.trials_ending_soon.map(({ company, trial_day, total_days, expires_in_days, features_used, last_meaningful_activity }) => (
             <div key={company.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs hover:bg-slate-800/30 transition-colors">
               <div className="space-y-1.5 flex-1">
@@ -149,8 +149,8 @@ export default function CustomerSuccessPage() {
                   </span>
                 </div>
 
-                <div className="text-slate-400 flex items-center gap-2 flex-wrap text-2xs">
-                  <span>Owner: <strong className="text-slate-200">{company.owner_name}</strong></span>
+                <div className="text-muted-foreground flex items-center gap-2 flex-wrap text-2xs">
+                  <span>Owner: <strong className="text-foreground">{company.owner_name}</strong></span>
                   <span>•</span>
                   <span>Phone: <strong className="text-emerald-400 tabular-nums">{company.owner_phone}</strong></span>
                   <span>•</span>
@@ -160,9 +160,9 @@ export default function CustomerSuccessPage() {
                 </div>
 
                 <div className="flex items-center gap-1.5 text-2xs pt-1">
-                  <span className="text-slate-500">Features Adopted:</span>
+                  <span className="text-muted-foreground">Features Adopted:</span>
                   {features_used.map((f) => (
-                    <span key={f} className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-medium">
+                    <span key={f} className="px-1.5 py-0.2 rounded bg-secondary text-muted-foreground font-medium">
                       ✓ {f}
                     </span>
                   ))}
@@ -172,7 +172,7 @@ export default function CustomerSuccessPage() {
               <div className="flex items-center gap-2 shrink-0">
                 <div className="text-right mr-2">
                   <div className="font-bold text-amber-300">Expires in {expires_in_days} days</div>
-                  <div className="text-2xs text-slate-500 tabular-nums">Last active: {company.last_activity}</div>
+                  <div className="text-2xs text-muted-foreground tabular-nums">Last active: {company.last_activity}</div>
                 </div>
 
                 <Link
@@ -188,18 +188,18 @@ export default function CustomerSuccessPage() {
       </Card>
 
       {/* 2. Inactive Tenants Section */}
-      <Card className="bg-slate-900 border-slate-800">
-        <CardHeader className="pb-3 border-b border-slate-800">
+      <Card className="bg-foreground border-border">
+        <CardHeader className="pb-3 border-b border-border">
           <CardTitle className="text-base text-white font-bold flex items-center gap-2">
             <UserX className="h-4 w-4 text-amber-400" />
             <span>Inactive Tenants (No Meaningful Activity for 7+ Days)</span>
           </CardTitle>
-          <CardDescription className="text-xs text-slate-400">
+          <CardDescription className="text-xs text-muted-foreground">
             Monitoring mechanism for churn detection. Does NOT automatically suspend accounts.
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="p-0 divide-y divide-slate-800 text-xs">
+        <CardContent className="p-0 divide-y divide-border text-xs">
           {data.inactive_tenants.map(({ company, days_inactive, last_meaningful_activity }) => (
             <div key={company.id} className="p-4 flex items-center justify-between hover:bg-slate-800/30 transition-colors">
               <div className="space-y-1">
@@ -207,11 +207,11 @@ export default function CustomerSuccessPage() {
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white text-sm hover:text-indigo-400">
                     {company.name}
                   </Link>
-                  <span className="capitalize px-2 py-0.5 rounded bg-slate-800 text-slate-300 tabular-nums text-2xs">
+                  <span className="capitalize px-2 py-0.5 rounded bg-secondary text-muted-foreground tabular-nums text-2xs">
                     {company.plan}
                   </span>
                 </div>
-                <div className="text-slate-400 text-2xs">
+                <div className="text-muted-foreground text-2xs">
                   Owner: {company.owner_name} ({company.owner_phone}) • {company.hub}
                 </div>
                 <div className="text-2xs text-amber-400">
@@ -222,12 +222,12 @@ export default function CustomerSuccessPage() {
               <div className="flex items-center gap-3">
                 <div className="text-right tabular-nums">
                   <div className="font-bold text-red-400 text-sm">{days_inactive} Days</div>
-                  <div className="text-2xs text-slate-500">Inactive</div>
+                  <div className="text-2xs text-muted-foreground">Inactive</div>
                 </div>
 
                 <Link
                   href={`/platform/companies/${company.id}`}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700"
+                  className="px-3 py-1.5 rounded-xl bg-secondary hover:bg-slate-700 text-foreground font-semibold text-xs border border-border"
                 >
                   Inspect →
                 </Link>
@@ -240,14 +240,14 @@ export default function CustomerSuccessPage() {
       {/* 3. At Risk & High Growth Split */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* At Risk Accounts */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3 border-b border-slate-800">
+        <Card className="bg-foreground border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm text-white font-bold flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-400" />
               <span>At-Risk Accounts ({data.at_risk_tenants.length})</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-slate-800 text-xs">
+          <CardContent className="p-0 divide-y divide-border text-xs">
             {data.at_risk_tenants.map(({ company, risk_score, reasons }) => (
               <div key={company.id} className="p-3.5 space-y-1 hover:bg-slate-800/30 transition-colors">
                 <div className="flex items-center justify-between">
@@ -258,7 +258,7 @@ export default function CustomerSuccessPage() {
                     Risk {risk_score}%
                   </span>
                 </div>
-                <div className="text-2xs text-slate-400 space-y-0.5">
+                <div className="text-2xs text-muted-foreground space-y-0.5">
                   {reasons.map((r, i) => (
                     <div key={i} className="text-amber-300/90">• {r}</div>
                   ))}
@@ -269,21 +269,21 @@ export default function CustomerSuccessPage() {
         </Card>
 
         {/* High Growth Accounts */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="pb-3 border-b border-slate-800">
+        <Card className="bg-foreground border-border">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm text-white font-bold flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-emerald-400" />
               <span>High-Growth Accounts ({data.high_growth_tenants.length})</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-slate-800 text-xs">
+          <CardContent className="p-0 divide-y divide-border text-xs">
             {data.high_growth_tenants.map(({ company, growth_rate_pct, order_volume }) => (
               <div key={company.id} className="p-3.5 flex items-center justify-between hover:bg-slate-800/30 transition-colors">
                 <div>
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white hover:text-emerald-300">
                     {company.name}
                   </Link>
-                  <div className="text-2xs text-slate-400 mt-0.5">
+                  <div className="text-2xs text-muted-foreground mt-0.5">
                     {order_volume.toLocaleString()} orders logged this month • {company.plan.toUpperCase()}
                   </div>
                 </div>

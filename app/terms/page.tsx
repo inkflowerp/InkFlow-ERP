@@ -12,12 +12,12 @@ export default function TermsOfServicePage() {
   const { tBilingual } = useI18n()
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-white font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-foreground text-slate-100 selection:bg-cyan-500 selection:text-white font-sans antialiased overflow-x-hidden">
       <MarketingNavbar onOpenDemo={() => setDemoOpen(true)} />
 
       <main className="pt-20">
         {/* Banner */}
-        <div className="py-16 bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800 text-center px-4">
+        <div className="py-16 bg-gradient-to-b from-slate-900 to-slate-950 border-b border-border text-center px-4">
           <div className="max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/30">
               Terms & Agreements
@@ -25,7 +25,7 @@ export default function TermsOfServicePage() {
             <h1 className="text-4xl sm:text-5xl font-black text-white bangla-text">
               {tBilingual('Terms of Service & Subscription', 'ব্যবহারের শর্তাবলী ও সাবস্ক্রিপশন')}
             </h1>
-            <p className="text-slate-400 text-base max-w-xl mx-auto leading-relaxed bangla-text">
+            <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed bangla-text">
               {tBilingual(
                 'Clear, fair terms governing the usage, billing, and support of the PrintERP SaaS platform.',
                 'প্রিন্টইআরপি প্ল্যাটফর্ম ব্যবহার ও সেবার নীতিমালা।'
@@ -35,7 +35,7 @@ export default function TermsOfServicePage() {
         </div>
 
         {/* Content */}
-        <div className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 text-sm text-slate-300 leading-relaxed">
+        <div className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 text-sm text-muted-foreground leading-relaxed">
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Scale className="h-5 w-5 text-cyan-400" />

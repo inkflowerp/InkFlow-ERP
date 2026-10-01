@@ -59,7 +59,7 @@ export function ThemeToggle({
         aria-checked={isDark}
         onClick={toggleTheme}
         className={cn(
-          'relative inline-flex shrink-0 cursor-pointer rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+          'relative inline-flex shrink-0 cursor-pointer rounded-full border border-border bg-muted transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
           size === 'sm' ? 'h-7 w-12 p-0.5' : 'h-8 w-14 p-1',
           className
         )}
@@ -74,7 +74,7 @@ export function ThemeToggle({
       >
         <span
           className={cn(
-            'flex items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow-xs transition-transform duration-200 ease-in-out',
+            'flex items-center justify-center rounded-full bg-card shadow-xs transition-transform duration-200 ease-in-out',
             size === 'sm' ? 'h-5.5 w-5.5' : 'h-6 w-6',
             isDark ? (size === 'sm' ? 'translate-x-5' : 'translate-x-6') : 'translate-x-0'
           )}

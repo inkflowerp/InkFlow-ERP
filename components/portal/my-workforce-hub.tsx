@@ -173,7 +173,7 @@ export function MyWorkforceHub() {
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black bangla-text">
               {employee ? tBilingual(employee.name, employee.name_bn || employee.name) : 'Team Member'}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               <span className="font-semibold text-white">{employee?.role || 'Print Operator'}</span> •{' '}
               <span className="capitalize">{employee?.department || 'printing'} Department</span> •{' '}
               <span className="capitalize">{employee?.employee_type || 'permanent'}</span>
@@ -181,7 +181,7 @@ export function MyWorkforceHub() {
           </div>
 
           {/* Today's Punch Station */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-4 sm:p-4.5 min-w-[260px] text-center md:text-right space-y-2.5">
+          <div className="bg-card/10 backdrop-blur-md border border-white/15 rounded-xl p-4 sm:p-4.5 min-w-[260px] text-center md:text-right space-y-2.5">
             <div className="text-xs text-blue-200 flex items-center justify-center md:justify-end gap-1.5 font-medium">
               <Clock className="h-3.5 w-3.5 text-cyan-400" />
               <span>{tBilingual('Today’s Shift Status', 'আজকের শিফট স্ট্যাটাস')}</span>
@@ -245,17 +245,17 @@ export function MyWorkforceHub() {
       {/* 2. 4 CORE METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Attendance & Late */}
-        <Card className="border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-400 transition-colors">
+        <Card className="border-border shadow-xs hover:border-blue-400 transition-colors">
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
               <span className="font-semibold">{tBilingual('This Month Attendance', 'চলতি মাসের হাজিরা')}</span>
               <Calendar className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="text-2xl font-black tabular-nums text-slate-900 dark:text-slate-100">
-              {presentDaysCount} <span className="text-xs font-normal text-slate-500">/ {myMonthAttendances.length || 26} {tBilingual('Days', 'দিন')}</span>
+            <div className="text-2xl font-black tabular-nums text-foreground dark:text-foreground">
+              {presentDaysCount} <span className="text-xs font-normal text-muted-foreground">/ {myMonthAttendances.length || 26} {tBilingual('Days', 'দিন')}</span>
             </div>
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
-              <span className={lateDaysCount > 0 ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-500'}>
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-border">
+              <span className={lateDaysCount > 0 ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-muted-foreground'}>
                 {lateDaysCount} {tBilingual('Late Arrivals', 'দিন লেট')}
               </span>
               {totalLateMinutes > 0 && (
@@ -268,17 +268,17 @@ export function MyWorkforceHub() {
         </Card>
 
         {/* Overtime (OT) */}
-        <Card className="border-slate-200 dark:border-slate-800 shadow-xs hover:border-emerald-400 transition-colors">
+        <Card className="border-border shadow-xs hover:border-emerald-400 transition-colors">
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
               <span className="font-semibold">{tBilingual('Approved Overtime (OT)', 'অনুমোদিত ওভারটাইম')}</span>
               <Clock3 className="h-4 w-4 text-emerald-600" />
             </div>
             <div className="text-2xl font-black tabular-nums text-emerald-700 dark:text-emerald-400">
-              {approvedMonthOtHours} <span className="text-xs font-normal text-slate-500">Hours</span>
+              {approvedMonthOtHours} <span className="text-xs font-normal text-muted-foreground">Hours</span>
             </div>
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
-              <span className="text-slate-500">Rate: ৳{otHourlyRate}/hr</span>
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-border">
+              <span className="text-muted-foreground">Rate: ৳{otHourlyRate}/hr</span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                 +{formatBDT(totalOtEarnings)}
               </span>
@@ -287,17 +287,17 @@ export function MyWorkforceHub() {
         </Card>
 
         {/* Leave Balance */}
-        <Card className="border-slate-200 dark:border-slate-800 shadow-xs hover:border-purple-400 transition-colors">
+        <Card className="border-border shadow-xs hover:border-purple-400 transition-colors">
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
               <span className="font-semibold">{tBilingual('Leave Balance', 'ছুটির ব্যালেন্স')}</span>
               <CalendarRange className="h-4 w-4 text-purple-600" />
             </div>
             <div className="text-2xl font-black tabular-nums text-purple-700 dark:text-purple-400">
-              {remainingLeaves} <span className="text-xs font-normal text-slate-500">/ {allowedLeaves} {tBilingual('Left', 'বাকি')}</span>
+              {remainingLeaves} <span className="text-xs font-normal text-muted-foreground">/ {allowedLeaves} {tBilingual('Left', 'বাকি')}</span>
             </div>
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
-              <span className="text-slate-500">{consumedMonthLeaves} {tBilingual('used this month', 'দিন কাটা হয়েছে')}</span>
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-border">
+              <span className="text-muted-foreground">{consumedMonthLeaves} {tBilingual('used this month', 'দিন কাটা হয়েছে')}</span>
               <button
                 type="button"
                 onClick={() => setIsLeaveModalOpen(true)}
@@ -310,17 +310,17 @@ export function MyWorkforceHub() {
         </Card>
 
         {/* Salary & Advance */}
-        <Card className="border-slate-200 dark:border-slate-800 shadow-xs hover:border-indigo-400 transition-colors">
+        <Card className="border-border shadow-xs hover:border-indigo-400 transition-colors">
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
               <span className="font-semibold">{tBilingual('Estimated Net Salary', 'আনুমানিক নিট বেতন')}</span>
               <Wallet className="h-4 w-4 text-indigo-600" />
             </div>
             <div className="text-2xl font-black tabular-nums text-indigo-700 dark:text-indigo-400">
               {formatBDT(salaryStructure.netPayable)}
             </div>
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
-              <span className={currentAdvanceBalance > 0 ? 'text-amber-600 font-semibold' : 'text-slate-500'}>
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-border dark:border-border">
+              <span className={currentAdvanceBalance > 0 ? 'text-amber-600 font-semibold' : 'text-muted-foreground'}>
                 {tBilingual('Advance:', 'অগ্রিম:')} {formatBDT(currentAdvanceBalance)}
               </span>
               <button
@@ -336,14 +336,14 @@ export function MyWorkforceHub() {
       </div>
 
       {/* 3. TABS NAVIGATION */}
-      <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-1">
+      <div className="flex items-center gap-1.5 border-b border-border overflow-x-auto pb-1">
         <button
           type="button"
           onClick={() => setActiveTab('attendance')}
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'attendance'
               ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           {tBilingual('Daily Attendance & Lates', 'দৈনিক হাজিরা ও লেট লগ')}
@@ -355,7 +355,7 @@ export function MyWorkforceHub() {
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'overtime'
               ? 'bg-emerald-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           {tBilingual('Overtime Breakdown', 'ওভারটাইম হিসাব')}
@@ -367,7 +367,7 @@ export function MyWorkforceHub() {
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'leaves'
               ? 'bg-purple-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           {tBilingual('Leaves & Applications', 'ছুটি ও আবেদন')}
@@ -379,7 +379,7 @@ export function MyWorkforceHub() {
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'salary'
               ? 'bg-indigo-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           {tBilingual('Salary & Payslip', 'বেতন ও পে-স্লিপ')}
@@ -391,7 +391,7 @@ export function MyWorkforceHub() {
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'advances'
               ? 'bg-amber-600 text-white shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           {tBilingual('Advance Salary Ledger', 'অগ্রিম বেতন খতিয়ান')}
@@ -402,13 +402,13 @@ export function MyWorkforceHub() {
 
       {/* TAB 1: ATTENDANCE & LATE LOG */}
       {activeTab === 'attendance' && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+        <Card className="border-border shadow-xs">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                 {tBilingual('My Attendance & Punch History', 'আমার হাজিরা ও পাঞ্চিং ইতিহাস')}
               </CardTitle>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {tBilingual('Showing records for the current calendar month', 'চলতি মাসের প্রতিদিনের উপস্থিতি ও লেট বিবরণ')}
               </p>
             </div>
@@ -418,13 +418,13 @@ export function MyWorkforceHub() {
           </CardHeader>
           <CardContent className="p-0">
             {myAttendances.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 text-xs">
+              <div className="py-12 text-center text-muted-foreground text-xs">
                 {tBilingual('No attendance records logged yet this month.', 'এই মাসে এখনো কোনো হাজিরা রেকর্ড পাওয়া যায়নি।')}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
+                  <thead className="bg-muted text-muted-foreground border-b border-border uppercase text-2xs font-bold">
                     <tr>
                       <th className="px-4 py-3">{tBilingual('Date', 'তারিখ')}</th>
                       <th className="px-4 py-3">{tBilingual('Status', 'অবস্থা')}</th>
@@ -435,12 +435,12 @@ export function MyWorkforceHub() {
                       <th className="px-4 py-3 text-right">{tBilingual('Overtime', 'ওভারটাইম')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                  <tbody className="divide-y divide-border font-medium">
                     {myAttendances.map((att) => {
                       const isLate = att.status === 'late' || (att.late_minutes && att.late_minutes > 0)
                       return (
-                        <tr key={att.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                          <td className="px-4 py-3 tabular-nums font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                        <tr key={att.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                          <td className="px-4 py-3 tabular-nums font-bold text-foreground whitespace-nowrap">
                             {formatDate(att.attendance_date)}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
@@ -452,26 +452,26 @@ export function MyWorkforceHub() {
                                   ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                                   : att.status === 'absent'
                                   ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                                  : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                                  : 'bg-muted text-foreground dark:text-muted-foreground'
                               }`}
                             >
                               {att.status}
                             </Badge>
                           </td>
-                          <td className="px-4 py-3 tabular-nums text-slate-700 dark:text-slate-300">
+                          <td className="px-4 py-3 tabular-nums text-foreground dark:text-muted-foreground">
                             {att.check_in_time || '—'}
                           </td>
-                          <td className="px-4 py-3 tabular-nums text-slate-700 dark:text-slate-300">
+                          <td className="px-4 py-3 tabular-nums text-foreground dark:text-muted-foreground">
                             {att.check_out_time || '—'}
                           </td>
-                          <td className="px-4 py-3 text-right tabular-nums text-slate-900 dark:text-slate-100">
+                          <td className="px-4 py-3 text-right tabular-nums text-foreground dark:text-foreground">
                             {att.worked_duration_formatted || (att.worked_minutes ? `${Math.floor(att.worked_minutes / 60)}h ${att.worked_minutes % 60}m` : '—')}
                           </td>
                           <td className="px-4 py-3 text-right tabular-nums">
                             {isLate ? (
                               <span className="font-bold text-rose-600 dark:text-rose-400">+{att.late_minutes}m</span>
                             ) : (
-                              <span className="text-slate-400">0m</span>
+                              <span className="text-muted-foreground">0m</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right tabular-nums">
@@ -480,7 +480,7 @@ export function MyWorkforceHub() {
                                 {Math.round(((att.approved_ot_minutes || att.potential_ot_minutes || 0) / 60) * 10) / 10}h
                               </span>
                             ) : (
-                              <span className="text-slate-400">—</span>
+                              <span className="text-muted-foreground">—</span>
                             )}
                           </td>
                         </tr>
@@ -496,13 +496,13 @@ export function MyWorkforceHub() {
 
       {/* TAB 2: OVERTIME BREAKDOWN */}
       {activeTab === 'overtime' && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+        <Card className="border-border shadow-xs">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                 {tBilingual('My Overtime (OT) Sessions', 'আমার ওভারটাইম সেশনসমূহ')}
               </CardTitle>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {tBilingual(`Calculated at base hourly rate ৳${otHourlyRate}/hour`, `ঘণ্টাপ্রতি ওভারটাইম রেট ৳${otHourlyRate} অনুযায়ী গণনাকৃত`)}
               </p>
             </div>
@@ -512,13 +512,13 @@ export function MyWorkforceHub() {
           </CardHeader>
           <CardContent className="p-0">
             {myOvertimes.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 text-xs">
+              <div className="py-12 text-center text-muted-foreground text-xs">
                 {tBilingual('No extra overtime sessions recorded yet.', 'এখনো কোনো অতিরিক্ত ওভারটাইম সেশন জমা হয়নি।')}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
+                  <thead className="bg-muted text-muted-foreground border-b border-border uppercase text-2xs font-bold">
                     <tr>
                       <th className="px-4 py-3">{tBilingual('Date', 'তারিখ')}</th>
                       <th className="px-4 py-3">{tBilingual('Duration', 'সময়কাল')}</th>
@@ -528,16 +528,16 @@ export function MyWorkforceHub() {
                       <th className="px-4 py-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                  <tbody className="divide-y divide-border font-medium">
                     {myOvertimes.map((ot) => (
-                      <tr key={ot.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="px-4 py-3 tabular-nums font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                      <tr key={ot.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                        <td className="px-4 py-3 tabular-nums font-bold text-foreground whitespace-nowrap">
                           {formatDate(ot.ot_date)}
                         </td>
                         <td className="px-4 py-3 tabular-nums">
                           {ot.duration_hours || Math.round((ot.duration_minutes / 60) * 10) / 10} Hours
                         </td>
-                        <td className="px-4 py-3 max-w-xs truncate text-slate-600 dark:text-slate-400">
+                        <td className="px-4 py-3 max-w-xs truncate text-muted-foreground dark:text-muted-foreground">
                           {ot.reason || 'Late Production Run'}
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums">
@@ -571,13 +571,13 @@ export function MyWorkforceHub() {
 
       {/* TAB 3: LEAVES & APPLICATIONS */}
       {activeTab === 'leaves' && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+        <Card className="border-border shadow-xs">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                 {tBilingual('My Leaves & Applications', 'আমার ছুটি ও ছুটির আবেদন')}
               </CardTitle>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {tBilingual(`${allowedLeaves} monthly casual/sick leaves allocated`, `মাসে সর্বোচ্চ ${allowedLeaves} দিন বেতনসহ ছুটি অনুমোদিত`)}
               </p>
             </div>
@@ -592,13 +592,13 @@ export function MyWorkforceHub() {
           </CardHeader>
           <CardContent className="p-0">
             {myLeaves.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 text-xs">
+              <div className="py-12 text-center text-muted-foreground text-xs">
                 {tBilingual('No leave applications submitted yet.', 'এখনো কোনো ছুটির আবেদন করা হয়নি।')}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
+                  <thead className="bg-muted text-muted-foreground border-b border-border uppercase text-2xs font-bold">
                     <tr>
                       <th className="px-4 py-3">{tBilingual('Type', 'ছুটির ধরন')}</th>
                       <th className="px-4 py-3">{tBilingual('Date Range', 'তারিখ')}</th>
@@ -607,19 +607,19 @@ export function MyWorkforceHub() {
                       <th className="px-4 py-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                  <tbody className="divide-y divide-border font-medium">
                     {myLeaves.map((lv) => (
-                      <tr key={lv.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100 capitalize">
+                      <tr key={lv.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                        <td className="px-4 py-3 font-semibold text-foreground capitalize">
                           {lv.leave_type.replace(/_/g, ' ')}
                         </td>
-                        <td className="px-4 py-3 tabular-nums text-slate-700 dark:text-slate-300">
+                        <td className="px-4 py-3 tabular-nums text-foreground dark:text-muted-foreground">
                           {formatDate(lv.start_date)} {lv.start_date !== lv.end_date ? `to ${formatDate(lv.end_date)}` : ''}
                         </td>
                         <td className="px-4 py-3 text-center tabular-nums font-bold">
                           {lv.days_count} {tBilingual('Days', 'দিন')}
                         </td>
-                        <td className="px-4 py-3 max-w-xs truncate text-slate-600 dark:text-slate-400">
+                        <td className="px-4 py-3 max-w-xs truncate text-muted-foreground dark:text-muted-foreground">
                           {lv.reason}
                         </td>
                         <td className="px-4 py-3 text-center whitespace-nowrap">
@@ -649,13 +649,13 @@ export function MyWorkforceHub() {
       {activeTab === 'salary' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Earnings Breakdown */}
-          <Card className="md:col-span-2 border-slate-200 dark:border-slate-800 shadow-xs">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+          <Card className="md:col-span-2 border-border shadow-xs">
+            <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                   {tBilingual('Monthly Salary Breakdown', 'মাসিক বেতন ও ভাতার বিবরণ')}
                 </CardTitle>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {tBilingual('Standard monthly payout structure and allowances', 'বেতন কাঠামো ও অতিরিক্ত ভাতা')}
                 </p>
               </div>
@@ -671,29 +671,29 @@ export function MyWorkforceHub() {
             </CardHeader>
             <CardContent className="p-4 space-y-3">
               <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 font-semibold">
+                <div className="flex items-center justify-between py-1.5 border-b border-border font-semibold">
                   <span>{tBilingual('Basic Salary', 'মূল বেতন (Basic)')}</span>
-                  <span className="tabular-nums text-slate-900 dark:text-slate-100">{formatBDT(salaryStructure.basic)}</span>
+                  <span className="tabular-nums text-foreground dark:text-foreground">{formatBDT(salaryStructure.basic)}</span>
                 </div>
-                <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+                <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground dark:text-muted-foreground">
                   <span>{tBilingual('House Rent Allowance (20%)', 'বাড়ি ভাড়া ভাতা (২০%)')}</span>
                   <span className="tabular-nums">{formatBDT(salaryStructure.house)}</span>
                 </div>
-                <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+                <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground dark:text-muted-foreground">
                   <span>{tBilingual('Medical Allowance (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
                   <span className="tabular-nums">{formatBDT(salaryStructure.medical)}</span>
                 </div>
-                <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+                <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground dark:text-muted-foreground">
                   <span>{tBilingual('Transport Allowance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
                   <span className="tabular-nums">{formatBDT(salaryStructure.transport)}</span>
                 </div>
                 {salaryStructure.totalOtEarnings > 0 && (
-                  <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <div className="flex items-center justify-between py-1.5 border-b border-border text-emerald-600 dark:text-emerald-400 font-semibold">
                     <span>{tBilingual('Overtime (OT) Bonus', 'ওভারটাইম অর্জন')}</span>
                     <span className="tabular-nums">+{formatBDT(salaryStructure.totalOtEarnings)}</span>
                   </div>
                 )}
-                <div className="flex items-center justify-between py-2 border-b-2 border-slate-300 dark:border-slate-700 font-bold text-slate-900 dark:text-slate-100">
+                <div className="flex items-center justify-between py-2 border-b-2 border-input font-bold text-foreground dark:text-foreground">
                   <span>{tBilingual('Gross Earnings', 'মোট অর্জন (Gross)')}</span>
                   <span className="tabular-nums text-emerald-600 dark:text-emerald-400">{formatBDT(salaryStructure.grossEarnings)}</span>
                 </div>
@@ -701,7 +701,7 @@ export function MyWorkforceHub() {
 
               {/* Deductions */}
               <div className="space-y-1.5 text-xs pt-2">
-                <span className="font-bold text-slate-700 dark:text-slate-300">{tBilingual('Deductions', 'কর্তনসমূহ')}:</span>
+                <span className="font-bold text-foreground dark:text-muted-foreground">{tBilingual('Deductions', 'কর্তনসমূহ')}:</span>
                 <div className="flex items-center justify-between py-1 text-rose-600 dark:text-rose-400 font-medium">
                   <span>{tBilingual('Advance Salary Deduction', 'অগ্রিম বেতন কর্তন')}</span>
                   <span className="tabular-nums">-{formatBDT(salaryStructure.advanceDeduction)}</span>
@@ -727,15 +727,15 @@ export function MyWorkforceHub() {
               <div className="text-3xl font-black tabular-nums text-indigo-900 dark:text-indigo-200">
                 {formatBDT(salaryStructure.netPayable)}
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 {tBilingual(
                   'Salaries are disbursed between the 1st and 7th of every calendar month into your registered MFS or Bank Account.',
                   'প্রতি মাসের ১ থেকে ৭ তারিখের মধ্যে ব্যাংক বা বিকাশ/নগদে বেতন পরিশোধ করা হয়।'
                 )}
               </p>
-              <div className="pt-2 border-t border-indigo-200 dark:border-indigo-800 text-xs text-slate-500">
+              <div className="pt-2 border-t border-indigo-200 dark:border-indigo-800 text-xs text-muted-foreground">
                 <span>Payment Mode: </span>
-                <span className="font-bold text-slate-900 dark:text-slate-100 capitalize">
+                <span className="font-bold text-foreground capitalize">
                   {employee?.payment_method || 'cash'}
                 </span>
               </div>
@@ -746,13 +746,13 @@ export function MyWorkforceHub() {
 
       {/* TAB 5: ADVANCES */}
       {activeTab === 'advances' && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+        <Card className="border-border shadow-xs">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              <CardTitle className="text-sm font-bold text-foreground dark:text-foreground">
                 {tBilingual('My Salary Advance Vouchers', 'আমার অগ্রিম বেতন খতিয়ান')}
               </CardTitle>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {tBilingual(`Current active advance balance: ৳${currentAdvanceBalance.toLocaleString()}`, `বর্তমান অবশিষ্ট অগ্রিম বকেয়া: ৳${currentAdvanceBalance.toLocaleString()}`)}
               </p>
             </div>
@@ -767,13 +767,13 @@ export function MyWorkforceHub() {
           </CardHeader>
           <CardContent className="p-0">
             {myAdvances.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 text-xs">
+              <div className="py-12 text-center text-muted-foreground text-xs">
                 {tBilingual('No salary advance records on file.', 'এখনো কোনো অগ্রিম বেতনের রেকর্ড নেই।')}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 uppercase text-2xs font-bold">
+                  <thead className="bg-muted text-muted-foreground border-b border-border uppercase text-2xs font-bold">
                     <tr>
                       <th className="px-4 py-3">{tBilingual('Voucher #', 'ভাউচার')}</th>
                       <th className="px-4 py-3">{tBilingual('Date', 'তারিখ')}</th>
@@ -782,9 +782,9 @@ export function MyWorkforceHub() {
                       <th className="px-4 py-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                  <tbody className="divide-y divide-border font-medium">
                     {myAdvances.map((adv) => (
-                      <tr key={adv.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                      <tr key={adv.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                         <td className="px-4 py-3 tabular-nums font-bold text-amber-700 dark:text-amber-400">
                           {adv.advance_voucher_number}
                         </td>
@@ -801,7 +801,7 @@ export function MyWorkforceHub() {
                           <Badge
                             className={`text-2xs uppercase font-bold ${
                               adv.is_settled
-                                ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                                ? 'bg-muted text-foreground dark:text-muted-foreground'
                                 : adv.status === 'disbursed'
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                 : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
@@ -827,7 +827,7 @@ export function MyWorkforceHub() {
             <DialogTitle className="text-base font-bold bangla-text">
               {tBilingual('Apply for Employee Leave', 'ছুটির জন্য আবেদন করুন')}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
+            <DialogDescription className="text-xs text-muted-foreground">
               {tBilingual('Your application will be sent to the department supervisor for review.', 'আবেদনটি অনুমোদনের জন্য সুপারিভাইজারের কাছে পাঠানো হবে।')}
             </DialogDescription>
           </DialogHeader>
@@ -838,7 +838,7 @@ export function MyWorkforceHub() {
               <select
                 value={leaveForm.leave_type}
                 onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value as any })}
-                className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-background"
+                className="w-full h-9 px-3 rounded-lg border border-input bg-background"
               >
                 <option value="casual_leave">Casual Leave (নৈমিত্তিক ছুটি)</option>
                 <option value="sick_leave">Sick Leave (অসুস্থতাজনিত ছুটি)</option>
@@ -877,7 +877,7 @@ export function MyWorkforceHub() {
                 onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
                 rows={3}
                 placeholder="Family emergency / Sick / Vacation..."
-                className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-xs"
+                className="w-full p-2.5 rounded-lg border border-input bg-background text-xs"
                 required
               />
             </div>
@@ -901,7 +901,7 @@ export function MyWorkforceHub() {
             <DialogTitle className="text-base font-bold bangla-text">
               {tBilingual('Request Salary Advance', 'অগ্রিম বেতনের আবেদন')}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
+            <DialogDescription className="text-xs text-muted-foreground">
               {tBilingual('Advance amounts are deducted in subsequent monthly payroll cycles.', 'অগ্রিম বেতনের টাকা পরবর্তী মাসিক বেতন থেকে কর্তন করা হবে।')}
             </DialogDescription>
           </DialogHeader>
@@ -927,7 +927,7 @@ export function MyWorkforceHub() {
                 onChange={(e) => setAdvanceForm({ ...advanceForm, reason: e.target.value })}
                 rows={3}
                 placeholder="Emergency medical expenses / House rent / Personal..."
-                className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-xs"
+                className="w-full p-2.5 rounded-lg border border-input bg-background text-xs"
                 required
               />
             </div>
@@ -956,13 +956,13 @@ export function MyWorkforceHub() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4 text-xs">
+          <div className="border border-border rounded-xl p-4 space-y-4 text-xs">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
-                <div className="font-black text-sm text-slate-900 dark:text-slate-100">{employee?.name}</div>
-                <div className="text-slate-500">{employee?.role} • {employee?.employee_id_number}</div>
+                <div className="font-black text-sm text-foreground dark:text-foreground">{employee?.name}</div>
+                <div className="text-muted-foreground">{employee?.role} • {employee?.employee_id_number}</div>
               </div>
-              <div className="text-right text-slate-500 tabular-nums">
+              <div className="text-right text-muted-foreground tabular-nums">
                 <div>{employee?.branch_name || 'Main Press Hub'}</div>
                 <div>Status: Active</div>
               </div>
@@ -973,15 +973,15 @@ export function MyWorkforceHub() {
                 <span>Basic Salary:</span>
                 <span className="tabular-nums font-bold">{formatBDT(salaryStructure.basic)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-muted-foreground">
                 <span>House Rent Allowance:</span>
                 <span className="tabular-nums">{formatBDT(salaryStructure.house)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-muted-foreground">
                 <span>Medical Allowance:</span>
                 <span className="tabular-nums">{formatBDT(salaryStructure.medical)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-muted-foreground">
                 <span>Transport Allowance:</span>
                 <span className="tabular-nums">{formatBDT(salaryStructure.transport)}</span>
               </div>
@@ -1010,7 +1010,7 @@ export function MyWorkforceHub() {
               )}
             </div>
 
-            <div className="border-t-2 border-slate-900 dark:border-slate-100 pt-2 flex justify-between font-black text-sm text-slate-900 dark:text-slate-100">
+            <div className="border-t-2 border-slate-900 pt-2 flex justify-between font-black text-sm text-foreground dark:text-foreground">
               <span>NET PAYABLE:</span>
               <span className="tabular-nums text-base text-indigo-600 dark:text-indigo-400">
                 {formatBDT(salaryStructure.netPayable)}

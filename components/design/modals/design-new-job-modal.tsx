@@ -135,13 +135,13 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 p-6 shadow-2xl">
-        <DialogHeader className="border-b border-slate-100 dark:border-slate-800 pb-3">
+      <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-2xl">
+        <DialogHeader className="border-b border-border pb-3">
           <DialogTitle className="text-lg font-bold flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
             <PlusCircle className="h-5 w-5" />
             <span>নতুন আর্টওয়ার্ক বা ডিজাইন জব এন্ট্রি (New Design Entry)</span>
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
+          <DialogDescription className="text-xs text-muted-foreground">
             দোকানে বসা কাস্টমার বা সরাসরি ডিজাইন রিকোয়ারমেন্ট যুক্ত করুন
           </DialogDescription>
         </DialogHeader>
@@ -150,11 +150,11 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Customer Selector */}
             <div className="space-y-1">
-              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">কাস্টমার (Customer):</Label>
+              <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">কাস্টমার (Customer):</Label>
               <select
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-800 dark:text-slate-200"
+                className="w-full text-xs font-semibold rounded-lg border border-input bg-muted p-2.5 text-foreground dark:text-foreground"
               >
                 {customers.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -166,11 +166,11 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
 
             {/* Priority */}
             <div className="space-y-1">
-              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">জরুরিত্ব (Priority):</Label>
+              <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">জরুরিত্ব (Priority):</Label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as DesignPriority)}
-                className="w-full text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-800 dark:text-slate-200"
+                className="w-full text-xs font-semibold rounded-lg border border-input bg-muted p-2.5 text-foreground dark:text-foreground"
               >
                 <option value="normal">সাধারণ (Normal)</option>
                 <option value="urgent">জরুরী (Urgent - Today)</option>
@@ -181,7 +181,7 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
 
           {/* Job Title */}
           <div className="space-y-1">
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
               ডিজাইন বা কাজের নাম (Artwork Title): *
             </Label>
             <Input
@@ -189,37 +189,37 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="যেমন: ৩×১০ ফিট ব্যানার, বিজনেস কার্ড, ৪ কালার লিফলেট..."
-              className="text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+              className="text-xs bg-muted border-input dark:border-border"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Dimensions */}
             <div className="space-y-1">
-              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">সাইজ / পরিমাপ (Dimensions):</Label>
+              <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">সাইজ / পরিমাপ (Dimensions):</Label>
               <Input
                 value={dimensions}
                 onChange={(e) => setDimensions(e.target.value)}
                 placeholder="যেমন: 3.5 x 2 in, 10 x 3 ft, A4"
-                className="text-xs tabular-nums bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                className="text-xs tabular-nums bg-muted border-input dark:border-border"
               />
             </div>
 
             {/* Material */}
             <div className="space-y-1">
-              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">মেটেরিয়াল (Material):</Label>
+              <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">মেটেরিয়াল (Material):</Label>
               <Input
                 value={material}
                 onChange={(e) => setMaterial(e.target.value)}
                 placeholder="যেমন: Star Flex 320g, 300 GSM Art Card"
-                className="text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                className="text-xs bg-muted border-input dark:border-border"
               />
             </div>
           </div>
 
           {/* Instructions */}
           <div className="space-y-1">
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
               ডিজাইন ব্রিফ ও কাস্টমারের নির্দেশনা (Design Brief / Notes):
             </Label>
             <Textarea
@@ -227,14 +227,14 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="কাস্টমারের কালার পছন্দ, ফন্ট, লোগো ও টেক্সটের বিবরণ..."
-              className="text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+              className="text-xs bg-muted border-input dark:border-border"
             />
           </div>
 
           {/* Quick Paste or Image URL */}
-          <div className="space-y-1 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="space-y-1 bg-muted p-3 rounded-lg border border-border dark:border-border">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                 <span>রেফারেন্স আর্টওয়ার্ক বা প্রিভিউ (Artwork Image / Proof):</span>
               </Label>
@@ -251,18 +251,18 @@ export const DesignNewJobModal = React.memo(function DesignNewJobModal({
               value={proofUrl}
               onChange={(e) => setProofUrl(e.target.value)}
               placeholder="https://... বা স্ক্রিনশট পেস্ট করুন"
-              className="text-xs tabular-nums bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+              className="text-xs tabular-nums bg-card border-input dark:border-border"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+          <div className="flex items-center justify-between border-t border-border pt-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="text-xs text-slate-600 dark:text-slate-400"
+              className="text-xs text-muted-foreground dark:text-muted-foreground"
             >
               বাতিল (Cancel)
             </Button>

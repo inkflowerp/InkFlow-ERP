@@ -206,7 +206,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card className="border-slate-200/80 shadow-2xl dark:border-slate-800">
+    <Card className="border-border shadow-2xl dark:border-border">
       {/* STEP 1: Enter Email */}
       {step === 'ENTER_EMAIL' && (
         <>
@@ -244,7 +244,7 @@ export default function ForgotPasswordPage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+            <CardFooter className="flex flex-col gap-3 border-t border-border pt-4">
               <Button
                 type="submit"
                 className="w-full justify-center bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
@@ -256,7 +256,7 @@ export default function ForgotPasswordPage() {
 
               <Link
                 href="/login"
-                className="flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 pt-1"
+                className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground pt-1"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 <span>{t('auth.back_to_login') || 'Back to Login'}</span>
@@ -300,7 +300,7 @@ export default function ForgotPasswordPage() {
               )}
 
               <div className="space-y-2">
-                <label className="block text-center text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <label className="block text-center text-xs font-semibold text-foreground dark:text-muted-foreground">
                   {t('auth.enter_verification_code') || 'Enter 6-Digit Code'}
                 </label>
                 <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
@@ -317,7 +317,7 @@ export default function ForgotPasswordPage() {
                       value={digit}
                       onChange={(e) => handleDigitChange(idx, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(idx, e)}
-                      className="h-12 w-10 sm:h-14 sm:w-12 rounded-lg border border-slate-300 bg-white text-center text-xl font-bold text-slate-900 shadow-sm transition-all focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      className="h-12 w-10 sm:h-14 sm:w-12 rounded-lg border border-input bg-card text-center text-xl font-bold text-foreground shadow-sm transition-all focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 dark:text-foreground"
                       aria-label={`Digit ${idx + 1}`}
                       autoFocus={idx === 0}
                     />
@@ -326,7 +326,7 @@ export default function ForgotPasswordPage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-3.5 border-t border-slate-100 dark:border-slate-800 pt-4">
+            <CardFooter className="flex flex-col gap-3.5 border-t border-border pt-4">
               <Button
                 type="submit"
                 className="w-full justify-center gap-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
@@ -337,11 +337,11 @@ export default function ForgotPasswordPage() {
               </Button>
 
               <div className="flex items-center justify-between w-full pt-1 text-xs">
-                <span className="text-slate-500 dark:text-slate-400">
+                <span className="text-muted-foreground dark:text-muted-foreground">
                   {t('auth.didnt_receive_code') || "Didn't receive it?"}
                 </span>
                 {cooldown > 0 ? (
-                  <span className="font-semibold text-slate-400 dark:text-slate-500 bangla-text">
+                  <span className="font-semibold text-muted-foreground bangla-text">
                     {locale === 'bn' ? `পুনরায় পাঠানো যাবে (${cooldown} সেকেন্ড)` : `Resend in ${cooldown}s`}
                   </span>
                 ) : (
@@ -361,7 +361,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setStep('ENTER_EMAIL')}
-                  className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   ← {locale === 'bn' ? 'ইমেইল পরিবর্তন করুন' : 'Change Email'}
                 </button>
@@ -420,7 +420,7 @@ export default function ForgotPasswordPage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+            <CardFooter className="flex flex-col gap-3 border-t border-border pt-4">
               <Button
                 type="submit"
                 className="w-full justify-center bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
@@ -440,10 +440,10 @@ export default function ForgotPasswordPage() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
             <CheckCircle2 className="h-7 w-7" />
           </div>
-          <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+          <h4 className="text-lg font-bold text-foreground dark:text-foreground">
             {t('auth.password_updated_title') || 'Password Updated'}
           </h4>
-          <p className="text-xs text-slate-500 max-w-xs mx-auto">
+          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
             {t('auth.password_updated_subtitle') || 'Your password has been updated successfully. You can now sign in with your new password.'}
           </p>
           <div className="pt-3">

@@ -17,7 +17,7 @@ export function FAQSection() {
   }
 
   return (
-    <section id="faq" className="py-16 sm:py-24 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200/80 dark:border-slate-800">
+    <section id="faq" className="py-16 sm:py-24 bg-muted border-t border-border dark:border-border">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-14">
         {/* Section Header */}
         <div className="text-center space-y-3 sm:space-y-4">
@@ -26,11 +26,11 @@ export function FAQSection() {
             <span>{tBilingual('Clear Answers', 'সাধারণ প্রশ্নোত্তর')}</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight bangla-text">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground dark:text-white tracking-tight leading-tight bangla-text">
             {tBilingual('Frequently Asked Questions.', 'সচরাচর জিজ্ঞাসিত প্রশ্নোত্তর।')}
           </h2>
 
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto leading-relaxed bangla-text">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
               'Clear, direct answers about PrintERP features, roll tracking, Bengali localization, BDT pricing, and getting started.',
               'প্রিন্টইআরপির ফিচার, রোল স্টক, বাংলা ভাষা, টাকা হিসাব এবং সহজে শুরু করার স্পষ্ট উত্তর।'
@@ -46,7 +46,7 @@ export function FAQSection() {
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden transition-all shadow-2xs"
+                className="rounded-xl border border-border bg-card overflow-hidden transition-all shadow-2xs"
               >
                 <button
                   type="button"
@@ -54,14 +54,14 @@ export function FAQSection() {
                   className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white bangla-text pr-2">
+                  <span className="text-sm sm:text-base font-bold text-foreground dark:text-white bangla-text pr-2">
                     {tBilingual(faq.qEn, faq.qBn)}
                   </span>
                   <div
                     className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200 ${
                       isOpen
                         ? 'rotate-180 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                        : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     <ChevronDown className="h-4 w-4" />
@@ -69,7 +69,7 @@ export function FAQSection() {
                 </button>
 
                 {isOpen && (
-                  <div className="px-4 sm:px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800/60 bangla-text animate-in fade-in-0 duration-150">
+                  <div className="px-4 sm:px-5 pb-5 pt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border dark:border-border/60 bangla-text animate-in fade-in-0 duration-150">
                     <p>{tBilingual(faq.aEn, faq.aBn)}</p>
                   </div>
                 )}

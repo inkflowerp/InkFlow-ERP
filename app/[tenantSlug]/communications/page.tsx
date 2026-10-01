@@ -231,49 +231,49 @@ export default function CommunicationsHubPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="p-4 border-l-4 border-l-blue-600">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-semibold text-slate-500">Unread In-App Alerts</span>
+            <span className="text-xs font-semibold text-muted-foreground">Unread In-App Alerts</span>
             {unreadCount > 0 && (
               <span className="h-2 w-2 rounded-full bg-blue-600 animate-ping" />
             )}
           </div>
           <div className="text-2xl font-black text-blue-600 mt-1">{unreadCount} Alerts</div>
-          <span className="text-2xs text-slate-400">Requires team attention</span>
+          <span className="text-2xs text-muted-foreground">Requires team attention</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-emerald-600">
-          <span className="text-xs font-semibold text-slate-500">Messages Sent Today</span>
+          <span className="text-xs font-semibold text-muted-foreground">Messages Sent Today</span>
           <div className="text-2xl font-black text-emerald-600 mt-1">{commLogs.length + 8} Dispatches</div>
           <span className="text-2xs text-emerald-600 font-medium">WhatsApp &amp; SMS combined</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-purple-600">
-          <span className="text-xs font-semibold text-slate-500">Delivery Success Rate</span>
+          <span className="text-xs font-semibold text-muted-foreground">Delivery Success Rate</span>
           <div className="text-2xl font-black text-purple-600 mt-1">99.4%</div>
-          <span className="text-2xs text-slate-400">Carrier delivered</span>
+          <span className="text-2xs text-muted-foreground">Carrier delivered</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-amber-500">
-          <span className="text-xs font-semibold text-slate-500">SMS Gateway Balance</span>
+          <span className="text-xs font-semibold text-muted-foreground">SMS Gateway Balance</span>
           <div className="text-2xl font-black text-amber-600 mt-1">৳ 1,450.50</div>
           <span className="text-2xs text-amber-700 font-medium">BulkSMSBD Masking Active</span>
         </Card>
       </div>
 
       {/* View Switcher Tabs */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2 rounded-xl bg-muted border border-border dark:border-border">
         <div className="flex items-center gap-1.5 overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 touch-scroll w-full sm:w-auto">
           <Button
             size="sm"
             variant={activeTab === 'in_app' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('in_app')}
             className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
-              activeTab === 'in_app' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+              activeTab === 'in_app' ? 'bg-blue-600 text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
             }`}
           >
             <Bell className="h-3.5 w-3.5 mr-1.5" />
             In-App Feed (ইনবক্স)
             {unreadCount > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-2xs bg-white text-blue-700 font-bold">
+              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-2xs bg-card text-blue-700 font-bold">
                 {unreadCount}
               </span>
             )}
@@ -284,7 +284,7 @@ export default function CommunicationsHubPage() {
             variant={activeTab === 'logs' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('logs')}
             className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
-              activeTab === 'logs' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+              activeTab === 'logs' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
             }`}
           >
             <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
@@ -296,7 +296,7 @@ export default function CommunicationsHubPage() {
             variant={activeTab === 'templates' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('templates')}
             className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
-              activeTab === 'templates' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+              activeTab === 'templates' ? 'bg-purple-600 text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
             }`}
           >
             <Languages className="h-3.5 w-3.5 mr-1.5" />
@@ -308,7 +308,7 @@ export default function CommunicationsHubPage() {
             variant={activeTab === 'gateways' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('gateways')}
             className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
-              activeTab === 'gateways' ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+              activeTab === 'gateways' ? 'bg-secondary text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
             }`}
           >
             <Settings className="h-3.5 w-3.5 mr-1.5" />
@@ -321,7 +321,7 @@ export default function CommunicationsHubPage() {
             size="sm"
             variant="ghost"
             onClick={handleMarkAllRead}
-            className="text-xs h-9 sm:h-7 text-slate-500 hover:text-slate-900 dark:hover:text-white shrink-0"
+            className="text-xs h-9 sm:h-7 text-muted-foreground hover:text-foreground dark:hover:text-white shrink-0"
           >
             Mark All as Read
           </Button>
@@ -338,7 +338,7 @@ export default function CommunicationsHubPage() {
               key={notif.id}
               className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                 notif.is_read
-                  ? 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 opacity-80'
+                  ? 'bg-card border-border opacity-80'
                   : 'bg-blue-50/40 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900 shadow-xs'
               }`}
             >
@@ -359,27 +359,27 @@ export default function CommunicationsHubPage() {
 
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-white bangla-text">
+                    <h4 className="font-bold text-sm text-foreground dark:text-white bangla-text">
                       {tBilingual(notif.title, notif.title_bn || notif.title)}
                     </h4>
                     {!notif.is_read && (
                       <span className="h-2 w-2 rounded-full bg-blue-600 shrink-0" />
                     )}
                   </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text">
+                  <p className="text-xs text-muted-foreground bangla-text">
                     {tBilingual(notif.message, notif.message_bn || notif.message)}
                   </p>
-                  <span className="text-2xs text-slate-400 tabular-nums block pt-0.5">
+                  <span className="text-2xs text-muted-foreground tabular-nums block pt-0.5">
                     {notif.created_at}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end sm:justify-start gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-end sm:justify-start gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-border dark:border-border">
                 {notif.action_url && (
                   <Link
                     href={getTenantNavHref(notif.action_url, null, slug)}
-                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-card border border-input text-foreground hover:bg-muted"
                   >
                     View <ExternalLink className="h-3 w-3 ml-1" />
                   </Link>
@@ -389,7 +389,7 @@ export default function CommunicationsHubPage() {
                   size="sm"
                   variant="ghost"
                   onClick={() => handleToggleRead(notif.id)}
-                  className="h-8 w-8 p-0 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground dark:hover:text-white rounded-lg"
                   title={notif.is_read ? 'Mark as unread' : 'Mark as read'}
                 >
                   <Check className="h-4 w-4" />
@@ -405,17 +405,17 @@ export default function CommunicationsHubPage() {
          ========================================================================= */}
       {activeTab === 'logs' && (
         <Card className="rounded-2xl overflow-hidden shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <CardTitle className="text-base font-bold">Communication Audit Trail ({commLogs.length})</CardTitle>
-              <span className="text-xs text-slate-400">Non-destructive transmission log</span>
+              <span className="text-xs text-muted-foreground">Non-destructive transmission log</span>
             </div>
           </CardHeader>
           <CardContent className="p-0">
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
+                <thead className="bg-muted font-semibold text-muted-foreground border-b">
                   <tr>
                     <th className="py-3 px-4">Channel &amp; Timestamp</th>
                     <th className="py-3 px-4">Recipient</th>
@@ -425,9 +425,9 @@ export default function CommunicationsHubPage() {
                     <th className="py-3 px-4 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {commLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50">
+                    <tr key={log.id} className="hover:bg-muted">
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-1.5 font-bold capitalize">
                           {log.channel === 'whatsapp' ? (
@@ -438,22 +438,22 @@ export default function CommunicationsHubPage() {
                             <span className="text-purple-600 tabular-nums">Email</span>
                           )}
                         </div>
-                        <div className="text-2xs text-slate-400 tabular-nums mt-0.5">{log.created_at}</div>
+                        <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">{log.created_at}</div>
                       </td>
 
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                      <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
                         {log.recipient_name}
                       </td>
 
-                      <td className="py-3.5 px-4 tabular-nums text-slate-600 dark:text-slate-300">
+                      <td className="py-3.5 px-4 tabular-nums text-muted-foreground dark:text-muted-foreground">
                         {log.recipient_destination}
                       </td>
 
-                      <td className="py-3.5 px-4 max-w-[280px] truncate text-slate-700 dark:text-slate-300">
+                      <td className="py-3.5 px-4 max-w-[280px] truncate text-foreground dark:text-muted-foreground">
                         {log.message_content}
                       </td>
 
-                      <td className="py-3.5 px-4 tabular-nums text-slate-500 text-2xs">
+                      <td className="py-3.5 px-4 tabular-nums text-muted-foreground text-2xs">
                         {log.provider_used}
                       </td>
 
@@ -469,9 +469,9 @@ export default function CommunicationsHubPage() {
             </div>
 
             {/* Mobile Touch Cards View */}
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="md:hidden divide-y divide-border dark:divide-border">
               {commLogs.length === 0 ? (
-                <div className="p-8 text-center text-xs text-slate-400">
+                <div className="p-8 text-center text-xs text-muted-foreground">
                   No communication dispatches recorded yet.
                 </div>
               ) : (
@@ -490,7 +490,7 @@ export default function CommunicationsHubPage() {
                         >
                           {log.channel}
                         </span>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        <span className="text-xs font-bold text-foreground dark:text-white">
                           {log.recipient_name}
                         </span>
                       </div>
@@ -499,11 +499,11 @@ export default function CommunicationsHubPage() {
                       </span>
                     </div>
 
-                    <div className="text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="text-xs text-foreground bg-muted p-2.5 rounded-xl border border-border dark:border-border">
                       {log.message_content}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-2xs text-slate-400 tabular-nums">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-2xs text-muted-foreground tabular-nums">
                       <span>Dest: {log.recipient_destination}</span>
                       <span>{log.created_at} • {log.provider_used}</span>
                     </div>
@@ -522,8 +522,8 @@ export default function CommunicationsHubPage() {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 shrink-0">Template Language:</span>
-              <div className="inline-flex p-0.5 bg-slate-100 dark:bg-slate-900 rounded-lg border">
+              <span className="text-xs text-muted-foreground shrink-0">Template Language:</span>
+              <div className="inline-flex p-0.5 bg-muted rounded-lg border">
                 <Button
                   size="sm"
                   variant={templateLang === 'en' ? 'default' : 'ghost'}
@@ -543,17 +543,17 @@ export default function CommunicationsHubPage() {
               </div>
             </div>
 
-            <span className="text-2xs sm:text-xs text-slate-400 tabular-nums break-all sm:break-normal">
+            <span className="text-2xs sm:text-xs text-muted-foreground tabular-nums break-all sm:break-normal">
               Supported Variables: {'{{customer_name}}, {{order_number}}, {{invoice_number}}, {{amount}}, {{due_amount}}, {{delivery_date}}'}
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {templates.map((tpl) => (
-              <Card key={tpl.id} className="p-4 border-slate-200 dark:border-slate-800 space-y-2.5 rounded-2xl">
+              <Card key={tpl.id} className="p-4 border-border space-y-2.5 rounded-2xl">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">{tpl.name}</h4>
+                    <h4 className="font-bold text-sm text-foreground dark:text-white">{tpl.name}</h4>
                     <span className="tabular-nums text-2xs text-blue-600">{tpl.template_key}</span>
                   </div>
                   <Badge variant="outline" className="uppercase text-2xs">
@@ -561,11 +561,11 @@ export default function CommunicationsHubPage() {
                   </Badge>
                 </div>
 
-                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs leading-relaxed text-slate-700 dark:text-slate-300 tabular-nums whitespace-pre-wrap">
+                <div className="p-3 bg-muted rounded-lg text-xs leading-relaxed text-foreground tabular-nums whitespace-pre-wrap">
                   {templateLang === 'bn' ? tpl.body_bn : tpl.body_en}
                 </div>
 
-                <div className="flex justify-between items-center text-2xs text-slate-400 pt-1">
+                <div className="flex justify-between items-center text-2xs text-muted-foreground pt-1">
                   <span>Interpolation Engine: Active</span>
                   <Button
                     size="sm"
@@ -593,13 +593,13 @@ export default function CommunicationsHubPage() {
           {/* WhatsApp Business API */}
           <Card className="p-4 space-y-3 rounded-2xl">
             <div className="flex justify-between items-center">
-              <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+              <h4 className="font-bold text-sm text-foreground dark:text-white flex items-center gap-1.5">
                 <Smartphone className="h-4 w-4 text-emerald-600" />
                 WhatsApp Business API
               </h4>
               <Badge className="bg-emerald-100 text-emerald-800 text-2xs">Connected</Badge>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Meta Cloud API for instant PDF quotation, invoice, and delivery tracking dispatch.
             </p>
             <div className="space-y-2 text-xs">
@@ -609,7 +609,7 @@ export default function CommunicationsHubPage() {
               </div>
               <div className="space-y-1">
                 <Label>Access Token (Permanent)</Label>
-                <Input type="password" value="EAAG9••••••••••••••••••••" readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-slate-100 dark:bg-slate-900" />
+                <Input type="password" value="EAAG9••••••••••••••••••••" readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted dark:bg-card" />
               </div>
             </div>
           </Card>
@@ -617,13 +617,13 @@ export default function CommunicationsHubPage() {
           {/* Bangladesh SMS Gateway Abstraction */}
           <Card className="p-4 space-y-3 border-l-4 border-l-blue-600 rounded-2xl">
             <div className="flex justify-between items-center">
-              <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+              <h4 className="font-bold text-sm text-foreground dark:text-white flex items-center gap-1.5">
                 <MessageSquare className="h-4 w-4 text-blue-600" />
                 Bangladesh SMS Gateway
               </h4>
               <Badge className="bg-blue-100 text-blue-800 text-2xs">Active Provider</Badge>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Multi-provider abstraction for verified Bangladeshi telco aggregators.
             </p>
             <div className="space-y-2 text-xs">
@@ -632,7 +632,7 @@ export default function CommunicationsHubPage() {
                 <select
                   value={smsProvider}
                   onChange={(e) => setSmsProvider(e.target.value as SmsProviderType)}
-                  className="w-full h-10 sm:h-8 px-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-xs"
+                  className="w-full h-10 sm:h-8 px-2.5 rounded-md border border-input bg-card font-bold text-xs"
                 >
                   <option value="bulksmsbd">BulkSMSBD (Approved Masking)</option>
                   <option value="ssl_wireless">SSL Wireless Gateway</option>
@@ -650,23 +650,23 @@ export default function CommunicationsHubPage() {
           {/* SMTP Email Server */}
           <Card className="p-4 space-y-3 rounded-2xl sm:col-span-2 lg:col-span-1">
             <div className="flex justify-between items-center">
-              <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+              <h4 className="font-bold text-sm text-foreground dark:text-white flex items-center gap-1.5">
                 <Mail className="h-4 w-4 text-purple-600" />
                 Custom SMTP Server
               </h4>
               <Badge className="bg-purple-100 text-purple-800 text-2xs">Configured</Badge>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Corporate email transport for sending formal PDF estimates and payment receipts.
             </p>
             <div className="space-y-2 text-xs">
               <div className="space-y-1">
                 <Label>SMTP Host &amp; Port</Label>
-                <Input value={`smtp.${company?.slug || 'inkflow'}.com:587`} readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-slate-100 dark:bg-slate-900" />
+                <Input value={`smtp.${company?.slug || 'inkflow'}.com:587`} readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted dark:bg-card" />
               </div>
               <div className="space-y-1">
                 <Label>Password</Label>
-                <Input type="password" value="••••••••••••" readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-slate-100 dark:bg-slate-900" />
+                <Input type="password" value="••••••••••••" readOnly className="h-10 sm:h-8 tabular-nums text-xs bg-muted dark:bg-card" />
               </div>
             </div>
           </Card>
@@ -690,7 +690,7 @@ export default function CommunicationsHubPage() {
                 id="sCh"
                 value={sendChannel}
                 onChange={(e) => setSendChannel(e.target.value as any)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
               >
                 <option value="whatsapp">WhatsApp Business API</option>
                 <option value="sms">SMS (BulkSMSBD Masking)</option>
@@ -708,7 +708,7 @@ export default function CommunicationsHubPage() {
                   const cust = (customers || []).find((c) => c.id === e.target.value)
                   if (cust) setCustomPhone(cust.mobile)
                 }}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
               >
                 {(customers || []).map((c) => (
                   <option key={c.id} value={c.id}>
@@ -726,7 +726,7 @@ export default function CommunicationsHubPage() {
                 id="sTpl"
                 value={sendTemplateKey}
                 onChange={(e) => setSendTemplateKey(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
               >
                 {(templates || []).map((t) => (
                   <option key={t.id} value={t.template_key}>
@@ -749,9 +749,9 @@ export default function CommunicationsHubPage() {
           </div>
 
           {/* Interpolated Preview Box */}
-          <div className="p-3 bg-slate-50 dark:bg-slate-900 border rounded-xl space-y-1">
-            <span className="text-2xs uppercase font-bold text-slate-400">Live Interpolated Preview:</span>
-            <p className="text-xs tabular-nums text-slate-800 dark:text-slate-200">
+          <div className="p-3 bg-muted border rounded-xl space-y-1">
+            <span className="text-2xs uppercase font-bold text-muted-foreground">Live Interpolated Preview:</span>
+            <p className="text-xs tabular-nums text-foreground dark:text-foreground">
               {renderTemplate(
                 templateLang === 'bn'
                   ? (templates || []).find((t) => t.template_key === sendTemplateKey)?.body_bn || ''
@@ -780,7 +780,7 @@ export default function CommunicationsHubPage() {
             </Button>
             <Button
               type="submit"
-              className="w-full sm:w-auto h-11 sm:h-9 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              className="w-full sm:w-auto h-11 sm:h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
             >
               Dispatch Message
             </Button>

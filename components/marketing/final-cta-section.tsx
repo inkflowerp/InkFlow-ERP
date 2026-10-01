@@ -25,16 +25,16 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
   const trialDaysBn = toBengaliDigits(trialDays)
 
   return (
-    <section className="py-16 sm:py-24 bg-white dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800">
+    <section className="py-16 sm:py-24 bg-card border-t border-border dark:border-border">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 p-8 sm:p-12 md:p-16 text-center space-y-5 sm:space-y-6 shadow-sm">
+        <div className="rounded-3xl border border-border bg-muted p-8 sm:p-12 md:p-16 text-center space-y-5 sm:space-y-6 shadow-sm">
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 uppercase tracking-wider">
             <span>{tBilingual('Get Started Today', 'আজই শুরু করুন')}</span>
           </div>
 
           {/* Heading */}
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight max-w-2xl mx-auto bangla-text">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-foreground dark:text-white tracking-tight leading-tight max-w-2xl mx-auto bangla-text">
             {tBilingual(
               'Ready to Bring Your Print Business Under Control?',
               'আপনার পুরো প্রিন্ট ব্যবসা নিয়ন্ত্রণে আনতে প্রস্তুত?'
@@ -42,7 +42,7 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
           </h2>
 
           {/* Subtitle */}
-          <p className="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed bangla-text">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
               'Start managing sales, production, inventory, payments and delivery from one connected system.',
               'সেলস, প্রোডাকশন, ইনভেন্টরি, পেমেন্ট ও ডেলিভারি পরিচালনা শুরু করুন একটি সমন্বিত আধুনিক সিস্টেমে।'
@@ -52,7 +52,7 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
           {/* Actions */}
           <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md mx-auto">
             <Link href="/register" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto h-12 px-7 text-sm sm:text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm cursor-pointer bangla-text">
+              <Button className="w-full sm:w-auto h-12 px-7 text-sm sm:text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer bangla-text">
                 <span>{tBilingual('Start Free Trial', 'ফ্রি ট্রায়াল শুরু করুন')}</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -63,7 +63,7 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
                 type="button"
                 variant="outline"
                 onClick={handleOpenDemo}
-                className="w-full sm:w-auto h-12 px-6 text-sm font-semibold border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer bangla-text"
+                className="w-full sm:w-auto h-12 px-6 text-sm font-semibold border-input bg-card text-foreground hover:bg-muted cursor-pointer bangla-text"
               >
                 <Calendar className="mr-2 h-4 w-4 text-blue-600" />
                 <span>{tBilingual('Book a Demo', 'লাইভ ডেমো বুক করুন')}</span>
@@ -72,7 +72,7 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
           </div>
 
           {/* Trust Guarantees */}
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-500 dark:text-slate-400">
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground dark:text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
               <span>{tBilingual('No credit card required', 'কোনো কার্ডের প্রয়োজন নেই')}</span>

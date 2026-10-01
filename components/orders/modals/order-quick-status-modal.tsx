@@ -75,13 +75,13 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 p-6 shadow-2xl">
-        <DialogHeader className="border-b border-slate-100 dark:border-slate-800 pb-3">
+      <DialogContent className="max-w-xl bg-card border border-border text-foreground p-6 shadow-2xl">
+        <DialogHeader className="border-b border-border pb-3">
           <DialogTitle className="text-base font-bold flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
             <ArrowRight className="h-5 w-5" />
             <span>{tBilingual('Update Order Live Status', 'অর্ডারের লাইভ স্ট্যাটাস আপডেট করুন')}</span>
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
+          <DialogDescription className="text-xs text-muted-foreground">
             {tBilingual('Order #:', 'অর্ডার নং:')}{' '}
             <span className="tabular-nums font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
             {tBilingual('Customer:', 'কাস্টমার:')} {order.customerName}
@@ -90,7 +90,7 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div>
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 block">
+            <Label className="text-xs font-bold text-foreground mb-2 block">
               {tBilingual('Select Live Current Status:', 'বর্তমান অবস্থা নির্বাচন করুন:')}
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -104,7 +104,7 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
                     className={`p-2.5 rounded-lg border text-left transition-all flex items-center justify-between ${
                       isSelected
                         ? 'bg-indigo-50 border-indigo-500 text-indigo-950 dark:bg-indigo-950/40 dark:text-indigo-200 shadow-sm ring-1 ring-indigo-400/30'
-                        : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                        : 'bg-muted border-border text-foreground hover:border-input'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -120,13 +120,13 @@ export const OrderQuickStatusModal = React.memo(function OrderQuickStatusModal({
             </div>
           </div>
 
-          <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+          <div className="flex items-center justify-between border-t border-border pt-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="text-xs text-slate-600 dark:text-slate-400"
+              className="text-xs text-muted-foreground dark:text-muted-foreground"
             >
               {tBilingual('Cancel', 'বাতিল')}
             </Button>

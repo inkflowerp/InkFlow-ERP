@@ -103,7 +103,7 @@ export function NewLocationModal({
               id="locType"
               value={locationType}
               onChange={(e) => setLocationType(e.target.value as LocationType)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
             >
               <option value="main_store">Main Store Warehouse</option>
               <option value="raw_material_store">Raw Material Store</option>
@@ -141,7 +141,7 @@ export function NewLocationModal({
           />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto min-h-[40px]">
             Cancel
           </Button>

@@ -1172,7 +1172,7 @@ export default function OrdersPage() {
                   setActiveStage('approval')
                   setFilters((f) => ({ ...f, quickFilter: 'all' }))
                 }}
-                className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 font-medium hover:bg-amber-100/50 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-card border border-amber-300 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 font-medium hover:bg-amber-100/50 transition-colors cursor-pointer"
               >
                 {metrics.inApproval} {tBilingual('jobs waiting approval', 'অনুমোদনের অপেক্ষায়')}
               </button>
@@ -1183,7 +1183,7 @@ export default function OrdersPage() {
                 onClick={() => {
                   setFilters((f) => ({ ...f, quickFilter: 'blocked' }))
                 }}
-                className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-red-300 dark:border-red-700/60 text-red-700 dark:text-red-300 font-medium hover:bg-red-50 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-card border border-red-300 dark:border-red-700/60 text-red-700 dark:text-red-300 font-medium hover:bg-red-50 transition-colors cursor-pointer"
               >
                 {metrics.blockedCount} {tBilingual('blocked jobs', 'স্থগিত কাজ')}
               </button>
@@ -1195,7 +1195,7 @@ export default function OrdersPage() {
                   setActiveStage('ready')
                   setFilters((f) => ({ ...f, quickFilter: 'all' }))
                 }}
-                className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-300 font-medium hover:bg-emerald-50 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-card border border-emerald-300 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-300 font-medium hover:bg-emerald-50 transition-colors cursor-pointer"
               >
                 {metrics.readyDelivery} {tBilingual('delivery ready', 'ডেলিভারি প্রস্তুত')}
               </button>
@@ -1206,7 +1206,7 @@ export default function OrdersPage() {
                 onClick={() => {
                   setFilters((f) => ({ ...f, quickFilter: 'payment_due' }))
                 }}
-                className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700/60 text-blue-800 dark:text-blue-300 font-medium hover:bg-blue-50 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-card border border-blue-300 dark:border-blue-700/60 text-blue-800 dark:text-blue-300 font-medium hover:bg-blue-50 transition-colors cursor-pointer"
               >
                 {metrics.paymentDueCount} {tBilingual('customer dues', 'গ্রাহকের বকেয়া')}
               </button>
@@ -1248,15 +1248,15 @@ export default function OrdersPage() {
               className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs ${
                 isActive
                   ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+                  : 'bg-card border border-border dark:border-border/80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
               }`}
             >
               <span>{s.label}</span>
               <span
                 className={`text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums ${
                   isActive
-                    ? 'bg-white text-blue-600 dark:bg-white dark:text-blue-600'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    ? 'bg-card text-blue-600 dark:text-blue-600'
+                    : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                 }`}
               >
                 {s.count}
@@ -1276,7 +1276,7 @@ export default function OrdersPage() {
 
       {/* Content Rendering: Card View vs High-Density Table View */}
       {isLoading ? (
-        <div className="p-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+        <div className="p-12 text-center text-muted-foreground text-xs flex items-center justify-center gap-2">
           <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
           <span>{tBilingual('Loading orders...', 'অর্ডার লোড হচ্ছে...')}</span>
         </div>
@@ -1308,11 +1308,11 @@ export default function OrdersPage() {
           ))}
 
           {filteredOrders.length === 0 && (
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
-              <div className="text-sm font-bold text-slate-700 dark:text-slate-300">
+            <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
+              <div className="text-sm font-bold text-foreground dark:text-muted-foreground">
                 {tBilingual('No orders found', 'কোনো অর্ডার পাওয়া যায়নি')}
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {tBilingual(
                   'Change your search or filter criteria, or book a new order.',
                   'ফিল্টার বা সার্চ পরিবর্তন করুন অথবা নতুন অর্ডার বুকিং করুন।'

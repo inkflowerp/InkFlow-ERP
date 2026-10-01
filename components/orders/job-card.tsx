@@ -124,12 +124,12 @@ export function JobCard({
 
   return (
     <div
-      className={`bg-white dark:bg-slate-900 border rounded-xl p-4 transition-all duration-150 hover:shadow-xs flex flex-col justify-between ${
+      className={`bg-card border rounded-xl p-4 transition-all duration-150 hover:shadow-xs flex flex-col justify-between ${
         isBlocked
           ? 'border-amber-300 bg-amber-50/20'
           : isOverdue
           ? 'border-rose-300'
-          : 'border-slate-200 dark:border-slate-800'
+          : 'border-border dark:border-border'
       } ${className}`}
     >
       <div className="space-y-3">
@@ -137,7 +137,7 @@ export function JobCard({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             {getDeptIcon()}
-            <span className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+            <span className="font-mono text-xs font-bold text-foreground truncate">
               {jobNumber}
             </span>
           </div>
@@ -148,31 +148,31 @@ export function JobCard({
 
         {/* Title & Customer */}
         <div>
-          <h4 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 leading-snug">
+          <h4 className="text-sm font-bold text-foreground dark:text-white line-clamp-1 leading-snug">
             {title}
           </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{customer}</p>
+          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{customer}</p>
         </div>
 
         {/* Specs & Qty */}
-        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted px-2.5 py-1.5 rounded-lg border border-border dark:border-border">
           {dimensions && (
             <span className="font-medium truncate">{dimensions}</span>
           )}
-          {dimensions && <span className="text-slate-300">•</span>}
+          {dimensions && <span className="text-muted-foreground">•</span>}
           <span className="font-bold tabular-nums">Qty {quantity}</span>
         </div>
 
         {/* CURRENT & NEXT */}
-        <div className="space-y-1.5 text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
+        <div className="space-y-1.5 text-xs pt-1 border-t border-border dark:border-border">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">CURRENT</span>
-            <span className="font-semibold text-slate-800 dark:text-slate-200 text-right truncate">
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">CURRENT</span>
+            <span className="font-semibold text-foreground text-right truncate">
               {currentStage}
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">NEXT</span>
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">NEXT</span>
             <span className="font-semibold text-blue-600 dark:text-blue-400 text-right truncate">
               {nextAction}
             </span>
@@ -201,28 +201,28 @@ export function JobCard({
         )}
 
         {/* Machine, Operator, Due Metrics Strip */}
-        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
-          <div className="bg-slate-50/70 dark:bg-slate-800/40 p-1.5 rounded">
-            <span className="text-3xs uppercase font-bold text-slate-400 block">MACHINE</span>
-            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate block">
+        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border text-center">
+          <div className="bg-muted p-1.5 rounded">
+            <span className="text-3xs uppercase font-bold text-muted-foreground block">MACHINE</span>
+            <span className="text-xs font-semibold text-foreground truncate block">
               {machine}
             </span>
           </div>
-          <div className="bg-slate-50/70 dark:bg-slate-800/40 p-1.5 rounded">
-            <span className="text-3xs uppercase font-bold text-slate-400 block">OPERATOR</span>
-            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate block">
+          <div className="bg-muted p-1.5 rounded">
+            <span className="text-3xs uppercase font-bold text-muted-foreground block">OPERATOR</span>
+            <span className="text-xs font-semibold text-foreground truncate block">
               {operator}
             </span>
           </div>
-          <div className="bg-slate-50/70 dark:bg-slate-800/40 p-1.5 rounded">
-            <span className="text-3xs uppercase font-bold text-slate-400 block">DUE</span>
+          <div className="bg-muted p-1.5 rounded">
+            <span className="text-3xs uppercase font-bold text-muted-foreground block">DUE</span>
             <span
               className={`text-xs font-bold truncate block ${
                 isOverdue
                   ? 'text-rose-600'
                   : isDueToday
                   ? 'text-amber-600'
-                  : 'text-slate-800 dark:text-slate-200'
+                  : 'text-foreground dark:text-foreground'
               }`}
             >
               {dueText}
@@ -232,12 +232,12 @@ export function JobCard({
       </div>
 
       {/* Footer Primary Action: [Open Job] */}
-      <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800">
+      <div className="pt-3 mt-3 border-t border-border dark:border-border">
         {onOpenJob ? (
           <Button
             size="sm"
             onClick={() => onOpenJob(job)}
-            className="w-full h-8 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full h-8 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <span>{tBilingual('Open Job', 'জব খুলুন')}</span>
             <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
@@ -246,7 +246,7 @@ export function JobCard({
           <Button
             asChild
             size="sm"
-            className="w-full h-8 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full h-8 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Link href={jobDetailUrl}>
               <span>{tBilingual('Open Job', 'জব খুলুন')}</span>

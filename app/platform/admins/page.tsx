@@ -79,8 +79,8 @@ const ROLE_DESCRIPTIONS: Record<PlatformUserRole, { label: string; desc: string;
   platform_readonly: {
     label: 'Read-Only Observer',
     desc: 'Audit view-only access without mutation capabilities.',
-    color: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
-    badge: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
+    color: 'text-muted-foreground bg-slate-500/10 border-slate-500/30',
+    badge: 'bg-slate-500/20 text-muted-foreground border-slate-500/30',
   },
 }
 
@@ -302,7 +302,7 @@ export default function PlatformAdminsPage() {
       <PlatformSettingsNav />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
@@ -312,7 +312,7 @@ export default function PlatformAdminsPage() {
             <Shield className="h-7 w-7 text-indigo-400" />
             Platform Administrators
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Privileged accounts with root administrative access to InkFlow platform infrastructure and operational controls.
           </p>
         </div>
@@ -332,7 +332,7 @@ export default function PlatformAdminsPage() {
             variant="outline"
             onClick={loadAdmins}
             disabled={loading}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9 min-h-[36px]"
+            className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9 min-h-[36px]"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
             Refresh
@@ -360,7 +360,7 @@ export default function PlatformAdminsPage() {
           <button
             type="button"
             onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-white text-xs px-1"
+            className="text-muted-foreground hover:text-white text-xs px-1"
           >
             ✕
           </button>
@@ -390,8 +390,8 @@ export default function PlatformAdminsPage() {
 
       {/* Metrics Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-slate-900/90 border-slate-800 p-4 relative overflow-hidden shadow-lg">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4 relative overflow-hidden shadow-lg">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Total Administrators</span>
             <Users className="h-4 w-4 text-indigo-400" />
           </div>
@@ -401,12 +401,12 @@ export default function PlatformAdminsPage() {
               Assigned
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Root administrative identities</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 font-medium">Root administrative identities</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
-        <Card className="bg-slate-900/90 border-slate-800 p-4 relative overflow-hidden shadow-lg">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4 relative overflow-hidden shadow-lg">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Active Status</span>
             <UserCheck className="h-4 w-4 text-emerald-400" />
           </div>
@@ -416,12 +416,12 @@ export default function PlatformAdminsPage() {
               Online
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Authorized to access platform console</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 font-medium">Authorized to access platform console</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
-        <Card className="bg-slate-900/90 border-slate-800 p-4 relative overflow-hidden shadow-lg">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4 relative overflow-hidden shadow-lg">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Platform Owners</span>
             <Crown className="h-4 w-4 text-amber-400" />
           </div>
@@ -431,12 +431,12 @@ export default function PlatformAdminsPage() {
               Root Authority
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Protected by Last-Owner Safety Rule</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 font-medium">Protected by Last-Owner Safety Rule</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
-        <Card className="bg-slate-900/90 border-slate-800 p-4 relative overflow-hidden shadow-lg">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4 relative overflow-hidden shadow-lg">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>MFA Enforcement</span>
             <Smartphone className="h-4 w-4 text-cyan-400" />
           </div>
@@ -446,20 +446,20 @@ export default function PlatformAdminsPage() {
               {stats.mfaEnforced}/{stats.total}
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Time-based OTP token security</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 font-medium">Time-based OTP token security</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
       </div>
 
       {/* Filter and Search Controls */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-foreground p-3.5 rounded-2xl border border-border">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             placeholder="Search by name, email, phone, or responsibility..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-slate-950/80 border-slate-800 text-xs text-white placeholder:text-slate-500 h-9 rounded-xl focus-visible:ring-indigo-500"
+            className="pl-9 bg-foreground border-border text-xs text-white placeholder:text-muted-foreground h-9 rounded-xl focus-visible:ring-indigo-500"
           />
         </div>
 
@@ -468,7 +468,7 @@ export default function PlatformAdminsPage() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="all">All Roles</option>
             <option value="platform_owner">Platform Owner</option>
@@ -483,7 +483,7 @@ export default function PlatformAdminsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="all">All Status</option>
             <option value="active">Active Only</option>
@@ -491,12 +491,12 @@ export default function PlatformAdminsPage() {
           </select>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center bg-foreground p-1 rounded-xl border border-border">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
               className={`p-1.5 rounded-lg transition-colors ${
-                viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:text-white'
               }`}
               title="Grid View"
             >
@@ -506,7 +506,7 @@ export default function PlatformAdminsPage() {
               type="button"
               onClick={() => setViewMode('table')}
               className={`p-1.5 rounded-lg transition-colors ${
-                viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:text-white'
               }`}
               title="Table View"
             >
@@ -520,15 +520,15 @@ export default function PlatformAdminsPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-56 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
+            <div key={i} className="h-56 bg-foreground border border-border rounded-2xl animate-pulse" />
           ))}
         </div>
       ) : filteredAdmins.length === 0 ? (
-        <Card className="bg-slate-900/60 border-slate-800 text-center py-16">
+        <Card className="bg-foreground border-border text-center py-16">
           <CardContent className="space-y-3">
-            <Users className="h-12 w-12 text-slate-600 mx-auto" />
+            <Users className="h-12 w-12 text-muted-foreground mx-auto" />
             <div className="text-base font-bold text-white">No administrators found</div>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
               No platform administrator records match your active search or filter criteria.
             </p>
             {(search || roleFilter !== 'all' || statusFilter !== 'all') && (
@@ -540,7 +540,7 @@ export default function PlatformAdminsPage() {
                   setRoleFilter('all')
                   setStatusFilter('all')
                 }}
-                className="border-slate-700 text-slate-300 text-xs mt-2"
+                className="border-border text-muted-foreground text-xs mt-2"
               >
                 Clear Filters
               </Button>
@@ -557,8 +557,8 @@ export default function PlatformAdminsPage() {
             return (
               <Card
                 key={adm.id}
-                className={`bg-slate-900 border-slate-800 p-5 space-y-4 transition-all shadow-xl flex flex-col justify-between ${
-                  isInactive ? 'opacity-65 bg-slate-950/90 border-slate-800/60' : 'hover:border-slate-700'
+                className={`bg-foreground border-border p-5 space-y-4 transition-all shadow-xl flex flex-col justify-between ${
+                  isInactive ? 'opacity-65 bg-foreground border-border' : 'hover:border-border'
                 }`}
               >
                 <div className="space-y-3">
@@ -575,8 +575,8 @@ export default function PlatformAdminsPage() {
                           <span>{adm.full_name}</span>
                           {isOwner && <Crown className="h-3.5 w-3.5 text-amber-400 shrink-0" />}
                         </div>
-                        <div className="text-xs text-slate-400 tabular-nums truncate flex items-center gap-1">
-                          <Mail className="h-3 w-3 shrink-0 text-slate-500" />
+                        <div className="text-xs text-muted-foreground tabular-nums truncate flex items-center gap-1">
+                          <Mail className="h-3 w-3 shrink-0 text-muted-foreground" />
                           <span>{adm.email}</span>
                         </div>
                       </div>
@@ -590,20 +590,20 @@ export default function PlatformAdminsPage() {
                   </div>
 
                   {/* Role description snippet */}
-                  <p className="text-2xs text-slate-400 line-clamp-2">{roleInfo.desc}</p>
+                  <p className="text-2xs text-muted-foreground line-clamp-2">{roleInfo.desc}</p>
 
                   {/* Phone if available */}
                   {adm.phone && (
-                    <div className="text-2xs text-slate-400 flex items-center gap-1.5 tabular-nums">
-                      <Phone className="h-3 w-3 text-slate-500" />
+                    <div className="text-2xs text-muted-foreground flex items-center gap-1.5 tabular-nums">
+                      <Phone className="h-3 w-3 text-muted-foreground" />
                       <span>{adm.phone}</span>
                     </div>
                   )}
 
                   {/* Metrics grid */}
-                  <div className="grid grid-cols-2 gap-2 text-2xs pt-3 border-t border-slate-800/80">
+                  <div className="grid grid-cols-2 gap-2 text-2xs pt-3 border-t border-border">
                     <div>
-                      <span className="text-slate-500 block text-2xs uppercase font-semibold">Status</span>
+                      <span className="text-muted-foreground block text-2xs uppercase font-semibold">Status</span>
                       <span
                         className={`font-semibold flex items-center gap-1.5 ${
                           adm.is_active ? 'text-emerald-400' : 'text-red-400'
@@ -619,10 +619,10 @@ export default function PlatformAdminsPage() {
                     </div>
 
                     <div>
-                      <span className="text-slate-500 block text-2xs uppercase font-semibold">MFA Security</span>
+                      <span className="text-muted-foreground block text-2xs uppercase font-semibold">MFA Security</span>
                       <span
                         className={`font-semibold flex items-center gap-1.5 ${
-                          adm.mfa_enabled ? 'text-cyan-400' : 'text-slate-400'
+                          adm.mfa_enabled ? 'text-cyan-400' : 'text-muted-foreground'
                         }`}
                       >
                         <span
@@ -636,7 +636,7 @@ export default function PlatformAdminsPage() {
                   </div>
 
                   {/* Last login info */}
-                  <div className="text-2xs text-slate-500 flex items-center gap-1 tabular-nums pt-1">
+                  <div className="text-2xs text-muted-foreground flex items-center gap-1 tabular-nums pt-1">
                     <Clock className="h-3 w-3" />
                     <span>
                       {adm.last_login_at
@@ -647,12 +647,12 @@ export default function PlatformAdminsPage() {
                 </div>
 
                 {/* Card Action Footer */}
-                <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-800/80 mt-2">
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-border mt-2">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleOpenEdit(adm)}
-                    className="h-8 text-xs border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800"
+                    className="h-8 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
                   >
                     <Edit2 className="h-3 w-3 mr-1" />
                     Edit Details
@@ -702,10 +702,10 @@ export default function PlatformAdminsPage() {
         </div>
       ) : (
         /* Table View */
-        <Card className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
+        <Card className="bg-foreground border-border overflow-hidden shadow-xl">
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
+              <thead className="bg-foreground text-muted-foreground font-semibold uppercase text-2xs border-b border-border">
                 <tr>
                   <th className="py-3 px-4">Administrator</th>
                   <th className="py-3 px-4">Platform Role</th>
@@ -715,7 +715,7 @@ export default function PlatformAdminsPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-200">
+              <tbody className="divide-y divide-border text-foreground">
                 {filteredAdmins.map((adm) => {
                   const isOwner = adm.role === 'platform_owner'
                   const roleInfo = ROLE_DESCRIPTIONS[adm.role] || ROLE_DESCRIPTIONS.platform_admin
@@ -732,7 +732,7 @@ export default function PlatformAdminsPage() {
                           <span>{adm.full_name}</span>
                           {isOwner && <Crown className="h-3 w-3 text-amber-400" />}
                         </div>
-                        <div className="text-2xs text-slate-400 tabular-nums mt-0.5">{adm.email}</div>
+                        <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">{adm.email}</div>
                       </td>
 
                       <td className="py-3.5 px-4">
@@ -761,7 +761,7 @@ export default function PlatformAdminsPage() {
                       <td className="py-3.5 px-4">
                         <span
                           className={`inline-flex items-center gap-1 font-semibold text-xs ${
-                            adm.mfa_enabled ? 'text-cyan-400' : 'text-slate-400'
+                            adm.mfa_enabled ? 'text-cyan-400' : 'text-muted-foreground'
                           }`}
                         >
                           {adm.mfa_enabled ? (
@@ -774,7 +774,7 @@ export default function PlatformAdminsPage() {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 tabular-nums text-slate-400 text-2xs">
+                      <td className="py-3.5 px-4 tabular-nums text-muted-foreground text-2xs">
                         {adm.last_login_at
                           ? formatDate(adm.last_login_at)
                           : 'Never'}
@@ -786,7 +786,7 @@ export default function PlatformAdminsPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleOpenEdit(adm)}
-                            className="h-7 text-xs border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800 px-2"
+                            className="h-7 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary px-2"
                           >
                             <Edit2 className="h-3 w-3 mr-1" />
                             Edit
@@ -834,8 +834,8 @@ export default function PlatformAdminsPage() {
       {/* CREATE ADMIN MODAL */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0">
-          <Card className="w-full max-w-lg bg-slate-900 border-slate-800 text-slate-100 shadow-2xl">
-            <CardHeader className="border-b border-slate-800 pb-3">
+          <Card className="w-full max-w-lg bg-foreground border-border text-slate-100 shadow-2xl">
+            <CardHeader className="border-b border-border pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                   <Plus className="h-5 w-5 text-indigo-400" />
@@ -844,13 +844,13 @@ export default function PlatformAdminsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="text-slate-400 hover:text-white p-1 rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                  className="text-muted-foreground hover:text-white p-1 rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
                   aria-label="Close dialog"
                 >
                   ✕
                 </button>
               </div>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Grants server-authorized platform administration privileges and creates a Supabase Auth identity.
               </CardDescription>
             </CardHeader>
@@ -865,62 +865,62 @@ export default function PlatformAdminsPage() {
                 )}
 
                 <div className="space-y-1">
-                  <Label className="font-semibold text-slate-300">Full Name *</Label>
+                  <Label className="font-semibold text-muted-foreground">Full Name *</Label>
                   <Input
                     name="full_name"
                     required
                     placeholder="e.g. Tariqul Islam"
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white text-xs h-9 focus-visible:ring-indigo-500"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="font-semibold text-slate-300">Email Address *</Label>
+                  <Label className="font-semibold text-muted-foreground">Email Address *</Label>
                   <Input
                     name="email"
                     type="email"
                     required
                     placeholder="tariqul@inkflow.com.bd"
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white text-xs h-9 tabular-nums focus-visible:ring-indigo-500"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="font-semibold text-slate-300">Phone Number (Optional)</Label>
+                  <Label className="font-semibold text-muted-foreground">Phone Number (Optional)</Label>
                   <Input
                     name="phone"
                     type="tel"
                     placeholder="+880 1711-000000"
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white text-xs h-9 tabular-nums focus-visible:ring-indigo-500"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="font-semibold text-slate-300">Initial Password</Label>
+                  <Label className="font-semibold text-muted-foreground">Initial Password</Label>
                   <div className="relative">
                     <Input
                       name="password"
                       type={showCreatePassword ? 'text' : 'password'}
                       placeholder="Default: InkFlowAdmin!2026"
-                      className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-indigo-500 pr-10"
+                      className="bg-foreground border-border text-white text-xs h-9 focus-visible:ring-indigo-500 pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowCreatePassword(!showCreatePassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
                     >
                       {showCreatePassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
-                  <span className="text-2xs text-slate-500">Leave blank to use default master password.</span>
+                  <span className="text-2xs text-muted-foreground">Leave blank to use default master password.</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="font-semibold text-slate-300">Platform Role / Responsibility</Label>
+                  <Label className="font-semibold text-muted-foreground">Platform Role / Responsibility</Label>
                   <select
                     name="role"
                     defaultValue="platform_admin"
-                    className="w-full h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:ring-1 focus:ring-indigo-500"
+                    className="w-full h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-white focus:ring-1 focus:ring-ring"
                   >
                     <option value="platform_owner">Platform Owner (Root Authority)</option>
                     <option value="platform_admin">Platform Administrator</option>
@@ -938,21 +938,21 @@ export default function PlatformAdminsPage() {
                     name="mfa_enabled"
                     value="true"
                     defaultChecked={true}
-                    className="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 cursor-pointer h-4 w-4"
+                    className="rounded bg-foreground border-border text-indigo-600 focus:ring-0 cursor-pointer h-4 w-4"
                   />
-                  <Label htmlFor="create-mfa" className="text-xs text-slate-300 font-medium cursor-pointer">
+                  <Label htmlFor="create-mfa" className="text-xs text-muted-foreground font-medium cursor-pointer">
                     Enforce Multi-Factor Authentication (TOTP)
                   </Label>
                 </div>
               </CardContent>
 
-              <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+              <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCreateModal(false)}
-                  className="text-xs border-slate-800 bg-slate-900 text-slate-300 h-9"
+                  className="text-xs border-border bg-foreground text-muted-foreground h-9"
                 >
                   Cancel
                 </Button>
@@ -980,8 +980,8 @@ export default function PlatformAdminsPage() {
       {/* EDIT ADMIN MODAL */}
       {editingAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0">
-          <Card className="w-full max-w-lg bg-slate-900 border-slate-800 text-slate-100 shadow-2xl">
-            <CardHeader className="border-b border-slate-800 pb-3">
+          <Card className="w-full max-w-lg bg-foreground border-border text-slate-100 shadow-2xl">
+            <CardHeader className="border-b border-border pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                   <Edit2 className="h-5 w-5 text-indigo-400" />
@@ -990,13 +990,13 @@ export default function PlatformAdminsPage() {
                 <button
                   type="button"
                   onClick={() => setEditingAdmin(null)}
-                  className="text-slate-400 hover:text-white p-1 rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                  className="text-muted-foreground hover:text-white p-1 rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
                   aria-label="Close dialog"
                 >
                   ✕
                 </button>
               </div>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Identity: <strong className="text-white tabular-nums">{editingAdmin.email}</strong>
               </CardDescription>
             </CardHeader>
@@ -1011,31 +1011,31 @@ export default function PlatformAdminsPage() {
                 )}
 
                 <div className="space-y-1">
-                  <Label className="font-semibold text-slate-300">Full Name</Label>
+                  <Label className="font-semibold text-muted-foreground">Full Name</Label>
                   <Input
                     value={targetName}
                     onChange={(e) => setTargetName(e.target.value)}
                     required
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white text-xs h-9 focus-visible:ring-indigo-500"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="font-semibold text-slate-300">Phone Number</Label>
+                  <Label className="font-semibold text-muted-foreground">Phone Number</Label>
                   <Input
                     value={targetPhone}
                     onChange={(e) => setTargetPhone(e.target.value)}
                     placeholder="+880 1711-000000"
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white text-xs h-9 tabular-nums focus-visible:ring-indigo-500"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="font-semibold text-slate-300">Assigned Platform Role</Label>
+                  <Label className="font-semibold text-muted-foreground">Assigned Platform Role</Label>
                   <select
                     value={targetRole}
                     onChange={(e) => setTargetRole(e.target.value as PlatformUserRole)}
-                    className="w-full h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:ring-1 focus:ring-indigo-500"
+                    className="w-full h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-white focus:ring-1 focus:ring-ring"
                   >
                     <option value="platform_owner">Platform Owner (Root Authority)</option>
                     <option value="platform_admin">Platform Administrator</option>
@@ -1046,16 +1046,16 @@ export default function PlatformAdminsPage() {
                   </select>
                 </div>
 
-                <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                <div className="space-y-2 pt-2 border-t border-border">
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       id="edit-mfa"
                       checked={targetMfa}
                       onChange={(e) => setTargetMfa(e.target.checked)}
-                      className="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 cursor-pointer h-4 w-4"
+                      className="rounded bg-foreground border-border text-indigo-600 focus:ring-0 cursor-pointer h-4 w-4"
                     />
-                    <Label htmlFor="edit-mfa" className="text-xs text-slate-300 font-medium cursor-pointer">
+                    <Label htmlFor="edit-mfa" className="text-xs text-muted-foreground font-medium cursor-pointer">
                       Require Multi-Factor Authentication (MFA)
                     </Label>
                   </div>
@@ -1066,22 +1066,22 @@ export default function PlatformAdminsPage() {
                       id="edit-active"
                       checked={targetActive}
                       onChange={(e) => setTargetActive(e.target.checked)}
-                      className="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 cursor-pointer h-4 w-4"
+                      className="rounded bg-foreground border-border text-indigo-600 focus:ring-0 cursor-pointer h-4 w-4"
                     />
-                    <Label htmlFor="edit-active" className="text-xs text-slate-300 font-medium cursor-pointer">
+                    <Label htmlFor="edit-active" className="text-xs text-muted-foreground font-medium cursor-pointer">
                       Account Status is Active
                     </Label>
                   </div>
                 </div>
               </CardContent>
 
-              <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+              <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setEditingAdmin(null)}
-                  className="text-xs border-slate-800 bg-slate-900 text-slate-300 h-9"
+                  className="text-xs border-border bg-foreground text-muted-foreground h-9"
                 >
                   Cancel
                 </Button>
@@ -1109,8 +1109,8 @@ export default function PlatformAdminsPage() {
       {/* DELETE CONFIRMATION MODAL */}
       {deletingAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0">
-          <Card className="w-full max-w-md bg-slate-900 border-slate-800 text-slate-100 shadow-2xl">
-            <CardHeader className="border-b border-slate-800 pb-3">
+          <Card className="w-full max-w-md bg-foreground border-border text-slate-100 shadow-2xl">
+            <CardHeader className="border-b border-border pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                   <Trash2 className="h-5 w-5 text-red-400" />
@@ -1119,18 +1119,18 @@ export default function PlatformAdminsPage() {
                 <button
                   type="button"
                   onClick={() => setDeletingAdmin(null)}
-                  className="text-slate-400 hover:text-white p-1 rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                  className="text-muted-foreground hover:text-white p-1 rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
                   aria-label="Close dialog"
                 >
                   ✕
                 </button>
               </div>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Identity: <strong className="text-white tabular-nums">{deletingAdmin.email}</strong>
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="pt-4 text-xs text-slate-300 space-y-3">
+            <CardContent className="pt-4 text-xs text-muted-foreground space-y-3">
               {deleteError && (
                 <div className="p-3 rounded-xl bg-red-950/80 border border-red-800 text-red-200 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-red-400 shrink-0" />
@@ -1151,12 +1151,12 @@ export default function PlatformAdminsPage() {
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setDeletingAdmin(null)}
-                className="text-xs border-slate-800 bg-slate-900 text-slate-300 h-9"
+                className="text-xs border-border bg-foreground text-muted-foreground h-9"
               >
                 Cancel
               </Button>

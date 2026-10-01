@@ -326,7 +326,7 @@ export function SupplierModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-black text-slate-900 dark:text-white">
+              <span className="text-base font-black text-foreground dark:text-white">
                 {isEditing
                   ? tBilingual('Edit Supplier & Vendor Profile', 'মহাজন ও ভেন্ডর প্রোফাইল সম্পাদনা')
                   : tBilingual('Register New Material Supplier', 'নতুন সাপ্লায়ার / মহাজন যুক্ত করুন')}
@@ -338,7 +338,7 @@ export function SupplierModal({
                 {formData.supplier_code || 'VENDOR'}
               </Badge>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual(
                 'Configure commercial credit terms, contact channels, market hubs, and payment terms.',
                 'ক্রেডিট সীমা, যোগাযোগের মাধ্যম, মার্কেট হাব এবং পেমেন্টের শর্তাবলী নির্ধারণ করুন।'
@@ -351,7 +351,7 @@ export function SupplierModal({
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
 
         {/* TAB NAVIGATION STRIP */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto pb-0.5">
+        <div className="flex border-b border-border gap-1 overflow-x-auto pb-0.5">
           {[
             { id: 'identity', labelEn: '1. Identity & Material Category', labelBn: '১. পরিচয় ও ক্যাটাগরি', icon: Building },
             { id: 'contact', labelEn: '2. Personnel & Contacts', labelBn: '২. প্রতিনিধি ও যোগাযোগ', icon: User },
@@ -369,10 +369,10 @@ export function SupplierModal({
                 className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer ${
                   isActive
                     ? 'border-teal-600 text-teal-700 bg-teal-50/60 dark:bg-teal-950/40 dark:border-teal-400 dark:text-teal-300'
-                    : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/60 dark:text-slate-400'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/60 dark:text-muted-foreground'
                 }`}
               >
-                <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400'}`} />
+                <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-muted-foreground'}`} />
                 <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
               </button>
             )
@@ -384,13 +384,13 @@ export function SupplierModal({
           {/* TAB 1: IDENTITY & CATEGORY */}
           {activeTab === 'identity' && (
             <div className="space-y-4 animate-in fade-in-50 duration-150">
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
                       1
                     </div>
-                    <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                       {tBilingual('Supplier Entity & Trading Identity', 'সাপ্লায়ারের বাণিজ্যিক পরিচয়')}
                     </h3>
                   </div>
@@ -401,7 +401,7 @@ export function SupplierModal({
                           <CheckCircle2 className="h-3.5 w-3.5" /> Active Vendor
                         </span>
                       ) : (
-                        <span className="text-slate-400 font-medium">Inactive</span>
+                        <span className="text-muted-foreground font-medium">Inactive</span>
                       )}
                     </Label>
                     <input
@@ -448,7 +448,7 @@ export function SupplierModal({
                       placeholder="e.g. SUP-2024-001"
                       value={formData.supplier_code}
                       onChange={(e) => setFormData({ ...formData, supplier_code: e.target.value })}
-                      className="text-xs h-9 tabular-nums uppercase bg-slate-50 dark:bg-slate-900"
+                      className="text-xs h-9 tabular-nums uppercase bg-muted dark:bg-card"
                     />
                   </div>
                 </div>
@@ -481,15 +481,15 @@ export function SupplierModal({
               </div>
 
               {/* Material Category Picker */}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CategoryIcon className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-foreground dark:text-white">
                       {tBilingual('Primary Supply Category', 'প্রধান উপাদানের ক্যাটাগরি')} <span className="text-rose-500">*</span>
                     </Label>
                   </div>
-                  <span className="text-2xs text-slate-400">Used for fast purchase PO filtering</span>
+                  <span className="text-2xs text-muted-foreground">Used for fast purchase PO filtering</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -504,7 +504,7 @@ export function SupplierModal({
                         className={`p-2.5 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
                           isSelected
                             ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 shadow-xs ring-1 ring-teal-500'
-                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                            : 'border-border bg-card hover:border-input dark:hover:border-border'
                         }`}
                       >
                         <div
@@ -514,10 +514,10 @@ export function SupplierModal({
                           <CatIcon className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
-                          <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          <div className="text-xs font-bold text-foreground dark:text-white truncate">
                             {cat.labelEn.split(' ')[0]}
                           </div>
-                          <div className="text-2xs text-slate-500 truncate">{cat.labelBn}</div>
+                          <div className="text-2xs text-muted-foreground truncate">{cat.labelBn}</div>
                         </div>
                       </button>
                     )
@@ -530,12 +530,12 @@ export function SupplierModal({
           {/* TAB 2: PERSONNEL & CONTACTS */}
           {activeTab === 'contact' && (
             <div className="space-y-4 animate-in fade-in-50 duration-150">
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
                     2
                   </div>
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                     {tBilingual('Vendor Personnel & Key Contact', 'যোগাযোগকারী প্রতিনিধি')}
                   </h3>
                 </div>
@@ -574,7 +574,7 @@ export function SupplierModal({
                       </Label>
                     </div>
                     <div className="relative">
-                      <Phone className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                      <Phone className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="01711-XXXXXX"
                         value={formData.mobile}
@@ -641,7 +641,7 @@ export function SupplierModal({
                     {tBilingual('Official Email Address', 'অফিসিয়াল ইমেইল')}
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                    <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       type="email"
                       placeholder="sales@vendor.com"
@@ -658,12 +658,12 @@ export function SupplierModal({
           {/* TAB 3: MARKET HUB & ADDRESS */}
           {activeTab === 'location' && (
             <div className="space-y-4 animate-in fade-in-50 duration-150">
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
                     3
                   </div>
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                     {tBilingual('Market Hub & Warehouse Location', 'মার্কেট হাব ও গুদাম ঠিকানা')}
                   </h3>
                 </div>
@@ -684,14 +684,14 @@ export function SupplierModal({
                           className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                             isSelected
                               ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 ring-1 ring-teal-500 shadow-xs'
-                              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                              : 'border-border bg-card hover:border-input dark:hover:border-border'
                           }`}
                         >
-                          <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          <div className="text-xs font-bold text-foreground dark:text-white truncate">
                             📍 {hub.nameEn.split(' ')[0]}
                           </div>
                           <div className="text-2xs text-teal-700 dark:text-teal-400 truncate">{hub.nameBn}</div>
-                          <div className="text-2xs text-slate-400 truncate mt-0.5">{hub.area}</div>
+                          <div className="text-2xs text-muted-foreground truncate mt-0.5">{hub.area}</div>
                         </button>
                       )
                     })}
@@ -742,12 +742,12 @@ export function SupplierModal({
           {/* TAB 4: COMMERCIAL & CREDIT TERMS */}
           {activeTab === 'terms' && (
             <div className="space-y-4 animate-in fade-in-50 duration-150">
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
                     4
                   </div>
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                     {tBilingual('Payment Terms & Credit Agreement', 'পেমেন্টের শর্ত ও বাকি চুক্তি')}
                   </h3>
                 </div>
@@ -768,18 +768,18 @@ export function SupplierModal({
                           className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                             isSelected
                               ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 ring-1 ring-teal-500 shadow-xs'
-                              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                              : 'border-border bg-card hover:border-input dark:hover:border-border'
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-slate-900 dark:text-white">
+                            <span className="text-xs font-bold text-foreground dark:text-white">
                               {tBilingual(term.labelEn, term.labelBn)}
                             </span>
                             <Badge variant="outline" className="text-2xs tabular-nums">
                               {term.days > 0 ? `${term.days} Days` : 'Spot'}
                             </Badge>
                           </div>
-                          <div className="text-2xs text-slate-400 mt-1 leading-tight">
+                          <div className="text-2xs text-muted-foreground mt-1 leading-tight">
                             {tBilingual(term.descriptionEn, term.descriptionBn || term.descriptionEn)}
                           </div>
                         </button>
@@ -794,7 +794,7 @@ export function SupplierModal({
                       {tBilingual('Credit Limit', 'সর্বোচ্চ বাকি সীমা')}
                     </Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">৳</span>
+                      <span className="absolute left-3 top-2 text-xs font-bold text-muted-foreground">৳</span>
                       <Input
                         type="number"
                         step="10000"
@@ -811,7 +811,7 @@ export function SupplierModal({
                       {tBilingual('Typical Delivery Lead Time (Days)', 'ডেলিভারি লিড টাইম (দিন)')}
                     </Label>
                     <div className="relative">
-                      <Clock className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                      <Clock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="number"
                         min="1"
@@ -830,12 +830,12 @@ export function SupplierModal({
           {/* TAB 5: TAX, BIN & BANKING */}
           {activeTab === 'banking' && (
             <div className="space-y-4 animate-in fade-in-50 duration-150">
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
                     5
                   </div>
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                     {tBilingual('Legal, VAT/BIN & Bank Settlement Details', 'ট্যাক্স, ভ্যাট ও ব্যাংক অ্যাকাউন্ট তথ্য')}
                   </h3>
                 </div>
@@ -880,10 +880,10 @@ export function SupplierModal({
                 </div>
 
                 {/* Bank Account Info */}
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <div className="pt-2 border-t border-border space-y-3">
                   <div className="flex items-center gap-2">
                     <Landmark className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <span className="text-xs font-bold text-foreground dark:text-foreground">
                       {tBilingual('Bank Account for Cheque / BEFTN Disbursements', 'চেক বা ব্যাংক ট্রান্সফারের তথ্য')}
                     </span>
                   </div>
@@ -896,7 +896,7 @@ export function SupplierModal({
                       <select
                         value={formData.bank_name}
                         onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-                        className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                        className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                       >
                         <option value="">-- Select Bank in Bangladesh --</option>
                         {BANGLADESH_BANKS.map((b, idx) => (
@@ -960,7 +960,7 @@ export function SupplierModal({
                 </div>
 
                 {/* Agreement Remarks */}
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="pt-2 border-t border-border dark:border-border">
                   <Label className="text-xs font-semibold mb-1 block">
                     {tBilingual('Vendor Agreement Remarks & Special Notes', 'বিশেষ চুক্তি বা বাকির শর্তাবলী নোট')}
                   </Label>
@@ -969,7 +969,7 @@ export function SupplierModal({
                     placeholder="e.g. Discount 2% on 15-day early clearance. Free delivery for rolls over 5,000 sft."
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-teal-500"
+                    className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </div>
@@ -978,7 +978,7 @@ export function SupplierModal({
         </div>
 
         {/* Action Footer */}
-        <div className="pt-3 flex items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+        <div className="pt-3 flex items-center justify-between gap-3 border-t border-border dark:border-border">
           <div>
             {activeTab !== 'identity' && (
               <Button

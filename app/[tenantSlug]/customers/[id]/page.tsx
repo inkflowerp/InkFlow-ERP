@@ -904,11 +904,11 @@ export default function CustomerProfilePage() {
   if (!isMounted || isLoading) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto pb-12">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
-        <div className="h-40 rounded-2xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
+        <div className="h-8 w-48 bg-muted rounded-lg animate-pulse" />
+        <div className="h-40 rounded-2xl bg-muted animate-pulse" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
+            <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />
           ))}
         </div>
       </div>
@@ -920,10 +920,10 @@ export default function CustomerProfilePage() {
       <div className="space-y-6 max-w-5xl mx-auto py-8 text-center">
         <Card className="p-12 space-y-4 border-rose-200 dark:border-rose-900">
           <AlertCircle className="h-10 w-10 text-rose-500 mx-auto" />
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-bold text-foreground dark:text-white">
             {errorText || 'Customer Profile Not Found'}
           </h2>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             The requested customer profile could not be loaded or you do not have permission to view it.
           </p>
           <div className="flex items-center justify-center gap-3 pt-2">
@@ -968,14 +968,14 @@ export default function CustomerProfilePage() {
       <div className="flex items-center justify-between">
         <Link
           href={getTenantNavHref('/customers', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to Customers</span>
         </Link>
 
         {customer.created_at && (
-          <span className="text-2xs text-slate-400">
+          <span className="text-2xs text-muted-foreground">
             Customer since {new Date(customer.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
         )}
@@ -990,21 +990,21 @@ export default function CustomerProfilePage() {
       )}
 
       {/* Customer 360 Header Profile Card */}
-      <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
+      <Card className="border-border shadow-sm bg-card overflow-hidden">
         <div className="p-5 sm:p-6 space-y-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             {/* Customer Details */}
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-black text-foreground dark:text-white tracking-tight">
                   {customer.name}
                 </h1>
                 {customer.name_bn && (
-                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  <span className="text-sm font-semibold text-muted-foreground dark:text-muted-foreground">
                     ({customer.name_bn})
                   </span>
                 )}
-                <span className="tabular-nums text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <span className="tabular-nums text-xs font-bold px-2 py-0.5 rounded-md bg-muted text-foreground border border-border dark:border-border">
                   {formatCustomerIdNo(customer)}
                 </span>
                 <Badge
@@ -1036,21 +1036,21 @@ export default function CustomerProfilePage() {
               </div>
 
               {/* Company & Contact Person */}
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground dark:text-muted-foreground">
                 {customer.company_name && (
-                  <div className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
-                    <Building className="h-3.5 w-3.5 text-slate-400" />
+                  <div className="flex items-center gap-1 font-semibold text-foreground dark:text-foreground">
+                    <Building className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>{customer.company_name}</span>
                   </div>
                 )}
                 {customer.contact_person && (
                   <div>
-                    {tBilingual('Contact:', 'যোগাযোগ:')} <strong className="text-slate-700 dark:text-slate-300">{customer.contact_person}</strong>
+                    {tBilingual('Contact:', 'যোগাযোগ:')} <strong className="text-foreground dark:text-muted-foreground">{customer.contact_person}</strong>
                   </div>
                 )}
                 {customer.area && (
                   <div className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>{customer.area}</span>
                   </div>
                 )}
@@ -1058,7 +1058,7 @@ export default function CustomerProfilePage() {
 
               {/* Full Address */}
               {customer.address && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   {customer.address}
                 </p>
               )}
@@ -1069,7 +1069,7 @@ export default function CustomerProfilePage() {
               {/* Phone Call */}
               <a
                 href={`tel:${customer.mobile}`}
-                className="flex items-center gap-1.5 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 font-bold text-xs text-slate-900 dark:text-white"
+                className="flex items-center gap-1.5 py-2 px-3 rounded-xl bg-muted hover:bg-muted font-bold text-xs text-foreground dark:text-white"
                 title="Call Customer"
               >
                 <Phone className="h-3.5 w-3.5 text-blue-600" />
@@ -1114,7 +1114,7 @@ export default function CustomerProfilePage() {
                     'h-9 text-xs font-semibold transition-colors',
                     customer.is_active === false
                       ? 'text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800'
-                      : 'text-slate-600 border-slate-200 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-rose-950/30'
+                      : 'text-muted-foreground border-border hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 dark:hover:bg-rose-950/30'
                   )}
                 >
                   {customer.is_active === false
@@ -1126,11 +1126,11 @@ export default function CustomerProfilePage() {
           </div>
 
           {/* Quick Actions Bar */}
-          <div className="pt-3 border-t border-slate-100 dark:border-slate-900 flex flex-wrap items-center gap-2">
+          <div className="pt-3 border-t border-border dark:border-slate-900 flex flex-wrap items-center gap-2">
             <Button
               size="sm"
               onClick={() => setIsNewInvoiceOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-8"
             >
               <Receipt className="h-3.5 w-3.5 mr-1.5" />
               <span>{tBilingual('Create Invoice', 'ইনভয়েস তৈরি')}</span>
@@ -1159,7 +1159,7 @@ export default function CustomerProfilePage() {
               size="sm"
               variant="outline"
               onClick={() => setIsLogCommOpen(true)}
-              className="text-xs font-medium text-slate-600 dark:text-slate-300 h-8 ml-auto"
+              className="text-xs font-medium text-muted-foreground h-8 ml-auto"
             >
               <Phone className="h-3 w-3 mr-1" />
               <span>{tBilingual('Log Comm', 'যোগাযোগ রেকর্ড')}</span>
@@ -1172,7 +1172,7 @@ export default function CustomerProfilePage() {
       <CustomerFinancialSummaryCards summary={financialSummary} />
 
       {/* Profile Navigation Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-xl p-1.5 gap-1 overflow-x-auto shadow-xs text-xs">
+      <div className="flex border-b border-border bg-card rounded-xl p-1.5 gap-1 overflow-x-auto shadow-xs text-xs">
         {[
           { key: 'overview', label: 'Overview', icon: Layers },
           { key: 'invoices', label: `Invoices (${invoices.length})`, icon: FileText },
@@ -1193,7 +1193,7 @@ export default function CustomerProfilePage() {
                 'py-2 px-3.5 rounded-lg font-bold flex items-center gap-1.5 shrink-0 transition-colors',
                 isActive
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
+                  : 'text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-muted'
               )}
             >
               <Icon className="h-3.5 w-3.5" />
@@ -1209,11 +1209,11 @@ export default function CustomerProfilePage() {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Open Work & Action Items Section */}
-          <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
-            <CardHeader className="p-4 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
+          <Card className="border-border shadow-sm bg-card overflow-hidden">
+            <CardHeader className="p-4 bg-muted border-b border-border dark:border-slate-900 flex flex-row items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertCircle className={cn("h-4 w-4", hasDue ? "text-amber-500" : "text-blue-600")} />
-                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
+                <CardTitle className="text-sm font-bold text-foreground dark:text-white">
                   Open Business & Action Items
                 </CardTitle>
               </div>
@@ -1230,9 +1230,9 @@ export default function CustomerProfilePage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Unpaid Invoices */}
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/30 dark:bg-slate-900/30 space-y-2">
+                  <div className="rounded-xl border border-border p-3 bg-muted space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-foreground dark:text-white flex items-center gap-1.5">
                         <FileText className="h-3.5 w-3.5 text-rose-500" />
                         Unpaid Invoices ({unpaidInvoices.length})
                       </span>
@@ -1254,7 +1254,7 @@ export default function CustomerProfilePage() {
                         {unpaidInvoices.map((inv) => (
                           <div
                             key={inv.id}
-                            className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs"
+                            className="p-2 rounded-lg bg-card border border-border flex items-center justify-between text-xs"
                           >
                             <div>
                               <Link
@@ -1263,7 +1263,7 @@ export default function CustomerProfilePage() {
                               >
                                 {inv.invoice_number}
                               </Link>
-                              <div className="text-2xs text-slate-400">
+                              <div className="text-2xs text-muted-foreground">
                                 {inv.invoice_date}
                               </div>
                             </div>
@@ -1271,7 +1271,7 @@ export default function CustomerProfilePage() {
                               <div className="font-bold text-rose-600 text-xs">
                                 Due ৳{Number(inv.due_amount).toLocaleString('en-IN')}
                               </div>
-                              <div className="text-2xs text-slate-400">
+                              <div className="text-2xs text-muted-foreground">
                                 Total ৳{Number(inv.grand_total).toLocaleString('en-IN')}
                               </div>
                             </div>
@@ -1282,9 +1282,9 @@ export default function CustomerProfilePage() {
                   </div>
 
                   {/* Open Quotations */}
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/30 dark:bg-slate-900/30 space-y-2">
+                  <div className="rounded-xl border border-border p-3 bg-muted space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-foreground dark:text-white flex items-center gap-1.5">
                         <Send className="h-3.5 w-3.5 text-amber-500" />
                         Open Quotations ({openQuotations.length})
                       </span>
@@ -1296,26 +1296,26 @@ export default function CustomerProfilePage() {
                       </Link>
                     </div>
                     {openQuotations.length === 0 ? (
-                      <p className="text-2xs text-slate-400 py-2">No pending quotations</p>
+                      <p className="text-2xs text-muted-foreground py-2">No pending quotations</p>
                     ) : (
                       <div className="space-y-1.5 max-h-48 overflow-y-auto">
                         {openQuotations.map((q) => (
                           <div
                             key={q.id}
-                            className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs"
+                            className="p-2 rounded-lg bg-card border border-border flex items-center justify-between text-xs"
                           >
                             <div>
                               <Link
                                 href={getTenantNavHref('/quotations', pathname, slug)}
-                                className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
+                                className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1"
                               >
                                 {q.quotation_number}
                               </Link>
-                              <div className="text-2xs text-slate-400 capitalize">
+                              <div className="text-2xs text-muted-foreground capitalize">
                                 Status: {q.status}
                               </div>
                             </div>
-                            <div className="font-bold text-slate-900 dark:text-white text-xs">
+                            <div className="font-bold text-foreground dark:text-white text-xs">
                               ৳{Number(q.grand_total).toLocaleString('en-IN')}
                             </div>
                           </div>
@@ -1325,9 +1325,9 @@ export default function CustomerProfilePage() {
                   </div>
 
                   {/* Active Orders */}
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/30 dark:bg-slate-900/30 space-y-2">
+                  <div className="rounded-xl border border-border p-3 bg-muted space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-foreground dark:text-white flex items-center gap-1.5">
                         <ShoppingBag className="h-3.5 w-3.5 text-cyan-500" />
                         Active Orders ({activeOrders.length})
                       </span>
@@ -1339,18 +1339,18 @@ export default function CustomerProfilePage() {
                       </Link>
                     </div>
                     {activeOrders.length === 0 ? (
-                      <p className="text-2xs text-slate-400 py-2">No active production orders</p>
+                      <p className="text-2xs text-muted-foreground py-2">No active production orders</p>
                     ) : (
                       <div className="space-y-1.5 max-h-48 overflow-y-auto">
                         {activeOrders.map((ord) => (
                           <div
                             key={ord.id}
-                            className="p-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs"
+                            className="p-2 rounded-lg bg-card border border-border flex items-center justify-between text-xs"
                           >
                             <div>
                               <Link
                                 href={getTenantNavHref('/orders', pathname, slug)}
-                                className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
+                                className="font-bold text-foreground dark:text-white hover:text-blue-600 flex items-center gap-1"
                               >
                                 {ord.order_number}
                               </Link>
@@ -1358,7 +1358,7 @@ export default function CustomerProfilePage() {
                                 {ord.status.replace('_', ' ')}
                               </div>
                             </div>
-                            <div className="font-bold text-slate-900 dark:text-white text-xs">
+                            <div className="font-bold text-foreground dark:text-white text-xs">
                               ৳{Number(ord.final_price || 0).toLocaleString('en-IN')}
                             </div>
                           </div>
@@ -1375,9 +1375,9 @@ export default function CustomerProfilePage() {
             {/* Left 2 Cols: Invoices & Payments Highlights */}
             <div className="lg:col-span-2 space-y-6">
               {/* Recent Invoices */}
-              <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
-                <CardHeader className="p-4 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
-                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Card className="border-border shadow-sm bg-card dark:bg-background">
+                <CardHeader className="p-4 border-b border-border dark:border-slate-900 flex flex-row items-center justify-between">
+                  <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                     <FileText className="h-4 w-4 text-blue-600" />
                     <span>Recent Invoices</span>
                   </CardTitle>
@@ -1390,25 +1390,25 @@ export default function CustomerProfilePage() {
                 </CardHeader>
                 <CardContent className="p-0">
                   {invoices.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-slate-400">
+                    <div className="p-6 text-center text-xs text-muted-foreground">
                       No invoices generated yet for this customer.
                     </div>
                   ) : (
-                    <div className="divide-y divide-slate-100 dark:divide-slate-900 text-xs">
+                    <div className="divide-y divide-border dark:divide-slate-900 text-xs">
                       {invoices.slice(0, 5).map((inv) => (
-                        <div key={inv.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
+                        <div key={inv.id} className="p-3.5 flex items-center justify-between hover:bg-muted dark:hover:bg-muted/40">
                           <div>
-                            <div className="font-bold text-slate-900 dark:text-white">
+                            <div className="font-bold text-foreground dark:text-white">
                               {inv.invoice_number}
                             </div>
-                            <div className="text-2xs text-slate-400">
+                            <div className="text-2xs text-muted-foreground">
                               {inv.invoice_date}
                             </div>
                           </div>
 
                           <div className="flex items-center gap-3">
                             <div className="text-right">
-                              <div className="font-bold text-slate-900 dark:text-white">
+                              <div className="font-bold text-foreground dark:text-white">
                                 ৳{Number(inv.grand_total).toLocaleString('en-IN')}
                               </div>
                               {Number(inv.due_amount) > 0 && (
@@ -1438,9 +1438,9 @@ export default function CustomerProfilePage() {
               </Card>
 
               {/* Recent Payments */}
-              <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
-                <CardHeader className="p-4 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
-                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Card className="border-border shadow-sm bg-card dark:bg-background">
+                <CardHeader className="p-4 border-b border-border dark:border-slate-900 flex flex-row items-center justify-between">
+                  <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                     <CreditCard className="h-4 w-4 text-emerald-600" />
                     <span>Recent Payments</span>
                   </CardTitle>
@@ -1453,18 +1453,18 @@ export default function CustomerProfilePage() {
                 </CardHeader>
                 <CardContent className="p-0">
                   {payments.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-slate-400">
+                    <div className="p-6 text-center text-xs text-muted-foreground">
                       No payment receipts recorded yet.
                     </div>
                   ) : (
-                    <div className="divide-y divide-slate-100 dark:divide-slate-900 text-xs">
+                    <div className="divide-y divide-border dark:divide-slate-900 text-xs">
                       {payments.slice(0, 5).map((pay) => (
-                        <div key={pay.id} className="p-3.5 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
+                        <div key={pay.id} className="p-3.5 flex items-center justify-between hover:bg-muted dark:hover:bg-muted/40">
                           <div>
-                            <div className="font-bold text-slate-900 dark:text-white">
+                            <div className="font-bold text-foreground dark:text-white">
                               MR #{pay.receipt_number}
                             </div>
-                            <div className="text-2xs text-slate-400">
+                            <div className="text-2xs text-muted-foreground">
                               {pay.payment_date} • via {pay.payment_method.toUpperCase()}
                             </div>
                           </div>
@@ -1483,9 +1483,9 @@ export default function CustomerProfilePage() {
             {/* Right Col: Timeline & Quick Rate Snapshot */}
             <div className="space-y-6">
               {/* Quick Activity Timeline */}
-              <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
-                <CardHeader className="p-4 border-b border-slate-100 dark:border-slate-900 flex flex-row items-center justify-between">
-                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Card className="border-border shadow-sm bg-card dark:bg-background">
+                <CardHeader className="p-4 border-b border-border dark:border-slate-900 flex flex-row items-center justify-between">
+                  <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                     <Clock className="h-4 w-4 text-purple-600" />
                     <span>Recent Activity</span>
                   </CardTitle>
@@ -1502,9 +1502,9 @@ export default function CustomerProfilePage() {
               </Card>
 
               {/* Rates Card Shortcut */}
-              <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 p-4 space-y-3">
+              <Card className="border-border shadow-sm bg-card p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <div className="font-bold text-xs text-foreground dark:text-white flex items-center gap-1.5">
                     <Tag className="h-3.5 w-3.5 text-blue-600" />
                     <span>Special Pricing Configured</span>
                   </div>
@@ -1513,7 +1513,7 @@ export default function CustomerProfilePage() {
                   </Badge>
                 </div>
 
-                <p className="text-2xs text-slate-500 leading-relaxed">
+                <p className="text-2xs text-muted-foreground leading-relaxed">
                   Automated rate fallback ensures this customer always gets their agreed rate on new quotations and invoices.
                 </p>
 
@@ -1533,11 +1533,11 @@ export default function CustomerProfilePage() {
 
       {/* 2. INVOICES TAB */}
       {activeTab === 'invoices' && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-900 flex items-center justify-between">
+        <Card className="border-border shadow-sm bg-card overflow-hidden">
+          <div className="p-4 border-b border-border dark:border-slate-900 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Customer Invoices</h3>
-              <p className="text-xs text-slate-400">All sales bills generated for this account</p>
+              <h3 className="text-sm font-bold text-foreground dark:text-white">Customer Invoices</h3>
+              <p className="text-xs text-muted-foreground">All sales bills generated for this account</p>
             </div>
             <Button
               size="sm"
@@ -1551,7 +1551,7 @@ export default function CustomerProfilePage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 font-semibold border-b">
+              <thead className="bg-muted text-muted-foreground font-semibold border-b">
                 <tr>
                   <th className="py-3 px-4">Invoice #</th>
                   <th className="py-3 px-3">Date</th>
@@ -1562,21 +1562,21 @@ export default function CustomerProfilePage() {
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
+              <tbody className="divide-y divide-border dark:divide-slate-900">
                 {invoices.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                    <td colSpan={7} className="py-8 text-center text-muted-foreground">
                       No invoices recorded for this customer.
                     </td>
                   </tr>
                 ) : (
                   invoices.map((inv) => (
-                    <tr key={inv.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
-                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                    <tr key={inv.id} className="hover:bg-muted dark:hover:bg-muted/40">
+                      <td className="py-3 px-4 font-bold text-foreground dark:text-white">
                         {inv.invoice_number}
                       </td>
-                      <td className="py-3 px-3 text-slate-500">{inv.invoice_date}</td>
-                      <td className="py-3 px-3 text-right font-semibold text-slate-900 dark:text-white">
+                      <td className="py-3 px-3 text-muted-foreground">{inv.invoice_date}</td>
+                      <td className="py-3 px-3 text-right font-semibold text-foreground dark:text-white">
                         ৳{Number(inv.grand_total).toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3 text-right font-medium text-emerald-600">
@@ -1617,11 +1617,11 @@ export default function CustomerProfilePage() {
 
       {/* 3. PAYMENTS TAB */}
       {activeTab === 'payments' && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-900 flex items-center justify-between">
+        <Card className="border-border shadow-sm bg-card overflow-hidden">
+          <div className="p-4 border-b border-border dark:border-slate-900 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Payment Collections</h3>
-              <p className="text-xs text-slate-400">All money receipts issued to this customer</p>
+              <h3 className="text-sm font-bold text-foreground dark:text-white">Payment Collections</h3>
+              <p className="text-xs text-muted-foreground">All money receipts issued to this customer</p>
             </div>
             <Button
               size="sm"
@@ -1635,7 +1635,7 @@ export default function CustomerProfilePage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 font-semibold border-b">
+              <thead className="bg-muted text-muted-foreground font-semibold border-b">
                 <tr>
                   <th className="py-3 px-4">Receipt #</th>
                   <th className="py-3 px-3">Date</th>
@@ -1645,27 +1645,27 @@ export default function CustomerProfilePage() {
                   <th className="py-3 px-4 text-center">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
+              <tbody className="divide-y divide-border dark:divide-slate-900">
                 {payments.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                    <td colSpan={6} className="py-8 text-center text-muted-foreground">
                       No payments recorded yet.
                     </td>
                   </tr>
                 ) : (
                   payments.map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
-                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                    <tr key={p.id} className="hover:bg-muted dark:hover:bg-muted/40">
+                      <td className="py-3 px-4 font-bold text-foreground dark:text-white">
                         MR #{p.receipt_number}
                       </td>
-                      <td className="py-3 px-3 text-slate-500">{p.payment_date}</td>
-                      <td className="py-3 px-3 uppercase font-medium text-slate-700 dark:text-slate-300">
+                      <td className="py-3 px-3 text-muted-foreground">{p.payment_date}</td>
+                      <td className="py-3 px-3 uppercase font-medium text-foreground dark:text-muted-foreground">
                         {p.payment_method}
                       </td>
                       <td className="py-3 px-3 text-right font-black text-emerald-600 text-sm">
                         ৳{Number(p.amount).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-3 px-3 text-slate-500">{p.received_by_name}</td>
+                      <td className="py-3 px-3 text-muted-foreground">{p.received_by_name}</td>
                       <td className="py-3 px-4 text-center">
                         <Button
                           size="sm"
@@ -1688,14 +1688,14 @@ export default function CustomerProfilePage() {
 
       {/* 4. QUOTATIONS TAB */}
       {activeTab === 'quotations' && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 overflow-hidden">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-900 flex items-center justify-between">
+        <Card className="border-border shadow-sm bg-card overflow-hidden">
+          <div className="p-4 border-b border-border dark:border-slate-900 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Customer Quotations</h3>
-              <p className="text-xs text-slate-400">Price proposals and estimates</p>
+              <h3 className="text-sm font-bold text-foreground dark:text-white">Customer Quotations</h3>
+              <p className="text-xs text-muted-foreground">Price proposals and estimates</p>
             </div>
             <Link href={getTenantNavHref(`/quotations/new?customerId=${customer.id}`, pathname, slug)}>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8">
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-8">
                 <Send className="h-3.5 w-3.5 mr-1.5" />
                 <span>{tBilingual('New Quotation', 'নতুন কোটেশন')}</span>
               </Button>
@@ -1704,7 +1704,7 @@ export default function CustomerProfilePage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 font-semibold border-b">
+              <thead className="bg-muted text-muted-foreground font-semibold border-b">
                 <tr>
                   <th className="py-3 px-4">Quotation #</th>
                   <th className="py-3 px-3">Date</th>
@@ -1714,22 +1714,22 @@ export default function CustomerProfilePage() {
                   <th className="py-3 px-4 text-center">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-900">
+              <tbody className="divide-y divide-border dark:divide-slate-900">
                 {quotations.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                    <td colSpan={6} className="py-8 text-center text-muted-foreground">
                       No quotations issued yet for this customer.
                     </td>
                   </tr>
                 ) : (
                   quotations.map((q) => (
-                    <tr key={q.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
-                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                    <tr key={q.id} className="hover:bg-muted dark:hover:bg-muted/40">
+                      <td className="py-3 px-4 font-bold text-foreground dark:text-white">
                         {q.quotation_number}
                       </td>
-                      <td className="py-3 px-3 text-slate-500">{q.quotation_date}</td>
-                      <td className="py-3 px-3 text-slate-500">{q.valid_until}</td>
-                      <td className="py-3 px-3 text-right font-bold text-slate-900 dark:text-white">
+                      <td className="py-3 px-3 text-muted-foreground">{q.quotation_date}</td>
+                      <td className="py-3 px-3 text-muted-foreground">{q.valid_until}</td>
+                      <td className="py-3 px-3 text-right font-bold text-foreground dark:text-white">
                         ৳{Number(q.grand_total).toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3 text-center">
@@ -1772,20 +1772,20 @@ export default function CustomerProfilePage() {
 
       {/* 7. ACTIVITY & TIMELINE TAB */}
       {activeTab === 'activity' && (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 p-6">
+        <Card className="border-border shadow-sm bg-card p-6">
           <CustomerTimeline events={timelineEvents} tenantSlug={slug} />
         </Card>
       )}
 
       {/* EDIT CUSTOMER MODAL */}
       {isEditOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl p-6 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-base font-bold text-foreground dark:text-white">
                 Edit Customer Profile
               </h3>
-              <button onClick={() => setIsEditOpen(false)} className="text-slate-400 hover:text-slate-700">
+              <button onClick={() => setIsEditOpen(false)} className="text-muted-foreground hover:text-foreground">
                 &times;
               </button>
             </div>
@@ -1828,7 +1828,7 @@ export default function CustomerProfilePage() {
                   <select
                     value={editCustomerType}
                     onChange={(e) => setEditCustomerType(e.target.value as any)}
-                    className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs"
+                    className="w-full h-9 rounded-md border border-border bg-card px-2 text-xs"
                   >
                     <option value="retail">Retail</option>
                     <option value="reseller">Reseller</option>
@@ -1934,13 +1934,13 @@ export default function CustomerProfilePage() {
 
       {/* LOG COMMUNICATION MODAL */}
       {isLogCommOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="relative w-full max-w-md bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-base font-bold text-foreground dark:text-white">
                 Log Customer Interaction
               </h3>
-              <button onClick={() => setIsLogCommOpen(false)} className="text-slate-400 hover:text-slate-700">
+              <button onClick={() => setIsLogCommOpen(false)} className="text-muted-foreground hover:text-foreground">
                 &times;
               </button>
             </div>
@@ -1951,7 +1951,7 @@ export default function CustomerProfilePage() {
                 <select
                   value={commType}
                   onChange={(e) => setCommType(e.target.value as any)}
-                  className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs"
+                  className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs"
                 >
                   <option value="phone_call">Phone Call (ফোন কল)</option>
                   <option value="whatsapp_message">WhatsApp Message</option>
@@ -1974,13 +1974,13 @@ export default function CustomerProfilePage() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-600">Action Items / Details</Label>
+                <Label className="text-xs font-semibold text-muted-foreground">Action Items / Details</Label>
                 <textarea
                   rows={3}
                   placeholder="Additional notes, client promises, or design feedback..."
                   value={commDetails}
                   onChange={(e) => setCommDetails(e.target.value)}
-                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-2 text-xs"
+                  className="w-full rounded-md border border-border bg-card p-2 text-xs"
                 />
               </div>
 

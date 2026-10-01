@@ -79,7 +79,7 @@ export function MachineryStatusBadge({
       return (
         <Badge
           variant="outline"
-          className={`bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 font-medium inline-flex items-center gap-1 ${className}`}
+          className={`bg-muted text-foreground border-input font-medium inline-flex items-center gap-1 ${className}`}
         >
           {showIcon && <PowerOff className="h-3 w-3" />}
           <span>Offline</span>
@@ -89,7 +89,7 @@ export function MachineryStatusBadge({
       return (
         <Badge
           variant="outline"
-          className={`bg-slate-200 text-slate-500 border-slate-300 dark:bg-slate-900 dark:text-slate-500 dark:border-slate-800 font-medium inline-flex items-center gap-1 ${className}`}
+          className={`bg-muted text-muted-foreground border-input font-medium inline-flex items-center gap-1 ${className}`}
         >
           {showIcon && <Archive className="h-3 w-3" />}
           <span>Retired</span>

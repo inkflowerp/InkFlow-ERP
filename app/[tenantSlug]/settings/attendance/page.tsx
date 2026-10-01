@@ -469,9 +469,9 @@ export default function AttendanceSettingsPage() {
   if (!mounted) {
     return (
       <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4 sm:px-0 animate-pulse">
-        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
-        <div className="h-64 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-20 bg-muted rounded-2xl w-full" />
+        <div className="h-12 bg-muted rounded-xl w-3/4" />
+        <div className="h-64 bg-muted rounded-2xl w-full" />
       </div>
     )
   }
@@ -494,7 +494,7 @@ export default function AttendanceSettingsPage() {
               size="sm"
               onClick={loadAllData}
               disabled={isLoading}
-              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 h-9 w-9 p-0 rounded-xl flex items-center justify-center shrink-0 cursor-pointer"
+              className="border-border text-foreground hover:bg-muted h-9 w-9 p-0 rounded-xl flex items-center justify-center shrink-0 cursor-pointer"
               title={tBilingual('Refresh', 'রিফ্রেশ')}
               aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
             >
@@ -536,7 +536,7 @@ export default function AttendanceSettingsPage() {
           <button
             type="button"
             onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-md"
+            className="text-muted-foreground hover:text-muted-foreground dark:hover:text-white p-1 rounded-md"
           >
             <X className="h-4 w-4" />
           </button>
@@ -589,14 +589,14 @@ export default function AttendanceSettingsPage() {
       </KpiGrid>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 pb-px overflow-x-auto scrollbar-none">
+      <div className="flex border-b border-border gap-2 pb-px overflow-x-auto scrollbar-none">
         <button
           type="button"
           onClick={() => setActiveTab('locations')}
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'locations'
               ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+              : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
           <MapPin className="h-3.5 w-3.5" />
@@ -612,7 +612,7 @@ export default function AttendanceSettingsPage() {
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'qr_management'
               ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+              : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
           <QrCode className="h-3.5 w-3.5" />
@@ -625,7 +625,7 @@ export default function AttendanceSettingsPage() {
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
             activeTab === 'corrections'
               ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+              : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
           <Clock className="h-3.5 w-3.5" />
@@ -643,7 +643,7 @@ export default function AttendanceSettingsPage() {
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'audit'
               ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+              : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
           }`}
         >
           <ShieldCheck className="h-3.5 w-3.5" />
@@ -660,24 +660,24 @@ export default function AttendanceSettingsPage() {
           {[1, 2].map((n) => (
             <div
               key={n}
-              className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 animate-pulse"
+              className="p-6 rounded-2xl bg-card border border-border space-y-4 animate-pulse"
             >
               <div className="flex items-center justify-between">
-                <div className="h-5 w-40 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-                <div className="h-5 w-20 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                <div className="h-5 w-40 bg-muted rounded-lg" />
+                <div className="h-5 w-20 bg-muted rounded-full" />
               </div>
               <div className="flex gap-4">
-                <div className="h-24 w-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+                <div className="h-24 w-24 bg-muted rounded-xl" />
                 <div className="space-y-2 flex-1 pt-2">
-                  <div className="h-3 w-full bg-slate-200 dark:bg-slate-800 rounded" />
-                  <div className="h-3 w-3/4 bg-slate-200 dark:bg-slate-800 rounded" />
-                  <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-800 rounded" />
+                  <div className="h-3 w-full bg-muted rounded" />
+                  <div className="h-3 w-3/4 bg-muted rounded" />
+                  <div className="h-3 w-1/2 bg-muted rounded" />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 pt-2">
-                <div className="h-9 bg-slate-200 dark:bg-slate-800 rounded-xl" />
-                <div className="h-9 bg-slate-200 dark:bg-slate-800 rounded-xl" />
-                <div className="h-9 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+                <div className="h-9 bg-muted rounded-xl" />
+                <div className="h-9 bg-muted rounded-xl" />
+                <div className="h-9 bg-muted rounded-xl" />
               </div>
             </div>
           ))}
@@ -688,14 +688,14 @@ export default function AttendanceSettingsPage() {
       {!isLoading && activeTab === 'locations' && (
         <div className="space-y-4">
           {/* Search & Filter Toolbar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-card border border-border rounded-2xl shadow-sm">
             <div className="relative w-full sm:w-72">
-              <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={tBilingual('Search locations or addresses...', 'লোকেশন বা ঠিকানা খুঁজুন...')}
-                className="pl-9 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs h-9 rounded-xl"
+                className="pl-9 bg-muted border-border text-foreground dark:text-white text-xs h-9 rounded-xl"
               />
             </div>
 
@@ -705,7 +705,7 @@ export default function AttendanceSettingsPage() {
                 <select
                   value={selectedBranchFilter}
                   onChange={(e) => setSelectedBranchFilter(e.target.value)}
-                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs rounded-xl px-3 h-9 font-medium"
+                  className="bg-muted border border-border text-foreground text-xs rounded-xl px-3 h-9 font-medium"
                 >
                   <option value="all">{tBilingual('All Branches', 'সকল শাখা')}</option>
                   {branches.map((b) => (
@@ -720,7 +720,7 @@ export default function AttendanceSettingsPage() {
               <select
                 value={selectedStatusFilter}
                 onChange={(e) => setSelectedStatusFilter(e.target.value as any)}
-                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs rounded-xl px-3 h-9 font-medium"
+                className="bg-muted border border-border text-foreground text-xs rounded-xl px-3 h-9 font-medium"
               >
                 <option value="all">{tBilingual('All Statuses', 'সকল স্ট্যাটাস')}</option>
                 <option value="active">{tBilingual('Active Only', 'শুধু সক্রিয়')}</option>
@@ -731,14 +731,14 @@ export default function AttendanceSettingsPage() {
 
           {/* Locations Grid */}
           {filteredLocations.length === 0 ? (
-            <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-12 text-center space-y-3 rounded-2xl shadow-sm">
+            <Card className="border-border bg-card p-12 text-center space-y-3 rounded-2xl shadow-sm">
               <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center mx-auto text-indigo-600 dark:text-indigo-400">
                 <MapPin className="h-6 w-6" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-base font-bold text-foreground dark:text-white">
                 {tBilingual('No Attendance Locations Found', 'কোন কর্মস্থল লোকেশন পাওয়া যায়নি')}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                 {searchTerm || selectedBranchFilter !== 'all' || selectedStatusFilter !== 'all'
                   ? tBilingual('No locations match your filter criteria.', 'আপনার ফিল্টারের সাথে কোনো লোকেশন মিলেনি।')
                   : tBilingual(
@@ -769,38 +769,38 @@ export default function AttendanceSettingsPage() {
                 return (
                   <Card
                     key={loc.id}
-                    className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all rounded-2xl overflow-hidden flex flex-col justify-between group"
+                    className="border-border bg-card shadow-sm hover:shadow-md transition-all rounded-2xl overflow-hidden flex flex-col justify-between group"
                   >
-                    <CardHeader className="p-5 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+                    <CardHeader className="p-5 pb-3 border-b border-border dark:border-border/80">
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <CardTitle className="text-base text-slate-900 dark:text-white font-bold">
+                            <CardTitle className="text-base text-foreground dark:text-white font-bold">
                               {loc.name}
                             </CardTitle>
                             <Badge
                               className={`text-2xs font-bold ${
                                 loc.is_active
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
-                                  : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                                  : 'bg-muted text-muted-foreground border-border dark:border-border'
                               }`}
                             >
                               {loc.is_active ? tBilingual('Active Geofence', 'সক্রিয় জিওফেন্স') : tBilingual('Disabled', 'নিষ্ক্রিয়')}
                             </Badge>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground dark:text-muted-foreground">
                             {loc.branch_name && (
                               <Badge
                                 variant="outline"
-                                className="bg-slate-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border-slate-200 dark:border-slate-700 text-2xs px-2 py-0.5 flex items-center gap-1 rounded-md"
+                                className="bg-muted text-indigo-600 dark:text-indigo-300 border-border text-2xs px-2 py-0.5 flex items-center gap-1 rounded-md"
                               >
                                 <Building className="h-2.5 w-2.5" />
                                 <span>{loc.branch_name}</span>
                               </Badge>
                             )}
                             {loc.address && (
-                              <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
-                                <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
+                              <span className="flex items-center gap-1 text-muted-foreground dark:text-muted-foreground">
+                                <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
                                 <span>{loc.address}</span>
                               </span>
                             )}
@@ -811,7 +811,7 @@ export default function AttendanceSettingsPage() {
                           <button
                             type="button"
                             onClick={() => openEditModal(loc)}
-                            className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            className="p-1.5 text-muted-foreground hover:text-indigo-600 dark:hover:text-white rounded-lg hover:bg-muted transition-colors"
                             title="Edit Location"
                           >
                             <Edit className="h-4 w-4" />
@@ -819,7 +819,7 @@ export default function AttendanceSettingsPage() {
                           <button
                             type="button"
                             onClick={() => openDeleteConfirm(loc)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            className="p-1.5 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-muted transition-colors"
                             title="Delete Location & QR Terminal"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -830,18 +830,18 @@ export default function AttendanceSettingsPage() {
 
                     <CardContent className="p-5 space-y-4">
                       {/* QR Preview & Specs */}
-                      <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-4 bg-muted p-4 rounded-xl border border-border dark:border-border">
                         <div
                           id={`qr-container-${loc.id}`}
                           onClick={() => openQrDetailModal(loc)}
-                          className="p-2.5 bg-white rounded-xl shrink-0 shadow-sm border border-slate-200 dark:border-transparent cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all group-hover:scale-105"
+                          className="p-2.5 bg-card rounded-xl shrink-0 shadow-sm border border-border dark:border-transparent cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all group-hover:scale-105"
                           title="Click to zoom & inspect QR details"
                         >
                           <QRCodeSVG value={qrValue} size={84} includeMargin={false} />
                         </div>
 
                         <div className="space-y-1 text-xs flex-1">
-                          <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
+                          <div className="flex justify-between items-center text-muted-foreground dark:text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Compass className="h-3 w-3 text-indigo-500" />
                               <span>{tBilingual('GPS Center', 'জিপিএস অবস্থান')}:</span>
@@ -849,25 +849,25 @@ export default function AttendanceSettingsPage() {
                             <button
                               type="button"
                               onClick={() => handleCopy(`${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}`, 'GPS')}
-                              className="tabular-nums text-slate-800 dark:text-slate-200 font-semibold hover:text-indigo-600 flex items-center gap-1 cursor-pointer"
+                              className="tabular-nums text-foreground font-semibold hover:text-indigo-600 flex items-center gap-1 cursor-pointer"
                               title="Copy Coordinates"
                             >
                               <span>{loc.latitude.toFixed(4)}°, {loc.longitude.toFixed(4)}°</span>
-                              <Copy className="h-2.5 w-2.5 text-slate-400" />
+                              <Copy className="h-2.5 w-2.5 text-muted-foreground" />
                             </button>
                           </div>
 
-                          <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                          <div className="flex justify-between text-muted-foreground dark:text-muted-foreground">
                             <span>{tBilingual('Radius Geofence', 'অনুমোদিত ব্যাসার্ধ')}:</span>
                             <span className="font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums">{loc.radius_meters}m</span>
                           </div>
 
-                          <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                          <div className="flex justify-between text-muted-foreground dark:text-muted-foreground">
                             <span>{tBilingual('Max Tolerance', 'সর্বোচ্চ নির্ভুলতা')}:</span>
-                            <span className="tabular-nums text-slate-700 dark:text-slate-300">±{loc.max_accuracy_meters}m</span>
+                            <span className="tabular-nums text-foreground dark:text-muted-foreground">±{loc.max_accuracy_meters}m</span>
                           </div>
 
-                          <div className="flex justify-between text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-800">
+                          <div className="flex justify-between text-muted-foreground pt-1 border-t border-border dark:border-border">
                             <span>{tBilingual('Token Prefix', 'কিউআর টোকেন')}:</span>
                             <span className="tabular-nums text-2xs text-emerald-600 dark:text-emerald-400 font-bold">
                               {activeToken?.token_prefix || 'ACTIVE'}
@@ -885,7 +885,7 @@ export default function AttendanceSettingsPage() {
                             setSelectedLocation(loc)
                             setIsPrintPosterOpen(true)
                           }}
-                          className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
+                          className="border-border bg-card text-foreground hover:bg-muted dark:hover:bg-slate-700 text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
                         >
                           <Printer className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                           <span>{tBilingual('Poster', 'পোস্টার')}</span>
@@ -895,7 +895,7 @@ export default function AttendanceSettingsPage() {
                           type="button"
                           variant="outline"
                           onClick={() => handleDownloadQrSvg(loc)}
-                          className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
+                          className="border-border bg-card text-foreground hover:bg-muted dark:hover:bg-slate-700 text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
                         >
                           <Download className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                           <span>{tBilingual('Vector', 'ভেক্টর')}</span>
@@ -908,7 +908,7 @@ export default function AttendanceSettingsPage() {
                             setSelectedLocation(loc)
                             setIsRegenerateConfirmOpen(true)
                           }}
-                          className="border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-slate-800 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-slate-700 text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
+                          className="border-amber-200 dark:border-amber-500/20 bg-amber-50 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-slate-700 text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
                         >
                           <RefreshCw className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                           <span>{tBilingual('Rotate', 'রোটেট')}</span>
@@ -925,21 +925,21 @@ export default function AttendanceSettingsPage() {
 
       {/* TAB 2: DEDICATED QR MANAGEMENT */}
       {!isLoading && activeTab === 'qr_management' && (
-        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-sm overflow-hidden">
-          <CardHeader className="p-5 pb-4 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-slate-900 dark:text-white text-base">
+        <Card className="border-border bg-card rounded-2xl shadow-sm overflow-hidden">
+          <CardHeader className="p-5 pb-4 border-b border-border dark:border-border">
+            <CardTitle className="text-foreground dark:text-white text-base">
               {tBilingual('QR Codes & Physical Terminal Management', 'কিউআর কোড ও ফিজিক্যাল টার্মিনাল')}
             </CardTitle>
-            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+            <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual(
                 'Audit active cryptographic tokens, generate printable A4 posters, or instantly rotate compromised QR codes.',
                 'সক্রিয় টোকেন পর্যবেক্ষণ করুন, প্রবেশদ্বারের পোস্টার প্রিন্ট করুন বা পুরাতন কিউআর পরিবর্তন করুন।'
               )}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-slate-100 dark:divide-slate-800">
+          <CardContent className="p-0 divide-y divide-border dark:divide-border">
             {locations.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-500">
+              <div className="p-8 text-center text-xs text-muted-foreground">
                 {tBilingual('No active locations available for QR management.', 'কিউআর ব্যবস্থাপনার জন্য কোনো সক্রিয় লোকেশন নেই।')}
               </div>
             ) : (
@@ -952,13 +952,13 @@ export default function AttendanceSettingsPage() {
                 return (
                   <div
                     key={loc.id}
-                    className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                    className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted dark:hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-start gap-4">
                       <div
                         id={`qr-container-${loc.id}`}
                         onClick={() => openQrDetailModal(loc)}
-                        className="p-2 bg-white rounded-xl shrink-0 shadow-sm border border-slate-200 dark:border-transparent cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all"
+                        className="p-2 bg-card rounded-xl shrink-0 shadow-sm border border-border dark:border-transparent cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all"
                         title="Click to inspect"
                       >
                         <QRCodeSVG value={qrValue} size={76} includeMargin={false} />
@@ -966,7 +966,7 @@ export default function AttendanceSettingsPage() {
 
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 dark:text-white text-sm">{loc.name}</span>
+                          <span className="font-bold text-foreground dark:text-white text-sm">{loc.name}</span>
                           <Badge
                             className={`text-2xs font-bold ${
                               activeToken?.is_active
@@ -977,11 +977,11 @@ export default function AttendanceSettingsPage() {
                             {activeToken?.is_active ? 'ACTIVE TOKEN' : 'INACTIVE'}
                           </Badge>
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+                        <p className="text-xs text-muted-foreground tabular-nums">
                           Prefix: <strong className="text-indigo-600 dark:text-indigo-300">{activeToken?.token_prefix || 'ACTIVE'}</strong> • Radius: {loc.radius_meters}m • Max Accuracy: ±{loc.max_accuracy_meters}m
                         </p>
                         {activeToken?.created_at && (
-                          <p className="text-2xs text-slate-400 dark:text-slate-500 tabular-nums">
+                          <p className="text-2xs text-muted-foreground tabular-nums">
                             Last Rotated: {new Date(activeToken.created_at).toLocaleString()}
                           </p>
                         )}
@@ -994,9 +994,9 @@ export default function AttendanceSettingsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => openQrDetailModal(loc)}
-                        className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs h-8 rounded-lg"
+                        className="border-border text-foreground text-xs h-8 rounded-lg"
                       >
-                        <Eye className="h-3.5 w-3.5 mr-1 text-slate-400" />
+                        <Eye className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                         <span>Inspect</span>
                       </Button>
                       <Button
@@ -1019,7 +1019,7 @@ export default function AttendanceSettingsPage() {
                           setSelectedLocation(loc)
                           setIsRegenerateConfirmOpen(true)
                         }}
-                        className="border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-slate-800 text-xs h-8 rounded-lg font-bold"
+                        className="border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-50 text-xs h-8 rounded-lg font-bold"
                       >
                         <RefreshCw className="h-3.5 w-3.5 mr-1 text-amber-500" />
                         <span>Regenerate</span>
@@ -1032,7 +1032,7 @@ export default function AttendanceSettingsPage() {
                           setSelectedLocation(loc)
                           setIsRevokeConfirmOpen(true)
                         }}
-                        className="border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 text-xs h-8 rounded-lg font-bold"
+                        className="border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-50 text-xs h-8 rounded-lg font-bold"
                       >
                         <Ban className="h-3.5 w-3.5 mr-1 text-rose-500" />
                         <span>Revoke</span>
@@ -1048,14 +1048,14 @@ export default function AttendanceSettingsPage() {
 
       {/* TAB 3: CORRECTION REQUESTS */}
       {!isLoading && activeTab === 'corrections' && (
-        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-sm overflow-hidden">
-          <CardHeader className="p-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <Card className="border-border bg-card rounded-2xl shadow-sm overflow-hidden">
+          <CardHeader className="p-5 pb-4 border-b border-border dark:border-border">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <CardTitle className="text-slate-900 dark:text-white text-base">
+                <CardTitle className="text-foreground dark:text-white text-base">
                   {tBilingual('Employee Attendance Corrections Inbox', 'হাজিরা সংশোধন ইনবক্স')}
                 </CardTitle>
-                <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+                <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {tBilingual(
                     'Review and approve or reject missed punch correction requests submitted by staff members.',
                     'কর্মীদের জমা দেওয়া অনুপস্থিতি বা ভুলে যাওয়া পাঞ্চ সংশোধনের আবেদন রিভিউ করুন।'
@@ -1066,7 +1066,7 @@ export default function AttendanceSettingsPage() {
               <select
                 value={correctionFilter}
                 onChange={(e) => setCorrectionFilter(e.target.value as any)}
-                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs rounded-xl px-3 h-8 self-start sm:self-auto font-medium"
+                className="bg-muted border border-border text-foreground text-xs rounded-xl px-3 h-8 self-start sm:self-auto font-medium"
               >
                 <option value="all">{tBilingual('All Corrections', 'সকল আবেদন')}</option>
                 <option value="pending">{tBilingual('Pending Only', 'অপেক্ষমান')}</option>
@@ -1075,26 +1075,26 @@ export default function AttendanceSettingsPage() {
               </select>
             </div>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-slate-100 dark:divide-slate-800">
+          <CardContent className="p-0 divide-y divide-border dark:divide-border">
             {filteredCorrections.length === 0 ? (
-              <div className="p-12 text-center text-xs text-slate-500 dark:text-slate-400">
+              <div className="p-12 text-center text-xs text-muted-foreground dark:text-muted-foreground">
                 {tBilingual('No correction requests found matching filter.', 'কোনো সংশোধন আবেদন পাওয়া যায়নি।')}
               </div>
             ) : (
               filteredCorrections.map((corr) => (
                 <div
                   key={corr.id}
-                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted dark:hover:bg-muted/30 transition-colors"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 dark:text-white text-xs">
+                      <span className="font-bold text-foreground dark:text-white text-xs">
                         {corr.employee_name || 'Staff Member'}
                       </span>
-                      <Badge className="text-2xs bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-slate-800 dark:text-indigo-300 dark:border-slate-700">
+                      <Badge className="text-2xs bg-indigo-50 text-indigo-700 border-indigo-200 dark:text-indigo-300 dark:border-border">
                         {corr.requested_type}
                       </Badge>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                      <span className="text-xs text-muted-foreground dark:text-muted-foreground">
                         {corr.attendance_date} at {corr.requested_time}
                       </span>
                       <Badge
@@ -1109,11 +1109,11 @@ export default function AttendanceSettingsPage() {
                         {corr.status.toUpperCase()}
                       </Badge>
                     </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300">
-                      Reason: <strong className="text-slate-800 dark:text-slate-200">{corr.reason}</strong>
+                    <p className="text-xs text-muted-foreground dark:text-muted-foreground">
+                      Reason: <strong className="text-foreground dark:text-foreground">{corr.reason}</strong>
                     </p>
                     {corr.review_notes && (
-                      <p className="text-2xs text-slate-400 italic">
+                      <p className="text-2xs text-muted-foreground italic">
                         Manager Note: &ldquo;{corr.review_notes}&rdquo;
                       </p>
                     )}
@@ -1141,7 +1141,7 @@ export default function AttendanceSettingsPage() {
                           setSelectedCorrection(corr)
                           handleReviewCorrection('rejected')
                         }}
-                        className="border-rose-200 dark:border-slate-700 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 text-xs h-8 rounded-lg font-bold"
+                        className="border-rose-200 text-rose-600 dark:text-rose-400 hover:bg-rose-50 text-xs h-8 rounded-lg font-bold"
                       >
                         <X className="h-3.5 w-3.5 mr-1" />
                         <span>Reject</span>
@@ -1157,14 +1157,14 @@ export default function AttendanceSettingsPage() {
 
       {/* TAB 4: AUDIT LOGS */}
       {!isLoading && activeTab === 'audit' && (
-        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-sm overflow-hidden">
-          <CardHeader className="p-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <Card className="border-border bg-card rounded-2xl shadow-sm overflow-hidden">
+          <CardHeader className="p-5 pb-4 border-b border-border dark:border-border">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <CardTitle className="text-slate-900 dark:text-white text-base">
+                <CardTitle className="text-foreground dark:text-white text-base">
                   {tBilingual('Authoritative Attendance Audit Trail', 'নিরাপদ অডিট ট্রেইল')}
                 </CardTitle>
-                <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+                <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {tBilingual(
                     'Immutable cryptographic ledger of all location setups, QR token rotations, and punch events.',
                     'সকল লোকেশন তৈরি, কিউআর কোড রোটেশন ও উপস্থিতি যাচাইকরণের সম্পূর্ণ রেকর্ড।'
@@ -1175,7 +1175,7 @@ export default function AttendanceSettingsPage() {
               <select
                 value={auditFilter}
                 onChange={(e) => setAuditFilter(e.target.value)}
-                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs rounded-xl px-3 h-8 self-start sm:self-auto font-medium"
+                className="bg-muted border border-border text-foreground text-xs rounded-xl px-3 h-8 self-start sm:self-auto font-medium"
               >
                 <option value="all">{tBilingual('All Actions', 'সকল কার্যক্রম')}</option>
                 <option value="location">{tBilingual('Location Events', 'লোকেশন ইভেন্ট')}</option>
@@ -1184,35 +1184,35 @@ export default function AttendanceSettingsPage() {
               </select>
             </div>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-slate-100 dark:divide-slate-800">
+          <CardContent className="p-0 divide-y divide-border dark:divide-border">
             {filteredAuditLogs.length === 0 ? (
-              <div className="p-12 text-center text-xs text-slate-500 dark:text-slate-400">
+              <div className="p-12 text-center text-xs text-muted-foreground dark:text-muted-foreground">
                 {tBilingual('No audit entries matching filter.', 'কোনো অডিট লগ পাওয়া যায়নি।')}
               </div>
             ) : (
               filteredAuditLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                  className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs hover:bg-muted dark:hover:bg-muted/30 transition-colors"
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className="text-2xs tabular-nums bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border-slate-200 dark:border-slate-700"
+                        className="text-2xs tabular-nums bg-muted text-indigo-600 dark:text-indigo-300 border-border dark:border-border"
                       >
                         {log.action_type}
                       </Badge>
-                      <span className="font-semibold text-slate-900 dark:text-white">{log.actor_name}</span>
+                      <span className="font-semibold text-foreground dark:text-white">{log.actor_name}</span>
                       {log.location_name && (
-                        <span className="text-slate-500 dark:text-slate-400">• Location: {log.location_name}</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">• Location: {log.location_name}</span>
                       )}
                     </div>
-                    <span className="text-slate-500 dark:text-slate-400 text-2xs block tabular-nums truncate max-w-xl">
+                    <span className="text-muted-foreground text-2xs block tabular-nums truncate max-w-xl">
                       {typeof log.details === 'object' ? JSON.stringify(log.details) : log.details}
                     </span>
                   </div>
-                  <span className="text-2xs text-slate-400 dark:text-slate-500 tabular-nums shrink-0">
+                  <span className="text-2xs text-muted-foreground tabular-nums shrink-0">
                     {new Date(log.created_at).toLocaleString()}
                   </span>
                 </div>
@@ -1234,7 +1234,7 @@ export default function AttendanceSettingsPage() {
       >
         <form onSubmit={handleCreateLocation} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="locName" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <Label htmlFor="locName" className="text-xs font-semibold text-foreground dark:text-muted-foreground">
               {tBilingual('Location Name', 'লোকেশন নাম')} *
             </Label>
             <Input
@@ -1242,7 +1242,7 @@ export default function AttendanceSettingsPage() {
               value={locName}
               onChange={(e) => setLocName(e.target.value)}
               placeholder="e.g. Head Office / Fakirapool Press Zone / Gazipur Warehouse"
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs h-10 rounded-xl"
+              className="bg-muted border-border text-foreground dark:text-white text-xs h-10 rounded-xl"
               required
             />
           </div>
@@ -1250,14 +1250,14 @@ export default function AttendanceSettingsPage() {
           {/* Branch Selection Dropdown */}
           {branches.length > 0 && (
             <div className="space-y-1.5">
-              <Label htmlFor="locBranch" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <Label htmlFor="locBranch" className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                 {tBilingual('Assign to Branch', 'শাখা নির্বাচন')}
               </Label>
               <select
                 id="locBranch"
                 value={locBranchId}
                 onChange={(e) => setLocBranchId(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-xl px-3 h-10"
+                className="w-full bg-muted border border-border text-foreground dark:text-white text-xs rounded-xl px-3 h-10"
               >
                 <option value="">{tBilingual('Default Company Location (All Branches)', 'ডিফল্ট কেন্দ্রীয় লোকেশন (সকল শাখা)')}</option>
                 {branches.map((b) => (
@@ -1270,7 +1270,7 @@ export default function AttendanceSettingsPage() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="locAddress" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <Label htmlFor="locAddress" className="text-xs font-semibold text-foreground dark:text-muted-foreground">
               {tBilingual('Address', 'ঠিকানা')}
             </Label>
             <Input
@@ -1278,14 +1278,14 @@ export default function AttendanceSettingsPage() {
               value={locAddress}
               onChange={(e) => setLocAddress(e.target.value)}
               placeholder="e.g. Motijheel C/A, Dhaka"
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs h-10 rounded-xl"
+              className="bg-muted border-border text-foreground dark:text-white text-xs h-10 rounded-xl"
             />
           </div>
 
           {/* GPS Coordinate Inputs & Auto-detect Button */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="p-4 rounded-2xl bg-muted border border-border space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span className="text-xs font-bold text-foreground dark:text-white flex items-center gap-1.5">
                 <Compass className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <span>{tBilingual('Geofence GPS Coordinates', 'জিওফেন্স জিপিএস কো-অর্ডিনেট')}</span>
               </span>
@@ -1296,7 +1296,7 @@ export default function AttendanceSettingsPage() {
                 size="sm"
                 onClick={detectCurrentGps}
                 disabled={isDetectingGps}
-                className="h-8 text-xs border-indigo-300 dark:border-indigo-500/40 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-slate-900 rounded-xl font-bold"
+                className="h-8 text-xs border-indigo-300 dark:border-indigo-500/40 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 rounded-xl font-bold"
               >
                 <Navigation className={`h-3.5 w-3.5 mr-1 ${isDetectingGps ? 'animate-spin' : ''}`} />
                 <span>{isDetectingGps ? tBilingual('Detecting GPS...', 'জিপিএস ধরা হচ্ছে...') : tBilingual('Capture Current GPS', 'বর্তমান অবস্থান নিন')}</span>
@@ -1312,7 +1312,7 @@ export default function AttendanceSettingsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="locLat" className="text-2xs text-slate-500 dark:text-slate-400 font-semibold">
+                <Label htmlFor="locLat" className="text-2xs text-muted-foreground font-semibold">
                   {tBilingual('Latitude (°N)', 'অক্ষাংশ')}
                 </Label>
                 <Input
@@ -1322,13 +1322,13 @@ export default function AttendanceSettingsPage() {
                   value={locLat}
                   onChange={(e) => setLocLat(parseFloat(e.target.value))}
                   placeholder="23.853600"
-                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white tabular-nums text-xs h-9 rounded-xl"
+                  className="bg-card border-border text-foreground dark:text-white tabular-nums text-xs h-9 rounded-xl"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="locLng" className="text-2xs text-slate-500 dark:text-slate-400 font-semibold">
+                <Label htmlFor="locLng" className="text-2xs text-muted-foreground font-semibold">
                   {tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}
                 </Label>
                 <Input
@@ -1338,7 +1338,7 @@ export default function AttendanceSettingsPage() {
                   value={locLng}
                   onChange={(e) => setLocLng(parseFloat(e.target.value))}
                   placeholder="90.417400"
-                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white tabular-nums text-xs h-9 rounded-xl"
+                  className="bg-card border-border text-foreground dark:text-white tabular-nums text-xs h-9 rounded-xl"
                   required
                 />
               </div>
@@ -1347,9 +1347,9 @@ export default function AttendanceSettingsPage() {
 
           {/* Sliders with Explanations */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+            <div className="space-y-1.5 p-3 rounded-xl bg-muted border border-border dark:border-border">
               <div className="flex justify-between items-center">
-                <Label htmlFor="locRadius" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <Label htmlFor="locRadius" className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                   Radius: <strong className="text-indigo-600 dark:text-indigo-400 tabular-nums">{locRadius}m</strong>
                 </Label>
               </div>
@@ -1363,15 +1363,15 @@ export default function AttendanceSettingsPage() {
                 onChange={(e) => setLocRadius(parseInt(e.target.value))}
                 className="w-full accent-indigo-600"
               />
-              <p className="text-2xs text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
                 {tBilingual('Allowed punch circle diameter.', 'অনুমোদিত উপস্থিতি বলয়।')}
               </p>
             </div>
 
-            <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+            <div className="space-y-1.5 p-3 rounded-xl bg-muted border border-border dark:border-border">
               <div className="flex justify-between items-center">
-                <Label htmlFor="locAcc" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Max Accuracy: <strong className="text-slate-900 dark:text-white tabular-nums">±{locMaxAccuracy}m</strong>
+                <Label htmlFor="locAcc" className="text-xs font-semibold text-foreground dark:text-muted-foreground">
+                  Max Accuracy: <strong className="text-foreground dark:text-white tabular-nums">±{locMaxAccuracy}m</strong>
                 </Label>
               </div>
               <input
@@ -1384,19 +1384,19 @@ export default function AttendanceSettingsPage() {
                 onChange={(e) => setLocMaxAccuracy(parseInt(e.target.value))}
                 className="w-full accent-indigo-600"
               />
-              <p className="text-2xs text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
                 {tBilingual('Rejects inaccurate GPS satellite signals.', 'দুর্বল জিপিএস সিগন্যাল বাতিল করবে।')}
               </p>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsAddLocationOpen(false)}
-              className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-xl"
+              className="border-border text-foreground text-xs rounded-xl"
             >
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
@@ -1421,28 +1421,28 @@ export default function AttendanceSettingsPage() {
       >
         <form onSubmit={handleUpdateLocation} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="editName" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <Label htmlFor="editName" className="text-xs font-semibold text-foreground dark:text-muted-foreground">
               {tBilingual('Location Name', 'লোকেশন নাম')} *
             </Label>
             <Input
               id="editName"
               value={locName}
               onChange={(e) => setLocName(e.target.value)}
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs h-10 rounded-xl"
+              className="bg-muted border-border text-foreground dark:text-white text-xs h-10 rounded-xl"
               required
             />
           </div>
 
           {branches.length > 0 && (
             <div className="space-y-1.5">
-              <Label htmlFor="editBranch" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <Label htmlFor="editBranch" className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                 {tBilingual('Branch', 'শাখা')}
               </Label>
               <select
                 id="editBranch"
                 value={locBranchId}
                 onChange={(e) => setLocBranchId(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs rounded-xl px-3 h-10"
+                className="w-full bg-muted border border-border text-foreground dark:text-white text-xs rounded-xl px-3 h-10"
               >
                 <option value="">{tBilingual('Default Company Location (All Branches)', 'ডিফল্ট কেন্দ্রীয় লোকেশন (সকল শাখা)')}</option>
                 {branches.map((b) => (
@@ -1455,46 +1455,46 @@ export default function AttendanceSettingsPage() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="editAddress" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <Label htmlFor="editAddress" className="text-xs font-semibold text-foreground dark:text-muted-foreground">
               {tBilingual('Address', 'ঠিকানা')}
             </Label>
             <Input
               id="editAddress"
               value={locAddress}
               onChange={(e) => setLocAddress(e.target.value)}
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs h-10 rounded-xl"
+              className="bg-muted border-border text-foreground dark:text-white text-xs h-10 rounded-xl"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-2xs text-slate-500 dark:text-slate-400 font-semibold">{tBilingual('Latitude (°N)', 'অক্ষাংশ')}</Label>
+              <Label className="text-2xs text-muted-foreground font-semibold">{tBilingual('Latitude (°N)', 'অক্ষাংশ')}</Label>
               <Input
                 type="number"
                 step="0.000001"
                 value={locLat}
                 onChange={(e) => setLocLat(parseFloat(e.target.value))}
-                className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white tabular-nums text-xs h-9 rounded-xl"
+                className="bg-card border-border text-foreground dark:text-white tabular-nums text-xs h-9 rounded-xl"
                 required
               />
             </div>
 
             <div className="space-y-1">
-              <Label className="text-2xs text-slate-500 dark:text-slate-400 font-semibold">{tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}</Label>
+              <Label className="text-2xs text-muted-foreground font-semibold">{tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}</Label>
               <Input
                 type="number"
                 step="0.000001"
                 value={locLng}
                 onChange={(e) => setLocLng(parseFloat(e.target.value))}
-                className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white tabular-nums text-xs h-9 rounded-xl"
+                className="bg-card border-border text-foreground dark:text-white tabular-nums text-xs h-9 rounded-xl"
                 required
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <div className="space-y-1.5 p-3 rounded-xl bg-muted border border-border dark:border-border">
+              <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                 Radius: <strong className="text-indigo-600 dark:text-indigo-400 tabular-nums">{locRadius}m</strong>
               </Label>
               <input
@@ -1508,9 +1508,9 @@ export default function AttendanceSettingsPage() {
               />
             </div>
 
-            <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Max Accuracy: <strong className="text-slate-900 dark:text-white tabular-nums">±{locMaxAccuracy}m</strong>
+            <div className="space-y-1.5 p-3 rounded-xl bg-muted border border-border dark:border-border">
+              <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
+                Max Accuracy: <strong className="text-foreground dark:text-white tabular-nums">±{locMaxAccuracy}m</strong>
               </Label>
               <input
                 type="range"
@@ -1532,18 +1532,18 @@ export default function AttendanceSettingsPage() {
               onChange={(e) => setLocActive(e.target.checked)}
               className="rounded accent-indigo-600 h-4 w-4"
             />
-            <Label htmlFor="locActive" className="text-xs cursor-pointer text-slate-700 dark:text-slate-300 font-semibold">
+            <Label htmlFor="locActive" className="text-xs cursor-pointer text-foreground font-semibold">
               {tBilingual('Active Geofence Location', 'সক্রিয় উপস্থিতি বলয়')}
             </Label>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsEditLocationOpen(false)}
-              className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-xl"
+              className="border-border text-foreground text-xs rounded-xl"
             >
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
@@ -1568,10 +1568,10 @@ export default function AttendanceSettingsPage() {
           description="Detailed cryptographic token metadata and terminal actions"
         >
           <div className="space-y-4 pt-2">
-            <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-muted border border-border dark:border-border">
               <div
                 id={`qr-container-${selectedLocation.id}`}
-                className="p-3 bg-white rounded-xl shadow-md shrink-0 border border-slate-200 dark:border-transparent"
+                className="p-3 bg-card rounded-xl shadow-md shrink-0 border border-border dark:border-transparent"
               >
                 <QRCodeSVG
                   value={
@@ -1585,32 +1585,32 @@ export default function AttendanceSettingsPage() {
               </div>
 
               <div className="space-y-1.5 text-xs flex-1 w-full">
-                <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-1">
-                  <span className="text-slate-500 dark:text-slate-400">Token Status:</span>
+                <div className="flex justify-between border-b border-border pb-1">
+                  <span className="text-muted-foreground dark:text-muted-foreground">Token Status:</span>
                   <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-2xs font-bold">
                     {selectedLocation.active_qr_token?.is_active ? 'ACTIVE & VERIFIED' : 'REVOKED'}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Token Prefix:</span>
+                  <span className="text-muted-foreground dark:text-muted-foreground">Token Prefix:</span>
                   <span className="tabular-nums text-indigo-600 dark:text-indigo-300 font-bold">
                     {selectedLocation.active_qr_token?.token_prefix || 'ACTIVE'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Geofence Center:</span>
-                  <span className="tabular-nums text-slate-800 dark:text-slate-200">
+                  <span className="text-muted-foreground dark:text-muted-foreground">Geofence Center:</span>
+                  <span className="tabular-nums text-foreground dark:text-foreground">
                     {selectedLocation.latitude.toFixed(6)}°N, {selectedLocation.longitude.toFixed(6)}°E
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Radius & Tolerance:</span>
-                  <span className="tabular-nums text-slate-800 dark:text-slate-200">
+                  <span className="text-muted-foreground dark:text-muted-foreground">Radius & Tolerance:</span>
+                  <span className="tabular-nums text-foreground dark:text-foreground">
                     {selectedLocation.radius_meters}m (Max: ±{selectedLocation.max_accuracy_meters}m)
                   </span>
                 </div>
                 {selectedLocation.active_qr_token?.created_at && (
-                  <div className="flex justify-between pt-1 border-t border-slate-200 dark:border-slate-800 text-slate-400 text-2xs">
+                  <div className="flex justify-between pt-1 border-t border-border text-muted-foreground text-2xs">
                     <span>Generated:</span>
                     <span>{new Date(selectedLocation.active_qr_token.created_at).toLocaleString()}</span>
                   </div>
@@ -1637,7 +1637,7 @@ export default function AttendanceSettingsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => handleDownloadQrSvg(selectedLocation)}
-                className="border-slate-200 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl"
+                className="border-border text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl"
               >
                 <Download className="h-3.5 w-3.5 mr-1" />
                 <span>Download</span>
@@ -1700,24 +1700,24 @@ export default function AttendanceSettingsPage() {
           <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <h4 className="font-bold text-slate-900 dark:text-white">Warning: Immediate Invalidation</h4>
+              <h4 className="font-bold text-foreground dark:text-white">Warning: Immediate Invalidation</h4>
               <p>
                 Regenerating this QR will <strong>immediately invalidate the previous QR code</strong>. Employees scanning the old printed QR code will be rejected. You must print and post the new QR code.
               </p>
             </div>
           </div>
 
-          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
-            Target Location: <strong className="text-slate-900 dark:text-white">{selectedLocation?.name}</strong>
+          <div className="p-3 bg-muted rounded-xl text-xs text-muted-foreground border border-border dark:border-border">
+            Target Location: <strong className="text-foreground dark:text-white">{selectedLocation?.name}</strong>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsRegenerateConfirmOpen(false)}
-              className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-xl"
+              className="border-border text-foreground text-xs rounded-xl"
             >
               Cancel
             </Button>
@@ -1745,20 +1745,20 @@ export default function AttendanceSettingsPage() {
           <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <h4 className="font-bold text-slate-900 dark:text-white">Warning: Terminal Deactivation</h4>
+              <h4 className="font-bold text-foreground dark:text-white">Warning: Terminal Deactivation</h4>
               <p>
                 Revoking this QR code will immediately disable scanning at <strong>{selectedLocation?.name}</strong>. Employees will not be able to punch attendance until a new QR is generated.
               </p>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsRevokeConfirmOpen(false)}
-              className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-xl"
+              className="border-border text-foreground text-xs rounded-xl"
             >
               Cancel
             </Button>
@@ -1789,27 +1789,27 @@ export default function AttendanceSettingsPage() {
           <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <h4 className="font-bold text-slate-900 dark:text-white">Permanent Deletion Warning (স্থায়ীভাবে মুছে ফেলা)</h4>
+              <h4 className="font-bold text-foreground dark:text-white">Permanent Deletion Warning (স্থায়ীভাবে মুছে ফেলা)</h4>
               <p>
                 Deleting <strong>&ldquo;{locationToDelete?.name}&rdquo;</strong> will permanently remove this location and immediately deactivate all associated QR codes. This action cannot be undone.
               </p>
             </div>
           </div>
 
-          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs text-slate-600 dark:text-slate-400 tabular-nums border border-slate-200 dark:border-slate-800">
-            Target Location: <strong className="text-slate-900 dark:text-white">{locationToDelete?.name}</strong> • Prefix:{' '}
+          <div className="p-3 bg-muted rounded-xl text-xs text-muted-foreground tabular-nums border border-border dark:border-border">
+            Target Location: <strong className="text-foreground dark:text-white">{locationToDelete?.name}</strong> • Prefix:{' '}
             <strong className="text-indigo-600 dark:text-indigo-300">
               {locationToDelete?.active_qr_token?.token_prefix || 'ACTIVE'}
             </strong>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsDeleteLocationConfirmOpen(false)}
-              className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-xl"
+              className="border-border text-foreground text-xs rounded-xl"
             >
               Cancel (বাতিল)
             </Button>

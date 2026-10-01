@@ -299,14 +299,14 @@ export function MachineryFormModal({
         )}
 
         {/* Section Tabs */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 sm:gap-2">
+        <div className="flex border-b border-border gap-1 sm:gap-2">
           <button
             type="button"
             onClick={() => setActiveTab('basic')}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold border-b-2 transition-colors ${
               activeTab === 'basic'
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
             <Cpu className="h-3.5 w-3.5" />
@@ -318,7 +318,7 @@ export function MachineryFormModal({
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold border-b-2 transition-colors ${
               activeTab === 'production'
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
             <Sliders className="h-3.5 w-3.5" />
@@ -330,7 +330,7 @@ export function MachineryFormModal({
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold border-b-2 transition-colors ${
               activeTab === 'costing'
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
             <DollarSign className="h-3.5 w-3.5" />
@@ -373,7 +373,7 @@ export function MachineryFormModal({
                   id="mType"
                   value={machineType}
                   onChange={(e) => setMachineType(e.target.value as MachineryType)}
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                  className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
                 >
                   {MACHINE_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -387,7 +387,7 @@ export function MachineryFormModal({
                   id="mCat"
                   value={category}
                   onChange={(e) => setCategory(e.target.value as MachineryCategory)}
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                  className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c.value} value={c.value}>{c.label}</option>
@@ -401,7 +401,7 @@ export function MachineryFormModal({
                   id="mDept"
                   value={department}
                   onChange={(e) => setDepartment(e.target.value as MachineryDepartment)}
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                  className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
                 >
                   {DEPARTMENTS.map((d) => (
                     <option key={d.value} value={d.value}>{d.label}</option>
@@ -508,7 +508,7 @@ export function MachineryFormModal({
                   id="mDimUnit"
                   value={dimensionUnit}
                   onChange={(e) => setDimensionUnit(e.target.value as DimensionUnit)}
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                  className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
                 >
                   <option value="inch">Inches (in)</option>
                   <option value="ft">Feet (ft)</option>
@@ -738,7 +738,7 @@ export function MachineryFormModal({
         )}
 
         {/* Modal Actions */}
-        <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-2 pt-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"
@@ -767,7 +767,7 @@ export function MachineryFormModal({
             <Button
               type="submit"
               isLoading={loading}
-              className="w-full sm:w-auto min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              className="w-full sm:w-auto min-h-[40px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
             >
               {isEdit ? 'Save Changes' : 'Register Machine'}
             </Button>

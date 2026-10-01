@@ -137,7 +137,7 @@ export function SettingsNav() {
   })
 
   return (
-    <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto gap-1 pb-px scrollbar-none mb-6 touch-scroll">
+    <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-border overflow-x-auto gap-1 pb-px scrollbar-none mb-6 touch-scroll">
       {links.map((link) => {
         const Icon = link.icon
         const cleanPath = (company?.slug && pathname?.startsWith(`/${company.slug}`))
@@ -166,7 +166,7 @@ export function SettingsNav() {
               'flex items-center gap-2 px-3.5 py-2.5 rounded-t-lg text-xs font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px h-10 sm:h-9 shrink-0',
               isActive
                 ? 'border-blue-600 text-blue-600 bg-blue-50/50 dark:border-blue-500 dark:text-blue-400 dark:bg-blue-950/20 font-bold'
-                : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:hover:text-slate-200 dark:hover:bg-slate-800/40'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/40'
             )}
           >
             <Icon className="h-4 w-4 shrink-0" />

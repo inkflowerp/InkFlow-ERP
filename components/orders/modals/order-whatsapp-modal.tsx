@@ -116,24 +116,24 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 p-6 shadow-2xl">
-        <DialogHeader className="border-b border-slate-100 dark:border-slate-800 pb-3">
+      <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-2xl">
+        <DialogHeader className="border-b border-border pb-3">
           <DialogTitle className="text-lg font-bold flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
             <MessageSquare className="h-5 w-5" />
             <span>{tBilingual('Order WhatsApp Communication Hub', 'অর্ডার হোয়াটসঅ্যাপ যোগাযোগ হাব')}</span>
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
+          <DialogDescription className="text-xs text-muted-foreground">
             {tBilingual('Order #:', 'অর্ডার নং:')}{' '}
             <span className="tabular-nums font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
             {tBilingual('Customer:', 'কাস্টমার:')}{' '}
-            <span className="font-semibold text-slate-800 dark:text-slate-200">{order.customerName}</span>
+            <span className="font-semibold text-foreground dark:text-foreground">{order.customerName}</span>
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
           {/* Template Selector Pills */}
           <div>
-            <Label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 block">
+            <Label className="text-xs font-bold text-muted-foreground mb-1.5 block">
               {tBilingual('Select Message Purpose / Template:', 'মেসেজ টেমপ্লেট নির্বাচন করুন:')}
             </Label>
             <div className="grid grid-cols-2 gap-2">
@@ -145,7 +145,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
                   className={`p-2.5 rounded-lg border text-left text-xs font-semibold transition-all flex flex-col justify-between ${
                     selectedTemplate === t.key
                       ? 'bg-emerald-50 border-emerald-500 text-emerald-950 dark:bg-emerald-950/50 dark:text-emerald-200 shadow-sm'
-                      : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-emerald-300'
+                      : 'bg-muted border-border text-foreground hover:border-emerald-300'
                   }`}
                 >
                   <span className="truncate">{tBilingual(t.titleEn, t.titleBn)}</span>
@@ -158,7 +158,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
           {/* Phone Number Input */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
             <div className="space-y-1">
-              <Label className="text-xs font-bold flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+              <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground dark:text-muted-foreground">
                 <Phone className="h-3.5 w-3.5 text-emerald-600" />
                 <span>{tBilingual('Customer WhatsApp Phone:', 'গ্রাহকের হোয়াটসঅ্যাপ নম্বর:')}</span>
               </Label>
@@ -166,11 +166,11 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="01711-XXXXXX"
-                className="tabular-nums text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                className="tabular-nums text-xs bg-muted border-input dark:border-border"
               />
             </div>
-            <div className="text-2xs text-slate-500 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-md border border-slate-200 dark:border-slate-700">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
+            <div className="text-2xs text-muted-foreground bg-muted p-2 rounded-md border border-border dark:border-border">
+              <span className="font-semibold text-foreground dark:text-muted-foreground">
                 {tBilingual('Auto 88 Format:', 'অটো ৮৮ ফরম্যাট:')}{' '}
               </span>
               +{sanitizeBangladeshiPhone(phoneNumber)}
@@ -180,7 +180,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
           {/* Editable WhatsApp Text Preview */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
                 <span>{tBilingual('Message Preview & Editor:', 'মেসেজ প্রিভিউ ও এডিটর:')}</span>
               </Label>
@@ -197,18 +197,18 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
               rows={6}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
-              className="text-xs font-sans leading-relaxed bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+              className="text-xs font-sans leading-relaxed bg-muted border-input dark:border-border"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+          <div className="flex items-center justify-between border-t border-border pt-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="text-xs text-slate-600 dark:text-slate-400"
+              className="text-xs text-muted-foreground dark:text-muted-foreground"
             >
               {tBilingual('Close', 'বন্ধ করুন')}
             </Button>

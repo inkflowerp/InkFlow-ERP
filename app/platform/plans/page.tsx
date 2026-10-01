@@ -535,7 +535,7 @@ export default function PlatformPlansPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* 1. HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
@@ -545,7 +545,7 @@ export default function PlatformPlansPage() {
             <Briefcase className="h-7 w-7 text-indigo-400" />
             Plan Management
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Manage subscription tiers, Free Trial parameters, BDT rates, 6 configurable quotas, and module access matrix.
           </p>
         </div>
@@ -556,7 +556,7 @@ export default function PlatformPlansPage() {
             variant="outline"
             onClick={loadData}
             disabled={loading}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9"
+            className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
           >
             <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
             Refresh
@@ -606,7 +606,7 @@ export default function PlatformPlansPage() {
             )}
             <span>{notification.message}</span>
           </div>
-          <button onClick={() => setNotification(null)} className="text-slate-400 hover:text-white p-0.5">
+          <button onClick={() => setNotification(null)} className="text-muted-foreground hover:text-white p-0.5">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -616,7 +616,7 @@ export default function PlatformPlansPage() {
       {loading && plans.length === 0 ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 animate-pulse">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="p-4 rounded-xl bg-slate-900 border border-slate-800 h-24" />
+            <div key={i} className="p-4 rounded-xl bg-foreground border border-border h-24" />
           ))}
         </div>
       ) : error && plans.length === 0 ? (
@@ -631,9 +631,9 @@ export default function PlatformPlansPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
+          <div className="p-4 rounded-xl bg-foreground border border-border flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
-              <div className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Active SaaS Tiers</div>
+              <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Active SaaS Tiers</div>
               <div className="text-2xl font-black text-white">{telemetry.activePlansCount} Plans</div>
               <div className="text-2xs text-indigo-400">Total {plans.length} configured</div>
             </div>
@@ -642,9 +642,9 @@ export default function PlatformPlansPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
+          <div className="p-4 rounded-xl bg-foreground border border-border flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
-              <div className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Free Trial Window</div>
+              <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Free Trial Window</div>
               <div className="text-2xl font-black text-amber-400">{telemetry.trialDays} Days</div>
               <div className="text-2xs text-amber-300/70">Full module access evaluation</div>
             </div>
@@ -653,9 +653,9 @@ export default function PlatformPlansPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
+          <div className="p-4 rounded-xl bg-foreground border border-border flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
-              <div className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Commercial Pricing Range</div>
+              <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Commercial Pricing Range</div>
               <div className="text-xl font-black text-emerald-400">
                 <CurrencyDisplay amount={telemetry.minPrice} /> - <CurrencyDisplay amount={telemetry.maxPrice} />
               </div>
@@ -666,11 +666,11 @@ export default function PlatformPlansPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
+          <div className="p-4 rounded-xl bg-foreground border border-border flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
-              <div className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Tenant Distribution</div>
+              <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Tenant Distribution</div>
               <div className="text-2xl font-black text-white">{telemetry.totalTenants} Tenants</div>
-              <div className="text-2xs text-slate-400">
+              <div className="text-2xs text-muted-foreground">
                 {telemetry.trialTenants} Trial · {telemetry.paidTenants} Commercial
               </div>
             </div>
@@ -683,14 +683,14 @@ export default function PlatformPlansPage() {
 
       {/* 3. TABS & SEARCH BAR */}
       {plans.length > 0 && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
             <button
               onClick={() => setActiveTab('all')}
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
                 activeTab === 'all'
                   ? 'bg-indigo-600 text-white shadow'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-muted-foreground hover:text-white hover:bg-slate-800/60'
               }`}
             >
               All Plans ({plans.length})
@@ -711,7 +711,7 @@ export default function PlatformPlansPage() {
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
                 activeTab === 'paid'
                   ? 'bg-indigo-600 text-white shadow'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-muted-foreground hover:text-white hover:bg-slate-800/60'
               }`}
             >
               Commercial Tiers ({paidPlans.length})
@@ -731,13 +731,13 @@ export default function PlatformPlansPage() {
 
           {activeTab !== 'trial' && activeTab !== 'matrix' && (
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-500" />
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search plans..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 pl-8 text-xs bg-slate-900 border-slate-800 text-white placeholder:text-slate-500"
+                className="h-8 pl-8 text-xs bg-foreground border-border text-white placeholder:text-muted-foreground"
               />
             </div>
           )}
@@ -748,10 +748,10 @@ export default function PlatformPlansPage() {
       {loading && plans.length === 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-96 rounded-2xl bg-slate-900 border border-slate-800 p-6 space-y-4">
-              <div className="h-6 w-1/2 bg-slate-800 rounded" />
+            <div key={i} className="h-96 rounded-2xl bg-foreground border border-border p-6 space-y-4">
+              <div className="h-6 w-1/2 bg-secondary rounded" />
               <div className="h-10 w-3/4 bg-slate-800/60 rounded" />
-              <div className="h-40 bg-slate-950 rounded-xl" />
+              <div className="h-40 bg-foreground rounded-xl" />
             </div>
           ))}
         </div>
@@ -769,7 +769,7 @@ export default function PlatformPlansPage() {
                   <Clock className="h-3.5 w-3.5" />
                   Free Evaluation Tier
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold bg-slate-800 text-amber-200 border border-amber-500/20">
+                <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold bg-secondary text-amber-200 border border-amber-500/20">
                   {trialPlan.trial_days ?? 30} Days Duration
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
@@ -785,7 +785,7 @@ export default function PlatformPlansPage() {
                   <span className="text-xs text-amber-300/80 font-medium">({trialPlan.name_bn})</span>
                 )}
               </h2>
-              <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">{trialPlan.description}</p>
+              <p className="text-xs text-muted-foreground max-w-3xl leading-relaxed">{trialPlan.description}</p>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
@@ -802,67 +802,67 @@ export default function PlatformPlansPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-5">
             {/* Limit summary: Users & Branches */}
-            <div className="rounded-xl bg-slate-950/90 p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
+            <div className="rounded-xl bg-foreground p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
               <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <Users className="h-4 w-4 text-amber-400" />
                 User &amp; Branch Quota
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-300">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Max User Seats:</span>
-                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
                   {trialPlan.max_users} seats
                 </strong>
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-300">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Max Branches:</span>
-                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
                   {trialPlan.max_branches} branch
                 </strong>
               </div>
             </div>
 
             {/* Limit summary: Storage & Orders */}
-            <div className="rounded-xl bg-slate-950/90 p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
+            <div className="rounded-xl bg-foreground p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
               <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <HardDrive className="h-4 w-4 text-amber-400" />
                 Volume &amp; Storage
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-300">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Cloud Storage:</span>
-                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
                   {trialPlan.storage_gb} GB
                 </strong>
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-300">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Monthly Orders:</span>
-                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
                   {trialPlan.monthly_orders.toLocaleString()} orders
                 </strong>
               </div>
             </div>
 
             {/* Limit summary: Customers & Products */}
-            <div className="rounded-xl bg-slate-950/90 p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
+            <div className="rounded-xl bg-foreground p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
               <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <Building2 className="h-4 w-4 text-amber-400" />
                 Directory Limits
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-300">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Max Customers:</span>
-                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
                   {trialPlan.max_customers.toLocaleString()}
                 </strong>
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-300">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Max Products:</span>
-                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
                   {trialPlan.max_products.toLocaleString()}
                 </strong>
               </div>
             </div>
 
             {/* Feature Access Summary */}
-            <div className="rounded-xl bg-slate-950/90 p-4 border border-amber-900/40 space-y-2.5 shadow-inner flex flex-col justify-between">
+            <div className="rounded-xl bg-foreground p-4 border border-amber-900/40 space-y-2.5 shadow-inner flex flex-col justify-between">
               <div>
                 <div className="text-xs font-bold text-amber-300 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
@@ -873,7 +873,7 @@ export default function PlatformPlansPage() {
                     {trialPlan.features.length} / {ALL_FEATURES.length}
                   </span>
                 </div>
-                <div className="text-2xs text-slate-400 mt-2">
+                <div className="text-2xs text-muted-foreground mt-2">
                   {trialPlan.features.length === ALL_FEATURES.length
                     ? 'All ERP modules fully unlocked during evaluation.'
                     : `${trialPlan.features.length} modules unlocked for trial evaluation.`}
@@ -902,7 +902,7 @@ export default function PlatformPlansPage() {
             </div>
 
             {paidPlans.some((p) => !p.is_active) && (
-              <span className="text-2xs text-slate-500">
+              <span className="text-2xs text-muted-foreground">
                 Includes {paidPlans.filter((p) => !p.is_active).length} archived plan(s)
               </span>
             )}
@@ -917,11 +917,11 @@ export default function PlatformPlansPage() {
               return (
                 <Card
                   key={plan.id}
-                  className={`bg-slate-900 border-slate-800 flex flex-col justify-between shadow-xl transition-all duration-200 ${
-                    isArchived ? 'opacity-65 border-dashed border-slate-700' : 'hover:border-slate-700'
+                  className={`bg-foreground border-border flex flex-col justify-between shadow-xl transition-all duration-200 ${
+                    isArchived ? 'opacity-65 border-dashed border-border' : 'hover:border-border'
                   }`}
                 >
-                  <CardHeader className="border-b border-slate-800/80 pb-4">
+                  <CardHeader className="border-b border-border pb-4">
                     <div className="flex items-center justify-between gap-2">
                       <div>
                         <CardTitle className="text-lg text-white font-bold flex items-center gap-2">
@@ -937,7 +937,7 @@ export default function PlatformPlansPage() {
                           {plan.code}
                         </span>
                         {isArchived ? (
-                          <Badge variant="outline" className="text-2xs bg-slate-800 text-slate-400 border-slate-700">
+                          <Badge variant="outline" className="text-2xs bg-secondary text-muted-foreground border-border">
                             Archived
                           </Badge>
                         ) : (
@@ -948,7 +948,7 @@ export default function PlatformPlansPage() {
                       </div>
                     </div>
 
-                    <CardDescription className="text-xs text-slate-400 mt-2 line-clamp-2">
+                    <CardDescription className="text-xs text-muted-foreground mt-2 line-clamp-2">
                       {plan.description || 'No description provided.'}
                     </CardDescription>
 
@@ -956,9 +956,9 @@ export default function PlatformPlansPage() {
                     <div className="pt-3.5 space-y-1">
                       <div className="text-2xl sm:text-3xl font-black text-white flex items-baseline gap-1">
                         <CurrencyDisplay amount={plan.price_monthly} />
-                        <span className="text-xs text-slate-400 font-normal"> / month</span>
+                        <span className="text-xs text-muted-foreground font-normal"> / month</span>
                       </div>
-                      <div className="text-2xs text-slate-400 flex items-center gap-1.5 flex-wrap">
+                      <div className="text-2xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
                         <span>or <strong className="text-white"><CurrencyDisplay amount={plan.price_yearly} /></strong> / year</span>
                         {yearlySavings > 0 && (
                           <span className="text-2xs font-bold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-800/60">
@@ -971,9 +971,9 @@ export default function PlatformPlansPage() {
 
                   <CardContent className="space-y-4 pt-4 flex-1">
                     {/* 6 Configurable Limits Grid */}
-                    <div className="rounded-xl bg-slate-950/80 p-3.5 border border-slate-800 space-y-2.5">
+                    <div className="rounded-xl bg-foreground p-3.5 border border-border space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
                           <Sliders className="h-3.5 w-3.5 text-indigo-400" />
                           Resource Limits
                         </span>
@@ -986,28 +986,28 @@ export default function PlatformPlansPage() {
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
-                        <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
-                          <span className="flex items-center gap-1"><Users className="h-3 w-3 text-slate-400" /> Users:</span>
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                          <span className="flex items-center gap-1"><Users className="h-3 w-3 text-muted-foreground" /> Users:</span>
                           <strong className="text-white tabular-nums">{plan.max_users}</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
-                          <span className="flex items-center gap-1"><Building2 className="h-3 w-3 text-slate-400" /> Branches:</span>
+                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                          <span className="flex items-center gap-1"><Building2 className="h-3 w-3 text-muted-foreground" /> Branches:</span>
                           <strong className="text-white tabular-nums">{plan.max_branches}</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
-                          <span className="flex items-center gap-1"><HardDrive className="h-3 w-3 text-slate-400" /> Storage:</span>
+                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                          <span className="flex items-center gap-1"><HardDrive className="h-3 w-3 text-muted-foreground" /> Storage:</span>
                           <strong className="text-white tabular-nums">{plan.storage_gb} GB</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
-                          <span className="flex items-center gap-1"><Briefcase className="h-3 w-3 text-slate-400" /> Orders:</span>
+                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                          <span className="flex items-center gap-1"><Briefcase className="h-3 w-3 text-muted-foreground" /> Orders:</span>
                           <strong className="text-white tabular-nums">{plan.monthly_orders.toLocaleString()}</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
+                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
                           <span>Customers:</span>
                           <strong className="text-white tabular-nums">{plan.max_customers.toLocaleString()}</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800/60">
+                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
                           <span>Products:</span>
                           <strong className="text-white tabular-nums">{plan.max_products.toLocaleString()}</strong>
                         </div>
@@ -1016,7 +1016,7 @@ export default function PlatformPlansPage() {
 
                     {/* Features summary badge */}
                     <div className="space-y-1.5">
-                      <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                      <div className="text-xs font-bold text-muted-foreground flex items-center justify-between">
                         <span>Modules Enabled</span>
                         <span className="text-2xs tabular-nums text-indigo-300 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-900/60 font-semibold">
                           {plan.features.length} / {ALL_FEATURES.length}
@@ -1026,7 +1026,7 @@ export default function PlatformPlansPage() {
                         {plan.features.slice(0, 6).map((f) => (
                           <span
                             key={f}
-                            className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 text-slate-300 border border-slate-700/60"
+                            className="px-1.5 py-0.5 rounded text-2xs bg-secondary text-muted-foreground border border-slate-700/60"
                           >
                             {FEATURE_METADATA[f]?.name || f}
                           </span>
@@ -1040,7 +1040,7 @@ export default function PlatformPlansPage() {
                     </div>
 
                     {/* Subscriber count */}
-                    <div className="flex items-center justify-between text-2xs text-slate-400 pt-1 border-t border-slate-800/80">
+                    <div className="flex items-center justify-between text-2xs text-muted-foreground pt-1 border-t border-border">
                       <span>Subscribed Tenants:</span>
                       <strong className="text-white font-medium">
                         {subscriberCount} {subscriberCount === 1 ? 'tenant' : 'tenants'}
@@ -1048,7 +1048,7 @@ export default function PlatformPlansPage() {
                     </div>
                   </CardContent>
 
-                  <CardFooter className="border-t border-slate-800/80 pt-3 flex items-center justify-between gap-2">
+                  <CardFooter className="border-t border-border pt-3 flex items-center justify-between gap-2">
                     <Button
                       size="sm"
                       onClick={() => handleOpenEditPlan(plan)}
@@ -1073,7 +1073,7 @@ export default function PlatformPlansPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setConfirmAction({ type: 'archive', plan })}
-                        className="border-slate-800 text-slate-400 hover:text-amber-400 hover:bg-slate-800 text-xs h-8"
+                        className="border-border text-muted-foreground hover:text-amber-400 hover:bg-secondary text-xs h-8"
                         title="Archive Plan"
                       >
                         <Archive className="h-3.5 w-3.5" />
@@ -1085,7 +1085,7 @@ export default function PlatformPlansPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setConfirmAction({ type: 'delete', plan })}
-                        className="border-slate-800 text-slate-400 hover:text-rose-400 hover:bg-slate-800 text-xs h-8"
+                        className="border-border text-muted-foreground hover:text-rose-400 hover:bg-secondary text-xs h-8"
                         title="Delete Custom Plan"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -1107,20 +1107,20 @@ export default function PlatformPlansPage() {
               <FileSpreadsheet className="h-4 w-4 text-purple-400" />
               <span>Full Tier Entitlement &amp; Quotas Comparison Matrix</span>
             </div>
-            <span className="text-xs text-slate-400">Click any checkmark to toggle module access for that plan.</span>
+            <span className="text-xs text-muted-foreground">Click any checkmark to toggle module access for that plan.</span>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl">
+          <div className="overflow-x-auto rounded-2xl border border-border bg-foreground shadow-2xl">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/80">
-                  <th className="p-4 font-bold text-slate-300 min-w-[240px] sticky left-0 bg-slate-950 z-10">
+                <tr className="border-b border-border bg-foreground">
+                  <th className="p-4 font-bold text-muted-foreground min-w-[240px] sticky left-0 bg-foreground z-10">
                     Feature / Quota / Module
                   </th>
                   {plans.map((p) => (
                     <th key={p.id} className="p-4 text-center min-w-[150px]">
                       <div className="font-bold text-white text-sm">{p.name}</div>
-                      <div className="text-2xs text-slate-400 font-normal">
+                      <div className="text-2xs text-muted-foreground font-normal">
                         {p.code === 'trial' ? (
                           <span className="text-amber-400 font-bold">Free Evaluation ({p.trial_days || 14}d)</span>
                         ) : (
@@ -1141,69 +1141,69 @@ export default function PlatformPlansPage() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-border/60">
                 {/* 1. RESOURCE LIMITS SECTION */}
-                <tr className="bg-slate-950/40 font-bold text-slate-300">
+                <tr className="bg-foreground font-bold text-muted-foreground">
                   <td colSpan={plans.length + 1} className="p-3 pl-4 text-xs uppercase tracking-wider text-indigo-400">
                     1. Configurable Resource Limits
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-slate-300 sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
                     <Users className="h-3.5 w-3.5 text-indigo-400" /> Max User Accounts
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-foreground">
                       {p.max_users}
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-slate-300 sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
                     <Building2 className="h-3.5 w-3.5 text-indigo-400" /> Max Branches &amp; Hubs
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-foreground">
                       {p.max_branches}
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-slate-300 sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
                     <HardDrive className="h-3.5 w-3.5 text-indigo-400" /> Cloud Media Storage
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-foreground">
                       {p.storage_gb} GB
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-slate-300 sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
                     <Briefcase className="h-3.5 w-3.5 text-indigo-400" /> Monthly Orders Quota
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-foreground">
                       {p.monthly_orders.toLocaleString()}
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-slate-300 sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
                     Directory: Max Customers
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-foreground">
                       {p.max_customers.toLocaleString()}
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-slate-300 sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
                     Directory: Max Products
                   </td>
                   {plans.map((p) => (
-                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-slate-200">
+                    <td key={p.id} className="p-3 text-center tabular-nums font-bold text-foreground">
                       {p.max_products.toLocaleString()}
                     </td>
                   ))}
@@ -1212,7 +1212,7 @@ export default function PlatformPlansPage() {
                 {/* 2. CATEGORIZED FEATURES */}
                 {FEATURE_CATEGORIES.map((cat) => (
                   <React.Fragment key={cat.id}>
-                    <tr className="bg-slate-950/40 font-bold text-slate-300">
+                    <tr className="bg-foreground font-bold text-muted-foreground">
                       <td colSpan={plans.length + 1} className="p-3 pl-4 text-xs uppercase tracking-wider text-indigo-400">
                         2.{cat.id} {cat.label} ({cat.label_bn})
                       </td>
@@ -1221,9 +1221,9 @@ export default function PlatformPlansPage() {
                       const meta = FEATURE_METADATA[feat]
                       return (
                         <tr key={feat} className="hover:bg-slate-800/40 transition-colors">
-                          <td className="p-3 pl-4 sticky left-0 bg-slate-900 z-10">
-                            <div className="font-semibold text-slate-200">{meta?.name || feat}</div>
-                            <div className="text-2xs text-slate-400">{meta?.description}</div>
+                          <td className="p-3 pl-4 sticky left-0 bg-foreground z-10">
+                            <div className="font-semibold text-foreground">{meta?.name || feat}</div>
+                            <div className="text-2xs text-muted-foreground">{meta?.description}</div>
                           </td>
                           {plans.map((p) => {
                             const isIncluded = p.features.includes(feat)
@@ -1235,7 +1235,7 @@ export default function PlatformPlansPage() {
                                   className={`p-1.5 rounded-lg inline-flex items-center justify-center transition-all ${
                                     isIncluded
                                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
-                                      : 'bg-slate-800/40 text-slate-600 hover:text-slate-400 hover:bg-slate-800'
+                                      : 'bg-slate-800/40 text-muted-foreground hover:text-muted-foreground hover:bg-secondary'
                                   }`}
                                   title={`Click to ${isIncluded ? 'remove from' : 'enable in'} ${p.name}`}
                                 >
@@ -1261,23 +1261,23 @@ export default function PlatformPlansPage() {
 
       {/* 7. EDIT TRIAL PLAN MODAL */}
       {editingTrialModalOpen && editingTrialPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-3xl bg-slate-900 border border-amber-500/40 rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-3xl bg-foreground border border-amber-500/40 rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
                   <Clock className="h-5 w-5" />
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-base">Configure Free Trial Plan</h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Set evaluation duration, 6 resource quotas, and accessible modules for new tenant evaluations.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setEditingTrialModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1287,20 +1287,20 @@ export default function PlatformPlansPage() {
               {/* Plan Titles & Duration */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-slate-300 font-semibold">Plan Name (English)</Label>
+                  <Label className="text-muted-foreground font-semibold">Plan Name (English)</Label>
                   <Input
                     required
                     value={editingTrialPlan.name}
                     onChange={(e) => setEditingTrialPlan((prev) => prev ? ({ ...prev, name: e.target.value }) : null)}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
+                    className="bg-foreground border-border text-white mt-1 h-9"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300 font-semibold">Plan Name (বাংলা)</Label>
+                  <Label className="text-muted-foreground font-semibold">Plan Name (বাংলা)</Label>
                   <Input
                     value={editingTrialPlan.name_bn || ''}
                     onChange={(e) => setEditingTrialPlan((prev) => prev ? ({ ...prev, name_bn: e.target.value }) : null)}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
+                    className="bg-foreground border-border text-white mt-1 h-9"
                   />
                 </div>
                 <div>
@@ -1320,31 +1320,31 @@ export default function PlatformPlansPage() {
                         trial_days: Math.max(1, Number(e.target.value)),
                       }) : null)
                     }
-                    className="bg-slate-950 border-amber-500/50 text-amber-200 mt-1 h-9 tabular-nums font-bold"
+                    className="bg-foreground border-amber-500/50 text-amber-200 mt-1 h-9 tabular-nums font-bold"
                   />
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <Label className="text-slate-300 font-semibold">Description</Label>
+                <Label className="text-muted-foreground font-semibold">Description</Label>
                 <Input
                   value={editingTrialPlan.description || ''}
                   onChange={(e) => setEditingTrialPlan((prev) => prev ? ({ ...prev, description: e.target.value }) : null)}
-                  className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
+                  className="bg-foreground border-border text-white mt-1 h-9"
                 />
               </div>
 
               {/* 6 Configurable Resource Limits */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
+                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Sliders className="h-3.5 w-3.5 text-indigo-400" />
                   Trial Resource Limits &amp; Quotas
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Users</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Users</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1355,11 +1355,11 @@ export default function PlatformPlansPage() {
                           max_users: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Branches</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Branches</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1370,11 +1370,11 @@ export default function PlatformPlansPage() {
                           max_branches: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Storage (GB)</Label>
+                    <Label className="text-muted-foreground text-2xs">Storage (GB)</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1385,11 +1385,11 @@ export default function PlatformPlansPage() {
                           storage_gb: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Monthly Orders</Label>
+                    <Label className="text-muted-foreground text-2xs">Monthly Orders</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1400,11 +1400,11 @@ export default function PlatformPlansPage() {
                           monthly_orders: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Customers</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Customers</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1415,11 +1415,11 @@ export default function PlatformPlansPage() {
                           max_customers: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Products</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Products</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1430,7 +1430,7 @@ export default function PlatformPlansPage() {
                           max_products: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1439,7 +1439,7 @@ export default function PlatformPlansPage() {
               {/* Feature Access Matrix */}
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between">
-                  <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
                     Trial Module Access Gating ({editingTrialPlan.features.length} / {ALL_FEATURES.length} Enabled)
                   </div>
@@ -1451,7 +1451,7 @@ export default function PlatformPlansPage() {
                     >
                       Select All
                     </button>
-                    <span className="text-slate-600">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <button
                       type="button"
                       onClick={() =>
@@ -1460,14 +1460,14 @@ export default function PlatformPlansPage() {
                           features: ['basic_sales', 'basic_customers', 'quotation_pdf', 'delivery_challan'] as FeatureCode[],
                         }) : null)
                       }
-                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-muted-foreground hover:text-muted-foreground"
                     >
                       Reset to Basic
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1 bg-slate-950 rounded-xl border border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1 bg-foreground rounded-xl border border-border">
                   {ALL_FEATURES.map((feat) => {
                     const meta = FEATURE_METADATA[feat]
                     const isEnabled = editingTrialPlan?.features?.includes(feat) || false
@@ -1477,12 +1477,12 @@ export default function PlatformPlansPage() {
                         className={`flex items-center justify-between p-2 rounded-lg text-2xs cursor-pointer transition-colors ${
                           isEnabled
                             ? 'bg-amber-950/30 text-amber-200 border border-amber-900/40'
-                            : 'text-slate-500 hover:bg-slate-900/60'
+                            : 'text-muted-foreground hover:bg-foreground'
                         }`}
                       >
                         <div className="truncate mr-2">
-                          <div className="font-semibold text-slate-200">{meta.name}</div>
-                          <div className="text-2xs text-slate-400 truncate">{meta.name_bn}</div>
+                          <div className="font-semibold text-foreground">{meta.name}</div>
+                          <div className="text-2xs text-muted-foreground truncate">{meta.name_bn}</div>
                         </div>
                         <input
                           type="checkbox"
@@ -1497,7 +1497,7 @@ export default function PlatformPlansPage() {
                               return { ...prev, features: updated as FeatureCode[] }
                             })
                           }}
-                          className="h-4 w-4 rounded border-slate-700 text-amber-500 focus:ring-amber-500 bg-slate-900 shrink-0"
+                          className="h-4 w-4 rounded border-border text-amber-500 focus:ring-amber-500 bg-foreground shrink-0"
                         />
                       </label>
                     )
@@ -1505,8 +1505,8 @@ export default function PlatformPlansPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-slate-800">
-                <div className="text-2xs text-slate-400 flex items-center gap-1.5">
+              <div className="flex items-center justify-between pt-3 border-t border-border">
+                <div className="text-2xs text-muted-foreground flex items-center gap-1.5">
                   <Info className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                   <span>Duration syncs with platform tenant onboarding defaults automatically.</span>
                 </div>
@@ -1517,7 +1517,7 @@ export default function PlatformPlansPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setEditingTrialModalOpen(false)}
-                    className="border-slate-700 text-xs"
+                    className="border-border text-xs"
                   >
                     Cancel
                   </Button>
@@ -1539,23 +1539,23 @@ export default function PlatformPlansPage() {
 
       {/* 8. EDIT PAID / CUSTOM PLAN MODAL */}
       {editingPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-3xl bg-foreground border border-border rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-500/30">
                   <Briefcase className="h-5 w-5" />
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-base">Edit Plan: {editingPlan.name}</h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Configure BDT pricing, resource quotas, and module access permissions.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setEditingPlan(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1565,46 +1565,46 @@ export default function PlatformPlansPage() {
               {/* Names & Code */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-slate-300 font-semibold">Plan Name (English)</Label>
+                  <Label className="text-muted-foreground font-semibold">Plan Name (English)</Label>
                   <Input
                     required
                     value={editingPlan.name}
                     onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
+                    className="bg-foreground border-border text-white mt-1 h-9"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300 font-semibold">Plan Name (বাংলা)</Label>
+                  <Label className="text-muted-foreground font-semibold">Plan Name (বাংলা)</Label>
                   <Input
                     value={editingPlan.name_bn || ''}
                     onChange={(e) => setEditingPlan({ ...editingPlan, name_bn: e.target.value })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
+                    className="bg-foreground border-border text-white mt-1 h-9"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-400 font-semibold">Plan Code</Label>
+                  <Label className="text-muted-foreground font-semibold">Plan Code</Label>
                   <Input
                     disabled
                     value={editingPlan.code}
-                    className="bg-slate-950/60 border-slate-800 text-slate-400 mt-1 h-9 tabular-nums"
+                    className="bg-foreground border-border text-muted-foreground mt-1 h-9 tabular-nums"
                   />
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <Label className="text-slate-300 font-semibold">Description</Label>
+                <Label className="text-muted-foreground font-semibold">Description</Label>
                 <Input
                   value={editingPlan.description || ''}
                   onChange={(e) => setEditingPlan({ ...editingPlan, description: e.target.value })}
-                  className="bg-slate-950 border-slate-700 text-white mt-1 h-9"
+                  className="bg-foreground border-border text-white mt-1 h-9"
                 />
               </div>
 
               {/* Pricing in BDT */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Tag className="h-3.5 w-3.5 text-indigo-400" />
                     Commercial BDT Pricing
                   </span>
@@ -1624,96 +1624,96 @@ export default function PlatformPlansPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-2xs">Monthly Rate (৳ BDT)</Label>
+                    <Label className="text-muted-foreground text-2xs">Monthly Rate (৳ BDT)</Label>
                     <Input
                       type="number"
                       required
                       min={0}
                       value={editingPlan.price_monthly}
                       onChange={(e) => setEditingPlan({ ...editingPlan, price_monthly: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Yearly Rate (৳ BDT)</Label>
+                    <Label className="text-muted-foreground text-2xs">Yearly Rate (৳ BDT)</Label>
                     <Input
                       type="number"
                       required
                       min={0}
                       value={editingPlan.price_yearly}
                       onChange={(e) => setEditingPlan({ ...editingPlan, price_yearly: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                 </div>
               </div>
 
               {/* 6 Configurable Resource Limits */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
+                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Sliders className="h-3.5 w-3.5 text-indigo-400" />
                   Resource Limits &amp; Quotas
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Users</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Users</Label>
                     <Input
                       type="number"
                       min={1}
                       value={editingPlan.max_users}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_users: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Branches</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Branches</Label>
                     <Input
                       type="number"
                       min={1}
                       value={editingPlan.max_branches}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_branches: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Storage (GB)</Label>
+                    <Label className="text-muted-foreground text-2xs">Storage (GB)</Label>
                     <Input
                       type="number"
                       min={1}
                       value={editingPlan.storage_gb}
                       onChange={(e) => setEditingPlan({ ...editingPlan, storage_gb: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Monthly Orders</Label>
+                    <Label className="text-muted-foreground text-2xs">Monthly Orders</Label>
                     <Input
                       type="number"
                       min={1}
                       value={editingPlan.monthly_orders}
                       onChange={(e) => setEditingPlan({ ...editingPlan, monthly_orders: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Customers</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Customers</Label>
                     <Input
                       type="number"
                       min={1}
                       value={editingPlan.max_customers}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_customers: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Products</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Products</Label>
                     <Input
                       type="number"
                       min={1}
                       value={editingPlan.max_products}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_products: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1722,7 +1722,7 @@ export default function PlatformPlansPage() {
               {/* Feature Access Matrix */}
               <div className="space-y-2 pt-1">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
                     Feature Access Gating ({editingPlan.features.length} / {ALL_FEATURES.length} Enabled)
                   </div>
@@ -1734,34 +1734,34 @@ export default function PlatformPlansPage() {
                     >
                       Select All
                     </button>
-                    <span className="text-slate-600">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('edit', 'starter')}
-                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-muted-foreground hover:text-muted-foreground"
                     >
                       Starter Preset
                     </button>
-                    <span className="text-slate-600">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('edit', 'business')}
-                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-muted-foreground hover:text-muted-foreground"
                     >
                       Business Preset
                     </button>
-                    <span className="text-slate-600">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('edit', 'clear')}
-                      className="text-2xs font-semibold text-slate-500 hover:text-slate-400"
+                      className="text-2xs font-semibold text-muted-foreground hover:text-muted-foreground"
                     >
                       Clear
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1 bg-slate-950 rounded-xl border border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1 bg-foreground rounded-xl border border-border">
                   {ALL_FEATURES.map((feat) => {
                     const meta = FEATURE_METADATA[feat]
                     const isEnabled = editingPlan.features.includes(feat)
@@ -1771,12 +1771,12 @@ export default function PlatformPlansPage() {
                         className={`flex items-center justify-between p-2 rounded-lg text-2xs cursor-pointer transition-colors ${
                           isEnabled
                             ? 'bg-indigo-950/40 text-indigo-200 border border-indigo-900/40'
-                            : 'text-slate-500 hover:bg-slate-900/60'
+                            : 'text-muted-foreground hover:bg-foreground'
                         }`}
                       >
                         <div className="truncate mr-2">
-                          <div className="font-semibold text-slate-200">{meta.name}</div>
-                          <div className="text-2xs text-slate-400 truncate">{meta.name_bn}</div>
+                          <div className="font-semibold text-foreground">{meta.name}</div>
+                          <div className="text-2xs text-muted-foreground truncate">{meta.name_bn}</div>
                         </div>
                         <input
                           type="checkbox"
@@ -1787,7 +1787,7 @@ export default function PlatformPlansPage() {
                               : [...editingPlan.features, feat]
                             setEditingPlan({ ...editingPlan, features: updated })
                           }}
-                          className="h-4 w-4 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-900 shrink-0"
+                          className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-ring bg-foreground shrink-0"
                         />
                       </label>
                     )
@@ -1796,38 +1796,38 @@ export default function PlatformPlansPage() {
               </div>
 
               {/* Status & Sort Order */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-foreground border border-border">
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="plan-active-check"
                     checked={editingPlan.is_active}
                     onChange={(e) => setEditingPlan({ ...editingPlan, is_active: e.target.checked })}
-                    className="h-4 w-4 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-900"
+                    className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-ring bg-foreground"
                   />
-                  <Label htmlFor="plan-active-check" className="text-slate-300 font-semibold cursor-pointer">
+                  <Label htmlFor="plan-active-check" className="text-muted-foreground font-semibold cursor-pointer">
                     Active Plan (Available for tenant subscriptions)
                   </Label>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Label className="text-slate-400 text-2xs">Sort Order</Label>
+                  <Label className="text-muted-foreground text-2xs">Sort Order</Label>
                   <Input
                     type="number"
                     value={editingPlan.sort_order}
                     onChange={(e) => setEditingPlan({ ...editingPlan, sort_order: Number(e.target.value) })}
-                    className="w-16 h-8 text-xs bg-slate-900 border-slate-700 text-white tabular-nums"
+                    className="w-16 h-8 text-xs bg-foreground border-border text-white tabular-nums"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setEditingPlan(null)}
-                  className="border-slate-700 text-xs"
+                  className="border-border text-xs"
                 >
                   Cancel
                 </Button>
@@ -1848,14 +1848,14 @@ export default function PlatformPlansPage() {
 
       {/* 9. QUICK EDIT LIMITS MODAL */}
       {editingLimitsPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <Sliders className="h-4 w-4 text-indigo-400" />
                 <span>Edit Resource Limits: {editingLimitsPlan.name}</span>
               </div>
-              <button onClick={() => setEditingLimitsPlan(null)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setEditingLimitsPlan(null)} className="text-muted-foreground hover:text-white">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -1863,74 +1863,74 @@ export default function PlatformPlansPage() {
             <form onSubmit={handleSaveQuickLimits} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-slate-300">Max Users</Label>
+                  <Label className="text-muted-foreground">Max Users</Label>
                   <Input
                     type="number"
                     min={1}
                     value={editingLimitsPlan.max_users}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_users: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
+                    className="bg-foreground border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Max Branches</Label>
+                  <Label className="text-muted-foreground">Max Branches</Label>
                   <Input
                     type="number"
                     min={1}
                     value={editingLimitsPlan.max_branches}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_branches: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
+                    className="bg-foreground border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Cloud Storage (GB)</Label>
+                  <Label className="text-muted-foreground">Cloud Storage (GB)</Label>
                   <Input
                     type="number"
                     min={1}
                     value={editingLimitsPlan.storage_gb}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, storage_gb: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
+                    className="bg-foreground border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Monthly Orders</Label>
+                  <Label className="text-muted-foreground">Monthly Orders</Label>
                   <Input
                     type="number"
                     min={1}
                     value={editingLimitsPlan.monthly_orders}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, monthly_orders: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
+                    className="bg-foreground border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Max Customers</Label>
+                  <Label className="text-muted-foreground">Max Customers</Label>
                   <Input
                     type="number"
                     min={1}
                     value={editingLimitsPlan.max_customers}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_customers: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
+                    className="bg-foreground border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Max Products</Label>
+                  <Label className="text-muted-foreground">Max Products</Label>
                   <Input
                     type="number"
                     min={1}
                     value={editingLimitsPlan.max_products}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_products: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
+                    className="bg-foreground border-border text-white mt-1 tabular-nums"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-border">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setEditingLimitsPlan(null)}
-                  className="border-slate-700 text-xs"
+                  className="border-border text-xs"
                 >
                   Cancel
                 </Button>
@@ -1951,23 +1951,23 @@ export default function PlatformPlansPage() {
 
       {/* 10. CREATE NEW PLAN MODAL */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-3xl bg-foreground border border-border rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-500/30">
                   <Plus className="h-5 w-5" />
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-base">Create New SaaS Plan</h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Define custom tiers, limits, BDT pricing, and module entitlements.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCreateOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1977,51 +1977,51 @@ export default function PlatformPlansPage() {
               {/* Plan Code & Names */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-slate-300 font-semibold">Plan Code (Unique Identifier)</Label>
+                  <Label className="text-muted-foreground font-semibold">Plan Code (Unique Identifier)</Label>
                   <Input
                     required
                     value={newPlan.code}
                     onChange={(e) => setNewPlan({ ...newPlan, code: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') as PlanCode })}
                     placeholder="e.g. agency, pro"
-                    className="bg-slate-950 border-slate-700 text-white mt-1 tabular-nums"
+                    className="bg-foreground border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300 font-semibold">Plan Name (English)</Label>
+                  <Label className="text-muted-foreground font-semibold">Plan Name (English)</Label>
                   <Input
                     required
                     value={newPlan.name}
                     onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
                     placeholder="Agency Plan"
-                    className="bg-slate-950 border-slate-700 text-white mt-1"
+                    className="bg-foreground border-border text-white mt-1"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300 font-semibold">Plan Name (বাংলা)</Label>
+                  <Label className="text-muted-foreground font-semibold">Plan Name (বাংলা)</Label>
                   <Input
                     value={newPlan.name_bn || ''}
                     onChange={(e) => setNewPlan({ ...newPlan, name_bn: e.target.value })}
                     placeholder="এজেন্সি প্ল্যান"
-                    className="bg-slate-950 border-slate-700 text-white mt-1"
+                    className="bg-foreground border-border text-white mt-1"
                   />
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <Label className="text-slate-300 font-semibold">Description</Label>
+                <Label className="text-muted-foreground font-semibold">Description</Label>
                 <Input
                   value={newPlan.description}
                   onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
                   placeholder="Tailored for printing agencies and production hubs."
-                  className="bg-slate-950 border-slate-700 text-white mt-1"
+                  className="bg-foreground border-border text-white mt-1"
                 />
               </div>
 
               {/* Pricing in BDT */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Tag className="h-3.5 w-3.5 text-indigo-400" />
                     Commercial BDT Pricing
                   </span>
@@ -2041,7 +2041,7 @@ export default function PlatformPlansPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-2xs">Monthly Rate (৳ BDT)</Label>
+                    <Label className="text-muted-foreground text-2xs">Monthly Rate (৳ BDT)</Label>
                     <Input
                       type="number"
                       required
@@ -2051,89 +2051,89 @@ export default function PlatformPlansPage() {
                         const m = Number(e.target.value)
                         setNewPlan({ ...newPlan, price_monthly: m, price_yearly: m * 10 })
                       }}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Yearly Rate (৳ BDT)</Label>
+                    <Label className="text-muted-foreground text-2xs">Yearly Rate (৳ BDT)</Label>
                     <Input
                       type="number"
                       required
                       min={0}
                       value={newPlan.price_yearly}
                       onChange={(e) => setNewPlan({ ...newPlan, price_yearly: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-9 tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                 </div>
               </div>
 
               {/* 6 Configurable Resource Limits */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
+                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Sliders className="h-3.5 w-3.5 text-indigo-400" />
                   Resource Limits &amp; Quotas
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Users</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Users</Label>
                     <Input
                       type="number"
                       min={1}
                       value={newPlan.max_users}
                       onChange={(e) => setNewPlan({ ...newPlan, max_users: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Branches</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Branches</Label>
                     <Input
                       type="number"
                       min={1}
                       value={newPlan.max_branches}
                       onChange={(e) => setNewPlan({ ...newPlan, max_branches: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Storage (GB)</Label>
+                    <Label className="text-muted-foreground text-2xs">Storage (GB)</Label>
                     <Input
                       type="number"
                       min={1}
                       value={newPlan.storage_gb}
                       onChange={(e) => setNewPlan({ ...newPlan, storage_gb: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Monthly Orders</Label>
+                    <Label className="text-muted-foreground text-2xs">Monthly Orders</Label>
                     <Input
                       type="number"
                       min={1}
                       value={newPlan.monthly_orders}
                       onChange={(e) => setNewPlan({ ...newPlan, monthly_orders: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Customers</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Customers</Label>
                     <Input
                       type="number"
                       min={1}
                       value={newPlan.max_customers}
                       onChange={(e) => setNewPlan({ ...newPlan, max_customers: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-2xs">Max Products</Label>
+                    <Label className="text-muted-foreground text-2xs">Max Products</Label>
                     <Input
                       type="number"
                       min={1}
                       value={newPlan.max_products}
                       onChange={(e) => setNewPlan({ ...newPlan, max_products: Number(e.target.value) })}
-                      className="bg-slate-900 border-slate-700 text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -2142,7 +2142,7 @@ export default function PlatformPlansPage() {
               {/* Feature Access Matrix */}
               <div className="space-y-2 pt-1">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
                     Feature Access Gating ({newPlan.features.length} / {ALL_FEATURES.length} Enabled)
                   </div>
@@ -2154,34 +2154,34 @@ export default function PlatformPlansPage() {
                     >
                       Select All
                     </button>
-                    <span className="text-slate-600">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('new', 'starter')}
-                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-muted-foreground hover:text-muted-foreground"
                     >
                       Starter Preset
                     </button>
-                    <span className="text-slate-600">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('new', 'business')}
-                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-muted-foreground hover:text-muted-foreground"
                     >
                       Business Preset
                     </button>
-                    <span className="text-slate-600">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('new', 'clear')}
-                      className="text-2xs font-semibold text-slate-500 hover:text-slate-400"
+                      className="text-2xs font-semibold text-muted-foreground hover:text-muted-foreground"
                     >
                       Clear
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto p-1 bg-slate-950 rounded-xl border border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto p-1 bg-foreground rounded-xl border border-border">
                   {ALL_FEATURES.map((feat) => {
                     const meta = FEATURE_METADATA[feat]
                     const isEnabled = newPlan.features.includes(feat)
@@ -2191,12 +2191,12 @@ export default function PlatformPlansPage() {
                         className={`flex items-center justify-between p-2 rounded-lg text-2xs cursor-pointer transition-colors ${
                           isEnabled
                             ? 'bg-indigo-950/40 text-indigo-200 border border-indigo-900/40'
-                            : 'text-slate-500 hover:bg-slate-900/60'
+                            : 'text-muted-foreground hover:bg-foreground'
                         }`}
                       >
                         <div className="truncate mr-2">
-                          <div className="font-semibold text-slate-200">{meta.name}</div>
-                          <div className="text-2xs text-slate-400 truncate">{meta.name_bn}</div>
+                          <div className="font-semibold text-foreground">{meta.name}</div>
+                          <div className="text-2xs text-muted-foreground truncate">{meta.name_bn}</div>
                         </div>
                         <input
                           type="checkbox"
@@ -2207,7 +2207,7 @@ export default function PlatformPlansPage() {
                               : [...newPlan.features, feat]
                             setNewPlan({ ...newPlan, features: updated })
                           }}
-                          className="h-4 w-4 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-900 shrink-0"
+                          className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-ring bg-foreground shrink-0"
                         />
                       </label>
                     )
@@ -2215,13 +2215,13 @@ export default function PlatformPlansPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-border">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setIsCreateOpen(false)}
-                  className="border-slate-700 text-xs"
+                  className="border-border text-xs"
                 >
                   Cancel
                 </Button>
@@ -2242,8 +2242,8 @@ export default function PlatformPlansPage() {
 
       {/* 11. CONFIRMATION DIALOG (ARCHIVE / REACTIVATE / DELETE) */}
       {confirmAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95">
             <div className="flex items-center gap-3">
               <div
                 className={`p-2.5 rounded-xl border ${
@@ -2266,7 +2266,7 @@ export default function PlatformPlansPage() {
                 <h3 className="font-bold text-white text-base capitalize">
                   {confirmAction.type} Plan: {confirmAction.plan.name}
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   {confirmAction.type === 'delete'
                     ? 'This will permanently remove this custom tier. This action cannot be undone.'
                     : confirmAction.type === 'archive'
@@ -2276,13 +2276,13 @@ export default function PlatformPlansPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex justify-end gap-2 pt-2 border-t border-border">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setConfirmAction(null)}
-                className="border-slate-700 text-xs"
+                className="border-border text-xs"
               >
                 Cancel
               </Button>

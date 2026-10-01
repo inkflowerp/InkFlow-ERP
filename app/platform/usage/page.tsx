@@ -186,7 +186,7 @@ export default function PlatformUsagePage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
@@ -196,7 +196,7 @@ export default function PlatformUsagePage() {
             <Gauge className="h-7 w-7 text-cyan-400" />
             Usage &amp; Limits Telemetry
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Monitor real-time user seating, cloud storage allocation, monthly order throughput, and capacity alerts across all tenant presses.
           </p>
         </div>
@@ -204,16 +204,16 @@ export default function PlatformUsagePage() {
         {/* Top Header Controls */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Company Filter */}
-          <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs">
-            <Building2 className="h-3.5 w-3.5 text-slate-400" />
+          <div className="flex items-center gap-1.5 bg-foreground border border-border rounded-xl px-2.5 py-1 text-xs">
+            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
             <select
               value={selectedCompanyId}
               onChange={(e) => setSelectedCompanyId(e.target.value)}
               className="bg-transparent border-none text-xs text-white font-bold focus:outline-hidden cursor-pointer max-w-[180px] truncate"
             >
-              <option value="all" className="bg-slate-900 text-white">Platform-wide (All Tenants)</option>
+              <option value="all" className="bg-foreground text-white">Platform-wide (All Tenants)</option>
               {companies.map((c) => (
-                <option key={c.id} value={c.id} className="bg-slate-900 text-white">
+                <option key={c.id} value={c.id} className="bg-foreground text-white">
                   {c.name}
                 </option>
               ))}
@@ -221,14 +221,14 @@ export default function PlatformUsagePage() {
           </div>
 
           {/* Period Selector */}
-          <div className="flex items-center rounded-xl bg-slate-900 border border-slate-800 p-0.5 text-xs">
+          <div className="flex items-center rounded-xl bg-foreground border border-border p-0.5 text-xs">
             {(['7d', '30d', '90d', '12m'] as const).map((p) => (
               <button
                 key={p}
                 type="button"
                 onClick={() => setPeriod(p)}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                  period === p ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                  period === p ? 'bg-cyan-600 text-white shadow-xs' : 'text-muted-foreground hover:text-white'
                 }`}
               >
                 {p}
@@ -239,7 +239,7 @@ export default function PlatformUsagePage() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors cursor-pointer"
+            className="px-3 py-2 rounded-xl bg-foreground hover:bg-secondary text-foreground hover:text-white border border-border text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors cursor-pointer"
           >
             <Download className="h-3.5 w-3.5 text-indigo-400" />
             <span>Export CSV</span>
@@ -249,7 +249,7 @@ export default function PlatformUsagePage() {
             type="button"
             onClick={loadData}
             disabled={loading}
-            className="h-9 w-9 p-0 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+            className="h-9 w-9 p-0 rounded-xl bg-foreground hover:bg-secondary text-foreground hover:text-white border border-border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shrink-0"
             title="Refresh"
             aria-label="Refresh"
           >
@@ -277,7 +277,7 @@ export default function PlatformUsagePage() {
           </div>
           <button
             onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-white cursor-pointer"
+            className="text-muted-foreground hover:text-white cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -288,17 +288,17 @@ export default function PlatformUsagePage() {
       {summary && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Staff Seating (Users) */}
-          <Card className="bg-slate-900 border-slate-800 p-4 relative overflow-hidden">
-            <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 relative overflow-hidden">
+            <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Staff Seating Utilization</span>
               <Users className="h-4 w-4 text-indigo-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1 flex items-baseline gap-2">
               <span>{summary.total_users}</span>
-              <span className="text-xs font-normal text-slate-400">/ {summary.users_capacity} seats</span>
+              <span className="text-xs font-normal text-muted-foreground">/ {summary.users_capacity} seats</span>
             </div>
             {/* Progress bar */}
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+            <div className="w-full bg-secondary h-1.5 rounded-full overflow-hidden mt-2">
               <div
                 className={`h-full rounded-full ${
                   summary.users_utilization_pct >= 90
@@ -312,22 +312,22 @@ export default function PlatformUsagePage() {
             </div>
             <div className="text-2xs text-indigo-300 mt-1.5 flex items-center justify-between">
               <span>{summary.users_utilization_pct}% capacity assigned</span>
-              <span className="text-slate-400 tabular-nums text-2xs">{summary.total_branches} Branches</span>
+              <span className="text-muted-foreground tabular-nums text-2xs">{summary.total_branches} Branches</span>
             </div>
           </Card>
 
           {/* Storage Consumed */}
-          <Card className="bg-slate-900 border-slate-800 p-4 relative overflow-hidden">
-            <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 relative overflow-hidden">
+            <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Cloud Storage Allocated</span>
               <HardDrive className="h-4 w-4 text-pink-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1 flex items-baseline gap-2">
               <span>{summary.total_storage_gb} GB</span>
-              <span className="text-xs font-normal text-slate-400">/ {summary.storage_capacity_gb} GB</span>
+              <span className="text-xs font-normal text-muted-foreground">/ {summary.storage_capacity_gb} GB</span>
             </div>
             {/* Progress bar */}
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+            <div className="w-full bg-secondary h-1.5 rounded-full overflow-hidden mt-2">
               <div
                 className={`h-full rounded-full ${
                   summary.storage_utilization_pct >= 90
@@ -341,22 +341,22 @@ export default function PlatformUsagePage() {
             </div>
             <div className="text-2xs text-pink-300 mt-1.5 flex items-center justify-between">
               <span>{summary.storage_utilization_pct}% disk used</span>
-              <span className="text-slate-400 tabular-nums text-2xs">PDF Proofs &amp; Artwork</span>
+              <span className="text-muted-foreground tabular-nums text-2xs">PDF Proofs &amp; Artwork</span>
             </div>
           </Card>
 
           {/* Monthly Orders Throughput */}
-          <Card className="bg-slate-900 border-slate-800 p-4 relative overflow-hidden">
-            <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 relative overflow-hidden">
+            <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Orders Handled This Month</span>
               <Layers className="h-4 w-4 text-purple-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1 flex items-baseline gap-2">
               <span>{summary.total_orders_this_month.toLocaleString()}</span>
-              <span className="text-xs font-normal text-slate-400">/ {summary.orders_capacity.toLocaleString()} cap</span>
+              <span className="text-xs font-normal text-muted-foreground">/ {summary.orders_capacity.toLocaleString()} cap</span>
             </div>
             {/* Progress bar */}
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+            <div className="w-full bg-secondary h-1.5 rounded-full overflow-hidden mt-2">
               <div
                 className={`h-full rounded-full ${
                   summary.orders_utilization_pct >= 90
@@ -370,13 +370,13 @@ export default function PlatformUsagePage() {
             </div>
             <div className="text-2xs text-purple-300 mt-1.5 flex items-center justify-between">
               <span>{summary.orders_utilization_pct}% monthly volume</span>
-              <span className="text-slate-400 tabular-nums text-2xs">{summary.total_customers} Customers</span>
+              <span className="text-muted-foreground tabular-nums text-2xs">{summary.total_customers} Customers</span>
             </div>
           </Card>
 
           {/* Quota Health Monitor */}
-          <Card className="bg-slate-900 border-slate-800 p-4 relative overflow-hidden">
-            <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 relative overflow-hidden">
+            <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Tenant Quota Health</span>
               <ShieldAlert className="h-4 w-4 text-amber-400" />
             </div>
@@ -384,9 +384,9 @@ export default function PlatformUsagePage() {
               <span className={summary.critical_tenants_count > 0 ? 'text-red-400' : 'text-emerald-400'}>
                 {summary.critical_tenants_count + summary.high_utilization_tenants_count}
               </span>
-              <span className="text-xs font-normal text-slate-400">tenants need attention</span>
+              <span className="text-xs font-normal text-muted-foreground">tenants need attention</span>
             </div>
-            <div className="text-2xs text-slate-300 mt-3 flex items-center gap-2">
+            <div className="text-2xs text-muted-foreground mt-3 flex items-center gap-2">
               <span className="text-red-400 font-bold">{summary.critical_tenants_count} Critical (&ge;90%)</span>
               <span>•</span>
               <span className="text-amber-400 font-bold">{summary.high_utilization_tenants_count} Warning (&ge;80%)</span>
@@ -396,17 +396,17 @@ export default function PlatformUsagePage() {
       )}
 
       {/* Main Tab Bar & Search / Health Filters */}
-      <div className="space-y-3 bg-slate-900/70 p-3.5 rounded-2xl border border-slate-800">
+      <div className="space-y-3 bg-foreground p-3.5 rounded-2xl border border-border">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Main Tabs */}
-          <div className="flex items-center p-1 bg-slate-950 border border-slate-800 rounded-xl shrink-0">
+          <div className="flex items-center p-1 bg-foreground border border-border rounded-xl shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab('rankings')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'rankings'
                   ? 'bg-cyan-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-muted-foreground hover:text-white'
               }`}
             >
               <Gauge className="h-3.5 w-3.5" />
@@ -418,7 +418,7 @@ export default function PlatformUsagePage() {
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'timeline'
                   ? 'bg-cyan-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-muted-foreground hover:text-white'
               }`}
             >
               <Calendar className="h-3.5 w-3.5" />
@@ -428,17 +428,17 @@ export default function PlatformUsagePage() {
 
           {/* Search Box */}
           <div className="relative w-full lg:w-80">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               placeholder="Search by company name, slug, plan..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-xs bg-slate-950 border-slate-800 text-white placeholder:text-slate-600 focus:border-cyan-500"
+              className="pl-8 h-8 text-xs bg-foreground border-border text-white placeholder:text-muted-foreground focus:border-cyan-500"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-2 text-slate-500 hover:text-white text-xs cursor-pointer"
+                className="absolute right-2.5 top-2 text-muted-foreground hover:text-white text-xs cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -447,10 +447,10 @@ export default function PlatformUsagePage() {
         </div>
 
         {/* Secondary Filter Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/60 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border text-xs">
           {/* Health Status Chips */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-slate-400 text-2xs mr-1">Quota Health:</span>
+            <span className="text-muted-foreground text-2xs mr-1">Quota Health:</span>
             {[
               { id: 'all', label: 'All Tenants' },
               { id: 'critical', label: 'Critical / Exceeded (≥90%)', count: summary?.critical_tenants_count },
@@ -465,14 +465,14 @@ export default function PlatformUsagePage() {
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                   healthFilter === chip.id
                     ? 'bg-cyan-600 text-white shadow-xs'
-                    : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                    : 'bg-foreground border border-border text-muted-foreground hover:text-white hover:bg-secondary'
                 }`}
               >
                 <span>{chip.label}</span>
                 {chip.count !== undefined && (
                   <span
                     className={`text-2xs px-1.5 py-0.2 rounded-full tabular-nums ${
-                      healthFilter === chip.id ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300'
+                      healthFilter === chip.id ? 'bg-card/20 text-white' : 'bg-secondary text-muted-foreground'
                     }`}
                   >
                     {chip.count}
@@ -483,12 +483,12 @@ export default function PlatformUsagePage() {
           </div>
 
           {/* Sort Control */}
-          <div className="flex items-center gap-1.5 text-slate-400">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <span>Sort by:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-white text-xs"
+              className="bg-foreground border border-border rounded-lg px-2.5 py-1 text-white text-xs"
             >
               <option value="utilization">Highest Utilization %</option>
               <option value="users">Staff Users Count</option>
@@ -499,7 +499,7 @@ export default function PlatformUsagePage() {
             <button
               type="button"
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="h-7 w-7 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+              className="h-7 w-7 rounded-lg bg-foreground border border-border text-muted-foreground hover:text-white flex items-center justify-center cursor-pointer transition-colors"
               title={`Toggle sort order (${sortOrder === 'asc' ? 'Ascending' : 'Descending'})`}
             >
               <ArrowUpDown className="h-3.5 w-3.5" />
@@ -512,10 +512,10 @@ export default function PlatformUsagePage() {
       {/* TAB 1: TENANT QUOTA RANKINGS & CAPACITY MONITOR */}
       {/* ========================================================================= */}
       {activeTab === 'rankings' && (
-        <Card className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
+        <Card className="bg-foreground border-border overflow-hidden shadow-xl">
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
+              <thead className="bg-foreground text-muted-foreground font-semibold uppercase text-2xs border-b border-border">
                 <tr>
                   <th className="py-3 px-4">Tenant Company</th>
                   <th className="py-3 px-4">Plan &amp; Quota Tier</th>
@@ -526,19 +526,19 @@ export default function PlatformUsagePage() {
                   <th className="py-3 px-4 text-right">Governance Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-200">
+              <tbody className="divide-y divide-border text-foreground">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-500">
+                    <td colSpan={7} className="py-12 text-center text-muted-foreground">
                       <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-cyan-400" />
                       <span>Aggregating real-time resource telemetry across tenants...</span>
                     </td>
                   </tr>
                 ) : filteredRankings.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-500">
-                      <Gauge className="h-8 w-8 mx-auto mb-2 text-slate-700" />
-                      <p className="font-semibold text-slate-400">No tenant companies match your filter.</p>
+                    <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                      <Gauge className="h-8 w-8 mx-auto mb-2 text-foreground" />
+                      <p className="font-semibold text-muted-foreground">No tenant companies match your filter.</p>
                       <p className="text-xs mt-1">Try switching health filters or search criteria.</p>
                     </td>
                   </tr>
@@ -553,12 +553,12 @@ export default function PlatformUsagePage() {
                             className="font-bold text-white hover:text-cyan-400 text-sm flex items-center gap-1.5"
                           >
                             <span>{r.company_name}</span>
-                            <ExternalLink className="h-3 w-3 text-slate-500 opacity-60 hover:opacity-100" />
+                            <ExternalLink className="h-3 w-3 text-muted-foreground opacity-60 hover:opacity-100" />
                           </Link>
                           <div className="text-2xs tabular-nums text-cyan-400">
                             {r.company_slug}.printerp.com.bd
                           </div>
-                          <div className="text-2xs text-slate-400 mt-0.5">
+                          <div className="text-2xs text-muted-foreground mt-0.5">
                             {r.owner_phone} • {r.branches_count} of {r.branches_limit} branches
                           </div>
                         </td>
@@ -585,7 +585,7 @@ export default function PlatformUsagePage() {
                               </span>
                             )}
                           </div>
-                          <div className="text-2xs text-slate-500 mt-1">
+                          <div className="text-2xs text-muted-foreground mt-1">
                             {r.customers_count} registered customers
                           </div>
                         </td>
@@ -595,11 +595,11 @@ export default function PlatformUsagePage() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-2xs">
                               <span><strong className="text-white">{r.users_count}</strong>/{r.users_limit}</span>
-                              <span className={`text-2xs tabular-nums ${r.user_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
+                              <span className={`text-2xs tabular-nums ${r.user_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-muted-foreground'}`}>
                                 {r.user_utilization_pct}%
                               </span>
                             </div>
-                            <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div className="w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
                                   r.user_utilization_pct >= 90
@@ -619,11 +619,11 @@ export default function PlatformUsagePage() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-2xs">
                               <span><strong className="text-white">{r.storage_used_gb}</strong>/{r.storage_limit_gb} GB</span>
-                              <span className={`text-2xs tabular-nums ${r.storage_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
+                              <span className={`text-2xs tabular-nums ${r.storage_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-muted-foreground'}`}>
                                 {r.storage_utilization_pct}%
                               </span>
                             </div>
-                            <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div className="w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
                                   r.storage_utilization_pct >= 90
@@ -643,11 +643,11 @@ export default function PlatformUsagePage() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-2xs">
                               <span><strong className="text-white">{r.orders_this_month}</strong>/{r.orders_limit}</span>
-                              <span className={`text-2xs tabular-nums ${r.order_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
+                              <span className={`text-2xs tabular-nums ${r.order_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-muted-foreground'}`}>
                                 {r.order_utilization_pct}%
                               </span>
                             </div>
-                            <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div className="w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
                                   r.order_utilization_pct >= 90
@@ -680,7 +680,7 @@ export default function PlatformUsagePage() {
                               <span>{r.max_utilization_pct}% WARNING</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-2xs font-semibold px-2 py-0.5 rounded-lg bg-slate-800 text-emerald-300 border border-slate-700">
+                            <span className="inline-flex items-center gap-1 text-2xs font-semibold px-2 py-0.5 rounded-lg bg-secondary text-emerald-300 border border-border">
                               <CheckCircle2 className="h-3 w-3 text-emerald-400" />
                               <span>{r.max_utilization_pct}% NORMAL</span>
                             </span>
@@ -691,7 +691,7 @@ export default function PlatformUsagePage() {
                         <td className="py-3 px-4 text-right">
                           <Link
                             href={`/platform/subscriptions`}
-                            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-100 hover:text-white border border-slate-700 shadow-sm transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-100 hover:text-white border border-border shadow-sm transition-colors cursor-pointer"
                             title="Adjust plan limits or custom overrides on Subscriptions page"
                           >
                             <Sliders className="h-3.5 w-3.5 text-indigo-400" />
@@ -712,13 +712,13 @@ export default function PlatformUsagePage() {
       {/* TAB 2: HISTORICAL USAGE TIMELINE TABLE */}
       {/* ========================================================================= */}
       {activeTab === 'timeline' && (
-        <Card className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
-          <CardHeader className="pb-3 border-b border-slate-800 flex flex-row items-center justify-between">
+        <Card className="bg-foreground border-border overflow-hidden shadow-xl">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white font-bold">
                 Historical Telemetry Points ({period.toUpperCase()})
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Audited daily/weekly snapshot logs from PostgreSQL cluster database.
               </CardDescription>
             </div>
@@ -729,7 +729,7 @@ export default function PlatformUsagePage() {
 
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
+              <thead className="bg-foreground text-muted-foreground font-semibold uppercase text-2xs border-b border-border">
                 <tr>
                   <th className="py-3 px-4">Snapshot Date</th>
                   <th className="py-3 px-4">Active Staff Seats</th>
@@ -739,7 +739,7 @@ export default function PlatformUsagePage() {
                   <th className="py-3 px-4">Active Branches</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-200">
+              <tbody className="divide-y divide-border text-foreground">
                 {data?.points.map((pt, i) => (
                   <tr key={i} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4 font-bold text-white flex items-center gap-2">
@@ -759,11 +759,11 @@ export default function PlatformUsagePage() {
                       {pt.orders_count.toLocaleString()} orders
                     </td>
 
-                    <td className="py-3.5 px-4 tabular-nums text-slate-300">
+                    <td className="py-3.5 px-4 tabular-nums text-muted-foreground">
                       {pt.customers_count.toLocaleString()} customers
                     </td>
 
-                    <td className="py-3.5 px-4 tabular-nums text-slate-400">
+                    <td className="py-3.5 px-4 tabular-nums text-muted-foreground">
                       {pt.branches_count} branches
                     </td>
                   </tr>

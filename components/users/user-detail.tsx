@@ -297,20 +297,20 @@ export function UserDetailDrawer({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-40 transition-opacity"
+        className="fixed inset-0 bg-foreground backdrop-blur-[2px] z-40 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Drawer Container */}
       <aside
-        className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200"
+        className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-card shadow-2xl border-l border-border flex flex-col overflow-hidden animate-in slide-in-from-right duration-200"
         role="dialog"
         aria-modal="true"
         aria-label={`User Details: ${fullName}`}
       >
         {/* HEADER */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="p-4 sm:p-5 border-b border-border flex items-start justify-between gap-3 bg-muted/50 dark:bg-card">
           <div className="flex items-center gap-3 min-w-0">
             <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold text-lg flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-800">
               {fullName.charAt(0).toUpperCase()}
@@ -318,16 +318,16 @@ export function UserDetailDrawer({
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
+                <h2 className="text-base sm:text-lg font-bold text-foreground truncate">
                   {fullName}
                 </h2>
-                <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border border-border bg-card dark:bg-muted">
                   <span className={`h-1.5 w-1.5 rounded-full ${statusColor}`} />
                   <span>{statusText}</span>
                 </span>
               </div>
 
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2 flex-wrap">
+              <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
                 <Badge variant="outline" className="text-xs font-medium">
                   {primaryRole?.name || 'General Staff'}
                 </Badge>
@@ -338,7 +338,7 @@ export function UserDetailDrawer({
                     <span>EMP: {linkedEmployee.employee_id_number || linkedEmployee.name}</span>
                   </span>
                 ) : (
-                  <span className="text-slate-400">Not Linked to Employee</span>
+                  <span className="text-muted-foreground">Not Linked to Employee</span>
                 )}
               </div>
             </div>
@@ -347,7 +347,7 @@ export function UserDetailDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             aria-label="Close user details"
           >
             <X className="h-5 w-5" />
@@ -355,7 +355,7 @@ export function UserDetailDrawer({
         </div>
 
         {/* TAB NAVIGATION */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 px-4 overflow-x-auto gap-1 text-xs scrollbar-none">
+        <div className="flex border-b border-border px-4 overflow-x-auto gap-1 text-xs scrollbar-none">
           {[
             { id: 'account', label: 'Account' },
             { id: 'access', label: 'Role & Duties' },
@@ -371,7 +371,7 @@ export function UserDetailDrawer({
               className={`py-3 px-3 border-b-2 font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id
                   ? 'border-blue-600 text-blue-600 dark:text-blue-400 font-bold'
-                  : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                  : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
               {tab.label}
@@ -384,9 +384,9 @@ export function UserDetailDrawer({
           {/* TAB 1: ACCOUNT */}
           {activeTab === 'account' && (
             <div className="space-y-5 text-sm">
-              <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <div className="bg-muted border border-border rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border dark:border-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Login Identity
                   </span>
                   <Badge variant="outline" className="text-xs font-mono">
@@ -396,46 +396,46 @@ export function UserDetailDrawer({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span className="text-slate-400">Email Address</span>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 mt-0.5">
-                      <Mail className="h-3.5 w-3.5 text-slate-400" />
+                    <span className="text-muted-foreground">Email Address</span>
+                    <div className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5">
+                      <Mail className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>{email}</span>
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-slate-400">Username</span>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+                    <span className="text-muted-foreground">Username</span>
+                    <div className="font-semibold text-foreground mt-0.5">
                       {username ? `@${username}` : '—'}
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-slate-400">Mobile Phone</span>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 mt-0.5">
-                      <Phone className="h-3.5 w-3.5 text-slate-400" />
+                    <span className="text-muted-foreground">Mobile Phone</span>
+                    <div className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5">
+                      <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>{phone || '—'}</span>
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-slate-400">Status</span>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 mt-0.5">
+                    <span className="text-muted-foreground">Status</span>
+                    <div className="font-semibold text-foreground flex items-center gap-1.5 mt-0.5">
                       <span className={`h-2 w-2 rounded-full ${statusColor}`} />
                       <span>{statusText}</span>
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-slate-400">Created At</span>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+                    <span className="text-muted-foreground">Created At</span>
+                    <div className="font-semibold text-foreground mt-0.5">
                       {formatDateTime(user.created_at)}
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-slate-400">Last Login</span>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+                    <span className="text-muted-foreground">Last Login</span>
+                    <div className="font-semibold text-foreground mt-0.5">
                       {user.last_login_at ? formatDateTime(user.last_login_at) : 'Never'}
                     </div>
                   </div>
@@ -443,9 +443,9 @@ export function UserDetailDrawer({
               </div>
 
               {/* Linked Employee Card */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-2">
+              <div className="border border-border rounded-lg p-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Linked Workforce Profile
                   </span>
                   {linkedEmployee ? (
@@ -473,10 +473,10 @@ export function UserDetailDrawer({
                 {linkedEmployee ? (
                   <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-lg text-xs flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                      <div className="font-bold text-foreground text-sm">
                         {linkedEmployee.name}
                       </div>
-                      <div className="text-slate-500 mt-0.5 flex items-center gap-2">
+                      <div className="text-muted-foreground mt-0.5 flex items-center gap-2">
                         <span>ID: {linkedEmployee.employee_id_number || 'EMP'}</span>
                         <span>•</span>
                         <span>{linkedEmployee.department || 'Operations'}</span>
@@ -493,7 +493,7 @@ export function UserDetailDrawer({
                     </Badge>
                   </div>
                 ) : (
-                  <div className="p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg text-xs text-slate-500 text-center">
+                  <div className="p-3 bg-muted rounded-lg text-xs text-muted-foreground text-center">
                     This login account is not currently linked to any employee record.
                   </div>
                 )}
@@ -539,11 +539,11 @@ export function UserDetailDrawer({
           {/* TAB 2: ROLE & DUTIES */}
           {activeTab === 'access' && (
             <div className="space-y-5 text-sm">
-              <div className="p-4 border border-slate-200 dark:border-slate-800 rounded-lg space-y-3">
+              <div className="p-4 border border-border rounded-lg space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-xs text-slate-400 uppercase tracking-wider">Current Role</span>
-                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base mt-0.5">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Current Role</span>
+                    <h3 className="font-bold text-foreground text-base mt-0.5">
                       {primaryRole?.name || 'General Staff'}
                     </h3>
                   </div>
@@ -551,21 +551,21 @@ export function UserDetailDrawer({
                   <Button
                     size="sm"
                     onClick={() => onEditAccess(user)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs gap-1.5"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5"
                   >
                     <Edit2 className="h-3.5 w-3.5" />
                     <span>Edit Access</span>
                   </Button>
                 </div>
 
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {primaryRole?.description || 'Operational role template with standard printing responsibilities.'}
                 </p>
               </div>
 
               {/* Responsibilities Cloud */}
               <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Assigned Responsibilities ({user.responsibilities?.length || 0})
                 </Label>
                 <div className="flex flex-wrap gap-1.5">
@@ -573,25 +573,25 @@ export function UserDetailDrawer({
                     <Badge
                       key={resp}
                       variant="secondary"
-                      className="px-2.5 py-1 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200"
+                      className="px-2.5 py-1 text-xs font-medium bg-muted text-foreground dark:text-foreground"
                     >
                       {resp}
                     </Badge>
                   ))}
                   {(!user.responsibilities || user.responsibilities.length === 0) && (
-                    <span className="text-xs text-slate-400">No responsibilities assigned</span>
+                    <span className="text-xs text-muted-foreground">No responsibilities assigned</span>
                   )}
                 </div>
               </div>
 
               {/* Advanced Overrides Trigger */}
               {onOpenAdvancedPermissions && (
-                <div className="p-3 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-lg flex items-center justify-between text-xs">
+                <div className="p-3 bg-muted border border-border rounded-lg flex items-center justify-between text-xs">
                   <div>
-                    <span className="font-semibold text-slate-900 dark:text-slate-100">
+                    <span className="font-semibold text-foreground dark:text-foreground">
                       Granular Permission Overrides
                     </span>
-                    <div className="text-slate-500 text-[11px] mt-0.5">
+                    <div className="text-muted-foreground text-[11px] mt-0.5">
                       Explicit Allow/Deny controls for advanced administrators
                     </div>
                   </div>
@@ -613,16 +613,16 @@ export function UserDetailDrawer({
           {/* TAB 3: DATA SCOPE */}
           {activeTab === 'data' && (
             <div className="space-y-4 text-sm">
-              <div className="p-4 border border-slate-200 dark:border-slate-800 rounded-lg space-y-2">
-                <span className="text-xs text-slate-400 uppercase tracking-wider">Operational Scope</span>
-                <div className="font-bold text-slate-900 dark:text-slate-100 text-base">
+              <div className="p-4 border border-border rounded-lg space-y-2">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Operational Scope</span>
+                <div className="font-bold text-foreground text-base">
                   {user.data_scopes?.orders === 'company'
                     ? 'Entire Company'
                     : user.data_scopes?.orders === 'branch'
                     ? 'Branch Wide'
                     : 'Assigned Work'}
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Determines which customer orders, jobs, and invoices this user can view within authorized modules.
                 </p>
               </div>
@@ -641,19 +641,19 @@ export function UserDetailDrawer({
           {/* TAB 4: BRANCH ACCESS */}
           {activeTab === 'branch' && (
             <div className="space-y-4 text-sm">
-              <div className="p-4 border border-slate-200 dark:border-slate-800 rounded-lg space-y-2">
-                <span className="text-xs text-slate-400 uppercase tracking-wider">Primary Branch</span>
-                <div className="font-bold text-slate-900 dark:text-slate-100 text-base">
+              <div className="p-4 border border-border rounded-lg space-y-2">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Primary Branch</span>
+                <div className="font-bold text-foreground text-base">
                   {user.branch?.name || 'Head Office (Main)'}
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Default branch for orders, jobs, and inventory requisitions.
                 </p>
               </div>
 
               {user.authorized_branch_ids && user.authorized_branch_ids.length > 0 && (
                 <div className="space-y-2">
-                  <span className="text-xs text-slate-400 uppercase tracking-wider">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
                     Authorized Branch Access ({user.authorized_branch_ids.length})
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -672,21 +672,21 @@ export function UserDetailDrawer({
           {activeTab === 'security' && (
             <div className="space-y-5 text-sm">
               {/* Account Health Diagnostics (Prompt Sec 61) */}
-              <div className="border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              <div className="border border-border rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border dark:border-border">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Account Health Diagnostic
                   </span>
                   {isLoadingHealth ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                   ) : (
-                    <span className="text-[11px] text-slate-400">Real-time check</span>
+                    <span className="text-[11px] text-muted-foreground">Real-time check</span>
                   )}
                 </div>
 
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center justify-between py-1">
-                    <span className="text-slate-600 dark:text-slate-300">Auth Identity (auth.users)</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">Auth Identity (auth.users)</span>
                     {healthData?.authOk ? (
                       <span className="text-emerald-600 flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5" /> Verified
@@ -699,7 +699,7 @@ export function UserDetailDrawer({
                   </div>
 
                   <div className="flex items-center justify-between py-1">
-                    <span className="text-slate-600 dark:text-slate-300">Profile Record (user_profiles)</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">Profile Record (user_profiles)</span>
                     {healthData?.profileOk ? (
                       <span className="text-emerald-600 flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5" /> Verified
@@ -712,18 +712,18 @@ export function UserDetailDrawer({
                   </div>
 
                   <div className="flex items-center justify-between py-1">
-                    <span className="text-slate-600 dark:text-slate-300">Company Membership</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">Company Membership</span>
                     {healthData?.membershipOk ? (
                       <span className="text-emerald-600 flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5" /> Active
                       </span>
                     ) : (
-                      <span className="text-slate-400 font-medium">Inactive</span>
+                      <span className="text-muted-foreground font-medium">Inactive</span>
                     )}
                   </div>
 
                   <div className="flex items-center justify-between py-1">
-                    <span className="text-slate-600 dark:text-slate-300">Workforce Link (employees)</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">Workforce Link (employees)</span>
                     {healthData?.employeeOk ? (
                       <span className="text-emerald-600 flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5" /> Linked ({healthData.linkedEmployee?.employee_id_number || 'EMP'})
@@ -736,7 +736,7 @@ export function UserDetailDrawer({
                   </div>
 
                   <div className="flex items-center justify-between py-1">
-                    <span className="text-slate-600 dark:text-slate-300">Role Assignment</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">Role Assignment</span>
                     {healthData?.roleOk ? (
                       <span className="text-emerald-600 flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5" /> Assigned
@@ -749,7 +749,7 @@ export function UserDetailDrawer({
                   </div>
 
                   <div className="flex items-center justify-between py-1">
-                    <span className="text-slate-600 dark:text-slate-300">Branch Allocation</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">Branch Allocation</span>
                     {healthData?.branchOk ? (
                       <span className="text-emerald-600 flex items-center gap-1 font-medium">
                         <Check className="h-3.5 w-3.5" /> Configured
@@ -772,10 +772,10 @@ export function UserDetailDrawer({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-slate-100">
+                      <div className="font-semibold text-foreground dark:text-foreground">
                         Remove System Login
                       </div>
-                      <div className="text-slate-500 text-[11px]">
+                      <div className="text-muted-foreground text-[11px]">
                         Detaches login access. Employee records, attendance, and payroll are preserved.
                       </div>
                     </div>
@@ -797,29 +797,29 @@ export function UserDetailDrawer({
           {activeTab === 'activity' && (
             <div className="space-y-4 text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-semibold uppercase tracking-wider text-slate-400 text-[11px]">
+                <span className="font-semibold uppercase tracking-wider text-muted-foreground text-[11px]">
                   Recent Access Events
                 </span>
-                {isLoadingActivities && <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />}
+                {isLoadingActivities && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
               </div>
 
               {activities.length === 0 ? (
-                <div className="p-6 text-center text-slate-400 border border-slate-200 dark:border-slate-800 rounded-lg">
+                <div className="p-6 text-center text-muted-foreground border border-border rounded-lg">
                   No audit logs recorded for this user yet.
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg">
+                <div className="divide-y divide-border border border-border rounded-lg">
                   {activities.map((log) => (
                     <div key={log.id} className="p-3 space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        <span className="font-semibold text-foreground dark:text-foreground">
                           {log.action || 'Access Updated'}
                         </span>
-                        <span className="text-[11px] text-slate-400">
+                        <span className="text-[11px] text-muted-foreground">
                           {formatDateTime(log.created_at)}
                         </span>
                       </div>
-                      <div className="text-slate-500 text-[11px]">
+                      <div className="text-muted-foreground text-[11px]">
                         {log.details?.message || log.description || `Performed by ${log.actor_name || 'Admin'}`}
                       </div>
                     </div>

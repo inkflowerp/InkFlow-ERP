@@ -24,10 +24,10 @@ export default function InvoiceDetailRedirectPage() {
         <Receipt className="h-6 w-6 animate-pulse" />
       </div>
       <div className="space-y-1">
-        <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+        <h2 className="text-sm font-bold text-foreground dark:text-foreground">
           Loading Invoice...
         </h2>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Redirecting to invoice cockpit in Billing & Collections.
         </p>
       </div>

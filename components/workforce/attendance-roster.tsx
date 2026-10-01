@@ -144,7 +144,7 @@ export function AttendanceRoster({
       case 'field_work':
         return 'bg-purple-50 text-purple-700 border-purple-200'
       default:
-        return 'bg-slate-100 text-slate-700 border-slate-200'
+        return 'bg-muted text-foreground border-border'
     }
   }
 
@@ -160,40 +160,40 @@ export function AttendanceRoster({
     <div className="space-y-4">
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <Card className="p-3 bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-slate-500 block">Present</span>
+        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
+          <span className="text-[11px] font-medium text-muted-foreground block">Present</span>
           <span className="text-xl font-bold text-emerald-600 tabular-nums">{stats.present}</span>
-          <span className="text-[10px] text-slate-400 block">উপস্থিত</span>
+          <span className="text-[10px] text-muted-foreground block">উপস্থিত</span>
         </Card>
-        <Card className="p-3 bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-slate-500 block">Late</span>
+        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
+          <span className="text-[11px] font-medium text-muted-foreground block">Late</span>
           <span className="text-xl font-bold text-amber-600 tabular-nums">{stats.late}</span>
-          <span className="text-[10px] text-slate-400 block">দেরিতে আগমন</span>
+          <span className="text-[10px] text-muted-foreground block">দেরিতে আগমন</span>
         </Card>
-        <Card className="p-3 bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-slate-500 block">Absent</span>
+        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
+          <span className="text-[11px] font-medium text-muted-foreground block">Absent</span>
           <span className="text-xl font-bold text-red-600 tabular-nums">{stats.absent}</span>
-          <span className="text-[10px] text-slate-400 block">অনুপস্থিত</span>
+          <span className="text-[10px] text-muted-foreground block">অনুপস্থিত</span>
         </Card>
-        <Card className="p-3 bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-slate-500 block">Leave</span>
+        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
+          <span className="text-[11px] font-medium text-muted-foreground block">Leave</span>
           <span className="text-xl font-bold text-blue-600 tabular-nums">{stats.leave}</span>
-          <span className="text-[10px] text-slate-400 block">ছুটিতে</span>
+          <span className="text-[10px] text-muted-foreground block">ছুটিতে</span>
         </Card>
-        <Card className="p-3 bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-slate-500 block">Field Work</span>
+        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
+          <span className="text-[11px] font-medium text-muted-foreground block">Field Work</span>
           <span className="text-xl font-bold text-purple-600 tabular-nums">{stats.fieldWork}</span>
-          <span className="text-[10px] text-slate-400 block">ফিল্ডে</span>
+          <span className="text-[10px] text-muted-foreground block">ফিল্ডে</span>
         </Card>
-        <Card className="p-3 bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-[11px] font-medium text-slate-500 block">Working Now</span>
+        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
+          <span className="text-[11px] font-medium text-muted-foreground block">Working Now</span>
           <span className="text-xl font-bold text-indigo-600 tabular-nums">{stats.currentlyWorking}</span>
-          <span className="text-[10px] text-slate-400 block">ফ্লোরে কর্মরত</span>
+          <span className="text-[10px] text-muted-foreground block">ফ্লোরে কর্মরত</span>
         </Card>
       </div>
 
       {/* Date & Filter Toolbar */}
-      <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
+      <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
         <CardContent className="p-4 space-y-3">
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
             {/* Date Selector */}
@@ -202,7 +202,7 @@ export function AttendanceRoster({
                 variant="outline"
                 size="sm"
                 onClick={() => shiftDate(-1)}
-                className="h-8 w-8 p-0 border-slate-200 text-slate-600 hover:bg-slate-50"
+                className="h-8 w-8 p-0 border-border text-muted-foreground hover:bg-muted"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -212,7 +212,7 @@ export function AttendanceRoster({
                   type="date"
                   value={selectedDate}
                   onChange={(e) => onDateChange(e.target.value)}
-                  className="h-8 text-xs font-semibold bg-white border-slate-200 w-36 pl-3"
+                  className="h-8 text-xs font-semibold bg-card border-border w-36 pl-3"
                 />
               </div>
 
@@ -220,7 +220,7 @@ export function AttendanceRoster({
                 variant="outline"
                 size="sm"
                 onClick={() => shiftDate(1)}
-                className="h-8 w-8 p-0 border-slate-200 text-slate-600 hover:bg-slate-50"
+                className="h-8 w-8 p-0 border-border text-muted-foreground hover:bg-muted"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
@@ -243,7 +243,7 @@ export function AttendanceRoster({
                 variant="outline"
                 size="sm"
                 onClick={onOpenQrPunch}
-                className="h-8 text-xs border-slate-200 hover:bg-slate-50 text-slate-700 min-h-[32px]"
+                className="h-8 text-xs border-border hover:bg-muted text-foreground min-h-[32px]"
               >
                 <QrCode className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
                 <span>QR Attendance</span>
@@ -252,7 +252,7 @@ export function AttendanceRoster({
               <Button
                 size="sm"
                 onClick={onOpenManualEntry}
-                className="h-8 px-3 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white min-h-[32px]"
+                className="h-8 px-3 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 <span>Manual Punch</span>
@@ -261,22 +261,22 @@ export function AttendanceRoster({
           </div>
 
           {/* Search & Filter Row */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-border">
             <div className="relative flex-1 max-w-sm">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               <Input
                 type="text"
                 placeholder="Search roster..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 h-8 text-xs bg-slate-50/50 border-slate-200"
+                className="pl-8 h-8 text-xs bg-muted border-border"
               />
             </div>
 
             <select
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              className="h-8 rounded-md border border-slate-200 bg-white px-2.5 text-xs text-slate-700"
+              className="h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground"
             >
               <option value="all">All Departments</option>
               <option value="printing">Printing</option>
@@ -293,7 +293,7 @@ export function AttendanceRoster({
               <select
                 value={selectedBranch}
                 onChange={(e) => setSelectedBranch(e.target.value)}
-                className="h-8 rounded-md border border-slate-200 bg-white px-2.5 text-xs text-slate-700"
+                className="h-8 rounded-md border border-border bg-card px-2.5 text-xs text-foreground"
               >
                 <option value="all">All Branches</option>
                 {branches.map((b) => (
@@ -304,7 +304,7 @@ export function AttendanceRoster({
               </select>
             )}
 
-            <span className="text-slate-400 text-xs ml-auto shrink-0">
+            <span className="text-muted-foreground text-xs ml-auto shrink-0">
               Showing {filteredRoster.length} staff
             </span>
           </div>
@@ -313,7 +313,7 @@ export function AttendanceRoster({
 
       {/* Roster Table */}
       {isLoading ? (
-        <Card className="bg-white border-slate-200 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="space-y-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full rounded-lg" />
@@ -321,15 +321,15 @@ export function AttendanceRoster({
           </div>
         </Card>
       ) : filteredRoster.length === 0 ? (
-        <Card className="bg-white border-slate-200 py-12 text-center">
-          <p className="text-sm font-medium text-slate-600">No attendance records for this date</p>
-          <p className="text-xs text-slate-400 mt-1">Try selecting a different date or clearing your search.</p>
+        <Card className="bg-card border-border py-12 text-center">
+          <p className="text-sm font-medium text-muted-foreground">No attendance records for this date</p>
+          <p className="text-xs text-muted-foreground mt-1">Try selecting a different date or clearing your search.</p>
         </Card>
       ) : (
-        <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
+        <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto min-h-[160px]">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
                   <th className="py-3 px-4">Employee</th>
                   <th className="py-3 px-3">Department</th>
@@ -344,25 +344,25 @@ export function AttendanceRoster({
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {filteredRoster.map(({ employee, summary, status }) => {
                   return (
-                    <tr key={employee.id} className="hover:bg-slate-50/60 transition-colors">
+                    <tr key={employee.id} className="hover:bg-muted transition-colors">
                       {/* Employee */}
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-900">{employee.name}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">
+                        <div className="font-semibold text-foreground">{employee.name}</div>
+                        <div className="text-[11px] text-muted-foreground font-mono">
                           {employee.employee_id_number}
                         </div>
                       </td>
 
                       {/* Department */}
-                      <td className="py-3 px-3 capitalize text-slate-600">
+                      <td className="py-3 px-3 capitalize text-muted-foreground">
                         {employee.department}
                       </td>
 
                       {/* Shift */}
-                      <td className="py-3 px-3 text-slate-600">
+                      <td className="py-3 px-3 text-muted-foreground">
                         {summary?.shift_name || 'Standard Day'}
                       </td>
 
@@ -379,22 +379,22 @@ export function AttendanceRoster({
                       </td>
 
                       {/* Check In */}
-                      <td className="py-3 px-3 font-mono font-medium text-slate-800">
+                      <td className="py-3 px-3 font-mono font-medium text-foreground">
                         {summary?.check_in_time || '—'}
                       </td>
 
                       {/* Check Out */}
-                      <td className="py-3 px-3 font-mono font-medium text-slate-800">
+                      <td className="py-3 px-3 font-mono font-medium text-foreground">
                         {summary?.check_out_time || '—'}
                       </td>
 
                       {/* Worked */}
-                      <td className="py-3 px-3 font-mono text-slate-600">
+                      <td className="py-3 px-3 font-mono text-muted-foreground">
                         {summary?.worked_duration_formatted || (summary?.worked_minutes ? `${Math.floor(summary.worked_minutes / 60)}h ${summary.worked_minutes % 60}m` : '—')}
                       </td>
 
                       {/* Late */}
-                      <td className="py-3 px-3 font-mono text-slate-600">
+                      <td className="py-3 px-3 font-mono text-muted-foreground">
                         {summary && summary.late_minutes > 0 ? (
                           <span className="text-amber-600 font-semibold">{summary.late_minutes}m</span>
                         ) : (
@@ -403,7 +403,7 @@ export function AttendanceRoster({
                       </td>
 
                       {/* OT */}
-                      <td className="py-3 px-3 font-mono text-slate-600">
+                      <td className="py-3 px-3 font-mono text-muted-foreground">
                         {summary && summary.approved_ot_minutes > 0 ? (
                           <span className="text-indigo-600 font-semibold">{Math.round((summary.approved_ot_minutes / 60) * 10) / 10}h</span>
                         ) : (
@@ -412,7 +412,7 @@ export function AttendanceRoster({
                       </td>
 
                       {/* Source */}
-                      <td className="py-3 px-3 text-slate-500 capitalize">
+                      <td className="py-3 px-3 text-muted-foreground capitalize">
                         {summary?.attendance_source || 'manual'}
                       </td>
 
@@ -423,7 +423,7 @@ export function AttendanceRoster({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg min-h-[32px] min-w-[32px]"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg min-h-[32px] min-w-[32px]"
                             >
                               <MoreVertical className="w-4 h-4" />
                             </Button>

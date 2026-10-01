@@ -98,9 +98,9 @@ export default function BrandingSettingsPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-5xl animate-pulse">
-        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
-        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-20 bg-muted rounded-2xl w-full" />
+        <div className="h-12 bg-muted rounded-xl w-3/4" />
+        <div className="h-48 bg-muted rounded-2xl w-full" />
       </div>
     )
   }
@@ -126,7 +126,7 @@ export default function BrandingSettingsPage() {
       <form onSubmit={handleSave} className="space-y-6">
         {/* Color & Visual Theme */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base">Primary Brand Accent Color</CardTitle>
             <CardDescription className="text-xs">
               This color will highlight your invoices, challans, and customer web previews.
@@ -142,7 +142,7 @@ export default function BrandingSettingsPage() {
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
                     branding.primary_color === c.hex
                       ? 'border-slate-900 ring-2 ring-slate-900/20 dark:border-white shadow-xs'
-                      : 'border-slate-200 hover:border-slate-300 dark:border-slate-800'
+                      : 'border-border hover:border-input dark:border-border'
                   }`}
                 >
                   <span className="h-4 w-4 rounded-full shrink-0" style={{ backgroundColor: c.hex }} />
@@ -167,14 +167,14 @@ export default function BrandingSettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Main Logo */}
           <Card>
-            <CardHeader className="pb-2 border-b border-slate-100 dark:border-slate-800">
+            <CardHeader className="pb-2 border-b border-border dark:border-border">
               <CardTitle className="text-sm flex items-center gap-2">
                 <ImageIcon className="h-4 w-4 text-blue-600" />
                 Main Company Logo
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-3">
-              <div className="h-28 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-3">
+              <div className="h-28 rounded-lg border border-dashed border-input bg-muted flex items-center justify-center p-3">
                 {branding.logo_url ? (
                   <img
                     src={branding.logo_url}
@@ -182,7 +182,7 @@ export default function BrandingSettingsPage() {
                     className="max-h-full max-w-full object-contain"
                   />
                 ) : (
-                  <span className="text-xs text-slate-400">No logo uploaded</span>
+                  <span className="text-xs text-muted-foreground">No logo uploaded</span>
                 )}
               </div>
               <Input
@@ -196,14 +196,14 @@ export default function BrandingSettingsPage() {
 
           {/* Invoice Header Logo */}
           <Card>
-            <CardHeader className="pb-2 border-b border-slate-100 dark:border-slate-800">
+            <CardHeader className="pb-2 border-b border-border dark:border-border">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Receipt className="h-4 w-4 text-emerald-600" />
                 Invoice Header Logo
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-3">
-              <div className="h-28 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-3">
+              <div className="h-28 rounded-lg border border-dashed border-input bg-muted flex items-center justify-center p-3">
                 {branding.invoice_logo_url ? (
                   <img
                     src={branding.invoice_logo_url}
@@ -211,7 +211,7 @@ export default function BrandingSettingsPage() {
                     className="max-h-full max-w-full object-contain"
                   />
                 ) : (
-                  <span className="text-xs text-slate-400">Default company logo</span>
+                  <span className="text-xs text-muted-foreground">Default company logo</span>
                 )}
               </div>
               <Input
@@ -225,14 +225,14 @@ export default function BrandingSettingsPage() {
 
           {/* Quotation Logo */}
           <Card>
-            <CardHeader className="pb-2 border-b border-slate-100 dark:border-slate-800">
+            <CardHeader className="pb-2 border-b border-border dark:border-border">
               <CardTitle className="text-sm flex items-center gap-2">
                 <FileSpreadsheet className="h-4 w-4 text-purple-600" />
                 Quotation Header Logo
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-3">
-              <div className="h-28 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-3">
+              <div className="h-28 rounded-lg border border-dashed border-input bg-muted flex items-center justify-center p-3">
                 {branding.quotation_logo_url ? (
                   <img
                     src={branding.quotation_logo_url}
@@ -240,7 +240,7 @@ export default function BrandingSettingsPage() {
                     className="max-h-full max-w-full object-contain"
                   />
                 ) : (
-                  <span className="text-xs text-slate-400">Default company logo</span>
+                  <span className="text-xs text-muted-foreground">Default company logo</span>
                 )}
               </div>
               <Input
@@ -255,7 +255,7 @@ export default function BrandingSettingsPage() {
 
         {/* Document Footer Terms & Conditions */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base">Document Footer Notes & Terms (বিল শর্তাবলী)</CardTitle>
             <CardDescription className="text-xs">
               Printed automatically at the bottom of all Commercial Invoices, Quotations, and Delivery Challans.

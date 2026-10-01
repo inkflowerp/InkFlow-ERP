@@ -147,19 +147,19 @@ export function CustomerRatesTable({
             <Sparkles className="h-3.5 w-3.5" />
           </div>
           <div>
-            <div className="font-semibold text-slate-900 dark:text-white">
+            <div className="font-semibold text-foreground dark:text-white">
               Automated Dynamic Rate Priority Engine
             </div>
-            <div className="text-slate-600 dark:text-slate-400 text-2xs leading-relaxed mt-0.5">
+            <div className="text-muted-foreground text-2xs leading-relaxed mt-0.5">
               Priority: <span className="font-semibold text-blue-600 dark:text-blue-400">Custom Rate</span> &rarr;{' '}
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">Last Invoice Rate</span> &rarr;{' '}
               <span className="font-semibold text-amber-600 dark:text-amber-400">Last Quotation Rate</span> &rarr;{' '}
-              <span className="font-semibold text-slate-600 dark:text-slate-300">Catalog Default</span>.
+              <span className="font-semibold text-muted-foreground dark:text-muted-foreground">Catalog Default</span>.
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-2xs text-slate-500 dark:text-slate-400 shrink-0 bg-white/60 dark:bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
+        <div className="flex items-center gap-1.5 text-2xs text-muted-foreground shrink-0 bg-card/60 px-2.5 py-1.5 rounded-lg border border-border dark:border-border">
           <ShieldAlert className="h-3.5 w-3.5 text-amber-500 shrink-0" />
           <span>Historical invoices remain immutable</span>
         </div>
@@ -187,7 +187,7 @@ export function CustomerRatesTable({
       {/* Search Bar */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Search products & services by name or SKU..."
             value={searchTerm}
@@ -198,10 +198,10 @@ export function CustomerRatesTable({
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+      <div className="hidden md:block overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold">
+            <thead className="bg-muted border-b border-border text-muted-foreground font-semibold">
               <tr>
                 <th className="py-3 px-4">Product / Service</th>
                 <th className="py-3 px-3">Unit</th>
@@ -214,10 +214,10 @@ export function CustomerRatesTable({
                 {canEdit && <th className="py-3 px-4 text-center">Action</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+            <tbody className="divide-y divide-border dark:divide-border">
               {filteredRates.length === 0 ? (
                 <tr>
-                  <td colSpan={canEdit ? 9 : 8} className="py-8 text-center text-slate-400">
+                  <td colSpan={canEdit ? 9 : 8} className="py-8 text-center text-muted-foreground">
                     No products matched your search filter.
                   </td>
                 </tr>
@@ -229,32 +229,32 @@ export function CustomerRatesTable({
                     <tr
                       key={r.productId}
                       className={cn(
-                        'hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors',
+                        'hover:bg-muted dark:hover:bg-muted/40 transition-colors',
                         r.hasCustomRate && 'bg-blue-50/20 dark:bg-blue-950/10'
                       )}
                     >
                       {/* Product Name */}
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-900 dark:text-white">
+                        <div className="font-semibold text-foreground dark:text-white">
                           {r.productName}
                         </div>
                         {r.productNameBn && (
-                          <div className="text-2xs text-slate-500 dark:text-slate-400">
+                          <div className="text-2xs text-muted-foreground dark:text-muted-foreground">
                             {r.productNameBn}
                           </div>
                         )}
-                        <div className="text-2xs text-slate-400 tabular-nums mt-0.5">
+                        <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
                           {r.sku}
                         </div>
                       </td>
 
                       {/* Unit */}
-                      <td className="py-3 px-3 font-medium text-slate-600 dark:text-slate-300 uppercase">
+                      <td className="py-3 px-3 font-medium text-muted-foreground uppercase">
                         {r.unit}
                       </td>
 
                       {/* Default Rate */}
-                      <td className="py-3 px-3 text-right font-medium text-slate-500">
+                      <td className="py-3 px-3 text-right font-medium text-muted-foreground">
                         {formatBDT(r.defaultRate)}
                       </td>
 
@@ -266,13 +266,13 @@ export function CustomerRatesTable({
                               {formatBDT(r.lastInvoiceRate)}
                             </span>
                             {r.lastInvoiceNumber && (
-                              <div className="text-2xs text-slate-400 truncate" title={`${r.lastInvoiceNumber} (${r.lastInvoiceDate})`}>
+                              <div className="text-2xs text-muted-foreground truncate" title={`${r.lastInvoiceNumber} (${r.lastInvoiceDate})`}>
                                 {r.lastInvoiceNumber}
                               </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-400 italic">No bill</span>
+                          <span className="text-muted-foreground italic">No bill</span>
                         )}
                       </td>
 
@@ -284,13 +284,13 @@ export function CustomerRatesTable({
                               {formatBDT(r.lastQuotationRate)}
                             </span>
                             {r.lastQuotationNumber && (
-                              <div className="text-2xs text-slate-400 truncate" title={`${r.lastQuotationNumber} (${r.lastQuotationDate})`}>
+                              <div className="text-2xs text-muted-foreground truncate" title={`${r.lastQuotationNumber} (${r.lastQuotationDate})`}>
                                 {r.lastQuotationNumber}
                               </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-400 italic">No quote</span>
+                          <span className="text-muted-foreground italic">No quote</span>
                         )}
                       </td>
 
@@ -334,7 +334,7 @@ export function CustomerRatesTable({
                             {formatBDT(r.customerRate)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 italic">Auto</span>
+                          <span className="text-muted-foreground italic">Auto</span>
                         )}
                       </td>
 
@@ -353,14 +353,14 @@ export function CustomerRatesTable({
                             Last Quote
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-slate-500 text-2xs">
+                          <Badge variant="outline" className="text-muted-foreground text-2xs">
                             Catalog Default
                           </Badge>
                         )}
                       </td>
 
                       {/* Effective Rate */}
-                      <td className="py-3 px-3 text-right font-black text-sm text-slate-900 dark:text-white">
+                      <td className="py-3 px-3 text-right font-black text-sm text-foreground dark:text-white">
                         {formatBDT(r.effectiveRate)}
                       </td>
 
@@ -406,7 +406,7 @@ export function CustomerRatesTable({
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => handleResetRate(r.productId)}
-                                  className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600"
+                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600"
                                   title="Reset to automated fallback"
                                 >
                                   <RotateCcw className="h-3 w-3" />
@@ -428,7 +428,7 @@ export function CustomerRatesTable({
       {/* Mobile Card View */}
       <div className="block md:hidden space-y-2.5">
         {filteredRates.length === 0 ? (
-          <div className="py-8 text-center text-slate-400 text-xs bg-white dark:bg-slate-950 rounded-xl border p-4">
+          <div className="py-8 text-center text-muted-foreground text-xs bg-card rounded-xl border p-4">
             No products match your search.
           </div>
         ) : (
@@ -439,19 +439,19 @@ export function CustomerRatesTable({
               <Card
                 key={r.productId}
                 className={cn(
-                  'border-slate-200 dark:border-slate-800 shadow-sm p-3.5 space-y-3',
+                  'border-border shadow-sm p-3.5 space-y-3',
                   r.hasCustomRate && 'border-blue-200 dark:border-blue-900 bg-blue-50/10'
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="font-bold text-sm text-slate-900 dark:text-white">
+                    <div className="font-bold text-sm text-foreground dark:text-white">
                       {r.productName}
                     </div>
                     {r.productNameBn && (
-                      <div className="text-xs text-slate-500">{r.productNameBn}</div>
+                      <div className="text-xs text-muted-foreground">{r.productNameBn}</div>
                     )}
-                    <div className="text-2xs text-slate-400 tabular-nums mt-0.5">
+                    <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
                       {r.sku} • {r.unit.toUpperCase()}
                     </div>
                   </div>
@@ -470,35 +470,35 @@ export function CustomerRatesTable({
                         Last Quote
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-slate-500 text-2xs">
+                      <Badge variant="outline" className="text-muted-foreground text-2xs">
                         Default
                       </Badge>
                     )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 rounded-lg bg-muted text-xs">
                   <div>
-                    <div className="text-2xs text-slate-400">Default</div>
-                    <div className="font-medium text-slate-600 dark:text-slate-400">
+                    <div className="text-2xs text-muted-foreground">Default</div>
+                    <div className="font-medium text-muted-foreground dark:text-muted-foreground">
                       {formatBDT(r.defaultRate)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xs text-slate-400">Last Invoice</div>
+                    <div className="text-2xs text-muted-foreground">Last Invoice</div>
                     <div className="font-medium text-emerald-600 dark:text-emerald-400 truncate">
                       {r.lastInvoiceRate !== null ? formatBDT(r.lastInvoiceRate) : 'None'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xs text-slate-400">Last Quoted</div>
+                    <div className="text-2xs text-muted-foreground">Last Quoted</div>
                     <div className="font-medium text-amber-600 dark:text-amber-400 truncate">
                       {r.lastQuotationRate !== null && r.lastQuotationRate !== undefined ? formatBDT(r.lastQuotationRate) : 'None'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-2xs text-slate-400 font-bold">Effective</div>
-                    <div className="font-black text-slate-900 dark:text-white">
+                    <div className="text-2xs text-muted-foreground font-bold">Effective</div>
+                    <div className="font-black text-foreground dark:text-white">
                       {formatBDT(r.effectiveRate)}
                     </div>
                   </div>

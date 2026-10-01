@@ -485,10 +485,10 @@ export function SpendMoneyModal({
               <Receipt className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-black text-slate-900 dark:text-white">
+              <h2 className="text-base font-black text-foreground dark:text-white">
                 {locale === 'bn' ? 'খরচ ও স্টাফ বেতন এন্ট্রি' : 'Spend Money / Record Expense & Staff Salary'}
               </h2>
-              <p className="text-2xs text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
                 Double-Entry General Ledger • Auto Staff Advance Tracking • Instant Voucher Generation
               </p>
             </div>
@@ -521,27 +521,27 @@ export function SpendMoneyModal({
         {/* =========================================================================
             SECTION 1: EXPENSE CATEGORY & CLASSIFICATION
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 flex items-center justify-center font-bold text-xs">
                 1
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {locale === 'bn' ? 'খরচের খাত ও শ্রেণিবিভাগ' : 'Expense Category & GL Account'}
               </h3>
             </div>
 
             {/* Category Quick Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg text-xs self-start sm:self-auto">
+            <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg text-xs self-start sm:self-auto">
               <button
                 type="button"
                 onClick={() => setCategoryTab('all')}
                 className={cn(
                   'px-2.5 py-1 rounded-md font-semibold text-xs transition-all cursor-pointer',
                   categoryTab === 'all'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    ? 'bg-card text-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 )}
               >
                 {tBilingual('All', 'সব')}
@@ -553,7 +553,7 @@ export function SpendMoneyModal({
                   'px-2.5 py-1 rounded-md font-semibold text-xs transition-all flex items-center gap-1 cursor-pointer',
                   categoryTab === 'staff'
                     ? 'bg-rose-600 text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 )}
               >
                 <span>👨‍💼</span>
@@ -565,8 +565,8 @@ export function SpendMoneyModal({
                 className={cn(
                   'px-2.5 py-1 rounded-md font-semibold text-xs transition-all cursor-pointer',
                   categoryTab === 'operations'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    ? 'bg-card text-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 )}
               >
                 {tBilingual('Factory & Ops', 'কারখানা ও অপস')}
@@ -577,8 +577,8 @@ export function SpendMoneyModal({
                 className={cn(
                   'px-2.5 py-1 rounded-md font-semibold text-xs transition-all cursor-pointer',
                   categoryTab === 'utilities'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    ? 'bg-card text-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 )}
               >
                 {tBilingual('Office & Admin', 'অফিস ও প্রশাসন')}
@@ -599,7 +599,7 @@ export function SpendMoneyModal({
                     'flex flex-col items-start p-3 rounded-xl border text-left transition-all relative cursor-pointer',
                     isSelected
                       ? 'border-rose-500 bg-rose-50/80 dark:bg-rose-950/40 text-rose-950 dark:text-rose-100 ring-2 ring-rose-500/20 shadow-xs'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300'
+                      : 'border-border bg-card hover:bg-muted dark:hover:bg-muted/50 text-foreground dark:text-muted-foreground'
                   )}
                 >
                   <div className="flex items-center justify-between w-full">
@@ -612,7 +612,7 @@ export function SpendMoneyModal({
                         {tBilingual('Payroll', 'বেতন')}
                       </Badge>
                     ) : (
-                      <span className="text-2xs text-slate-400 tabular-nums font-medium">
+                      <span className="text-2xs text-muted-foreground tabular-nums font-medium">
                         {p.glAccount.split(' ')[0]}
                       </span>
                     )}
@@ -620,7 +620,7 @@ export function SpendMoneyModal({
                   <span className="mt-1.5 text-xs font-bold leading-tight line-clamp-1">
                     {p.labelBn}
                   </span>
-                  <span className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                  <span className="text-2xs text-muted-foreground mt-0.5 line-clamp-1">
                     {p.labelEn}
                   </span>
                 </button>
@@ -629,16 +629,16 @@ export function SpendMoneyModal({
           </div>
 
           {/* Active Category GL Route Info Banner */}
-          <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-950/50 border border-slate-200/80 dark:border-slate-800 rounded-lg text-xs text-slate-600 dark:text-slate-400">
+          <div className="flex items-center justify-between px-3 py-2 bg-muted border border-border rounded-lg text-xs text-muted-foreground dark:text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <span className="text-base">{activeCategoryDef.icon}</span>
-              <span className="font-semibold text-slate-900 dark:text-slate-100">
+              <span className="font-semibold text-foreground dark:text-foreground">
                 {activeCategoryDef.labelBn} ({activeCategoryDef.labelEn})
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs text-slate-500">{activeCategoryDef.descBn}</span>
-              <Badge variant="outline" className="text-2xs tabular-nums font-bold bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+              <span className="text-2xs text-muted-foreground">{activeCategoryDef.descBn}</span>
+              <Badge variant="outline" className="text-2xs tabular-nums font-bold bg-card border-input dark:border-border">
                 GL: {activeCategoryDef.glAccount}
               </Badge>
             </div>
@@ -648,13 +648,13 @@ export function SpendMoneyModal({
         {/* =========================================================================
             SECTION 2: STAFF SELECTION & PAYEE HUD
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 flex items-center justify-center font-bold text-xs">
                 2
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {isWorkforceCategory
                   ? locale === 'bn'
                     ? 'স্টাফ / কর্মচারী ও প্রাপক তথ্য'
@@ -689,7 +689,7 @@ export function SpendMoneyModal({
                   <select
                     value={selectedEmployeeId}
                     onChange={(e) => handleEmployeeSelect(e.target.value)}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium focus:border-rose-500"
+                    className="w-full h-9 text-xs rounded-md border border-input bg-card px-2.5 font-medium focus:border-rose-500"
                     required={category !== 'daily_labor'}
                   >
                     <option value="">
@@ -725,30 +725,30 @@ export function SpendMoneyModal({
               {selectedEmployee ? (
                 <div className="p-3 bg-rose-50/60 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs animate-in fade-in-0">
                   <div>
-                    <span className="text-2xs uppercase font-bold text-slate-400 block">
+                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
                       {tBilingual('Designation & Dept', 'পদবি ও বিভাগ')}
                     </span>
-                    <span className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1 mt-0.5">
+                    <span className="font-semibold text-foreground flex items-center gap-1 mt-0.5">
                       <User className="h-3.5 w-3.5 text-rose-600" />
                       <span>{selectedEmployee.designation || 'Staff'}</span>
                     </span>
-                    <span className="text-2xs text-slate-500 block">{selectedEmployee.department || 'Print Production'}</span>
+                    <span className="text-2xs text-muted-foreground block">{selectedEmployee.department || 'Print Production'}</span>
                   </div>
 
                   <div>
-                    <span className="text-2xs uppercase font-bold text-slate-400 block">
+                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
                       {tBilingual('Base Salary Rate', 'নির্ধারিত মূল বেতন')}
                     </span>
-                    <span className="tabular-nums font-bold text-slate-900 dark:text-slate-100 text-sm mt-0.5 block">
+                    <span className="tabular-nums font-bold text-foreground text-sm mt-0.5 block">
                       ৳{(selectedEmployee.base_salary || selectedEmployee.daily_rate || 0).toLocaleString()}
                     </span>
-                    <span className="text-2xs text-slate-500 block">
+                    <span className="text-2xs text-muted-foreground block">
                       {selectedEmployee.salary_type === 'daily' ? 'Daily Wage' : 'Per Month'}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-2xs uppercase font-bold text-slate-400 block">
+                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
                       {tBilingual('Outstanding Advance', 'পূর্ববর্তী বকেয়া অগ্রিম')}
                     </span>
                     <span className={cn(
@@ -757,25 +757,25 @@ export function SpendMoneyModal({
                     )}>
                       ৳{Number(selectedEmployee.current_advance_balance || 0).toLocaleString()}
                     </span>
-                    <span className="text-2xs text-slate-500 block">
+                    <span className="text-2xs text-muted-foreground block">
                       {Number(selectedEmployee.current_advance_balance || 0) > 0 ? 'Deduct from payroll' : 'No prior advance'}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-2xs uppercase font-bold text-slate-400 block">
+                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
                       {tBilingual('Phone / Contact', 'যোগাযোগ নম্বর')}
                     </span>
-                    <span className="tabular-nums font-semibold text-slate-800 dark:text-slate-200 text-xs mt-0.5 block">
+                    <span className="tabular-nums font-semibold text-foreground text-xs mt-0.5 block">
                       {selectedEmployee.phone || 'N/A'}
                     </span>
-                    <span className="text-2xs text-slate-500 block">
+                    <span className="text-2xs text-muted-foreground block">
                       Status: <strong className="text-emerald-600">Active</strong>
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between text-xs text-slate-500">
+                <div className="p-3 bg-muted border border-dashed border-border rounded-xl flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Info className="h-4 w-4 text-rose-500" />
                     <span>
@@ -821,20 +821,20 @@ export function SpendMoneyModal({
         {/* =========================================================================
             SECTION 3: AMOUNT, PAYMENT ACCOUNT & SETTLEMENT
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 flex items-center justify-center font-bold text-xs">
                 3
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {locale === 'bn' ? 'টাকার পরিমাণ ও পেমেন্ট মাধ্যম' : 'Payment Source, Method & Amount'}
               </h3>
             </div>
 
             {/* Quick Amount Chips */}
             <div className="flex items-center gap-1">
-              <span className="text-2xs text-slate-400 font-medium mr-1 hidden sm:inline">
+              <span className="text-2xs text-muted-foreground font-medium mr-1 hidden sm:inline">
                 {tBilingual('Quick Add:', 'কুইক বাটন:')}
               </span>
               {QUICK_AMOUNTS.map((amt) => (
@@ -842,7 +842,7 @@ export function SpendMoneyModal({
                   key={amt}
                   type="button"
                   onClick={() => handleQuickAmount(amt)}
-                  className="px-2 py-0.5 text-2xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-300 hover:text-rose-600 rounded-md transition-all cursor-pointer border border-slate-200 dark:border-slate-700"
+                  className="px-2 py-0.5 text-2xs font-bold bg-muted hover:bg-rose-50 dark:hover:bg-rose-950/40 text-foreground hover:text-rose-600 rounded-md transition-all cursor-pointer border border-border dark:border-border"
                 >
                   +{amt >= 1000 ? `${amt / 1000}k` : amt}
                 </button>
@@ -857,7 +857,7 @@ export function SpendMoneyModal({
                 {tBilingual('Amount to Pay', 'পরিশোধের পরিমাণ')} <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg pointer-events-none">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground text-lg pointer-events-none">
                   ৳
                 </span>
                 <Input
@@ -867,7 +867,7 @@ export function SpendMoneyModal({
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="pl-8 text-base tabular-nums font-black h-9 rounded-md bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:border-rose-500 text-slate-900 dark:text-slate-100"
+                  className="pl-8 text-base tabular-nums font-black h-9 rounded-md bg-card border-input focus:border-rose-500 text-foreground dark:text-foreground"
                 />
               </div>
             </div>
@@ -897,7 +897,7 @@ export function SpendMoneyModal({
                   setPaymentAccountId(e.target.value)
                   if (error) setError(null)
                 }}
-                className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
                 required
               >
                 {paymentAccounts.length === 0 ? (
@@ -930,7 +930,7 @@ export function SpendMoneyModal({
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
               >
                 <option value="cash">Cash Counter (নগদ ক্যাশ)</option>
                 <option value="bank">Bank Transfer / Cheque (ব্যাংক)</option>
@@ -946,13 +946,13 @@ export function SpendMoneyModal({
         {/* =========================================================================
             SECTION 4: DATE, VOUCHER & RECEIPT ATTACHMENT
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 flex items-center justify-center font-bold text-xs">
                 4
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {locale === 'bn' ? 'তারিখ ও ভাউচার রেফারেন্স' : 'Date, Narration & Voucher Reference'}
               </h3>
             </div>
@@ -988,7 +988,7 @@ export function SpendMoneyModal({
               <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('General Ledger Debit Account', 'খতিয়ান হিসাব')}
               </Label>
-              <div className="h-9 px-3 flex items-center bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-md tabular-nums text-xs text-slate-700 dark:text-slate-300 font-semibold truncate">
+              <div className="h-9 px-3 flex items-center bg-muted border border-border rounded-md tabular-nums text-xs text-foreground font-semibold truncate">
                 {activeCategoryDef.glAccount}
               </div>
             </div>
@@ -1012,8 +1012,8 @@ export function SpendMoneyModal({
         {/* =========================================================================
             STANDARDIZED MODAL BOTTOM ACTION BAR (Matching Invoice & Quotation)
            ========================================================================= */}
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground dark:text-muted-foreground">
             <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
             <span>
               {tBilingual(
@@ -1029,7 +1029,7 @@ export function SpendMoneyModal({
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted cursor-pointer"
             >
               {tBilingual('Cancel', 'বাতিল')}
             </Button>

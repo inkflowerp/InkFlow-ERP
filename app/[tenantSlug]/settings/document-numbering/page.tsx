@@ -165,9 +165,9 @@ export default function DocumentNumberingSettingsPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-5xl animate-pulse">
-        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
-        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-20 bg-muted rounded-2xl w-full" />
+        <div className="h-12 bg-muted rounded-xl w-3/4" />
+        <div className="h-48 bg-muted rounded-2xl w-full" />
       </div>
     )
   }
@@ -207,7 +207,7 @@ export default function DocumentNumberingSettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base">Configured Document Sequences</CardTitle>
             <CardDescription className="text-xs">
               Customize prefixes (e.g. QUO, ORD, INV) and zero-padding lengths for each business paper.
@@ -217,7 +217,7 @@ export default function DocumentNumberingSettingsPage() {
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                   <tr>
                     <th className="py-3 px-4">Document Type</th>
                     <th className="py-3 px-4 w-36">Prefix</th>
@@ -225,14 +225,14 @@ export default function DocumentNumberingSettingsPage() {
                     <th className="py-3 px-4">Live Sample Preview</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {(Array.isArray(sequences) ? sequences : INITIAL_SEQUENCES).map((seq) => (
-                    <tr key={seq.doc_type} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                    <tr key={seq.doc_type} className="hover:bg-muted dark:hover:bg-muted/50">
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-900 dark:text-white">
+                        <div className="font-semibold text-foreground dark:text-white">
                           {seq.name}
                         </div>
-                        <div className="text-xs text-slate-400">{seq.nameBn}</div>
+                        <div className="text-xs text-muted-foreground">{seq.nameBn}</div>
                       </td>
 
                       <td className="py-3 px-4">
@@ -248,7 +248,7 @@ export default function DocumentNumberingSettingsPage() {
                         <select
                           value={seq.padding}
                           onChange={(e) => handlePaddingChange(seq.doc_type, Number(e.target.value))}
-                          className="h-8 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs tabular-nums px-2"
+                          className="h-8 w-full rounded-md border border-input bg-card text-xs tabular-nums px-2"
                         >
                           <option value={4}>4 digits (0001)</option>
                           <option value={5}>5 digits (00001)</option>
@@ -259,7 +259,7 @@ export default function DocumentNumberingSettingsPage() {
 
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <span className="tabular-nums font-bold text-xs px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
+                          <span className="tabular-nums font-bold text-xs px-2.5 py-1 rounded bg-muted text-blue-600 dark:text-blue-400 border border-border dark:border-border">
                             {formatPreview(seq)}
                           </span>
                           <Badge variant="outline" className="text-2xs">
@@ -274,15 +274,15 @@ export default function DocumentNumberingSettingsPage() {
             </div>
 
             {/* Mobile Touch Cards View */}
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="md:hidden divide-y divide-border dark:divide-border">
               {(Array.isArray(sequences) ? sequences : INITIAL_SEQUENCES).map((seq) => (
                 <div key={seq.doc_type} className="p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-sm text-slate-900 dark:text-white">
+                      <div className="font-bold text-sm text-foreground dark:text-white">
                         {seq.name}
                       </div>
-                      <div className="text-xs text-slate-500">{seq.nameBn}</div>
+                      <div className="text-xs text-muted-foreground">{seq.nameBn}</div>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="tabular-nums font-bold text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
@@ -293,7 +293,7 @@ export default function DocumentNumberingSettingsPage() {
 
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     <div className="space-y-1">
-                      <Label className="text-2xs text-slate-500">Prefix Code</Label>
+                      <Label className="text-2xs text-muted-foreground">Prefix Code</Label>
                       <Input
                         value={seq.prefix}
                         onChange={(e) => handlePrefixChange(seq.doc_type, e.target.value)}
@@ -303,11 +303,11 @@ export default function DocumentNumberingSettingsPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-2xs text-slate-500">Zero Padding</Label>
+                      <Label className="text-2xs text-muted-foreground">Zero Padding</Label>
                       <select
                         value={seq.padding}
                         onChange={(e) => handlePaddingChange(seq.doc_type, Number(e.target.value))}
-                        className="h-9 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs tabular-nums px-2"
+                        className="h-9 w-full rounded-md border border-input bg-card text-xs tabular-nums px-2"
                       >
                         <option value={4}>4 digits (0001)</option>
                         <option value={5}>5 digits (00001)</option>

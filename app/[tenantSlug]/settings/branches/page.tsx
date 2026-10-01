@@ -335,9 +335,9 @@ export default function BranchesSettingsPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-5xl animate-pulse">
-        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
-        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-20 bg-muted rounded-2xl w-full" />
+        <div className="h-12 bg-muted rounded-xl w-3/4" />
+        <div className="h-48 bg-muted rounded-2xl w-full" />
       </div>
     )
   }
@@ -350,10 +350,10 @@ export default function BranchesSettingsPage() {
           <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
             <ShieldAlert className="h-6 w-6" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 bangla-text">
+          <h2 className="text-xl font-bold text-foreground bangla-text">
             {tBilingual('Branch Administration Restricted', 'শাখা ব্যবস্থাপনা সীমিত')}
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto bangla-text leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-md mx-auto bangla-text leading-relaxed">
             {tBilingual(
               'Company branches and multi-location hub administration are restricted to business owners.',
               'প্রতিষ্ঠান শাখা ও হাব ব্যবস্থাপনা সেটিংস শুধুমাত্র প্রতিষ্ঠান মালিকের জন্য সংরক্ষিত।'
@@ -393,7 +393,7 @@ export default function BranchesSettingsPage() {
       />
 
       {/* Branch Quota Alert */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-muted border-border text-xs">
         <div className="flex items-center gap-2.5">
           <div className={cn(
             'p-1.5 rounded-lg text-white font-bold shrink-0',
@@ -402,7 +402,7 @@ export default function BranchesSettingsPage() {
             <Building className="h-4 w-4" />
           </div>
           <div>
-            <div className="font-bold text-slate-900 dark:text-white bangla-text">
+            <div className="font-bold text-foreground dark:text-white bangla-text">
               {branchCheck.exceeded
                 ? tBilingual(
                     `Plan Limit Reached: Your current plan allows up to ${currentPlan.max_branches} Branches quota (currently at ${branches.length}). Please upgrade your subscription to continue.`,
@@ -413,7 +413,7 @@ export default function BranchesSettingsPage() {
                     `শাখা সীমা: ${toBengaliDigits(currentPlan.max_branches)} টির মধ্যে ${toBengaliDigits(branches.length)} টি শাখা সক্রিয়`
                   )}
             </div>
-            <p className="text-2xs text-slate-500 dark:text-slate-400 bangla-text">
+            <p className="text-2xs text-muted-foreground bangla-text">
               {branchCheck.exceeded
                 ? tBilingual('Branch limit reached. Upgrade to Enterprise to add multi-branch factory locations.', 'শাখার সর্বোচ্চ সীমা পূর্ণ হয়েছে। নতুন হাব/শাখা যোগ করতে প্ল্যান আপগ্রেড করুন।')
                 : tBilingual(`Configured for ${currentPlan.name}.`, `${currentPlan.name_bn}-এ পরিচালিত।`)}
@@ -444,7 +444,7 @@ export default function BranchesSettingsPage() {
       {/* Search Filter Bar */}
       {branches.length > 1 && (
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={tBilingual('Search branches by name, code, phone, or location...', 'শাখার নাম, কোড, ফোন বা ঠিকানা দিয়ে খুঁজুন...')}
             value={searchQuery}
@@ -457,19 +457,19 @@ export default function BranchesSettingsPage() {
       {/* Branches List */}
       <div className="space-y-4">
         {filteredBranches.length === 0 ? (
-          <div className="p-8 text-center text-xs text-slate-500 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+          <div className="p-8 text-center text-xs text-muted-foreground rounded-2xl border border-dashed border-border dark:border-border">
             {tBilingual('No branches matching your search criteria.', 'কোন শাখা খুঁজে পাওয়া যায়নি।')}
           </div>
         ) : (
           filteredBranches.map((branch) => (
-            <Card key={branch.id} className={cn('p-5 transition-all', !branch.isActive && 'opacity-65 bg-slate-50/40 dark:bg-slate-900/40')}>
+            <Card key={branch.id} className={cn('p-5 transition-all', !branch.isActive && 'opacity-65 bg-muted dark:bg-card')}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="tabular-nums text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400">
+                    <span className="tabular-nums text-xs font-bold px-2 py-0.5 rounded bg-muted text-blue-600 dark:text-blue-400">
                       {branch.code}
                     </span>
-                    <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                    <h3 className="font-bold text-base text-foreground dark:text-white">
                       {branch.name}
                     </h3>
                     {branch.isMain && (
@@ -485,32 +485,32 @@ export default function BranchesSettingsPage() {
                     )}
                   </div>
                   {branch.nameBn && (
-                    <div className="text-xs text-slate-500">{branch.nameBn}</div>
+                    <div className="text-xs text-muted-foreground">{branch.nameBn}</div>
                   )}
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 dark:text-slate-400 pt-1">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
                     {branch.phone && (
                       <a href={`tel:${branch.phone}`} className="flex items-center gap-1 hover:text-blue-600">
-                        <Phone className="h-3.5 w-3.5 text-slate-400" />
+                        <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="tabular-nums">{branch.phone}</span>
                       </a>
                     )}
                     {branch.address && (
                       <span className="flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                        <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                         <span>{branch.address}</span>
                       </span>
                     )}
                     {branch.managerName && (
                       <span className="flex items-center gap-1">
-                        <User className="h-3.5 w-3.5 text-slate-400" />
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
                         <span>Manager: {branch.managerName}</span>
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+                <div className="flex flex-wrap items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border dark:border-border">
                   <Button
                     variant="outline"
                     size="sm"
@@ -518,7 +518,7 @@ export default function BranchesSettingsPage() {
                     onClick={() => handleOpenEdit(branch)}
                     title="Edit Branch Information"
                   >
-                    <Edit2 className="h-3.5 w-3.5 mr-1 text-slate-500" />
+                    <Edit2 className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                     {tBilingual('Edit', 'এডিট')}
                   </Button>
 
@@ -661,7 +661,7 @@ export default function BranchesSettingsPage() {
             </div>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)} className="w-full sm:w-auto h-9 text-xs">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
@@ -765,7 +765,7 @@ export default function BranchesSettingsPage() {
               </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border dark:border-border">
               <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} className="w-full sm:w-auto h-9 text-xs">
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>

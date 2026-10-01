@@ -80,15 +80,15 @@ export function PdfViewerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} maxWidth="max-w-5xl">
-      <DialogContent onClose={onClose} className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-slate-950 text-slate-100 border-slate-800">
-        <DialogHeader className="p-4 border-b border-slate-800 flex flex-row items-center justify-between space-y-0 bg-slate-900 text-slate-100 dark:bg-slate-900 pr-14">
+      <DialogContent onClose={onClose} className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-foreground text-slate-100 border-border">
+        <DialogHeader className="p-4 border-b border-border flex flex-row items-center justify-between space-y-0 bg-foreground text-slate-100 pr-14">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
               <FileText className="h-4 w-4" />
             </div>
             <div>
               <DialogTitle className="text-sm font-bold text-slate-100">{title}</DialogTitle>
-              <DialogDescription className="text-2xs text-slate-400">
+              <DialogDescription className="text-2xs text-muted-foreground">
                 Vector PDF Rendering Engine (pdfcn + Forme WASM)
               </DialogDescription>
             </div>
@@ -100,7 +100,7 @@ export function PdfViewerModal({
               variant="outline"
               disabled={!blobUrl || isLoading}
               onClick={handlePrint}
-              className="h-8 text-xs font-semibold bg-slate-900 border-slate-700 hover:bg-slate-800 text-slate-200"
+              className="h-8 text-xs font-semibold bg-foreground border-border hover:bg-secondary text-foreground"
             >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
               Print
@@ -118,9 +118,9 @@ export function PdfViewerModal({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 bg-slate-900/60 relative overflow-hidden flex items-center justify-center">
+        <div className="flex-1 bg-foreground relative overflow-hidden flex items-center justify-center">
           {isLoading && (
-            <div className="flex flex-col items-center gap-3 text-slate-400">
+            <div className="flex flex-col items-center gap-3 text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
               <p className="text-xs font-medium">Generating high-fidelity vector PDF...</p>
             </div>
@@ -129,7 +129,7 @@ export function PdfViewerModal({
           {error && (
             <div className="text-center p-6 max-w-md">
               <p className="text-sm font-semibold text-rose-400 mb-2">Generation Failed</p>
-              <p className="text-xs text-slate-400 mb-4">{error}</p>
+              <p className="text-xs text-muted-foreground mb-4">{error}</p>
               <Button size="sm" variant="outline" onClick={() => window.print()}>
                 Fallback to Browser Print
               </Button>
@@ -140,7 +140,7 @@ export function PdfViewerModal({
             <iframe
               id="pdf-preview-iframe"
               src={`${blobUrl}#toolbar=0&navpanes=0`}
-              className="w-full h-full border-none bg-white"
+              className="w-full h-full border-none bg-card"
               title={title}
             />
           )}

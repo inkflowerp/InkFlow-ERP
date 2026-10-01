@@ -10,9 +10,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const { appName, appLogoUrl, tagline, supportHelpline, contactPhone } = usePlatformSettings()
 
   return (
-    <div className="flex min-h-screen w-full flex-col lg:flex-row bg-slate-50 dark:bg-[#080B16]">
+    <div className="flex min-h-screen w-full flex-col lg:flex-row bg-muted dark:bg-[#080B16]">
       {/* Left Branding Showcase Column (Visible on LG 1024px+) */}
-      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-[#0B1024] via-[#0E1630] to-[#121B3B] p-10 xl:p-14 text-white overflow-hidden border-r border-slate-800/80">
+      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-[#0B1024] via-[#0E1630] to-[#121B3B] p-10 xl:p-14 text-white overflow-hidden border-r border-border">
         {/* Background Ambient Color Orbs */}
         <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
         <div className="absolute top-1/2 -right-32 h-96 w-96 rounded-full bg-pink-500/15 blur-3xl pointer-events-none" />
@@ -25,7 +25,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-10 w-10 rounded-xl object-contain bg-slate-900 border border-slate-700/60 p-1 shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform shrink-0"
+                className="h-10 w-10 rounded-xl object-contain bg-foreground border border-slate-700/60 p-1 shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform shrink-0"
               />
             ) : (
               <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 text-white shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform shrink-0">
@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                   <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" title="Cyan" />
                   <span className="h-1.5 w-1.5 rounded-full bg-pink-500" title="Magenta" />
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-400" title="Yellow" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-slate-900 border border-slate-700" title="Key" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-foreground border border-border" title="Key" />
                 </div>
               </div>
             )}
@@ -48,7 +48,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                   BD SaaS
                 </span>
               </div>
-              <span className="text-2xs font-semibold text-slate-400 tracking-wider uppercase">
+              <span className="text-2xs font-semibold text-muted-foreground tracking-wider uppercase">
                 {tagline || 'Printing & Signage Operating System'}
               </span>
             </div>
@@ -70,38 +70,38 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 Built for your shop floor.
               </span>
             </h1>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               From Fakirapool offset presses and Nilkhet digital hubs to Chittagong LED signage fabricators—estimate square feet, track job tickets, manage paper inventory, and collect payments effortlessly.
             </p>
           </div>
 
           {/* Quick Value Props Chips */}
           <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
-            <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-slate-200">
+            <div className="p-3 rounded-xl bg-foreground border border-border backdrop-blur-sm space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-foreground">
                 <CheckCircle2 className="h-4 w-4 text-cyan-400 shrink-0" />
                 <span>১২+ প্রিন্ট ইন্ডাস্ট্রি</span>
               </div>
-              <p className="text-2xs text-slate-400">ডিজিটাল, অফসেট, ব্যানার, এক্রিলিক, এলইডি ও ডাই-কাটিং</p>
+              <p className="text-2xs text-muted-foreground">ডিজিটাল, অফসেট, ব্যানার, এক্রিলিক, এলইডি ও ডাই-কাটিং</p>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-slate-200">
+            <div className="p-3 rounded-xl bg-foreground border border-border backdrop-blur-sm space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-foreground">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
                 <span>৳ BDT ও বাংলা ইনভয়েস</span>
               </div>
-              <p className="text-2xs text-slate-400">মুসক ৬.৩ চালান, গেটপাস, ডিসকাউন্ট ও বকেয়া খাতা</p>
+              <p className="text-2xs text-muted-foreground">মুসক ৬.৩ চালান, গেটপাস, ডিসকাউন্ট ও বকেয়া খাতা</p>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-slate-400 pt-4 border-t border-slate-800/80">
+        <div className="relative z-10 flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-cyan-400" />
             <span>Multi-Tenant RLS & 256-Bit SSL Isolated</span>
           </div>
-          <span className="font-medium text-slate-400">© {new Date().getFullYear()} {appName}</span>
+          <span className="font-medium text-muted-foreground">© {new Date().getFullYear()} {appName}</span>
         </div>
       </div>
 
@@ -115,14 +115,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-1 shadow-md"
+                className="h-8 w-8 rounded-lg object-contain bg-foreground border border-slate-700/60 p-1 shadow-md"
               />
             ) : (
               <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-md">
                 <Printer className="h-4 w-4" />
               </div>
             )}
-            <span className="text-base font-black tracking-tight text-slate-900 dark:text-white">
+            <span className="text-base font-black tracking-tight text-foreground dark:text-white">
               {appName}
             </span>
           </Link>
@@ -138,7 +138,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* Support Hotline / Help */}
-        <div className="text-center text-xs text-slate-500 dark:text-slate-400 mt-4 shrink-0">
+        <div className="text-center text-xs text-muted-foreground mt-4 shrink-0">
           <span>Need setup assistance or customized onboarding? Hotline: </span>
           <a
             href={`tel:${(supportHelpline || contactPhone || '+8801700000000').replace(/[^\d+]/g, '')}`}

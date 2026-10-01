@@ -87,7 +87,7 @@ export function PromptDialog({
           <div className="rounded-2xl bg-indigo-500/10 p-2.5 text-indigo-500 dark:bg-indigo-500/20 border border-indigo-500/30 shrink-0 mt-0.5">
             <MessageSquare className="h-4 w-4" />
           </div>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed bangla-text">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">
             {displayMessage}
           </p>
         </div>
@@ -100,7 +100,7 @@ export function PromptDialog({
               onChange={(e) => setValue(e.target.value)}
               placeholder={displayPlaceholder}
               autoFocus
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 p-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
+              className="w-full rounded-xl border border-input bg-muted p-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring transition-all resize-none"
             />
           ) : (
             <input
@@ -109,7 +109,7 @@ export function PromptDialog({
               onChange={(e) => setValue(e.target.value)}
               placeholder={displayPlaceholder}
               autoFocus
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 p-2.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition-all"
+              className="w-full rounded-xl border border-input bg-muted p-2.5 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring transition-all"
             />
           )}
         </div>

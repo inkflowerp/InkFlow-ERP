@@ -9,6 +9,7 @@
     --foreground: 222.2 47.4% 11.2%; /* #0F172A */
     --card: 0 0% 100%; /* #FFFFFF */
     --card-foreground: 222.2 47.4% 11.2%;
+    --card-elevated: 0 0% 100%; /* #FFFFFF — same as card in light */
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 47.4% 11.2%;
     --primary: 221.2 83.2% 53.3%; /* #2563EB */
@@ -27,14 +28,19 @@
     --input: 212.7 26.8% 83.9%; /* #CBD5E1 Input Border */
     --ring: 221.2 83.2% 53.3%; /* #2563EB Focus Ring */
     --radius: 0.5rem; /* 8px controls, 12px cards, 16px containers */
+    --surface-inset: 210 40% 96.1%; /* #F1F5F9 — inset/recessed surface (table headers, code blocks) */
 
     /* Semantic Feedback Accents */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
+    --success-surface: 138 76% 97%; /* #ECFDF5 */
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
+    --warning-surface: 48 100% 96%; /* #FFFBEB */
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
+    --info-surface: 214 100% 97%; /* #EFF6FF */
+    --danger-surface: 0 86% 97%; /* #FEF2F2 */
 
     /* Printing & Signage CMYK Industry Accents (Subtle Brand Identity) */
     --cmyk-cyan: 191 97% 45%;
@@ -67,6 +73,13 @@
     --border: 217.2 32.6% 27.5%; /* #334155 */
     --input: 217.2 32.6% 27.5%; /* #334155 */
     --ring: 217.2 91.2% 67.8%;
+    --surface-inset: 222 47% 8%; /* #0B1120 — inset/recessed surface */
+
+    /* Status Subtle Backgrounds (Dark) */
+    --success-surface: 144 61% 10%;
+    --warning-surface: 32 80% 10%;
+    --info-surface: 217 33% 17.5%;
+    --danger-surface: 0 62% 12%;
 
     /* Semantic Feedback Accents with WCAG AA compliant dark-mode contrast */
     --success: 142 70% 48%;
@@ -111,6 +124,12 @@
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
   --radius: var(--radius);
+  --color-card-elevated: hsl(var(--card-elevated));
+  --color-surface-inset: hsl(var(--surface-inset));
+  --color-success-surface: hsl(var(--success-surface));
+  --color-warning-surface: hsl(var(--warning-surface));
+  --color-info-surface: hsl(var(--info-surface));
+  --color-danger-surface: hsl(var(--danger-surface));
 
   /* Printing & Signage CMYK Industry Tokens */
   --color-cmyk-cyan: hsl(var(--cmyk-cyan));
@@ -313,75 +332,62 @@ pre,
    Consistent, clean, professional enterprise printing SaaS aesthetic
    ============================================================================== */
 
-/* 1. Primary Solid Brand Action Surface (Replaces excessive gradients) */
+/* 1. Legacy gradient aliases → solid brand surfaces (backward compat) */
 .bg-gradient-brand,
 .gradient-primary {
-  background-color: #2563eb !important;
-  background-image: none !important;
+  background-color: hsl(var(--primary));
+  background-image: none;
 }
 
 .hover\:bg-gradient-brand-hover:hover {
-  background-color: #1d4ed8 !important;
-  background-image: none !important;
+  background-color: hsl(var(--primary-hover));
+  background-image: none;
 }
 
-/* 2. Flat Dark Surface for Command Console */
+/* 2. Dark hero surface */
 .bg-gradient-dark-hero,
 .gradient-dark-hero {
-  background-color: #0f172a !important;
-  background-image: none !important;
+  background-color: hsl(var(--foreground));
+  background-image: none;
 }
 
-/* 3. Flat Neutral Card Header Surface */
+/* 3. Card header surface */
 .bg-gradient-card-light {
-  background-color: #ffffff !important;
-  background-image: none !important;
-}
-.dark .bg-gradient-card-light {
-  background-color: #111827 !important;
-  background-image: none !important;
+  background-color: hsl(var(--card));
+  background-image: none;
 }
 
-/* 4. Semantic Action Solid Surfaces */
+/* 4. Semantic solid surfaces */
 .bg-gradient-success {
-  background-color: #10b981 !important;
-  background-image: none !important;
+  background-color: hsl(var(--success));
+  background-image: none;
 }
 .bg-gradient-warning {
-  background-color: #f59e0b !important;
-  background-image: none !important;
+  background-color: hsl(var(--warning));
+  background-image: none;
 }
 .bg-gradient-danger {
-  background-color: #ef4444 !important;
-  background-image: none !important;
+  background-color: hsl(var(--destructive));
+  background-image: none;
 }
 
 /* 5. Printing Industry CMYK Signature Rainbow Micro Accent Line (2px) */
 .cmyk-rainbow-bar {
-  background: linear-gradient(90deg, #00A3E0 0%, #E4007C 33%, #FFD100 66%, #1E293B 100%) !important;
-}
-.dark .cmyk-rainbow-bar {
-  background: linear-gradient(90deg, #00A3E0 0%, #E4007C 33%, #FFD100 66%, #F8FAFC 100%) !important;
+  background: linear-gradient(90deg, hsl(var(--cmyk-cyan)) 0%, hsl(var(--cmyk-magenta)) 33%, hsl(var(--cmyk-yellow)) 66%, hsl(var(--cmyk-key)) 100%) !important;
 }
 
-/* 6. Clean Flat Structured Cards */
+/* 6. Clean Flat Structured Cards (token-based) */
 .glass-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-}
-.dark .glass-card {
-  background-color: #111827;
-  border-color: #334155;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
 }
 
 .glass-card-elevated {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+  background-color: hsl(var(--card-elevated));
+  border: 1px solid hsl(var(--border));
   box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
 }
 .dark .glass-card-elevated {
-  background-color: #1e293b;
-  border-color: #334155;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
 }
 
@@ -817,87 +823,26 @@ input.no-spinners {
 }
 
 /* ==============================================================================
-   Platform Admin High-Contrast & Accessibility Visibility Overrides
-   Resolves low-contrast text, dim borders, invisible table headers, and washed-out inputs.
+   Dark Mode Accessibility Safety Net
+   Ensures minimum contrast when legacy hardcoded slate classes remain.
+   These rules will be gradually removed as pages migrate to semantic tokens.
    ============================================================================== */
-.dark {
-  /* Upgrade dark mode borders from washed-out #1e293b to distinct slate-700 (#334155) */
-  --border: 217.2 32.6% 27.5%;
-  --input: 217.2 32.6% 27.5%;
-}
 
-/* Ensure high text contrast for muted/subdued elements in dark mode (WCAG AA > 4.5:1) */
-.dark .text-slate-500 {
-  color: #94a3b8 !important; /* upgraded from #64748b to #94a3b8 (slate-400) */
-}
-
-.dark .text-slate-600 {
-  color: #cbd5e1 !important; /* upgraded from #475569 to #cbd5e1 (slate-300) */
-}
-
-.dark .text-slate-400 {
-  color: #cbd5e1 !important; /* upgraded to #cbd5e1 for crystal-clear readability */
-}
-
-/* Ensure placeholder text is easily readable instead of nearly black */
+/* Placeholder text contrast */
 .dark input::placeholder,
-.dark textarea::placeholder,
-.dark .placeholder\:text-slate-500::placeholder,
-.dark .placeholder\:text-slate-600::placeholder {
-  color: #94a3b8 !important;
-  opacity: 0.9 !important;
+.dark textarea::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.9;
 }
 
-/* Make card borders, table dividers, and container boundaries cleanly delineated */
-.dark .border-slate-800 {
-  border-color: #334155 !important; /* slate-700 */
-}
-
-.dark .border-slate-800\/80 {
-  border-color: rgba(51, 65, 85, 0.85) !important;
-}
-
-.dark .border-slate-800\/60 {
-  border-color: rgba(51, 65, 85, 0.7) !important;
-}
-
-.dark .divide-slate-800 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #334155 !important;
-}
-
-/* Table headers high visibility */
-.dark thead {
-  background-color: #0b1120 !important;
-  border-bottom: 1px solid #334155 !important;
-}
-
-.dark thead th {
-  color: #f1f5f9 !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.025em !important;
-}
-
-/* Form inputs & select controls high visibility in dark theme */
-.dark input:not([type="checkbox"]):not([type="radio"]),
-.dark select,
-.dark textarea {
-  border-color: #334155 !important;
-}
-
-.dark input:not([type="checkbox"]):not([type="radio"]):focus,
-.dark select:focus,
-.dark textarea:focus {
-  border-color: #6366f1 !important; /* indigo-500 */
-}
-
-/* Scrollbar contrast in platform dark mode */
+/* Scrollbar contrast in dark mode */
 .dark ::-webkit-scrollbar-thumb {
-  background-color: #334155;
+  background-color: hsl(var(--border));
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background-color: #475569;
+  background-color: hsl(var(--muted-foreground));
 }
 .dark ::-webkit-scrollbar-track {
-  background-color: #020617;
+  background-color: hsl(222 47% 5%);
 }

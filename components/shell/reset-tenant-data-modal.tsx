@@ -114,7 +114,7 @@ export function ResetTenantDataModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose} maxWidth="max-w-md">
-      <DialogContent className="p-0 overflow-hidden border-rose-500/40 bg-slate-900 text-white shadow-2xl rounded-2xl">
+      <DialogContent className="p-0 overflow-hidden border-rose-500/40 bg-foreground text-white shadow-2xl rounded-2xl">
         {/* Header with Caution Theme */}
         <div className="p-5 bg-gradient-to-b from-rose-950/60 to-slate-900/90 border-b border-rose-900/40 relative">
           <div className="flex items-start gap-3.5">
@@ -145,12 +145,12 @@ export function ResetTenantDataModal({
           )}
 
           {/* Explanation Box */}
-          <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2.5">
-            <div className="font-bold text-slate-200 flex items-center gap-2">
+          <div className="p-3.5 rounded-xl bg-foreground border border-border space-y-2.5">
+            <div className="font-bold text-foreground flex items-center gap-2">
               <Trash2 className="h-4 w-4 text-rose-400" />
               <span>{tBilingual('The following records will be cleared:', 'নিম্নলিখিত ডাটাগুলো মুছে ফেলা হবে:')}</span>
             </div>
-            <ul className="space-y-1.5 text-slate-400 pl-2">
+            <ul className="space-y-1.5 text-muted-foreground pl-2">
               <li className="flex items-center gap-2">
                 <ShoppingBag className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
                 <span>Sales Orders, POS Transactions &amp; Quotations</span>
@@ -183,7 +183,7 @@ export function ResetTenantDataModal({
 
           {/* Type Confirmation */}
           <div className="space-y-2 pt-1">
-            <label className="block font-semibold text-slate-300">
+            <label className="block font-semibold text-muted-foreground">
               {tBilingual(
                 'To confirm, type "RESET" in the box below:',
                 'নিশ্চিত করতে নিচে "RESET" লিখুন:'
@@ -194,19 +194,19 @@ export function ResetTenantDataModal({
               placeholder="RESET"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
-              className="tabular-nums text-center tracking-widest uppercase bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus:border-rose-500 focus:ring-rose-500/20"
+              className="tabular-nums text-center tracking-widest uppercase bg-foreground border-border text-white placeholder:text-muted-foreground focus:border-rose-500 focus:ring-rose-500/20"
             />
           </div>
         </div>
 
         {/* Footer Actions */}
-        <DialogFooter className="p-4 bg-slate-950/60 border-t border-slate-800 flex items-center justify-end gap-2.5">
+        <DialogFooter className="p-4 bg-foreground border-t border-border flex items-center justify-end gap-2.5">
           <Button
             type="button"
             variant="outline"
             onClick={handleClose}
             disabled={loading}
-            className="text-xs border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+            className="text-xs border-border text-muted-foreground hover:bg-secondary hover:text-white"
           >
             {tBilingual('Cancel', 'বাতিল')}
           </Button>

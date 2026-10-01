@@ -68,7 +68,7 @@ function getRoleBadgeStyle(roleName: string) {
   if (norm.includes('account') || norm.includes('cashier')) {
     return 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
   }
-  return 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+  return 'bg-muted text-foreground border-border dark:border-border'
 }
 
 function getDataScopeBadge(scope?: string) {
@@ -95,7 +95,7 @@ function getDataScopeBadge(scope?: string) {
     )
   }
   return (
-    <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700">
+    <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-foreground border border-border dark:border-border">
       Assigned / Own
     </span>
   )
@@ -137,11 +137,11 @@ export function UserTable({
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+    <div className="w-full overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/75 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <tr className="border-b border-border bg-slate-50/75 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               <th scope="col" className="px-5 py-3.5">
                 User
               </th>
@@ -168,7 +168,7 @@ export function UserTable({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+          <tbody className="divide-y divide-border dark:divide-border/80">
             {users.map((u) => {
               const roleName = u.role?.name || u.roles?.[0]?.name || 'Staff'
               const isCurrentUser = currentUserId && (u.user_id === currentUserId || u.id === currentUserId)
@@ -186,17 +186,17 @@ export function UserTable({
                 <tr
                   key={u.id}
                   onClick={() => onViewDetails(u)}
-                  className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 cursor-pointer transition-colors group"
+                  className="hover:bg-muted/70 dark:hover:bg-muted/40 cursor-pointer transition-colors group"
                 >
                   {/* Column 1: User Identity */}
                   <td className="px-5 py-3.5 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs flex items-center justify-center border border-slate-200 dark:border-slate-700 flex-shrink-0 group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors">
+                      <div className="w-9 h-9 rounded-full bg-muted text-foreground font-semibold text-xs flex items-center justify-center border border-border flex-shrink-0 group-hover:border-blue-400 dark:group-hover:border-blue-500 transition-colors">
                         {initials}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-900 dark:text-slate-100 truncate text-sm">
+                          <span className="font-semibold text-foreground truncate text-sm">
                             {u.profile?.full_name || u.linked_employee?.name || 'Unnamed User'}
                           </span>
                           {isCurrentUser && (
@@ -205,7 +205,7 @@ export function UserTable({
                             </Badge>
                           )}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        <div className="text-xs text-muted-foreground truncate">
                           {u.profile?.email || 'No email registered'}
                         </div>
                       </div>
@@ -216,13 +216,13 @@ export function UserTable({
                   <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                     {u.linked_employee ? (
                       <div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-200 text-xs">
+                        <div className="flex items-center gap-1.5 font-medium text-foreground text-xs">
                           <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                           <span className="truncate">{u.linked_employee.name}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground dark:text-muted-foreground">
                           {u.linked_employee.employee_id_number && (
-                            <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-[10px] border border-slate-200 dark:border-slate-700">
+                            <span className="font-mono bg-muted px-1 rounded text-[10px] border border-border dark:border-border">
                               {u.linked_employee.employee_id_number}
                             </span>
                           )}
@@ -264,17 +264,17 @@ export function UserTable({
                         topResponsibilities.map((resp) => (
                           <span
                             key={resp}
-                            className="inline-flex items-center text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded border border-slate-200/80 dark:border-slate-700/80 font-normal truncate"
+                            className="inline-flex items-center text-[10px] bg-muted text-foreground px-1.5 py-0.5 rounded border border-border dark:border-slate-700/80 font-normal truncate"
                           >
                             {resp}
                           </span>
                         ))
                       ) : (
-                        <span className="text-xs text-slate-400 italic">Standard duties</span>
+                        <span className="text-xs text-muted-foreground italic">Standard duties</span>
                       )}
                       {extraCount > 0 && (
                         <span
-                          className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-200/60"
+                          className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border"
                           title="Click row to view all duties"
                         >
                           +{extraCount} more
@@ -284,15 +284,15 @@ export function UserTable({
                   </td>
 
                   {/* Column 5: Branch Access */}
-                  <td className="px-4 py-3.5 whitespace-nowrap text-xs text-slate-700 dark:text-slate-300">
+                  <td className="px-4 py-3.5 whitespace-nowrap text-xs text-foreground dark:text-muted-foreground">
                     <div className="flex items-center gap-1.5">
-                      <GitBranch className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                      <GitBranch className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                       <span className="truncate max-w-[130px] font-medium">
                         {getBranchName(u.branch_id)}
                       </span>
                     </div>
                     {u.user_branch_access && u.user_branch_access.length > 1 && (
-                      <span className="text-[10px] text-slate-400 ml-5">
+                      <span className="text-[10px] text-muted-foreground ml-5">
                         +{u.user_branch_access.length - 1} extra branch
                       </span>
                     )}
@@ -313,7 +313,7 @@ export function UserTable({
                       </span>
                     )}
                     {isUserDisabled && (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border dark:border-border">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                         Disabled
                       </span>
@@ -321,14 +321,14 @@ export function UserTable({
                   </td>
 
                   {/* Column 7: Last Login */}
-                  <td className="px-4 py-3.5 whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
+                  <td className="px-4 py-3.5 whitespace-nowrap text-xs text-muted-foreground dark:text-muted-foreground">
                     {lastLogin ? (
                       <div className="flex items-center gap-1.5" title={new Date(lastLogin).toLocaleString()}>
-                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                         <span>{formatDateTime(lastLogin, 'en')}</span>
                       </div>
                     ) : (
-                      <span className="text-slate-400 italic">Never logged in</span>
+                      <span className="text-muted-foreground italic">Never logged in</span>
                     )}
                   </td>
 
@@ -342,7 +342,7 @@ export function UserTable({
                         variant="ghost"
                         size="sm"
                         onClick={() => onViewDetails(u)}
-                        className="h-8 px-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400"
+                        className="h-8 px-2 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"
                         title="View Full Profile & Diagnostics"
                       >
                         <Eye className="w-4 h-4 mr-1" />
@@ -354,7 +354,7 @@ export function UserTable({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground dark:hover:text-white"
                           >
                             <span className="sr-only">Open menu</span>
                             <MoreVertical className="w-4 h-4" />

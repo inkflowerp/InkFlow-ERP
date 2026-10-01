@@ -298,7 +298,7 @@ export default function SalesManagerPage() {
       </KpiGrid>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto touch-scroll pb-px">
+      <div className="flex border-b border-border gap-1 overflow-x-auto touch-scroll pb-px">
         {[
           { id: 'quotations', label: tBilingual('Active Quotations', 'দরপ্রস্তাব') },
           { id: 'orders', label: tBilingual('Booked Job Orders', 'জব অর্ডার') },
@@ -310,7 +310,7 @@ export default function SalesManagerPage() {
             className={`px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors shrink-0 whitespace-nowrap bangla-text ${
               activeTab === tab.id
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
             {tab.label}
@@ -321,7 +321,7 @@ export default function SalesManagerPage() {
       {/* Quotations List */}
       {activeTab === 'quotations' && (
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base">Pending Customer Quotations</CardTitle>
             <CardDescription className="text-xs">
               Review estimates, discount approvals, and convert directly to Job Orders.
@@ -331,7 +331,7 @@ export default function SalesManagerPage() {
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                   <tr>
                     <th className="py-3 px-4">Quote No.</th>
                     <th className="py-3 px-4">Client</th>
@@ -341,19 +341,19 @@ export default function SalesManagerPage() {
                     <th className="py-3 px-4 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {(quotations || []).map((q) => (
-                    <tr key={q.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    <tr key={q.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                       <td className="py-3.5 px-4 tabular-nums text-xs font-bold text-blue-600">
                         <Link href={`/quotations/${q.id}`} className="hover:underline">
                           {q.quotation_number}
                         </Link>
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">{q.customer_name}</td>
-                      <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-300">
+                      <td className="py-3.5 px-4 font-semibold text-foreground dark:text-white">{q.customer_name}</td>
+                      <td className="py-3.5 px-4 text-xs text-muted-foreground dark:text-muted-foreground">
                         {q.items?.map((i) => `${i.description} (${i.width}x${i.height} ${i.unit})`).join(', ') || 'Custom Print Job'}
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                      <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
                         <CurrencyDisplay amount={q.grand_total} />
                       </td>
                       <td className="py-3.5 px-4">
@@ -384,7 +384,7 @@ export default function SalesManagerPage() {
                   ))}
                   {(quotations || []).length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                      <td colSpan={6} className="py-8 text-center text-muted-foreground text-xs">
                         No quotations found.
                       </td>
                     </tr>
@@ -394,7 +394,7 @@ export default function SalesManagerPage() {
             </div>
 
             {/* Mobile Card View */}
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="md:hidden divide-y divide-border dark:divide-border">
               {(quotations || []).map((q) => (
                 <div key={q.id} className="p-4 space-y-2.5">
                   <div className="flex items-start justify-between gap-2">
@@ -405,7 +405,7 @@ export default function SalesManagerPage() {
                       >
                         {q.quotation_number}
                       </Link>
-                      <div className="font-semibold text-sm text-slate-900 dark:text-white mt-0.5">
+                      <div className="font-semibold text-sm text-foreground dark:text-white mt-0.5">
                         {q.customer_name}
                       </div>
                     </div>
@@ -414,12 +414,12 @@ export default function SalesManagerPage() {
                     </Badge>
                   </div>
 
-                  <div className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/60">
+                  <div className="text-xs text-muted-foreground bg-muted p-2.5 rounded-lg border border-border dark:border-border/60">
                     {q.items?.map((i) => `${i.description} (${i.width}x${i.height} ${i.unit})`).join(', ') || 'Custom Print Job'}
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
-                    <div className="font-black tabular-nums text-base text-slate-900 dark:text-white">
+                    <div className="font-black tabular-nums text-base text-foreground dark:text-white">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
                     {q.status !== 'converted' && !q.converted_order_id ? (
@@ -443,7 +443,7 @@ export default function SalesManagerPage() {
                 </div>
               ))}
               {(quotations || []).length === 0 && (
-                <div className="p-8 text-center text-slate-400 text-xs">
+                <div className="p-8 text-center text-muted-foreground text-xs">
                   No quotations found.
                 </div>
               )}
@@ -455,7 +455,7 @@ export default function SalesManagerPage() {
       {/* Job Orders List */}
       {activeTab === 'orders' && (
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base">Commercial Job Orders ({orders.length})</CardTitle>
             <CardDescription className="text-xs">
               Track production and delivery statuses for sales team commission & customer follow-up.
@@ -465,7 +465,7 @@ export default function SalesManagerPage() {
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                   <tr>
                     <th className="py-3 px-4">Order No.</th>
                     <th className="py-3 px-4">Customer</th>
@@ -475,16 +475,16 @@ export default function SalesManagerPage() {
                     <th className="py-3 px-4">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {(orders || []).map((o) => (
-                    <tr key={o.id} className="hover:bg-slate-50/50">
+                    <tr key={o.id} className="hover:bg-muted">
                       <td className="py-3.5 px-4 tabular-nums text-xs font-bold text-blue-600">
                         <Link href={`/orders/${o.id}`} className="hover:underline">
                           {o.order_number}
                         </Link>
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">{o.customer_name}</td>
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                      <td className="py-3.5 px-4 font-semibold text-foreground dark:text-white">{o.customer_name}</td>
+                      <td className="py-3.5 px-4 font-bold text-foreground dark:text-white">
                         <CurrencyDisplay amount={o.final_price || 0} />
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-emerald-600">
@@ -502,7 +502,7 @@ export default function SalesManagerPage() {
                   ))}
                   {(orders || []).length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                      <td colSpan={6} className="py-8 text-center text-muted-foreground text-xs">
                         No commercial job orders found.
                       </td>
                     </tr>
@@ -512,7 +512,7 @@ export default function SalesManagerPage() {
             </div>
 
             {/* Mobile Card View */}
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="md:hidden divide-y divide-border dark:divide-border">
               {(orders || []).map((o) => (
                 <div key={o.id} className="p-4 space-y-2.5">
                   <div className="flex items-start justify-between gap-2">
@@ -523,7 +523,7 @@ export default function SalesManagerPage() {
                       >
                         {o.order_number}
                       </Link>
-                      <div className="font-semibold text-sm text-slate-900 dark:text-white mt-0.5">
+                      <div className="font-semibold text-sm text-foreground dark:text-white mt-0.5">
                         {o.customer_name}
                       </div>
                     </div>
@@ -532,10 +532,10 @@ export default function SalesManagerPage() {
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800/60 text-center">
+                  <div className="grid grid-cols-3 gap-2 p-2.5 bg-muted rounded-lg border border-border dark:border-border/60 text-center">
                     <div>
-                      <span className="text-2xs text-slate-400 uppercase block">Total</span>
-                      <div className="tabular-nums font-bold text-xs text-slate-900 dark:text-white">
+                      <span className="text-2xs text-muted-foreground uppercase block">Total</span>
+                      <div className="tabular-nums font-bold text-xs text-foreground dark:text-white">
                         {formatBDT(o.final_price || 0)}
                       </div>
                     </div>
@@ -555,7 +555,7 @@ export default function SalesManagerPage() {
                 </div>
               ))}
               {(orders || []).length === 0 && (
-                <div className="p-8 text-center text-slate-400 text-xs">
+                <div className="p-8 text-center text-muted-foreground text-xs">
                   No commercial job orders found.
                 </div>
               )}
@@ -567,13 +567,13 @@ export default function SalesManagerPage() {
       {/* Leads List */}
       {activeTab === 'leads' && (
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base">Corporate Printing Leads</CardTitle>
             <CardDescription className="text-xs">
               New prospective business inquiries from advertising agencies and corporate clients.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 text-xs text-slate-500">
+          <CardContent className="p-4 text-xs text-muted-foreground">
             3 new corporate procurement inquiries received via WhatsApp and phone today.
           </CardContent>
         </Card>

@@ -58,13 +58,13 @@ export function PanelAccessDenied({
               <Lock className="w-3 h-3" />
               {tBilingual('403 Panel Isolated', '৪০৩ প্যানেল সীমাবদ্ধ')}
             </span>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-foreground dark:text-white tracking-tight">
               {tBilingual(
                 `Access Restricted: ${panelTitle}`,
                 `অনুমতি সীমাবদ্ধ: ${panelTitleBn || panelTitle}`
               )}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
               {reason ||
                 tBilingual(
                   `Your active employee profile does not possess authorization to access this operational panel. Missing required permission: "${requiredPermCode}".`,
@@ -74,24 +74,24 @@ export function PanelAccessDenied({
           </div>
 
           {/* User Profile Context */}
-          <div className="p-3.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-left text-xs space-y-2">
-            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+          <div className="p-3.5 rounded-xl bg-muted border border-border text-left text-xs space-y-2">
+            <div className="flex items-center justify-between text-muted-foreground">
               <span className="font-medium">{tBilingual('Logged-in User:', 'লগইনকৃত ব্যবহারকারী:')}</span>
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
+              <span className="font-semibold text-foreground">
                 {currentUser?.profile?.full_name || 'Staff Member'}
               </span>
             </div>
 
             {currentUser?.department && (
-              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+              <div className="flex items-center justify-between text-muted-foreground">
                 <span className="font-medium">{tBilingual('Department:', 'বিভাগ:')}</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
+                <span className="font-semibold text-foreground capitalize">
                   {currentUser.department}
                 </span>
               </div>
             )}
 
-            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
+            <div className="flex items-center justify-between text-muted-foreground pt-1 border-t border-border">
               <span className="font-medium">{tBilingual('Active Responsibilities:', 'বর্তমান দায়িত্বসমূহ:')}</span>
               <div className="flex flex-wrap gap-1 justify-end">
                 {responsibilities.length > 0 ? (
@@ -99,13 +99,13 @@ export function PanelAccessDenied({
                     <Badge
                       key={r}
                       variant="outline"
-                      className="text-2xs bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 capitalize px-1.5 py-0"
+                      className="text-2xs bg-card text-foreground capitalize px-1.5 py-0"
                     >
                       {r.replace(/_/g, ' ')}
                     </Badge>
                   ))
                 ) : (
-                  <Badge variant="outline" className="text-2xs bg-white dark:bg-slate-900 text-slate-500">
+                  <Badge variant="outline" className="text-2xs bg-card text-muted-foreground">
                     general staff
                   </Badge>
                 )}
@@ -117,7 +117,7 @@ export function PanelAccessDenied({
           <div className="pt-2 flex flex-col sm:flex-row gap-2.5 justify-center">
             <Button
               asChild
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs gap-1.5 shadow-md"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-1.5 shadow-md"
             >
               <Link href={getTenantNavHref('/dashboard', pathname, slug)}>
                 <LayoutDashboard className="h-4 w-4" />
@@ -128,7 +128,7 @@ export function PanelAccessDenied({
             <Button
               asChild
               variant="outline"
-              className="border-slate-300 dark:border-slate-700 text-xs gap-1.5"
+              className="border-border text-xs gap-1.5"
             >
               <Link href={getTenantNavHref('/portal/my-workforce', pathname, slug)}>
                 <UserCheck className="h-4 w-4 text-emerald-600" />
@@ -138,7 +138,7 @@ export function PanelAccessDenied({
           </div>
 
           {/* Notice to contact Owner */}
-          <p className="text-2xs text-slate-400 dark:text-slate-500">
+          <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
             {tBilingual(
               'If you need access to this panel for your workflow duties, contact your business owner to update your permissions.',
               'কাজের প্রয়োজনে এই প্যানেলে প্রবেশের অনুমতির জন্য প্রতিষ্ঠানের মালিকের সাথে যোগাযোগ করুন।'

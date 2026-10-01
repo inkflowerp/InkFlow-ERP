@@ -57,7 +57,7 @@ export default function SupplierPriceHistoryPage() {
       <div>
         <Link
           href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 bangla-text"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white mb-3 bangla-text"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           {tBilingual('Back to Purchases', 'ক্রয় তালিকায় ফিরুন')}
@@ -85,35 +85,35 @@ export default function SupplierPriceHistoryPage() {
           const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
 
           return (
-            <Card key={matId} className="p-4 border-slate-200 dark:border-slate-800">
+            <Card key={matId} className="p-4 border-border dark:border-border">
               <span className="tabular-nums text-2xs uppercase text-blue-600 font-bold block truncate">
                 {matId.toUpperCase()}
               </span>
-              <h4 className="font-bold text-xs text-slate-900 dark:text-white mt-0.5 truncate">
+              <h4 className="font-bold text-xs text-foreground dark:text-white mt-0.5 truncate">
                 {matName}
               </h4>
 
-              <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-border text-xs">
                 <div>
-                  <span className="text-slate-400 text-2xs">Last Paid:</span>
-                  <div className="tabular-nums font-bold text-slate-900 dark:text-white">
+                  <span className="text-muted-foreground text-2xs">Last Paid:</span>
+                  <div className="tabular-nums font-bold text-foreground dark:text-white">
                     {formatBDT(lastPrice)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-2xs">Average:</span>
+                  <span className="text-muted-foreground text-2xs">Average:</span>
                   <div className="tabular-nums font-bold text-blue-600">
                     {formatBDT(avg)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-2xs">Lowest:</span>
+                  <span className="text-muted-foreground text-2xs">Lowest:</span>
                   <div className="tabular-nums font-bold text-emerald-600">
                     {formatBDT(lowest)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-2xs">Highest:</span>
+                  <span className="text-muted-foreground text-2xs">Highest:</span>
                   <div className="tabular-nums font-bold text-red-600">
                     {formatBDT(highest)}
                   </div>
@@ -128,7 +128,7 @@ export default function SupplierPriceHistoryPage() {
       <Card className="p-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by material name or supplier..."
               value={search}
@@ -141,7 +141,7 @@ export default function SupplierPriceHistoryPage() {
             <select
               value={selectedMaterial}
               onChange={(e) => setSelectedMaterial(e.target.value)}
-              className="h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="h-9 px-3 rounded-md border border-input bg-card text-xs font-semibold"
             >
               <option value="all">All Materials</option>
               {uniqueMaterials.map((mId) => (
@@ -156,7 +156,7 @@ export default function SupplierPriceHistoryPage() {
 
       {/* Price History Table & Mobile Cards */}
       <Card>
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <CardHeader className="pb-3 border-b border-border dark:border-border">
           <CardTitle className="text-base">Procurement Price Audit Trail ({filtered.length})</CardTitle>
           <CardDescription className="text-xs">
             Historical invoice prices paid to vendors across procurement POs.
@@ -166,7 +166,7 @@ export default function SupplierPriceHistoryPage() {
           {/* Desktop Table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-muted font-semibold text-muted-foreground border-b border-border dark:border-border">
                 <tr>
                   <th className="py-3 px-4">PO Date</th>
                   <th className="py-3 px-4">Material</th>
@@ -177,10 +177,10 @@ export default function SupplierPriceHistoryPage() {
                   <th className="py-3 px-4 text-right">Variance</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-border dark:divide-border">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                    <td colSpan={7} className="py-8 text-center text-muted-foreground">
                       No supplier price history records available.
                     </td>
                   </tr>
@@ -190,21 +190,21 @@ export default function SupplierPriceHistoryPage() {
                     const isIncreased = diff > 0
 
                     return (
-                      <tr key={item.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-4 tabular-nums text-slate-500">{item.po_date}</td>
-                        <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                      <tr key={item.id} className="hover:bg-muted">
+                        <td className="py-3 px-4 tabular-nums text-muted-foreground">{item.po_date}</td>
+                        <td className="py-3 px-4 font-bold text-foreground dark:text-white">
                           {item.material_name}
                         </td>
-                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
+                        <td className="py-3 px-4 text-foreground dark:text-muted-foreground">
                           {item.supplier_name}
                         </td>
                         <td className="py-3 px-4 text-right tabular-nums font-medium">
                           {item.quantity}
                         </td>
-                        <td className="py-3 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white">
+                        <td className="py-3 px-4 text-right tabular-nums font-bold text-foreground dark:text-white">
                           {formatBDT(item.purchase_price)}
                         </td>
-                        <td className="py-3 px-4 text-right tabular-nums text-slate-400">
+                        <td className="py-3 px-4 text-right tabular-nums text-muted-foreground">
                           {item.previous_price ? formatBDT(item.previous_price) : 'N/A'}
                         </td>
                         <td className="py-3 px-4 text-right tabular-nums text-xs">
@@ -222,7 +222,7 @@ export default function SupplierPriceHistoryPage() {
                               {isIncreased ? `+৳ ${diff}` : `-৳ ${Math.abs(diff)}`}
                             </span>
                           ) : (
-                            <span className="text-slate-400">Baseline</span>
+                            <span className="text-muted-foreground">Baseline</span>
                           )}
                         </td>
                       </tr>
@@ -234,9 +234,9 @@ export default function SupplierPriceHistoryPage() {
           </div>
 
           {/* Mobile Cards */}
-          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="md:hidden divide-y divide-border dark:divide-border">
             {filtered.length === 0 ? (
-              <div className="py-8 text-center text-slate-500 text-xs">
+              <div className="py-8 text-center text-muted-foreground text-xs">
                 No supplier price history records available.
               </div>
             ) : (
@@ -245,27 +245,27 @@ export default function SupplierPriceHistoryPage() {
                 const isIncreased = diff > 0
 
                 return (
-                  <div key={item.id} className="p-4 space-y-2 text-xs bg-white dark:bg-slate-900">
+                  <div key={item.id} className="p-4 space-y-2 text-xs bg-card dark:bg-card">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <div className="font-bold text-slate-900 dark:text-white text-sm">{item.material_name}</div>
-                        <div className="text-2xs text-slate-500 flex items-center gap-1 mt-0.5">
-                          <Building className="h-3 w-3 text-slate-400" /> {item.supplier_name}
+                        <div className="font-bold text-foreground dark:text-white text-sm">{item.material_name}</div>
+                        <div className="text-2xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <Building className="h-3 w-3 text-muted-foreground" /> {item.supplier_name}
                         </div>
                       </div>
-                      <span className="tabular-nums text-2xs text-slate-400 shrink-0">{item.po_date}</span>
+                      <span className="tabular-nums text-2xs text-muted-foreground shrink-0">{item.po_date}</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 tabular-nums">
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted tabular-nums">
                       <div>
-                        <div className="text-2xs text-slate-400">Qty: {item.quantity}</div>
-                        <div className="text-sm font-black text-slate-900 dark:text-white">
+                        <div className="text-2xs text-muted-foreground">Qty: {item.quantity}</div>
+                        <div className="text-sm font-black text-foreground dark:text-white">
                           {formatBDT(item.purchase_price)}
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className="text-2xs text-slate-400">
+                        <div className="text-2xs text-muted-foreground">
                           Prev: {item.previous_price ? formatBDT(item.previous_price) : 'N/A'}
                         </div>
                         {item.previous_price ? (
@@ -278,7 +278,7 @@ export default function SupplierPriceHistoryPage() {
                             {isIncreased ? `+৳ ${diff}` : `-৳ ${Math.abs(diff)}`}
                           </span>
                         ) : (
-                          <span className="text-2xs text-slate-400">Baseline</span>
+                          <span className="text-2xs text-muted-foreground">Baseline</span>
                         )}
                       </div>
                     </div>

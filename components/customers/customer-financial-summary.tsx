@@ -107,7 +107,7 @@ export function CustomerFinancialSummaryCards({
                 'text-2xs font-bold',
                 summary.totalDue > creditLimit
                   ? 'text-rose-600 dark:text-rose-400'
-                  : 'text-slate-600 dark:text-slate-300'
+                  : 'text-muted-foreground dark:text-muted-foreground'
               )}
             >
               {summary.totalDue > creditLimit

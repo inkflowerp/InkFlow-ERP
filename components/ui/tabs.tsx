@@ -32,7 +32,16 @@ export function TabsList({
   children: React.ReactNode
   className?: string
 }) {
-  return <div className={cn('flex items-center', className)}>{children}</div>
+  return (
+    <div
+      className={cn(
+        'inline-flex items-center gap-1 rounded-lg bg-muted p-1 text-muted-foreground',
+        className
+      )}
+    >
+      {children}
+    </div>
+  )
 }
 
 export function TabsTrigger({
@@ -54,7 +63,10 @@ export function TabsTrigger({
       onClick={() => ctx.onValueChange(value)}
       data-state={isActive ? 'active' : 'inactive'}
       className={cn(
-        'transition-all duration-150 select-none cursor-pointer',
+        'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        isActive
+          ? 'bg-card text-foreground shadow-xs'
+          : 'text-muted-foreground hover:text-foreground hover:bg-card/50',
         className
       )}
     >

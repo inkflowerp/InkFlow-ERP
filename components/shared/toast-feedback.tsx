@@ -100,10 +100,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           }
 
           const styleMap = {
-            success: 'bg-slate-900/95 border-emerald-500/40 text-emerald-200 shadow-emerald-950/30',
-            error: 'bg-slate-900/95 border-rose-500/40 text-rose-200 shadow-rose-950/30',
-            warning: 'bg-slate-900/95 border-amber-500/40 text-amber-200 shadow-amber-950/30',
-            info: 'bg-slate-900/95 border-indigo-500/40 text-indigo-200 shadow-indigo-950/30',
+            success: 'bg-foreground border-emerald-500/40 text-emerald-200 shadow-emerald-950/30',
+            error: 'bg-foreground border-rose-500/40 text-rose-200 shadow-rose-950/30',
+            warning: 'bg-foreground border-amber-500/40 text-amber-200 shadow-amber-950/30',
+            info: 'bg-foreground border-indigo-500/40 text-indigo-200 shadow-indigo-950/30',
           }
 
           return (
@@ -120,7 +120,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 <div className="space-y-0.5 min-w-0">
                   <div className="font-bold text-white bangla-text truncate">{displayTitle}</div>
                   {displayMessage && (
-                    <div className="text-2xs text-slate-300 bangla-text leading-relaxed">
+                    <div className="text-2xs text-muted-foreground bangla-text leading-relaxed">
                       {displayMessage}
                     </div>
                   )}
@@ -129,7 +129,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
               <button
                 onClick={() => removeToast(toast.id)}
-                className="text-slate-400 hover:text-white p-2 shrink-0 rounded-lg hover:bg-slate-800/80 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center -mr-1.5 -mt-1 transition-colors"
+                className="text-muted-foreground hover:text-white p-2 shrink-0 rounded-lg hover:bg-slate-800/80 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center -mr-1.5 -mt-1 transition-colors"
                 aria-label="Dismiss notification"
               >
                 <X className="h-4 w-4" />

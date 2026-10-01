@@ -369,10 +369,10 @@ export function RecordPaymentModal({
               <DollarSign className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-black text-slate-900 dark:text-white">
+              <h2 className="text-base font-black text-foreground dark:text-white">
                 {locale === 'bn' ? 'বকেয়া আদায় (Collect Due)' : 'Collect Due'}
               </h2>
-              <p className="text-2xs text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
                 Search invoice or customer • Partial or full collection • Instant receipt
               </p>
             </div>
@@ -383,18 +383,18 @@ export function RecordPaymentModal({
             <div className="flex items-center gap-2 min-w-0">
               {selectedInvoice ? (
                 <div className="text-xs truncate">
-                  <span className="text-slate-500 font-medium">Collecting: </span>
+                  <span className="text-muted-foreground font-medium">Collecting: </span>
                   <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                     {numericAmount > 0 ? formatBDT(numericAmount) : '৳0'}
                   </span>
                   {remainingDue !== null && numericAmount > 0 && (
-                    <span className="text-slate-400 tabular-nums text-2xs ml-2">
+                    <span className="text-muted-foreground tabular-nums text-2xs ml-2">
                       (Rem Due: {formatBDT(remainingDue)})
                     </span>
                   )}
                 </div>
               ) : (
-                <span className="text-xs text-slate-400">Select an unpaid invoice above</span>
+                <span className="text-xs text-muted-foreground">Select an unpaid invoice above</span>
               )}
             </div>
 
@@ -459,9 +459,9 @@ export function RecordPaymentModal({
           {!selectedInvoice ? (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <Label className="text-xs font-bold text-foreground flex items-center justify-between">
                   <span>Search Invoice or Customer / চালান খুঁজুন</span>
-                  <span className="text-2xs text-slate-400 font-normal">
+                  <span className="text-2xs text-muted-foreground font-normal">
                     Invoice #, Customer Name, Phone
                   </span>
                 </Label>
@@ -470,15 +470,15 @@ export function RecordPaymentModal({
                     placeholder="Type Invoice # (e.g. INV-1025), customer name, or phone..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-10 text-xs pl-9 pr-8 rounded-xl border-slate-300 dark:border-slate-700"
+                    className="h-10 text-xs pl-9 pr-8 rounded-xl border-input dark:border-border"
                     autoFocus
                   />
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      className="absolute right-3 top-3 text-muted-foreground hover:text-muted-foreground cursor-pointer"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -488,51 +488,51 @@ export function RecordPaymentModal({
 
               {/* Matching Results List */}
               <div className="space-y-1.5">
-                <div className="text-2xs font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                   <span>Unpaid Invoices Matching Search ({matchingInvoices.length})</span>
-                  {isLoadingInvoices && <Loader2 className="h-3 w-3 animate-spin text-slate-400" />}
+                  {isLoadingInvoices && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
 
                 {isLoadingInvoices ? (
-                  <div className="p-8 text-center text-xs text-slate-500 space-y-2">
+                  <div className="p-8 text-center text-xs text-muted-foreground space-y-2">
                     <Loader2 className="h-5 w-5 animate-spin mx-auto text-emerald-600" />
                     <p>Searching invoices...</p>
                   </div>
                 ) : matchingInvoices.length === 0 ? (
-                  <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 space-y-1">
+                  <div className="p-8 text-center bg-muted rounded-xl border border-dashed border-border space-y-1">
                     <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto" />
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <p className="text-xs font-bold text-foreground dark:text-muted-foreground">
                       No matching unpaid invoices found.
                     </p>
-                    <p className="text-2xs text-slate-500">
+                    <p className="text-2xs text-muted-foreground">
                       All matching accounts are paid, or invoice number does not exist.
                     </p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden max-h-72 overflow-y-auto">
+                  <div className="divide-y divide-border border border-border rounded-xl overflow-hidden max-h-72 overflow-y-auto">
                     {matchingInvoices.map((inv) => {
                       const daysOverdue = calculateDaysOverdue(inv.due_date)
                       return (
                         <div
                           key={inv.id}
                           onClick={() => handleSelectInvoice(inv)}
-                          className="p-3 hover:bg-emerald-50/50 dark:hover:bg-slate-900/60 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs"
+                          className="p-3 hover:bg-emerald-50/50 dark:hover:bg-muted/60 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs"
                         >
                           <div className="space-y-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="tabular-nums font-bold text-blue-600 dark:text-blue-400">
                                 #{inv.invoice_number}
                               </span>
-                              <span className="font-bold text-slate-900 dark:text-white truncate">
+                              <span className="font-bold text-foreground dark:text-white truncate">
                                 {inv.customer_name}
                               </span>
                               {inv.customer_phone && (
-                                <span className="text-slate-500 text-2xs tabular-nums">
+                                <span className="text-muted-foreground text-2xs tabular-nums">
                                   ({inv.customer_phone})
                                 </span>
                               )}
                             </div>
-                            <div className="text-2xs text-slate-500 flex flex-wrap items-center gap-x-3 tabular-nums">
+                            <div className="text-2xs text-muted-foreground flex flex-wrap items-center gap-x-3 tabular-nums">
                               <span>Date: {inv.invoice_date}</span>
                               <span>Total: {formatBDT(inv.grand_total)}</span>
                               <span>Paid: {formatBDT(inv.paid_amount || 0)}</span>
@@ -579,14 +579,14 @@ export function RecordPaymentModal({
                     <span className="text-xs text-blue-700 dark:text-blue-300 font-bold uppercase tracking-wider">
                       Selected Invoice
                     </span>
-                    <strong className="tabular-nums text-sm font-black text-slate-900 dark:text-white">
+                    <strong className="tabular-nums text-sm font-black text-foreground dark:text-white">
                       #{selectedInvoice.invoice_number}
                     </strong>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <span className="text-xs font-bold text-foreground dark:text-foreground">
                       • {selectedInvoice.customer_name}
                     </span>
                     {selectedInvoice.customer_phone && (
-                      <span className="text-xs text-slate-500 tabular-nums">
+                      <span className="text-xs text-muted-foreground tabular-nums">
                         ({selectedInvoice.customer_phone})
                       </span>
                     )}
@@ -606,16 +606,16 @@ export function RecordPaymentModal({
 
                 {/* 3 Prominent Stat Cards */}
                 <div className="grid grid-cols-3 gap-2.5 pt-1 text-center tabular-nums">
-                  <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                    <span className="text-2xs text-slate-500 uppercase tracking-wider block">
+                  <div className="p-2 bg-card rounded-lg border border-border dark:border-border">
+                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">
                       Invoice Total
                     </span>
-                    <strong className="text-xs font-bold text-slate-900 dark:text-white">
+                    <strong className="text-xs font-bold text-foreground dark:text-white">
                       {formatBDT(invoiceTotal)}
                     </strong>
                   </div>
 
-                  <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="p-2 bg-card rounded-lg border border-border dark:border-border">
                     <span className="text-2xs text-emerald-600 uppercase tracking-wider block">
                       Paid
                     </span>
@@ -638,7 +638,7 @@ export function RecordPaymentModal({
               {/* PAYMENT INPUT & PRESET ACTIONS */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <DollarSign className="h-4 w-4 text-emerald-600" />
                     <span>Payment Amount (টাকার পরিমাণ)*</span>
                   </Label>
@@ -657,7 +657,7 @@ export function RecordPaymentModal({
                 </div>
 
                 <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-base font-black text-slate-500 tabular-nums">
+                  <span className="absolute left-3.5 top-2.5 text-base font-black text-muted-foreground tabular-nums">
                     ৳
                   </span>
                   <Input
@@ -684,24 +684,24 @@ export function RecordPaymentModal({
                 </div>
 
                 {numericAmount > 0 && (
-                  <p className="text-2xs text-slate-500 italic">
+                  <p className="text-2xs text-muted-foreground italic">
                     In words: {numberToWordsBDT(numericAmount)}
                   </p>
                 )}
               </div>
 
               {/* LIVE PAYMENT BREAKDOWN & PROJECTED INVOICE STATUS */}
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+              <div className="p-3.5 bg-muted rounded-xl border border-border space-y-2 text-xs">
                 <div className="flex items-center justify-between tabular-nums">
-                  <span className="text-slate-500 font-medium">Outstanding Due:</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatBDT(invoiceDue)}</span>
+                  <span className="text-muted-foreground font-medium">Outstanding Due:</span>
+                  <span className="font-bold text-foreground dark:text-foreground">{formatBDT(invoiceDue)}</span>
                 </div>
                 <div className="flex items-center justify-between tabular-nums">
                   <span className="text-emerald-700 dark:text-emerald-400 font-bold">Collecting Now:</span>
                   <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">{formatBDT(numericAmount)}</span>
                 </div>
-                <div className="flex items-center justify-between tabular-nums pt-1.5 border-t border-slate-200 dark:border-slate-800">
-                  <span className="font-bold text-slate-900 dark:text-white">Remaining Due:</span>
+                <div className="flex items-center justify-between tabular-nums pt-1.5 border-t border-border dark:border-border">
+                  <span className="font-bold text-foreground dark:text-white">Remaining Due:</span>
                   <span className={cn('font-black text-sm', remainingDue === 0 ? 'text-emerald-600' : 'text-rose-600')}>
                     {formatBDT(remainingDue)}
                   </span>
@@ -709,7 +709,7 @@ export function RecordPaymentModal({
 
                 {/* Projected Status Indicator */}
                 <div className="pt-1 flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-500 font-normal">Projected Status:</span>
+                  <span className="text-muted-foreground font-normal">Projected Status:</span>
                   {isOverpaid ? (
                     <span className="text-rose-600 flex items-center gap-1">
                       <AlertTriangle className="h-3.5 w-3.5" /> Amount exceeds outstanding due!
@@ -723,14 +723,14 @@ export function RecordPaymentModal({
                       <Clock className="h-3.5 w-3.5" /> Partially Paid
                     </span>
                   ) : (
-                    <span className="text-slate-400">Enter amount received</span>
+                    <span className="text-muted-foreground">Enter amount received</span>
                   )}
                 </div>
               </div>
 
               {/* PAYMENT METHOD SELECTION */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                <Label className="text-xs font-bold text-foreground dark:text-foreground">
                   Payment Method (পদ্ধতি)*
                 </Label>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
@@ -745,7 +745,7 @@ export function RecordPaymentModal({
                           'p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-center justify-center gap-1 text-center',
                           isSelected
                             ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-xs'
-                            : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300'
+                            : 'border-border hover:bg-muted text-foreground dark:text-muted-foreground'
                         )}
                       >
                         <span className="text-base">{m.icon}</span>
@@ -761,7 +761,7 @@ export function RecordPaymentModal({
               {/* PAYMENT DATE & REFERENCE */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                     Payment Date (তারিখ)*
                   </Label>
                   <Input
@@ -774,7 +774,7 @@ export function RecordPaymentModal({
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                     {paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'other_mfs'
                       ? 'TrxID / Transaction No.'
                       : paymentMethod === 'cheque'
@@ -800,7 +800,7 @@ export function RecordPaymentModal({
 
               {/* OPTIONAL NOTES */}
               <div className="space-y-1 text-xs">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                   Notes (মন্তব্য)
                 </Label>
                 <Input

@@ -93,10 +93,10 @@ export const DesignJobCard = React.memo(function DesignJobCard({
 
   return (
     <div
-      className={`rounded-2xl border transition-all duration-200 overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-xs ${
+      className={`rounded-2xl border transition-all duration-200 overflow-hidden bg-card/95 backdrop-blur-sm shadow-xs ${
         isUrgent
           ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-400/20'
-          : 'border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700'
+          : 'border-border dark:border-border/80 hover:border-input dark:hover:border-border'
       }`}
     >
       {/* Top Banner for Urgent / Walk-in / Due Today */}
@@ -119,7 +119,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               </span>
             )}
           </div>
-          <span className="text-slate-500 text-2xs tabular-nums">
+          <span className="text-muted-foreground text-2xs tabular-nums">
             {job.deadline ? `টার্গেট: ${job.deadline.split('T')[0]}` : ''}
           </span>
         </div>
@@ -151,7 +151,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 {job.invoice_number && invoiceHref && (
                   <Link
                     href={invoiceHref}
-                    className="tabular-nums text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    className="tabular-nums text-xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-lg hover:bg-muted dark:hover:bg-slate-700 transition-colors"
                   >
                     Inv: #{job.invoice_number}
                   </Link>
@@ -175,20 +175,20 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 >
                   <span>Workbench ➔</span>
                 </Link>
-                <span className="text-2xs tabular-nums text-slate-400">
+                <span className="text-2xs tabular-nums text-muted-foreground">
                   v{job.current_version || versions.length || 1}
                 </span>
               </div>
             </div>
 
             {/* Title & Customer Name */}
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 leading-snug">
+            <h3 className="text-sm font-bold text-foreground dark:text-white line-clamp-1 leading-snug">
               <Link href={workbenchHref} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                 {specs.serviceName}
               </Link>
             </h3>
-            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-1">
-              <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+              <span className="font-semibold text-foreground truncate">
                 {job.customer_name}
               </span>
               {(job.customer_phone || (job as any).mobile) && (
@@ -204,48 +204,48 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             </div>
 
             {/* Job Specifications Strip (6-Field Specs) */}
-            <div className="mt-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-200 dark:border-slate-800 text-2xs tabular-nums space-y-1">
+            <div className="mt-2.5 rounded-lg bg-muted p-2.5 border border-border text-2xs tabular-nums space-y-1">
               <div className="grid grid-cols-2 gap-x-2 gap-y-1">
                 <div>
-                  <span className="text-slate-400 block text-2xs">{tBilingual('Service / Item:', 'সার্ভিস / আইটেম:')}</span>
-                  <strong className="text-slate-700 dark:text-slate-200 truncate block">
+                  <span className="text-muted-foreground block text-2xs">{tBilingual('Service / Item:', 'সার্ভিস / আইটেম:')}</span>
+                  <strong className="text-foreground truncate block">
                     {specs.serviceName}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-2xs">{tBilingual('Material:', 'মেটেরিয়াল:')}</span>
-                  <strong className="text-slate-700 dark:text-slate-200 truncate block" title={specs.material}>
+                  <span className="text-muted-foreground block text-2xs">{tBilingual('Material:', 'মেটেরিয়াল:')}</span>
+                  <strong className="text-foreground truncate block" title={specs.material}>
                     {specs.material}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-2xs">{tBilingual('Size / Dimensions:', 'সাইজ / পরিমাপ:')}</span>
-                  <strong className="text-slate-700 dark:text-slate-200 truncate block">
+                  <span className="text-muted-foreground block text-2xs">{tBilingual('Size / Dimensions:', 'সাইজ / পরিমাপ:')}</span>
+                  <strong className="text-foreground truncate block">
                     {specs.size}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-2xs">{tBilingual('Quantity:', 'পরিমাণ (Qty):')}</span>
-                  <strong className="text-slate-700 dark:text-slate-200 truncate block">
+                  <span className="text-muted-foreground block text-2xs">{tBilingual('Quantity:', 'পরিমাণ (Qty):')}</span>
+                  <strong className="text-foreground truncate block">
                     {specs.quantity}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-2xs">{tBilingual('Finishing:', 'ফিনিশিং:')}</span>
-                  <strong className={`truncate block ${specs.finishing !== 'None' ? 'text-amber-700 dark:text-amber-300 font-bold' : 'text-slate-500'}`}>
+                  <span className="text-muted-foreground block text-2xs">{tBilingual('Finishing:', 'ফিনিশিং:')}</span>
+                  <strong className={`truncate block ${specs.finishing !== 'None' ? 'text-amber-700 dark:text-amber-300 font-bold' : 'text-muted-foreground'}`}>
                     {specs.finishing}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-2xs">{tBilingual('Add-on:', 'অ্যাড-অন:')}</span>
-                  <strong className={`truncate block ${specs.addOn !== 'None' ? 'text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-500'}`}>
+                  <span className="text-muted-foreground block text-2xs">{tBilingual('Add-on:', 'অ্যাড-অন:')}</span>
+                  <strong className={`truncate block ${specs.addOn !== 'None' ? 'text-indigo-700 dark:text-indigo-300 font-bold' : 'text-muted-foreground'}`}>
                     {specs.addOn}
                   </strong>
                 </div>
               </div>
               {job.instructions && (
-                <div className="border-t border-slate-200 dark:border-slate-700/60 pt-1.5 text-slate-600 dark:text-slate-400">
-                  <span className="text-2xs font-bold text-slate-500 block">{tBilingual('Instructions:', 'কাস্টমার নির্দেশনা:')}</span>
+                <div className="border-t border-border dark:border-slate-700/60 pt-1.5 text-muted-foreground dark:text-muted-foreground">
+                  <span className="text-2xs font-bold text-muted-foreground block">{tBilingual('Instructions:', 'কাস্টমার নির্দেশনা:')}</span>
                   <p className="line-clamp-2 text-2xs italic">{job.instructions}</p>
                 </div>
               )}
@@ -255,7 +255,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
           {/* Pre-Press Quality Health Strip (Interactive Checklist Badges) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 প্রি-প্রেস কোয়ালিটি হেলথ (Pre-Press Verification):
               </span>
               <button
@@ -274,7 +274,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
                   preflight.cmyk
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                    : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'
+                    : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 {preflight.cmyk ? '✓ CMYK' : 'CMYK?'}
@@ -286,7 +286,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
                   preflight.dpi300
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                    : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'
+                    : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 {preflight.dpi300 ? '✓ 300 DPI' : '300 DPI?'}
@@ -298,7 +298,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
                   preflight.bleed
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                    : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'
+                    : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 {preflight.bleed ? '✓ Bleed' : 'Bleed?'}
@@ -310,7 +310,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
                   preflight.curves
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                    : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'
+                    : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 {preflight.curves ? '✓ Curves' : 'Curves?'}
@@ -322,7 +322,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
         {/* Right Artwork Preview & Actions (5 Cols) */}
         <div className="md:col-span-5 flex flex-col justify-between space-y-2.5">
           {/* Artwork Thumbnail with Zoom & Compare */}
-          <div className="relative group rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 aspect-[4/3] flex items-center justify-center">
+          <div className="relative group rounded-lg overflow-hidden bg-muted border border-border aspect-[4/3] flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
@@ -331,7 +331,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             />
             {/* Format & Version Overlay */}
             <div className="absolute top-2 left-2 flex items-center gap-1">
-              <span className="bg-slate-900/80 backdrop-blur-sm text-white text-2xs font-bold uppercase px-1.5 py-0.5 rounded">
+              <span className="bg-foreground backdrop-blur-sm text-white text-2xs font-bold uppercase px-1.5 py-0.5 rounded">
                 {currentVer?.file_format || 'PNG'}
               </span>
               <span className="bg-indigo-600/90 text-white text-2xs font-bold px-1.5 py-0.5 rounded tabular-nums">
@@ -340,13 +340,13 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             </div>
 
             {/* Hover Actions */}
-            <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="absolute inset-0 bg-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button
                 type="button"
                 size="sm"
                 variant="secondary"
                 onClick={() => onOpenLightbox(job)}
-                className="h-8 px-2.5 text-xs bg-white text-slate-900 font-bold shadow"
+                className="h-8 px-2.5 text-xs bg-card text-foreground font-bold shadow"
               >
                 <Eye className="h-3.5 w-3.5 mr-1" />
                 <span>বড় করে দেখুন</span>
@@ -357,7 +357,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                   size="sm"
                   variant="secondary"
                   onClick={() => onOpenCompare(job)}
-                  className="h-8 px-2.5 text-xs bg-white text-slate-900 font-bold shadow"
+                  className="h-8 px-2.5 text-xs bg-card text-foreground font-bold shadow"
                 >
                   <SplitSquareVertical className="h-3.5 w-3.5 mr-1" />
                   <span>তুলনা (Diff)</span>
@@ -426,7 +426,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                   type="button"
                   size="sm"
                   onClick={() => onStartDesign(job)}
-                  className="flex-1 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold h-8 shadow-sm cursor-pointer"
+                  className="flex-1 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-8 shadow-sm cursor-pointer"
                 >
                   <Play className="h-3 w-3 mr-1.5 fill-current" />
                   <span>Start Design</span>

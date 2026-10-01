@@ -25,10 +25,10 @@ export function Breadcrumbs() {
 
   // Format path segments
   return (
-    <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0 max-w-[280px] overflow-hidden">
+    <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap shrink-0 max-w-[280px] overflow-hidden">
       <Link
         href={getTenantNavHref('/dashboard', pathname, company?.slug)}
-        className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0"
+        className="flex items-center gap-1 hover:text-foreground dark:hover:text-white transition-colors shrink-0"
         title="Dashboard"
       >
         <Home className="h-3.5 w-3.5 shrink-0" />
@@ -42,15 +42,15 @@ export function Breadcrumbs() {
 
         return (
           <React.Fragment key={rawSubPath}>
-            <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
+            <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
             {isLast ? (
-              <span className="font-semibold text-slate-900 dark:text-white capitalize truncate">
+              <span className="font-semibold text-foreground dark:text-white capitalize truncate">
                 {label}
               </span>
             ) : (
               <Link
                 href={href}
-                className="hover:text-slate-900 dark:hover:text-white transition-colors capitalize truncate"
+                className="hover:text-foreground dark:hover:text-white transition-colors capitalize truncate"
               >
                 {label}
               </Link>

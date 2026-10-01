@@ -41,7 +41,7 @@ export function PaginationControls({
   const rowsLabel = tBilingual('Rows:', 'প্রতি পৃষ্ঠায়:')
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2 text-sm text-slate-600 dark:text-slate-400">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2 text-sm text-muted-foreground dark:text-muted-foreground">
       <div className="flex items-center gap-2">
         <span>{itemsText}</span>
         {onPageSizeChange && (

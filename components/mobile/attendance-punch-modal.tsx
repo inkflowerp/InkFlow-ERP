@@ -147,17 +147,17 @@ export function AttendancePunchModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent onClose={onClose} className="max-w-md p-5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-3xl shadow-2xl">
+      <DialogContent onClose={onClose} className="max-w-md p-5 bg-card border-border text-foreground rounded-3xl shadow-2xl">
         <DialogHeader className="mb-2">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30">
               <QrCode className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-slate-900 dark:text-white text-base font-bold">
+              <DialogTitle className="text-foreground dark:text-white text-base font-bold">
                 {tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
               </DialogTitle>
-              <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs">
+              <DialogDescription className="text-muted-foreground text-xs">
                 {tBilingual('Authoritative QR & GPS Geofence Verification', 'কিউআর কোড ও জিপিএস জিওফেন্স যাচাইকরণ')}
               </DialogDescription>
             </div>
@@ -168,14 +168,14 @@ export function AttendancePunchModal({
         {stage === 'scan' && (
           <div className="space-y-4">
             {/* Punch Type Selector */}
-            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted rounded-2xl border border-border dark:border-border">
               <button
                 type="button"
                 onClick={() => setPunchType('CHECK_IN')}
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   punchType === 'CHECK_IN'
                     ? 'bg-emerald-600 text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
                 <Clock className="h-4 w-4" />
@@ -188,7 +188,7 @@ export function AttendancePunchModal({
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   punchType === 'CHECK_OUT'
                     ? 'bg-amber-600 text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
                 <LogOut className="h-4 w-4" />
@@ -200,7 +200,7 @@ export function AttendancePunchModal({
             <CameraQrScanner onScanSuccess={handleQrScanned} />
 
             {/* Geofence Notice */}
-            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-2xs text-slate-500 dark:text-slate-400 flex items-start gap-2.5">
+            <div className="p-3.5 rounded-2xl bg-muted border border-border text-2xs text-muted-foreground flex items-start gap-2.5">
               <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <span>
                 {tBilingual(
@@ -221,10 +221,10 @@ export function AttendancePunchModal({
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-base font-bold text-foreground dark:text-white">
                 {tBilingual('Verifying Attendance...', 'হাজিরা যাচাই হচ্ছে...')}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto">
                 {tBilingual(
                   'Validating cryptographic QR token and calculating server-side geofence distance.',
                   'ক্রিপ্টোগ্রাফিক কিউআর টোকেন ও জিপিএস দূরত্ব হিসাব করা হচ্ছে।'
@@ -234,11 +234,11 @@ export function AttendancePunchModal({
 
             {/* Multi-step pipeline pills */}
             <div className="space-y-2 max-w-xs mx-auto text-left text-xs tabular-nums">
-              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-slate-950 p-2.5 rounded-xl border border-emerald-200 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 dark:border-border">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
                 <span>QR Token Captured</span>
               </div>
-              <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-slate-950 p-2.5 rounded-xl border border-indigo-200 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 bg-indigo-50 p-2.5 rounded-xl border border-indigo-200 dark:border-border">
                 <RefreshCw className="h-4 w-4 shrink-0 animate-spin" />
                 <span>Acquiring GPS & Calculating Geofence</span>
               </div>
@@ -257,12 +257,12 @@ export function AttendancePunchModal({
               <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-xs px-2.5 py-0.5 font-bold">
                 {punchType === 'CHECK_IN' ? 'Check-In Accepted' : 'Check-Out Accepted'}
               </Badge>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h3 className="text-xl font-black text-foreground dark:text-white tracking-tight">
                 {punchType === 'CHECK_IN' ? 'হাজিরা সফল হয়েছে!' : 'প্রস্থান সফল হয়েছে!'}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                 Timestamp:{' '}
-                <strong className="text-slate-900 dark:text-white tabular-nums">
+                <strong className="text-foreground dark:text-white tabular-nums">
                   {new Date(successRecord.checked_at).toLocaleTimeString('en-US', {
                     timeZone: 'Asia/Dhaka',
                     hour: '2-digit',
@@ -274,22 +274,22 @@ export function AttendancePunchModal({
             </div>
 
             {/* Verification Detail Card */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2 text-left text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-slate-200 dark:border-slate-800">
-                <span className="text-slate-500 dark:text-slate-400">Location:</span>
-                <span className="font-bold text-slate-900 dark:text-white">
+            <div className="p-4 rounded-2xl bg-muted border border-border space-y-2 text-left text-xs">
+              <div className="flex justify-between items-center py-1 border-b border-border dark:border-border">
+                <span className="text-muted-foreground dark:text-muted-foreground">Location:</span>
+                <span className="font-bold text-foreground dark:text-white">
                   {successRecord.location_name || 'Verified Workplace'}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-200 dark:border-slate-800">
-                <span className="text-slate-500 dark:text-slate-400">Distance from Center:</span>
+              <div className="flex justify-between items-center py-1 border-b border-border dark:border-border">
+                <span className="text-muted-foreground dark:text-muted-foreground">Distance from Center:</span>
                 <span className="tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">
                   {Math.round(successRecord.distance_from_location_meters)}m
                 </span>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-slate-500 dark:text-slate-400">GPS Accuracy:</span>
-                <span className="tabular-nums text-slate-700 dark:text-slate-300">
+                <span className="text-muted-foreground dark:text-muted-foreground">GPS Accuracy:</span>
+                <span className="tabular-nums text-foreground dark:text-muted-foreground">
                   ±{Math.round(successRecord.gps_accuracy_meters)}m
                 </span>
               </div>
@@ -313,7 +313,7 @@ export function AttendancePunchModal({
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-bold text-foreground dark:text-white">
                 {tBilingual('Attendance Could Not Be Recorded', 'হাজিরা রেকর্ড করা সম্ভব হয়নি')}
               </h3>
               <p className="text-xs text-rose-600 dark:text-rose-300 font-medium max-w-xs mx-auto">
@@ -322,9 +322,9 @@ export function AttendancePunchModal({
             </div>
 
             {verificationDetails && (
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs text-left">
+              <div className="p-3.5 rounded-2xl bg-muted border border-border space-y-1.5 text-xs text-left">
                 {verificationDetails.distanceMeters !== undefined && (
-                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                  <div className="flex justify-between text-muted-foreground dark:text-muted-foreground">
                     <span>Calculated Distance:</span>
                     <span className="tabular-nums text-rose-600 dark:text-rose-400 font-bold">
                       {verificationDetails.distanceMeters}m (Allowed: {verificationDetails.allowedRadiusMeters}m)
@@ -332,9 +332,9 @@ export function AttendancePunchModal({
                   </div>
                 )}
                 {verificationDetails.accuracyMeters !== undefined && (
-                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                  <div className="flex justify-between text-muted-foreground dark:text-muted-foreground">
                     <span>GPS Accuracy:</span>
-                    <span className="tabular-nums text-slate-700 dark:text-slate-300">±{verificationDetails.accuracyMeters}m</span>
+                    <span className="tabular-nums text-foreground dark:text-muted-foreground">±{verificationDetails.accuracyMeters}m</span>
                   </div>
                 )}
               </div>
@@ -345,7 +345,7 @@ export function AttendancePunchModal({
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs h-11 rounded-2xl"
+                className="flex-1 border-border text-foreground text-xs h-11 rounded-2xl"
               >
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>

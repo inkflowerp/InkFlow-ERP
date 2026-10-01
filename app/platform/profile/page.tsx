@@ -129,10 +129,10 @@ export default function PlatformOwnerProfilePage() {
   if (isLoading || !profile) {
     return (
       <div className="space-y-6 animate-pulse p-4 sm:p-6">
-        <div className="h-10 w-64 bg-slate-800 rounded-xl" />
+        <div className="h-10 w-64 bg-secondary rounded-xl" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="h-80 bg-slate-900 border border-slate-800 rounded-2xl" />
-          <div className="lg:col-span-2 h-80 bg-slate-900 border border-slate-800 rounded-2xl" />
+          <div className="h-80 bg-foreground border border-border rounded-2xl" />
+          <div className="lg:col-span-2 h-80 bg-foreground border border-border rounded-2xl" />
         </div>
       </div>
     )
@@ -141,7 +141,7 @@ export default function PlatformOwnerProfilePage() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <Shield className="h-4 w-4" />
@@ -150,7 +150,7 @@ export default function PlatformOwnerProfilePage() {
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
             Platform Owner Profile
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Manage your root supervisory profile, contact information, and security posture.
           </p>
         </div>
@@ -159,7 +159,7 @@ export default function PlatformOwnerProfilePage() {
           size="sm"
           variant="outline"
           onClick={loadProfile}
-          className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9 min-h-[36px]"
+          className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9 min-h-[36px]"
         >
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
           Refresh Profile
@@ -189,7 +189,7 @@ export default function PlatformOwnerProfilePage() {
         {/* Left Column: Avatar Card & Account Meta */}
         <div className="space-y-6">
           {/* Identity Card */}
-          <Card className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
+          <Card className="bg-foreground border-border overflow-hidden shadow-xl">
             <CardHeader className="text-center pb-2">
               <div className="flex justify-center mb-3 relative">
                 <div className="relative group">
@@ -241,32 +241,32 @@ export default function PlatformOwnerProfilePage() {
               </div>
             </CardHeader>
 
-            <CardContent className="pt-4 border-t border-slate-800 space-y-3 text-xs">
-              <div className="flex items-center justify-between text-slate-400 py-1 border-b border-slate-800/60">
+            <CardContent className="pt-4 border-t border-border space-y-3 text-xs">
+              <div className="flex items-center justify-between text-muted-foreground py-1 border-b border-border">
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-slate-500" />
+                  <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                   Created Date
                 </span>
-                <span className="text-slate-200 tabular-nums">
+                <span className="text-foreground tabular-nums">
                   {formatDate(profile.created_at)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-slate-400 py-1 border-b border-slate-800/60">
+              <div className="flex items-center justify-between text-muted-foreground py-1 border-b border-border">
                 <span className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-slate-500" />
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                   Last Login
                 </span>
-                <span className="text-slate-200 tabular-nums">
+                <span className="text-foreground tabular-nums">
                   {profile.last_login_at
                     ? formatDateTime(profile.last_login_at)
                     : 'Recent'}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-slate-400 py-1">
+              <div className="flex items-center justify-between text-muted-foreground py-1">
                 <span className="flex items-center gap-1.5">
-                  <Laptop className="h-3.5 w-3.5 text-slate-500" />
+                  <Laptop className="h-3.5 w-3.5 text-muted-foreground" />
                   Active Sessions
                 </span>
                 <span className="text-indigo-400 font-bold tabular-nums">
@@ -277,17 +277,17 @@ export default function PlatformOwnerProfilePage() {
           </Card>
 
           {/* Quick Security Shortcuts */}
-          <Card className="bg-slate-900 border-slate-800 p-4 space-y-3">
-            <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+          <Card className="bg-foreground border-border p-4 space-y-3">
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <Key className="h-4 w-4 text-cyan-400" />
               Security Posture
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-foreground border border-border flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-white">MFA Authentication</div>
-                  <div className="text-2xs text-slate-400">
+                  <div className="text-2xs text-muted-foreground">
                     {profile.mfa_enabled ? 'TOTP Authenticator active' : 'Not configured'}
                   </div>
                 </div>
@@ -302,10 +302,10 @@ export default function PlatformOwnerProfilePage() {
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-foreground border border-border flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-white">Password Status</div>
-                  <div className="text-2xs text-slate-400">
+                  <div className="text-2xs text-muted-foreground">
                     {profile.password_last_changed_at
                       ? `Last changed ${formatDate(profile.password_last_changed_at)}`
                       : 'Compliant'}
@@ -317,7 +317,7 @@ export default function PlatformOwnerProfilePage() {
               </div>
             </div>
 
-            <Button asChild variant="outline" className="w-full text-xs font-bold border-slate-700 hover:bg-slate-800 h-9 min-h-[44px]">
+            <Button asChild variant="outline" className="w-full text-xs font-bold border-border hover:bg-secondary h-9 min-h-[44px]">
               <Link href="/platform/security" className="flex items-center justify-center gap-1.5">
                 <span>Manage Security &amp; Sessions</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -328,13 +328,13 @@ export default function PlatformOwnerProfilePage() {
 
         {/* Right Column: Edit Profile Form */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="bg-slate-900 border-slate-800 shadow-xl">
-            <CardHeader className="border-b border-slate-800 pb-4">
+          <Card className="bg-foreground border-border shadow-xl">
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <User className="h-4 w-4 text-indigo-400" />
                 <span>Edit Profile Details</span>
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Update your display name, contact phone number, and avatar image.
               </CardDescription>
             </CardHeader>
@@ -343,7 +343,7 @@ export default function PlatformOwnerProfilePage() {
               <CardContent className="space-y-4 pt-5">
                 {/* Full Name */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="full-name" className="text-xs text-slate-300 font-semibold">
+                  <Label htmlFor="full-name" className="text-xs text-muted-foreground font-semibold">
                     Full Legal Name
                   </Label>
                   <Input
@@ -352,16 +352,16 @@ export default function PlatformOwnerProfilePage() {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    icon={<User className="h-4 w-4 text-slate-400" />}
+                    icon={<User className="h-4 w-4 text-muted-foreground" />}
                     placeholder="e.g. Haji Mohammad Shamim"
-                    className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
                   />
                 </div>
 
                 {/* Primary Email (Read-Only with verification notice) */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="email" className="text-xs text-slate-300 font-semibold">
+                    <Label htmlFor="email" className="text-xs text-muted-foreground font-semibold">
                       Platform Owner Email
                     </Label>
                     <span className="text-2xs text-emerald-400 font-bold flex items-center gap-1">
@@ -373,17 +373,17 @@ export default function PlatformOwnerProfilePage() {
                     type="email"
                     disabled
                     value={profile.email}
-                    icon={<Mail className="h-4 w-4 text-slate-500" />}
-                    className="bg-slate-950/40 border-slate-800 text-slate-400 cursor-not-allowed"
+                    icon={<Mail className="h-4 w-4 text-muted-foreground" />}
+                    className="bg-foreground border-border text-muted-foreground cursor-not-allowed"
                   />
-                  <p className="text-2xs text-slate-500">
+                  <p className="text-2xs text-muted-foreground">
                     Platform email changes require cryptographic step-up verification and audit log authorization to prevent hostile takeovers.
                   </p>
                 </div>
 
                 {/* Phone Number */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="phone" className="text-xs text-slate-300 font-semibold">
+                  <Label htmlFor="phone" className="text-xs text-muted-foreground font-semibold">
                     Direct Contact Phone (Bangladesh)
                   </Label>
                   <Input
@@ -391,21 +391,21 @@ export default function PlatformOwnerProfilePage() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    icon={<Phone className="h-4 w-4 text-slate-400" />}
+                    icon={<Phone className="h-4 w-4 text-muted-foreground" />}
                     placeholder="+8801711-892019"
-                    className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
                   />
                 </div>
 
                 {/* Platform Role (Read-only) */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-300 font-semibold">
+                  <Label className="text-xs text-muted-foreground font-semibold">
                     Assigned Platform Role
                   </Label>
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
+                  <div className="p-3 rounded-xl bg-foreground border border-border flex items-center justify-between text-xs">
                     <div>
                       <div className="font-bold text-white">Platform Owner (Super Administrator)</div>
-                      <div className="text-2xs text-slate-400">
+                      <div className="text-2xs text-muted-foreground">
                         Unrestricted authority across all PrintERP SaaS clusters, billing, and tenants.
                       </div>
                     </div>
@@ -417,7 +417,7 @@ export default function PlatformOwnerProfilePage() {
 
                 {/* Avatar URL / Storage selector */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="avatar-url" className="text-xs text-slate-300 font-semibold">
+                  <Label htmlFor="avatar-url" className="text-xs text-muted-foreground font-semibold">
                     Custom Avatar Image URL (Optional)
                   </Label>
                   <Input
@@ -425,18 +425,18 @@ export default function PlatformOwnerProfilePage() {
                     type="url"
                     value={avatarUrl}
                     onChange={(e) => setAvatarUrl(e.target.value)}
-                    icon={<Camera className="h-4 w-4 text-slate-400" />}
+                    icon={<Camera className="h-4 w-4 text-muted-foreground" />}
                     placeholder="https://..."
-                    className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500"
+                    className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
                   />
-                  <p className="text-2xs text-slate-500">
+                  <p className="text-2xs text-muted-foreground">
                     Supports JPG, PNG, WEBP. Max file size: 2MB. Stored with encrypted signed access.
                   </p>
                 </div>
               </CardContent>
 
-              <CardFooter className="border-t border-slate-800 pt-4 pb-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <span className="text-2xs text-slate-500">
+              <CardFooter className="border-t border-border pt-4 pb-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <span className="text-2xs text-muted-foreground">
                   Profile modifications are immutably logged to the Platform Audit Log.
                 </span>
                 <Button

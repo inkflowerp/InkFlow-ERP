@@ -61,17 +61,17 @@ export const DesignTableView = React.memo(function DesignTableView({
 
   if (jobs.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
+      <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
         কোনো ডিজাইন রেকর্ড পাওয়া যায়নি।
       </div>
     )
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-          <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-2xs font-bold text-slate-500 uppercase tracking-wider">
+        <table className="w-full text-left text-xs text-foreground dark:text-muted-foreground">
+          <thead className="bg-muted border-b border-border text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             <tr>
               <th className="py-3 px-4">জব আইডি / ইনভয়েস</th>
               <th className="py-3 px-4">কাস্টমার ও যোগাযোগ</th>
@@ -81,7 +81,7 @@ export const DesignTableView = React.memo(function DesignTableView({
               <th className="py-3 px-4 text-right">অ্যাকশন (Actions)</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-border dark:divide-border">
             {jobs.map((job) => {
               const pf = getPreflightStatus(job.id, job.status)
               const latestVer = job.versions?.[job.versions.length - 1]
@@ -99,7 +99,7 @@ export const DesignTableView = React.memo(function DesignTableView({
               return (
                 <tr
                   key={job.id}
-                  className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                  className="hover:bg-muted dark:hover:bg-muted/50 transition-colors"
                 >
                   {/* Job ID & Invoice */}
                   <td className="py-3 px-4 align-middle">
@@ -111,9 +111,9 @@ export const DesignTableView = React.memo(function DesignTableView({
                       <ExternalLink className="h-2.5 w-2.5 opacity-60" />
                     </Link>
                     {job.invoice_number && (
-                      <div className="tabular-nums text-2xs text-slate-500">
+                      <div className="tabular-nums text-2xs text-muted-foreground">
                         {invoiceHref ? (
-                          <Link href={invoiceHref} className="hover:underline hover:text-slate-800 dark:hover:text-slate-200">
+                          <Link href={invoiceHref} className="hover:underline hover:text-foreground dark:hover:text-foreground">
                             Inv: #{job.invoice_number}
                           </Link>
                         ) : (
@@ -125,7 +125,7 @@ export const DesignTableView = React.memo(function DesignTableView({
 
                   {/* Customer & Phone */}
                   <td className="py-3 px-4 align-middle">
-                    <div className="font-semibold text-slate-900 dark:text-white">
+                    <div className="font-semibold text-foreground dark:text-white">
                       {job.customer_name}
                     </div>
                     {(job.customer_phone || (job as any).mobile) && (
@@ -144,11 +144,11 @@ export const DesignTableView = React.memo(function DesignTableView({
                   <td className="py-3 px-4 align-middle">
                     <Link
                       href={workbenchHref}
-                      className="font-bold text-slate-800 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 line-clamp-1 transition-colors block"
+                      className="font-bold text-foreground hover:text-indigo-600 dark:hover:text-indigo-400 line-clamp-1 transition-colors block"
                     >
                       {specs.serviceName}
                     </Link>
-                    <div className="text-2xs text-slate-500 tabular-nums mt-0.5">
+                    <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
                       {specs.size} | {specs.quantity} | {specs.material}
                     </div>
                     {(specs.finishing !== 'None' || specs.addOn !== 'None') && (
@@ -168,7 +168,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                         className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
                           pf.cmyk
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800'
+                            : 'bg-muted text-muted-foreground border-border dark:bg-muted'
                         }`}
                       >
                         {pf.cmyk ? '✓ CMYK' : 'CMYK'}
@@ -178,7 +178,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                         className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
                           pf.dpi300
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800'
+                            : 'bg-muted text-muted-foreground border-border dark:bg-muted'
                         }`}
                       >
                         {pf.dpi300 ? '✓ 300DPI' : '300DPI'}
@@ -188,7 +188,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                         className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
                           pf.bleed
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800'
+                            : 'bg-muted text-muted-foreground border-border dark:bg-muted'
                         }`}
                       >
                         {pf.bleed ? '✓ Bleed' : 'Bleed'}
@@ -198,7 +198,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                         className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
                           pf.curves
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800'
+                            : 'bg-muted text-muted-foreground border-border dark:bg-muted'
                         }`}
                       >
                         {pf.curves ? '✓ Curves' : 'Curves'}
@@ -211,7 +211,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                     <button
                       type="button"
                       onClick={() => onOpenLightbox(job)}
-                      className="h-10 w-14 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden relative group block"
+                      className="h-10 w-14 rounded bg-muted border border-border overflow-hidden relative group block"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -219,7 +219,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                         alt={job.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                       />
-                      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="absolute inset-0 bg-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Eye className="h-3.5 w-3.5 text-white" />
                       </div>
                     </button>
@@ -309,7 +309,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                           type="button"
                           size="sm"
                           onClick={() => onStartDesign(job)}
-                          className="h-7 px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer"
+                          className="h-7 px-2.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold cursor-pointer"
                         >
                           <Play className="h-2.5 w-2.5 mr-1 fill-current" />
                           <span>Start Design</span>

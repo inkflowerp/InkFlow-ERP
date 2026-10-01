@@ -180,11 +180,11 @@ export default function MultiBranchReportingPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 animate-pulse">
-        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-20 bg-muted rounded-2xl w-full" />
+        <div className="h-12 bg-muted rounded-xl w-3/4" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+            <div key={i} className="h-32 bg-muted rounded-2xl" />
           ))}
         </div>
       </div>
@@ -198,10 +198,10 @@ export default function MultiBranchReportingPage() {
           <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400 font-bold">
             <ShieldAlert className="h-6 w-6" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 bangla-text">
+          <h2 className="text-xl font-bold text-foreground bangla-text">
             {tBilingual('Branch Reports Restricted', 'শাখা রিপোর্ট সীমিত')}
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto bangla-text leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-md mx-auto bangla-text leading-relaxed">
             {tBilingual(
               'Multi-branch consolidated reports are restricted to business owners.',
               'একাধিক শাখার সমন্বিত রিপোর্ট শুধুমাত্র প্রতিষ্ঠান মালিকের জন্য সংরক্ষিত।'
@@ -232,13 +232,13 @@ export default function MultiBranchReportingPage() {
         <div className="flex items-center gap-2">
           <Link
             href={getTenantNavHref('/reports', pathname, tenantSlug)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm hover:border-primary-300 transition-all min-h-[36px]"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-primary-600 dark:hover:text-primary-400 bg-card border border-border rounded-lg shadow-sm hover:border-primary-300 transition-all min-h-[36px]"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>{tBilingual('Back to BI Reports', 'মূল বিআই রিপোর্টে ফিরে যান')}</span>
           </Link>
-          <span className="text-slate-300 dark:text-slate-700">/</span>
-          <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1">
+          <span className="text-muted-foreground dark:text-foreground">/</span>
+          <span className="text-xs font-semibold text-foreground flex items-center gap-1">
             <GitBranch className="w-3.5 h-3.5 text-blue-600" />
             {tBilingual('Multi-Branch Telemetry', 'মাল্টি-ব্রাঞ্চ টেলিমেট্রি')}
           </span>
@@ -247,21 +247,21 @@ export default function MultiBranchReportingPage() {
         <div className="flex items-center gap-2">
           <Link
             href={getTenantNavHref('/costing', pathname, tenantSlug)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-primary-600 hover:bg-muted rounded-md transition-colors"
           >
             <Calculator className="w-3 h-3" />
             <span>{tBilingual('Job Costing', 'কস্টিং')}</span>
           </Link>
           <Link
             href={getTenantNavHref('/accounting', pathname, tenantSlug)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-primary-600 hover:bg-muted rounded-md transition-colors"
           >
             <FileText className="w-3 h-3" />
             <span>{tBilingual('OPEX Accounting', 'হিসাবরক্ষণ')}</span>
           </Link>
           <Link
             href={getTenantNavHref('/hr/salary-report', pathname, tenantSlug)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-primary-600 hover:bg-muted rounded-md transition-colors"
           >
             <Building className="w-3 h-3" />
             <span>{tBilingual('Salary Reports', 'বেতন রিপোর্ট')}</span>
@@ -284,12 +284,12 @@ export default function MultiBranchReportingPage() {
               onSelectBranch={(bId) => setSelectedBranchId(bId)}
             />
 
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200 dark:border-slate-700">
-              <Calendar className="w-3.5 h-3.5 ml-2 text-slate-400" />
+            <div className="flex items-center bg-muted rounded-lg p-0.5 border border-border dark:border-border">
+              <Calendar className="w-3.5 h-3.5 ml-2 text-muted-foreground" />
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value as any)}
-                className="bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-200 py-1.5 px-2 focus:outline-none cursor-pointer"
+                className="bg-transparent text-xs font-semibold text-foreground py-1.5 px-2 focus:outline-none cursor-pointer"
               >
                 <option value="today">{tBilingual('Today', 'আজ')}</option>
                 <option value="this_week">{tBilingual('This Week', 'এই সপ্তাহ')}</option>
@@ -304,7 +304,7 @@ export default function MultiBranchReportingPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleExportComparison}
-                className="h-10 text-xs font-semibold gap-1.5 border-slate-300 dark:border-slate-700"
+                className="h-10 text-xs font-semibold gap-1.5 border-input dark:border-border"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
                 <span className="hidden sm:inline">{tBilingual('Export CSV', 'এক্সপোর্ট')}</span>
@@ -315,9 +315,9 @@ export default function MultiBranchReportingPage() {
               variant="outline"
               size="sm"
               onClick={() => window.print()}
-              className="h-10 text-xs font-semibold gap-1.5 border-slate-300 dark:border-slate-700"
+              className="h-10 text-xs font-semibold gap-1.5 border-input dark:border-border"
             >
-              <Printer className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+              <Printer className="w-3.5 h-3.5 text-muted-foreground dark:text-muted-foreground" />
               <span className="hidden sm:inline">{tBilingual('Print', 'প্রিন্ট')}</span>
             </Button>
 
@@ -326,23 +326,23 @@ export default function MultiBranchReportingPage() {
               size="sm"
               onClick={loadData}
               disabled={isLoading}
-              className="h-10 w-10 p-0 border-slate-300 dark:border-slate-700 cursor-pointer"
+              className="h-10 w-10 p-0 border-input cursor-pointer"
               title={tBilingual('Refresh Data', 'রিফ্রেশ করুন')}
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-slate-600 dark:text-slate-300 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-muted-foreground ${isLoading ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         }
       />
 
       {/* Tabs */}
-      <div className="flex space-x-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto print:hidden">
+      <div className="flex space-x-2 border-b border-border pb-2 overflow-x-auto print:hidden">
         <button
           onClick={() => setActiveTab('kpi')}
           className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors flex items-center space-x-2 shrink-0 min-h-[44px] ${
             activeTab === 'kpi'
               ? 'bg-primary-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           <BarChart3 className="w-4 h-4" />
@@ -354,7 +354,7 @@ export default function MultiBranchReportingPage() {
           className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors flex items-center space-x-2 shrink-0 min-h-[44px] ${
             activeTab === 'comparison'
               ? 'bg-primary-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           <TrendingUp className="w-4 h-4" />
@@ -366,7 +366,7 @@ export default function MultiBranchReportingPage() {
           className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors flex items-center space-x-2 shrink-0 min-h-[44px] ${
             activeTab === 'consolidated'
               ? 'bg-primary-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-muted-foreground hover:bg-muted dark:hover:bg-muted'
           }`}
         >
           <Layers className="w-4 h-4" />
@@ -376,9 +376,9 @@ export default function MultiBranchReportingPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="py-20 flex flex-col items-center justify-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+        <div className="py-20 flex flex-col items-center justify-center space-y-3 bg-card rounded-2xl border border-border dark:border-border">
           <RefreshCw className="w-8 h-8 text-primary-500 animate-spin" />
-          <p className="text-sm font-medium text-slate-500">
+          <p className="text-sm font-medium text-muted-foreground">
             {tBilingual('Loading multi-branch telemetry...', 'মাল্টি-ব্রাঞ্চ টেলিমেট্রি লোড হচ্ছে...')}
           </p>
         </div>

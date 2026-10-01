@@ -133,7 +133,7 @@ export function NotificationsDropdown() {
       case 'inventory':
         return <AlertCircle className="h-4 w-4 text-amber-600" />
       default:
-        return <Clock className="h-4 w-4 text-slate-600" />
+        return <Clock className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -142,7 +142,7 @@ export function NotificationsDropdown() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer shadow-2xs"
+        className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground hover:bg-muted cursor-pointer shadow-2xs"
         title="Notifications"
         aria-label="Toggle notifications"
       >
@@ -155,10 +155,10 @@ export function NotificationsDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 md:w-96 rounded-2xl border border-slate-200 bg-white shadow-2xl z-50 dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-100 p-3.5 dark:border-slate-800">
+        <div className="absolute right-0 mt-2 w-80 md:w-96 rounded-2xl border border-border bg-card shadow-2xl z-50 animate-in fade-in-0 zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border p-3.5 dark:border-border">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm text-slate-900 dark:text-slate-100 bangla-text">
+                <span className="font-semibold text-sm text-foreground bangla-text">
                   {tBilingual('Notifications', 'নোটিফিকেশন')}
                 </span>
                 {unreadCount > 0 && (
@@ -178,9 +178,9 @@ export function NotificationsDropdown() {
               )}
             </div>
 
-            <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto dark:divide-slate-800">
+            <div className="divide-y divide-border max-h-80 overflow-y-auto dark:divide-border">
               {notifications.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                <div className="p-6 text-center text-xs text-muted-foreground dark:text-muted-foreground">
                   {tBilingual("You're all caught up.", "সব আপডেট রয়েছে। কোনো নতুন নোটিফিকেশন নেই")}
                 </div>
               ) : (
@@ -198,26 +198,26 @@ export function NotificationsDropdown() {
                       key={n.id}
                       onClick={() => markSingleAsRead(n)}
                       className={cn(
-                        'flex items-start gap-3 p-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer',
+                        'flex items-start gap-3 p-3.5 transition-colors hover:bg-muted dark:hover:bg-muted/60 cursor-pointer',
                         !isItemRead && 'bg-blue-50/40 dark:bg-blue-950/20'
                       )}
                     >
-                      <div className="rounded-full bg-slate-100 p-2 dark:bg-slate-800 shrink-0">
+                      <div className="rounded-full bg-muted p-2 shrink-0">
                         {getIcon(n.type)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
-                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                          <p className="text-xs font-semibold text-foreground truncate">
                             {title}
                           </p>
                           {!isItemRead && (
                             <span className="h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
                           )}
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">
                           {desc}
                         </p>
-                        <span className="text-2xs text-slate-400 mt-1 block">
+                        <span className="text-2xs text-muted-foreground mt-1 block">
                           {time}
                         </span>
                       </div>

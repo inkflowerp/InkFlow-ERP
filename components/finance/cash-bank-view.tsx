@@ -144,7 +144,7 @@ export function CashBankView({
   return (
     <div className="space-y-6">
       {/* 1. TOP SUMMARY STRIP & ACTION BUTTONS */}
-      <div className="p-5 rounded-3xl bg-linear-to-r from-slate-900 via-slate-850 to-indigo-950 text-white shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="p-5 rounded-3xl bg-linear-to-r from-slate-900 via-slate-850 to-indigo-950 text-white shadow-xl border border-border flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Badge className="bg-emerald-500/20 text-emerald-300 border-none text-2xs uppercase tracking-wider">
@@ -155,11 +155,11 @@ export function CashBankView({
             <span className="text-3xl sm:text-4xl font-black tabular-nums tracking-tight">
               ৳{stats.totalLiquid.toLocaleString()}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-muted-foreground">
               ({liquidAccounts.length} {tBilingual('Active Accounts', 'টি সক্রিয় হিসাব')})
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {tBilingual(
               'Real money accounts across Cash in Hand, Bank Checking Accounts, and MFS Wallets.',
               'দোকানের ক্যাশ ড্রয়ার, ব্যাংক অ্যাকাউন্ট ও বিকাশ/নগদ মার্চেন্ট ওয়ালেটের বাস্তব হিসাব।'
@@ -196,7 +196,7 @@ export function CashBankView({
           <Button
             onClick={() => onOpenTransferModal()}
             variant="outline"
-            className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 text-xs h-9 px-3.5 rounded-xl font-semibold cursor-pointer flex items-center gap-1.5"
+            className="border-border bg-secondary text-foreground hover:bg-slate-700 text-xs h-9 px-3.5 rounded-xl font-semibold cursor-pointer flex items-center gap-1.5"
           >
             <ArrowLeftRight className="w-4 h-4" />
             <span>{tBilingual('Transfer', 'ট্রান্সফার')}</span>
@@ -207,14 +207,14 @@ export function CashBankView({
       {/* 2. SUBTYPE FILTER PILLS & SEARCH */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Category Pills */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl w-fit">
+        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-2xl w-fit">
           <button
             type="button"
             onClick={() => setFilterType('ALL')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               filterType === 'ALL'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('All Accounts', 'সকল হিসাব')} ({liquidAccounts.length})
@@ -225,8 +225,8 @@ export function CashBankView({
             onClick={() => setFilterType('CASH')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               filterType === 'CASH'
-                ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-emerald-600 dark:text-emerald-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Wallet className="w-3.5 h-3.5 text-emerald-500" />
@@ -238,8 +238,8 @@ export function CashBankView({
             onClick={() => setFilterType('BANK')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               filterType === 'BANK'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Building2 className="w-3.5 h-3.5 text-blue-500" />
@@ -251,8 +251,8 @@ export function CashBankView({
             onClick={() => setFilterType('MFS')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               filterType === 'MFS'
-                ? 'bg-white dark:bg-slate-900 text-pink-600 dark:text-pink-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-pink-600 dark:text-pink-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Smartphone className="w-3.5 h-3.5 text-pink-500" />
@@ -262,12 +262,12 @@ export function CashBankView({
 
         {/* Search */}
         <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={tBilingual('Search account, bank or wallet...', 'হিসাব বা ওয়ালেট খুঁজুন...')}
-            className="h-8.5 pl-8 text-xs rounded-xl bg-white dark:bg-slate-900"
+            className="h-8.5 pl-8 text-xs rounded-xl bg-card dark:bg-card"
           />
         </div>
       </div>
@@ -283,11 +283,11 @@ export function CashBankView({
           return (
             <Card
               key={account.id}
-              className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between bg-white dark:bg-slate-900 group"
+              className="rounded-2xl border-border shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between bg-card group"
             >
               <div>
                 {/* Card Header */}
-                <div className="p-4 pb-3 border-b border-slate-100 dark:border-slate-800/80 flex items-start justify-between gap-3">
+                <div className="p-4 pb-3 border-b border-border dark:border-border/80 flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
@@ -305,7 +305,7 @@ export function CashBankView({
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">
+                        <span className="font-bold text-xs text-foreground truncate">
                           {account.name}
                         </span>
                         {account.is_system && (
@@ -314,7 +314,7 @@ export function CashBankView({
                           </Badge>
                         )}
                       </div>
-                      <p className="text-3xs text-slate-400 truncate">
+                      <p className="text-3xs text-muted-foreground truncate">
                         {account.code} •{' '}
                         {account.metadata?.bank_name ||
                           account.metadata?.mfs_provider?.toUpperCase() ||
@@ -343,24 +343,24 @@ export function CashBankView({
                 {/* Balance Display */}
                 <div className="p-4 pt-3">
                   <div className="flex items-baseline justify-between mb-3">
-                    <span className="text-3xs font-semibold text-slate-400 uppercase tracking-wider">
+                    <span className="text-3xs font-semibold text-muted-foreground uppercase tracking-wider">
                       {tBilingual('Current Balance', 'বর্তমান স্থিতি')}
                     </span>
-                    <span className="text-xl sm:text-2xl font-black tabular-nums text-slate-900 dark:text-white">
+                    <span className="text-xl sm:text-2xl font-black tabular-nums text-foreground dark:text-white">
                       ৳{Number(account.current_balance || 0).toLocaleString()}
                     </span>
                   </div>
 
                   {/* Account Metrics Grid */}
-                  <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-100 dark:border-slate-800 text-center">
+                  <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-muted dark:bg-slate-850/60 border border-border text-center">
                     <div>
-                      <span className="text-3xs text-slate-400 block">{tBilingual('Opening', 'প্রারম্ভিক')}</span>
-                      <span className="text-2xs tabular-nums font-semibold text-slate-700 dark:text-slate-300">
+                      <span className="text-3xs text-muted-foreground block">{tBilingual('Opening', 'প্রারম্ভিক')}</span>
+                      <span className="text-2xs tabular-nums font-semibold text-foreground dark:text-muted-foreground">
                         ৳{Number(account.opening_balance || 0).toLocaleString()}
                       </span>
                     </div>
 
-                    <div className="border-x border-slate-200 dark:border-slate-700">
+                    <div className="border-x border-border dark:border-border">
                       <span className="text-3xs text-emerald-600 block">{tBilingual('Received', 'মোট জমা')}</span>
                       <span className="text-2xs tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">
                         +৳{metrics.received.toLocaleString()}
@@ -378,7 +378,7 @@ export function CashBankView({
               </div>
 
               {/* Card Footer Actions */}
-              <div className="p-3 pt-0 flex items-center justify-between gap-1.5 border-t border-slate-100 dark:border-slate-800/80 mt-2">
+              <div className="p-3 pt-0 flex items-center justify-between gap-1.5 border-t border-border dark:border-border/80 mt-2">
                 <Button
                   size="sm"
                   variant="ghost"
@@ -426,8 +426,8 @@ export function CashBankView({
         })}
 
         {filteredAccounts.length === 0 && (
-          <div className="col-span-full p-12 text-center text-slate-400">
-            <Wallet className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+          <div className="col-span-full p-12 text-center text-muted-foreground">
+            <Wallet className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-xs font-semibold">
               {tBilingual('No matching money accounts found.', 'কোনো হিসাব পাওয়া যায়নি।')}
             </p>

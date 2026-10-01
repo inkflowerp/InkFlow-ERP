@@ -158,14 +158,14 @@ export function PaySupplierVoucherModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-black text-slate-900 dark:text-white">
+              <span className="text-base font-black text-foreground dark:text-white">
                 {tBilingual('Issue Payment Voucher to Supplier', 'মহাজনকে বিল পরিশোধ / পেমেন্ট ভাউচার')}
               </span>
               <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
                 {voucherNumber || 'PV-NEW'}
               </Badge>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual(
                 `Clear outstanding payable due for ${supplier.supplier_name} (${supplier.name_bn || 'মহাজন'})`,
                 `${supplier.supplier_name} এর বকেয়া বিল পরিশোধের ভাউচার তৈরি করুন`
@@ -192,10 +192,10 @@ export function PaySupplierVoucherModal({
           </div>
 
           <div className="text-left sm:text-right border-t sm:border-t-0 sm:border-l border-border pt-2 sm:pt-0 sm:pl-4">
-            <span className="text-2xs uppercase font-bold text-slate-400">
+            <span className="text-2xs uppercase font-bold text-muted-foreground">
               {tBilingual('Balance After Payment', 'পেমেন্ট পরবর্তী অবশিষ্ট')}
             </span>
-            <div className="text-xl font-bold tabular-nums text-slate-800 dark:text-slate-200 mt-0.5">
+            <div className="text-xl font-bold tabular-nums text-foreground mt-0.5">
               {formatBDT(remainingBalance)}
             </div>
             {numAmount > 0 && numAmount >= currentBalance && (
@@ -207,9 +207,9 @@ export function PaySupplierVoucherModal({
         </div>
 
         {/* AMOUNT & QUICK PERCENTAGE PRESETS */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
           <div className="flex items-center justify-between">
-            <Label className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+            <Label className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
               {tBilingual('Disbursement Amount', 'প্রদেয় টাকার পরিমাণ')} <span className="text-rose-500">*</span>
             </Label>
             <div className="flex items-center gap-1.5">
@@ -223,7 +223,7 @@ export function PaySupplierVoucherModal({
                   key={p.pct}
                   type="button"
                   onClick={() => handleSetPresetPercentage(p.pct)}
-                  className="text-2xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-teal-100 dark:hover:bg-teal-950 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                  className="text-2xs font-bold bg-muted hover:bg-teal-100 dark:hover:bg-teal-950 text-foreground px-2 py-0.5 rounded border border-border transition-colors cursor-pointer"
                 >
                   {p.label}
                 </button>
@@ -232,7 +232,7 @@ export function PaySupplierVoucherModal({
           </div>
 
           <div className="relative">
-            <span className="absolute left-3.5 top-2.5 text-base font-bold text-slate-400 pointer-events-none">৳</span>
+            <span className="absolute left-3.5 top-2.5 text-base font-bold text-muted-foreground pointer-events-none">৳</span>
             <Input
               type="number"
               step="1"
@@ -243,7 +243,7 @@ export function PaySupplierVoucherModal({
                 if (fieldErrors.amount) setFieldErrors((prev) => ({ ...prev, amount: '' }))
               }}
               className={cn(
-                "text-base h-11 pl-9 tabular-nums font-black text-slate-900 dark:text-white",
+                "text-base h-11 pl-9 tabular-nums font-black text-foreground dark:text-white",
                 fieldErrors.amount && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
               )}
               required
@@ -258,8 +258,8 @@ export function PaySupplierVoucherModal({
         </div>
 
         {/* PAYMENT METHOD SELECTION */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
-          <Label className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
+          <Label className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider block">
             {tBilingual('Disbursement Channel & Method', 'বিল পরিশোধের মাধ্যম')}
           </Label>
 
@@ -280,12 +280,12 @@ export function PaySupplierVoucherModal({
                   className={`p-3 rounded-xl border text-center flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                     isSelected
                       ? 'border-teal-600 bg-teal-50/70 dark:bg-teal-950/50 ring-1 ring-teal-500 text-teal-800 dark:text-teal-200 shadow-xs'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400'
+                      : 'border-border bg-card hover:border-input text-muted-foreground dark:text-muted-foreground'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
                   <div className="text-xs font-bold">{m.labelEn}</div>
-                  <div className="text-2xs text-slate-400">{m.labelBn}</div>
+                  <div className="text-2xs text-muted-foreground">{m.labelBn}</div>
                 </button>
               )
             })}
@@ -301,7 +301,7 @@ export function PaySupplierVoucherModal({
                 <select
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                 >
                   {BANGLADESH_BANKS.map((b, idx) => (
                     <option key={idx} value={b}>
@@ -359,7 +359,7 @@ export function PaySupplierVoucherModal({
                 <select
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                 >
                   {BANGLADESH_BANKS.map((b, idx) => (
                     <option key={idx} value={b}>
@@ -419,7 +419,7 @@ export function PaySupplierVoucherModal({
         </div>
 
         {/* REMARKS & AUTHORIZATION */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
@@ -447,7 +447,7 @@ export function PaySupplierVoucherModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

@@ -316,7 +316,7 @@ function VerifyEmailForm() {
   }
 
   return (
-    <Card className="border-slate-200/80 shadow-2xl dark:border-slate-800">
+    <Card className="border-border shadow-2xl dark:border-border">
       <CardHeader className="space-y-1.5 text-center pb-4">
         <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${isVerified ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-cyan-100 text-cyan-600 dark:bg-cyan-950/60 dark:text-cyan-400'} mb-1 transition-colors`}>
           {isVerified ? <CheckCircle2 className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
@@ -332,8 +332,8 @@ function VerifyEmailForm() {
             : (t('auth.verify_email_subtitle') || "We've sent a 6-digit verification code to your email address.")}
         </CardDescription>
         {email && (
-          <div className="inline-flex items-center justify-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300 mx-auto mt-1">
-            <Mail className="h-3.5 w-3.5 text-slate-500" />
+          <div className="inline-flex items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground mx-auto mt-1">
+            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
             <span>{email}</span>
           </div>
         )}
@@ -368,7 +368,7 @@ function VerifyEmailForm() {
 
           {/* 6-Digit Verification Code Inputs */}
           <div className="space-y-2">
-            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-foreground dark:text-muted-foreground">
               {isVerified ? (
                 <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                   <Lock className="h-3 w-3" />
@@ -396,7 +396,7 @@ function VerifyEmailForm() {
                   className={`h-12 w-10 sm:h-14 sm:w-12 rounded-lg border text-center text-xl font-bold shadow-sm transition-all focus:outline-none ${
                     isVerified
                       ? 'border-emerald-300 bg-emerald-50/50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300 cursor-not-allowed opacity-80'
-                      : 'border-slate-300 bg-white text-slate-900 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 disabled:opacity-50'
+                      : 'border-input bg-card text-foreground focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 disabled:opacity-50'
                   }`}
                   aria-label={`Digit ${idx + 1}`}
                 />
@@ -405,13 +405,13 @@ function VerifyEmailForm() {
           </div>
 
           {!isVerified && (
-            <p className="text-center text-2xs text-slate-500 dark:text-slate-400">
+            <p className="text-center text-2xs text-muted-foreground dark:text-muted-foreground">
               {t('auth.use_link_instead') || 'Use the verification link sent to your email to verify automatically.'}
             </p>
           )}
         </CardContent>
 
-        <CardFooter className="flex flex-col gap-3.5 border-t border-slate-100 dark:border-slate-800 pt-4">
+        <CardFooter className="flex flex-col gap-3.5 border-t border-border pt-4">
           <Button
             type="submit"
             className={`w-full justify-center gap-2 font-bold h-11 text-sm shadow-md transition-all ${
@@ -438,11 +438,11 @@ function VerifyEmailForm() {
           {/* Resend Code Section with Cooldown */}
           {!isVerified && (
             <div className="flex items-center justify-between w-full pt-1 text-xs">
-              <span className="text-slate-500 dark:text-slate-400">
+              <span className="text-muted-foreground dark:text-muted-foreground">
                 {t('auth.didnt_receive_code') || "Didn't receive the code?"}
               </span>
               {cooldown > 0 ? (
-                <span className="font-semibold text-slate-400 dark:text-slate-500 bangla-text">
+                <span className="font-semibold text-muted-foreground bangla-text">
                   {locale === 'bn' ? `পুনরায় পাঠানো যাবে (${cooldown} সেকেন্ড)` : `Resend in ${cooldown}s`}
                 </span>
               ) : (
@@ -462,7 +462,7 @@ function VerifyEmailForm() {
           <div className="pt-2 text-center text-xs">
             <Link
               href="/login"
-              className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               ← {t('auth.back_to_login') || 'Back to Login'}
             </Link>
@@ -475,7 +475,7 @@ function VerifyEmailForm() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-400 text-sm">Loading verification...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground text-sm">Loading verification...</div>}>
       <VerifyEmailForm />
     </Suspense>
   )

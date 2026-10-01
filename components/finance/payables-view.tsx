@@ -134,10 +134,10 @@ export function PayablesView({
               <ShoppingBag className="w-5 h-5" />
             </span>
             <div>
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+              <h3 className="font-bold text-sm text-foreground dark:text-white">
                 {tBilingual('Payables & Supplier Liabilities', 'সরবরাহকারী মহাজন দেনা ও বিল পরিশোধ')}
               </h3>
-              <p className="text-2xs text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
                 {tBilingual(
                   'Raw material, paper, ink, and plate purchases directly link with liabilities and payouts.',
                   'কাঁচামাল, কাগজ, কালি ও প্লেট ক্রয় সরাসরি মহাজন দেনা ও ব্যাংক/ক্যাশ পেমেন্টের সাথে যুক্ত।'
@@ -156,22 +156,22 @@ export function PayablesView({
         </div>
 
         {/* The Visual Pipeline Steps */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/60 text-center">
-          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-            <span className="text-3xs text-slate-400 font-bold block uppercase">Step 1</span>
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Purchase Billed</span>
-            <span className="text-xs tabular-nums text-slate-900 dark:text-white font-semibold">{totalPurchases > 0 ? formatBDT(totalPurchases) : 'Purchase Bill'}</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-4 border-t border-border dark:border-border/60 text-center">
+          <div className="p-2.5 rounded-xl bg-card border border-border dark:border-border">
+            <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 1</span>
+            <span className="text-xs font-bold text-foreground block">Purchase Billed</span>
+            <span className="text-xs tabular-nums text-foreground dark:text-white font-semibold">{totalPurchases > 0 ? formatBDT(totalPurchases) : 'Purchase Bill'}</span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-            <span className="text-3xs text-slate-400 font-bold block uppercase">Step 2</span>
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Paid to Vendor</span>
+          <div className="p-2.5 rounded-xl bg-card border border-border dark:border-border">
+            <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 2</span>
+            <span className="text-xs font-bold text-foreground block">Paid to Vendor</span>
             <span className="text-xs tabular-nums text-emerald-600 font-semibold">{totalPaid > 0 ? `-${formatBDT(totalPaid)}` : 'Payment'}</span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-            <span className="text-3xs text-slate-400 font-bold block uppercase">Step 3</span>
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Outstanding Due</span>
+          <div className="p-2.5 rounded-xl bg-card border border-border dark:border-border">
+            <span className="text-3xs text-muted-foreground font-bold block uppercase">Step 3</span>
+            <span className="text-xs font-bold text-foreground block">Outstanding Due</span>
             <span className="text-xs tabular-nums text-rose-600 font-bold">{totalPayables > 0 ? formatBDT(totalPayables) : '৳0'}</span>
           </div>
 
@@ -185,42 +185,42 @@ export function PayablesView({
 
       {/* 2. OPERATIONAL SUMMARY STATS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <span className="text-3xs text-slate-400 uppercase font-semibold block">
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <span className="text-3xs text-muted-foreground uppercase font-semibold block">
             {tBilingual('Total Supplier Due', 'মোট মহাজন দেনা')}
           </span>
           <span className="text-xl sm:text-2xl font-black tabular-nums text-rose-600 dark:text-rose-400">
             ৳{totalPayables.toLocaleString()}
           </span>
-          <span className="text-3xs text-slate-400 block mt-1">
+          <span className="text-3xs text-muted-foreground block mt-1">
             {supplierDueMap.length} {tBilingual('suppliers with dues', 'জন সরবরাহকারীর পাওনা')}
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <span className="text-3xs text-slate-400 uppercase font-semibold block">
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <span className="text-3xs text-muted-foreground uppercase font-semibold block">
             {tBilingual('Total Material Purchases', 'মোট কাঁচামাল ক্রয়')}
           </span>
-          <span className="text-xl sm:text-2xl font-black tabular-nums text-slate-800 dark:text-slate-200">
+          <span className="text-xl sm:text-2xl font-black tabular-nums text-foreground dark:text-foreground">
             ৳{totalPurchases.toLocaleString()}
           </span>
-          <span className="text-3xs text-slate-400 block mt-1">{items.length} {tBilingual('purchase bills', 'টি ক্রয় চালান')}</span>
+          <span className="text-3xs text-muted-foreground block mt-1">{items.length} {tBilingual('purchase bills', 'টি ক্রয় চালান')}</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <span className="text-3xs text-slate-400 uppercase font-semibold block">
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <span className="text-3xs text-muted-foreground uppercase font-semibold block">
             {tBilingual('Total Paid', 'মোট পরিশোধ')}
           </span>
           <span className="text-xl sm:text-2xl font-black tabular-nums text-emerald-600 dark:text-emerald-400">
             ৳{totalPaid.toLocaleString()}
           </span>
-          <span className="text-3xs text-slate-400 block mt-1">
+          <span className="text-3xs text-muted-foreground block mt-1">
             {totalPurchases > 0 ? Math.round((totalPaid / totalPurchases) * 100) : 0}% {tBilingual('settled', 'পরিশোধিত')}
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <span className="text-3xs text-slate-400 uppercase font-semibold block">
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <span className="text-3xs text-muted-foreground uppercase font-semibold block">
             {tBilingual('Overdue Liabilities', 'মেয়াদোত্তীর্ণ দেনা')}
           </span>
           <span className="text-xl sm:text-2xl font-black tabular-nums text-rose-600 dark:text-rose-400">
@@ -232,14 +232,14 @@ export function PayablesView({
 
       {/* 3. SUB-NAVIGATION TABS & SEARCH */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl w-fit">
+        <div className="flex items-center gap-1.5 bg-muted p-1 rounded-2xl w-fit">
           <button
             type="button"
             onClick={() => setActiveSubTab('supplier_due')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeSubTab === 'supplier_due'
-                ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-rose-600 dark:text-rose-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Supplier Due', 'সরবরাহকারী দেনা')} ({supplierDueMap.length})
@@ -250,8 +250,8 @@ export function PayablesView({
             onClick={() => setActiveSubTab('purchase_due')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeSubTab === 'purchase_due'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Purchase-wise Due', 'ক্রয়ভিত্তিক দেনা')} ({items.length})
@@ -262,8 +262,8 @@ export function PayablesView({
             onClick={() => setActiveSubTab('payment_history')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeSubTab === 'payment_history'
-                ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-emerald-600 dark:text-emerald-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Payment History', 'পরিশোধ ইতিহাস')} ({disbursementHistory.length})
@@ -274,8 +274,8 @@ export function PayablesView({
             onClick={() => setActiveSubTab('aging')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeSubTab === 'aging'
-                ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-purple-600 dark:text-purple-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tBilingual('Payable Aging', 'দেনার মেয়াদ বিশ্লেষণ')}
@@ -283,12 +283,12 @@ export function PayablesView({
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={tBilingual('Search supplier, phone or bill...', 'মহাজন বা চালান খুঁজুন...')}
-            className="h-8.5 pl-8 text-xs rounded-xl bg-white dark:bg-slate-900"
+            className="h-8.5 pl-8 text-xs rounded-xl bg-card dark:bg-card"
           />
         </div>
       </div>
@@ -297,11 +297,11 @@ export function PayablesView({
 
       {/* Sub-tab A: Supplier-wise Due */}
       {activeSubTab === 'supplier_due' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
                   <tr>
                     <th className="p-3">{tBilingual('Supplier Name', 'মহাজনের নাম')}</th>
                     <th className="p-3">{tBilingual('Phone / Mobile', 'মোবাইল')}</th>
@@ -313,13 +313,13 @@ export function PayablesView({
                     <th className="p-3 text-center">{tBilingual('Action', 'অ্যাকশন')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                <tbody className="divide-y divide-border dark:divide-border/50">
                   {filteredSuppliers.map((supp) => (
-                    <tr key={supp.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
+                    <tr key={supp.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                      <td className="p-3 font-semibold text-foreground dark:text-foreground">
                         {supp.name}
                       </td>
-                      <td className="p-3 tabular-nums text-slate-500">
+                      <td className="p-3 tabular-nums text-muted-foreground">
                         {supp.phone || '-'}
                       </td>
                       <td className="p-3 text-center tabular-nums">
@@ -327,7 +327,7 @@ export function PayablesView({
                           {supp.billsCount} bills
                         </Badge>
                       </td>
-                      <td className="p-3 text-right tabular-nums text-slate-700 dark:text-slate-300">
+                      <td className="p-3 text-right tabular-nums text-foreground dark:text-muted-foreground">
                         ৳{supp.totalAmount.toLocaleString()}
                       </td>
                       <td className="p-3 text-right tabular-nums text-emerald-600">
@@ -364,7 +364,7 @@ export function PayablesView({
 
                   {filteredSuppliers.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="p-10 text-center text-slate-400 text-xs">
+                      <td colSpan={8} className="p-10 text-center text-muted-foreground text-xs">
                         {tBilingual('No supplier payables found.', 'কোনো মহাজন পাওনা পাওয়া যায়নি।')}
                       </td>
                     </tr>
@@ -378,11 +378,11 @@ export function PayablesView({
 
       {/* Sub-tab B: Purchase-wise Due */}
       {activeSubTab === 'purchase_due' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
                   <tr>
                     <th className="p-3">{tBilingual('Purchase Bill #', 'চালান নম্বর')}</th>
                     <th className="p-3">{tBilingual('Supplier Name', 'মহাজনের নাম')}</th>
@@ -394,16 +394,16 @@ export function PayablesView({
                     <th className="p-3 text-center">{tBilingual('Action', 'অ্যাকশন')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                <tbody className="divide-y divide-border dark:divide-border/50">
                   {filteredPurchases.map((bill) => (
-                    <tr key={bill.reference_id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 tabular-nums font-medium text-slate-700 dark:text-slate-300">
+                    <tr key={bill.reference_id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                      <td className="p-3 tabular-nums font-medium text-foreground dark:text-muted-foreground">
                         {bill.reference_id}
                       </td>
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
+                      <td className="p-3 font-semibold text-foreground dark:text-foreground">
                         {bill.party_name}
                       </td>
-                      <td className="p-3 tabular-nums text-slate-500">
+                      <td className="p-3 tabular-nums text-muted-foreground">
                         {bill.issue_date || bill.due_date}
                       </td>
                       <td className="p-3 text-right tabular-nums">
@@ -434,7 +434,7 @@ export function PayablesView({
 
                   {filteredPurchases.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="p-10 text-center text-slate-400 text-xs">
+                      <td colSpan={8} className="p-10 text-center text-muted-foreground text-xs">
                         {tBilingual('No purchase bills found.', 'কোনো কাঁচামাল ক্রয় চালান পাওয়া যায়নি।')}
                       </td>
                     </tr>
@@ -448,11 +448,11 @@ export function PayablesView({
 
       {/* Sub-tab C: Payment History */}
       {activeSubTab === 'payment_history' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+        <Card className="rounded-2xl border-border shadow-xs overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted text-foreground font-semibold border-b border-border dark:border-border">
                   <tr>
                     <th className="p-3">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="p-3">{tBilingual('Voucher #', 'ভাউচার')}</th>
@@ -462,17 +462,17 @@ export function PayablesView({
                     <th className="p-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                <tbody className="divide-y divide-border dark:divide-border/50">
                   {disbursementHistory.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 tabular-nums text-slate-500 whitespace-nowrap">{t.transaction_date}</td>
+                    <tr key={t.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                      <td className="p-3 tabular-nums text-muted-foreground whitespace-nowrap">{t.transaction_date}</td>
                       <td className="p-3 tabular-nums font-medium text-rose-600 dark:text-rose-400">
                         {t.transaction_number}
                       </td>
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
+                      <td className="p-3 font-semibold text-foreground dark:text-foreground">
                         {t.narration?.replace(/^(Payment to supplier |Supplier payment: )/i, '') || 'Supplier'}
                       </td>
-                      <td className="p-3 text-slate-500 text-3xs tabular-nums">
+                      <td className="p-3 text-muted-foreground text-3xs tabular-nums">
                         {t.reference_id || t.narration || '-'}
                       </td>
                       <td className="p-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
@@ -488,7 +488,7 @@ export function PayablesView({
 
                   {disbursementHistory.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="p-10 text-center text-slate-400 text-xs">
+                      <td colSpan={6} className="p-10 text-center text-muted-foreground text-xs">
                         {tBilingual('No supplier payments recorded in history.', 'কোনো মহাজন পেমেন্টের ইতিহাস পাওয়া যায়নি।')}
                       </td>
                     </tr>

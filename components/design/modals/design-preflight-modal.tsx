@@ -75,21 +75,21 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 p-6 shadow-2xl">
-        <DialogHeader className="border-b border-slate-100 dark:border-slate-800 pb-3">
+      <DialogContent className="max-w-2xl bg-card border border-border text-foreground p-6 shadow-2xl">
+        <DialogHeader className="border-b border-border pb-3">
           <DialogTitle className="text-lg font-bold flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
             <ShieldCheck className="h-5 w-5" />
             <span>Pre-Press Quality Health & Print Floor Routing (প্রি-ফ্লাইট ও মেশিন অনুমোদন)</span>
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
-            জব: <span className="font-semibold text-slate-800 dark:text-slate-200">{job.title}</span> (#{job.design_number}) | কাস্টমার: {job.customer_name}
+          <DialogDescription className="text-xs text-muted-foreground">
+            জব: <span className="font-semibold text-foreground dark:text-foreground">{job.title}</span> (#{job.design_number}) | কাস্টমার: {job.customer_name}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           {/* 4-Item Interactive Pre-Press Checklist */}
           <div>
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 block">
+            <Label className="text-xs font-bold text-foreground mb-2 block">
               প্রি-প্রেস কোয়ালিটি চেকলিস্ট (Pre-Flight Verification):
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -99,12 +99,12 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
                 className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
                   currentPreflight.cmyk
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
-                    : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                    : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
                   className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
-                    currentPreflight.cmyk ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-300 dark:border-slate-600'
+                    currentPreflight.cmyk ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input dark:border-slate-600'
                   }`}
                 >
                   {currentPreflight.cmyk && <Check className="h-3 w-3" />}
@@ -121,12 +121,12 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
                 className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
                   currentPreflight.dpi300
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
-                    : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                    : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
                   className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
-                    currentPreflight.dpi300 ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-300 dark:border-slate-600'
+                    currentPreflight.dpi300 ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input dark:border-slate-600'
                   }`}
                 >
                   {currentPreflight.dpi300 && <Check className="h-3 w-3" />}
@@ -143,12 +143,12 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
                 className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
                   currentPreflight.bleed
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
-                    : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                    : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
                   className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
-                    currentPreflight.bleed ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-300 dark:border-slate-600'
+                    currentPreflight.bleed ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input dark:border-slate-600'
                   }`}
                 >
                   {currentPreflight.bleed && <Check className="h-3 w-3" />}
@@ -165,12 +165,12 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
                 className={`p-3 rounded-lg border flex items-center gap-2.5 cursor-pointer transition-all ${
                   currentPreflight.curves
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200'
-                    : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                    : 'bg-muted border-border text-muted-foreground hover:border-input'
                 }`}
               >
                 <div
                   className={`h-4 w-4 rounded flex items-center justify-center shrink-0 border ${
-                    currentPreflight.curves ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-300 dark:border-slate-600'
+                    currentPreflight.curves ? 'bg-emerald-600 text-white border-emerald-600' : 'border-input dark:border-slate-600'
                   }`}
                 >
                   {currentPreflight.curves && <Check className="h-3 w-3" />}
@@ -192,13 +192,13 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
 
           {/* Machine Selection */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
               টার্গেট প্রিন্ট ফ্লোর মেশিন (Select Target Printing Machine):
             </Label>
             <select
               value={selectedMachine}
               onChange={(e) => setSelectedMachine(e.target.value)}
-              className="w-full text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-slate-800 dark:text-slate-200"
+              className="w-full text-xs font-semibold rounded-lg border border-input bg-muted p-2.5 text-foreground dark:text-foreground"
             >
               {PRINT_MACHINERY_LIST.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -207,20 +207,20 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
               ))}
             </select>
             {selectedMachineObj && (
-              <div className="text-2xs text-slate-500 bg-slate-100 dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700">
-                <span className="font-bold text-slate-700 dark:text-slate-300">স্পেসিফিকেশন:</span> {selectedMachineObj.specs} | <span className="font-bold text-slate-700 dark:text-slate-300">ফ্লোর:</span> {selectedMachineObj.location}
+              <div className="text-2xs text-muted-foreground bg-muted p-2 rounded border border-border dark:border-border">
+                <span className="font-bold text-foreground dark:text-muted-foreground">স্পেসিফিকেশন:</span> {selectedMachineObj.specs} | <span className="font-bold text-foreground dark:text-muted-foreground">ফ্লোর:</span> {selectedMachineObj.location}
               </div>
             )}
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+          <div className="flex items-center justify-between border-t border-border pt-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="text-xs text-slate-600 dark:text-slate-400"
+              className="text-xs text-muted-foreground dark:text-muted-foreground"
             >
               বাতিল (Cancel)
             </Button>

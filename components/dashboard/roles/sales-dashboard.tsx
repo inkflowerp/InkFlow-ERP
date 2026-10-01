@@ -59,7 +59,7 @@ export function SalesDashboard({
       {/* Banner */}
       <div className="p-5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
-          <Badge className="bg-white/20 text-white border-none text-xs font-semibold backdrop-blur-sm">
+          <Badge className="bg-card/20 text-white border-none text-xs font-semibold backdrop-blur-sm">
             {tBilingual('Sales & Counter Desk', 'সেলস ও কাউন্টার ডেস্ক')}
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black">
@@ -74,7 +74,7 @@ export function SalesDashboard({
           type="button"
           size="lg"
           onClick={onOpenNewWork}
-          className="bg-white text-blue-900 hover:bg-blue-50 text-sm font-black h-12 px-8 shadow-lg"
+          className="bg-card text-blue-900 hover:bg-blue-50 text-sm font-black h-12 px-8 shadow-lg"
         >
           <Plus className="h-5 w-5 mr-1.5 stroke-[3]" />
           {tBilingual('New Work', 'নতুন কাজ')}

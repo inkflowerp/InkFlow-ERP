@@ -24,7 +24,7 @@ export default function NewWorkPage() {
           iconColor="text-blue-600"
         />
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xs">
+        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-xs">
           <NewWorkWizard isInlineModal={false} />
         </div>
       </div>

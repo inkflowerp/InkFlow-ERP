@@ -259,7 +259,7 @@ export function StockAdjustmentModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-black text-slate-900 dark:text-white">
+              <h2 className="text-base font-black text-foreground dark:text-white">
                 {tBilingual('Physical Count Reconciliation & Adjustment', 'ফিজিক্যাল স্টক গণনা ও সমন্বয়')}
               </h2>
               <Badge
@@ -269,7 +269,7 @@ export function StockAdjustmentModal({
                 Audit Log
               </Badge>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual(
                 'Reconcile system balance with audited floor physical counts & log variance to immutable ledger',
                 'ফিজিক্যাল গোডাউন স্টক যাচাই করে লেজার ব্যালেন্স সমন্বয় ও অডিট ট্রেইল তৈরি'
@@ -298,7 +298,7 @@ export function StockAdjustmentModal({
                 ? 'bg-emerald-600 hover:bg-emerald-700'
                 : variance < 0
                 ? 'bg-amber-600 hover:bg-amber-700'
-                : 'bg-slate-700 hover:bg-slate-800'
+                : 'bg-slate-700 hover:bg-secondary'
             )}
           >
             {loading ? (
@@ -334,15 +334,15 @@ export function StockAdjustmentModal({
         )}
 
         {/* 3-WAY RECONCILIATION WORKFLOW SELECTOR */}
-        <div className="grid grid-cols-3 gap-2 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+        <div className="grid grid-cols-3 gap-2 bg-muted p-1.5 rounded-xl border border-border text-xs">
           <button
             type="button"
             onClick={() => setMode('physical_count')}
             className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
               mode === 'physical_count'
-                ? 'bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-400 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <ClipboardList className="h-4 w-4 shrink-0" />
@@ -355,8 +355,8 @@ export function StockAdjustmentModal({
             className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
               mode === 'delta'
-                ? 'bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-400 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <Scale className="h-4 w-4 shrink-0" />
@@ -369,8 +369,8 @@ export function StockAdjustmentModal({
             className={cn(
               'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold transition-all text-center cursor-pointer',
               mode === 'damage_writeoff'
-                ? 'bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-400 shadow-xs'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-card text-amber-700 dark:text-amber-400 shadow-xs'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             )}
           >
             <TrendingDown className="h-4 w-4 shrink-0" />
@@ -379,10 +379,10 @@ export function StockAdjustmentModal({
         </div>
 
         {/* MATERIAL & LOCATION SELECTION */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
               {tBilingual('Material & Warehouse Store Location', 'কাঁচামাল ও গোডাউন')}
             </h3>
           </div>
@@ -395,7 +395,7 @@ export function StockAdjustmentModal({
               <select
                 value={materialId}
                 onChange={(e) => handleMaterialChange(e.target.value)}
-                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-10 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                 required
               >
                 <option value="">-- Choose Material to Reconcile --</option>
@@ -414,7 +414,7 @@ export function StockAdjustmentModal({
               <select
                 value={locationId}
                 onChange={(e) => setLocationId(e.target.value)}
-                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-10 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                 required
               >
                 {locations.map((loc) => (
@@ -428,8 +428,8 @@ export function StockAdjustmentModal({
 
           {/* Configured Roll Sizes Breakdown Display */}
           {stockBreakdown && stockBreakdown.roll_items && stockBreakdown.roll_items.length > 0 && (
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-              <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
+            <div className="pt-2 border-t border-border dark:border-border">
+              <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">
                 Active Configured Sizes & SFT Breakdown ({stockBreakdown.purchase_unit_display}):
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -437,13 +437,13 @@ export function StockAdjustmentModal({
                   <Badge
                     key={idx}
                     variant="outline"
-                    className="text-2xs tabular-nums py-1 px-2.5 bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5"
+                    className="text-2xs tabular-nums py-1 px-2.5 bg-muted border-border text-foreground flex items-center gap-1.5"
                   >
                     <span className="font-bold text-amber-600 dark:text-amber-400">
                       {item.width_ft}ft × {item.length_ft}ft:
                     </span>
                     <span className="font-semibold">{item.roll_count} Roll(s)</span>
-                    <span className="text-slate-400 text-2xs">({item.total_sft.toLocaleString()} SFT)</span>
+                    <span className="text-muted-foreground text-2xs">({item.total_sft.toLocaleString()} SFT)</span>
                     {item.purchase_price ? (
                       <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-2xs">
                         @ ৳{item.purchase_price}
@@ -457,10 +457,10 @@ export function StockAdjustmentModal({
         </div>
 
         {/* VARIANCE CALCULATOR & AUDIT COUNT */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center gap-2">
             <Scale className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
               {tBilingual('Physical Audit Entry & Variance Calculation', 'গণনাকৃত ব্যালেন্স ও পার্থক্য')}
             </h3>
           </div>
@@ -527,7 +527,7 @@ export function StockAdjustmentModal({
               <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('Current System Balance', 'বর্তমান সিস্টেম স্টক')}
               </Label>
-              <div className="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center tabular-nums font-bold text-slate-800 dark:text-slate-200">
+              <div className="h-10 px-3 rounded-lg border border-border bg-muted flex items-center tabular-nums font-bold text-foreground dark:text-foreground">
                 {currentSysStock} {activeMaterial?.unit || 'units'}
               </div>
             </div>
@@ -536,20 +536,20 @@ export function StockAdjustmentModal({
               <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('New Balance Post-Audit', 'সমন্বয় পরবর্তী ব্যালেন্স')}
               </Label>
-              <div className="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center tabular-nums font-black text-slate-900 dark:text-white">
+              <div className="h-10 px-3 rounded-lg border border-border bg-muted flex items-center tabular-nums font-black text-foreground dark:text-white">
                 {calculatedNewStock} {activeMaterial?.unit || 'units'}
               </div>
             </div>
           </div>
 
           {/* Variance & Financial Impact HUD */}
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="p-3.5 rounded-xl bg-muted border border-border grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div>
-              <span className="text-2xs text-slate-400 block font-semibold uppercase">Quantity Variance:</span>
+              <span className="text-2xs text-muted-foreground block font-semibold uppercase">Quantity Variance:</span>
               <div
                 className={cn(
                   'text-base font-black tabular-nums flex items-center gap-1.5 mt-0.5',
-                  variance > 0 ? 'text-emerald-600' : variance < 0 ? 'text-rose-600' : 'text-slate-500'
+                  variance > 0 ? 'text-emerald-600' : variance < 0 ? 'text-rose-600' : 'text-muted-foreground'
                 )}
               >
                 {variance > 0 ? (
@@ -566,14 +566,14 @@ export function StockAdjustmentModal({
             </div>
 
             <div>
-              <span className="text-2xs text-slate-400 block font-semibold uppercase">Unit Valuation:</span>
-              <div className="text-base font-bold tabular-nums text-slate-700 dark:text-slate-300 mt-0.5">
+              <span className="text-2xs text-muted-foreground block font-semibold uppercase">Unit Valuation:</span>
+              <div className="text-base font-bold tabular-nums text-foreground mt-0.5">
                 {formatBDT(unitCost)} / {activeMaterial?.unit || 'unit'}
               </div>
             </div>
 
             <div>
-              <span className="text-2xs text-slate-400 block font-semibold uppercase">Financial Impact:</span>
+              <span className="text-2xs text-muted-foreground block font-semibold uppercase">Financial Impact:</span>
               <div
                 className={cn(
                   'text-base font-black tabular-nums mt-0.5',
@@ -581,7 +581,7 @@ export function StockAdjustmentModal({
                     ? 'text-emerald-600'
                     : valuationImpact < 0
                     ? 'text-rose-600'
-                    : 'text-slate-500'
+                    : 'text-muted-foreground'
                 )}
               >
                 {valuationImpact > 0 ? `+${formatBDT(valuationImpact)} Gain` : valuationImpact < 0 ? `-${formatBDT(Math.abs(valuationImpact))} Loss` : '৳ 0 Net Impact'}
@@ -591,7 +591,7 @@ export function StockAdjustmentModal({
         </div>
 
         {/* AUDIT REASON & PRESET JUSTIFICATION */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
           <Label className="text-xs font-semibold block">
             {tBilingual('Audit Reason / Root Cause', 'সমন্বয়ের কারণ ও যৌক্তিকতা')} <span className="text-rose-500">*</span>
           </Label>
@@ -603,7 +603,7 @@ export function StockAdjustmentModal({
                 key={idx}
                 type="button"
                 onClick={() => setReason(p.reasonEn)}
-                className="text-2xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                className="text-2xs font-medium bg-muted hover:bg-amber-100 dark:hover:bg-amber-950/60 text-foreground px-2.5 py-1 rounded-md border border-border transition-colors cursor-pointer"
               >
                 🏷️ {p.tag}
               </button>
@@ -638,7 +638,7 @@ export function StockAdjustmentModal({
               <Input
                 value={auditRefNumber}
                 onChange={(e) => setAuditRefNumber(e.target.value)}
-                className="text-xs h-9 tabular-nums bg-slate-50 dark:bg-slate-900"
+                className="text-xs h-9 tabular-nums bg-muted dark:bg-card"
               />
             </div>
           </div>

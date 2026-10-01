@@ -34,9 +34,9 @@ export function CompanySelector() {
         disabled={!canSwitch}
         onClick={() => canSwitch && setIsOpen(!isOpen)}
         className={cn(
-          'flex items-center gap-1.5 sm:gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 px-2 sm:px-3 py-1.5 text-left text-sm font-medium transition-all dark:border-slate-800 dark:bg-slate-800/80 shrink-0 whitespace-nowrap min-h-[40px]',
+          'flex items-center gap-1.5 sm:gap-2.5 rounded-lg border border-border bg-muted px-2 sm:px-3 py-1.5 text-left text-sm font-medium transition-all shrink-0 whitespace-nowrap min-h-[40px]',
           canSwitch
-            ? 'hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer'
+            ? 'hover:bg-muted cursor-pointer'
             : 'cursor-default select-none'
         )}
         suppressHydrationWarning
@@ -49,12 +49,12 @@ export function CompanySelector() {
         </div>
         <div className="flex flex-col text-left max-w-[110px] xs:max-w-[150px] sm:max-w-[180px] lg:max-w-[220px] min-w-0" suppressHydrationWarning>
           <div className="flex items-center gap-1.5">
-            <span className="truncate font-semibold text-slate-800 dark:text-slate-100 text-xs sm:text-sm whitespace-nowrap bangla-text" suppressHydrationWarning>
+            <span className="truncate font-semibold text-foreground text-xs sm:text-sm whitespace-nowrap bangla-text" suppressHydrationWarning>
               {displayName}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-xs text-slate-500 dark:text-slate-400 capitalize whitespace-nowrap hidden xs:inline" suppressHydrationWarning>
+            <span className="truncate text-xs text-muted-foreground capitalize whitespace-nowrap hidden xs:inline" suppressHydrationWarning>
               {company?.business_type?.replace('_', ' ') || 'Printing & Signage'}
             </span>
             <span
@@ -73,13 +73,13 @@ export function CompanySelector() {
           </div>
         </div>
         {canSwitch && (
-          <ChevronsUpDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-400 shrink-0 ml-0.5" />
+          <ChevronsUpDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground shrink-0 ml-0.5" />
         )}
       </button>
 
       {canSwitch && isOpen && (
-        <div className="absolute left-0 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-2 shadow-2xl z-50 dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
-          <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400 bangla-text">
+        <div className="absolute left-0 mt-2 w-72 rounded-xl border border-border bg-card p-2 shadow-2xl z-50 animate-in fade-in-0 zoom-in-95">
+          <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground bangla-text">
             {tBilingual('Your Organizations', 'আপনার প্রতিষ্ঠানসমূহ')}
           </div>
 
@@ -97,15 +97,15 @@ export function CompanySelector() {
                     setIsOpen(false)
                   }}
                   className={cn(
-                    'flex w-full items-center justify-between rounded-lg p-2 text-left text-xs transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer',
+                    'flex w-full items-center justify-between rounded-lg p-2 text-left text-xs transition-colors hover:bg-muted cursor-pointer',
                     isSelected && 'bg-blue-50/80 text-blue-900 dark:bg-blue-950/60 dark:text-blue-200 font-semibold'
                   )}
                 >
                   <div className="flex items-center gap-2 truncate">
-                    <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
+                    <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
                     <div className="flex flex-col truncate">
                       <span className="truncate">{name}</span>
-                      <span className="text-2xs text-slate-400 font-normal">
+                      <span className="text-2xs text-muted-foreground font-normal">
                         {c.slug}
                       </span>
                     </div>
@@ -117,7 +117,7 @@ export function CompanySelector() {
           </div>
 
           {canAddBranch && (
-            <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="pt-2 mt-2 border-t border-border dark:border-border">
               <button
                 type="button"
                 onClick={() => {

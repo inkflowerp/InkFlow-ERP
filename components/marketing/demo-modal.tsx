@@ -93,21 +93,21 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto cursor-pointer"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto cursor-pointer"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="demo-modal-title"
     >
       <div
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-2xl text-slate-900 dark:text-slate-100 my-auto cursor-default animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card border border-border p-6 sm:p-8 shadow-2xl text-foreground my-auto cursor-default animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-lg text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-muted transition-colors cursor-pointer"
           aria-label="Close dialog"
         >
           <X className="h-5 w-5" />
@@ -119,11 +119,11 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
               <CheckCircle2 className="h-8 w-8" />
             </div>
 
-            <h3 id="demo-modal-title" className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white bangla-text">
+            <h3 id="demo-modal-title" className="text-xl sm:text-2xl font-bold text-foreground dark:text-white bangla-text">
               {tBilingual('Demo Walkthrough Scheduled!', 'ডেমো রিকোয়েস্ট নিশ্চিত হয়েছে!')}
             </h3>
 
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-sm mx-auto bangla-text">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto bangla-text">
               {tBilingual(
                 successMessage,
                 'আমাদের ঢাকা অনবোর্ডিং স্পেশালিস্ট আগামী ২ কর্মঘণ্টার মধ্যে কল করে আপনার সাথে লাইভ স্ক্রিন ডেমো পরিচালনা করবেন।'
@@ -133,7 +133,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
             <div className="pt-4">
               <Button
                 onClick={onClose}
-                className="w-full sm:w-auto px-8 h-11 font-semibold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+                className="w-full sm:w-auto px-8 h-11 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
               >
                 {tBilingual('Done', 'সম্পন্ন')}
               </Button>
@@ -147,10 +147,10 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                 <Calendar className="h-3.5 w-3.5" />
                 <span>{tBilingual('Live Walkthrough', 'লাইভ স্ক্রিন ডেমো')}</span>
               </div>
-              <h3 id="demo-modal-title" className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight bangla-text">
+              <h3 id="demo-modal-title" className="text-xl sm:text-2xl font-black text-foreground dark:text-white tracking-tight bangla-text">
                 {tBilingual('Schedule a Personalized Demo', 'আপনার প্রেসের জন্য ডেমো বুক করুন')}
               </h3>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed bangla-text">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">
                 {tBilingual(
                   'See how PrintERP manages your actual machines, roll stocks, and customer dues in real time.',
                   'আপনার মেশিনের প্রকার, রোল স্টক এবং বাকি খাতার হিসাব কীভাবে পরিচালিত হবে তা সরাসরি দেখুন।'
@@ -169,53 +169,53 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                <label className="block text-foreground font-medium mb-1">
                   {tBilingual('Press or Business Name *', 'প্রেস বা প্রতিষ্ঠানের নাম *')}
                 </label>
                 <div className="relative">
-                  <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <input
                     required
                     type="text"
                     placeholder="e.g. Apex Digital Press"
                     value={formData.businessName}
                     onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs transition-all"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs transition-all"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                  <label className="block text-foreground font-medium mb-1">
                     {tBilingual('Your Name *', 'আপনার নাম *')}
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <input
                       required
                       type="text"
                       placeholder="Kamrul Hasan"
                       value={formData.contactName}
                       onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs transition-all"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                  <label className="block text-foreground font-medium mb-1">
                     {tBilingual('Mobile Number (WhatsApp) *', 'মোবাইল নম্বর (হোয়াটসঅ্যাপ) *')}
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <input
                       required
                       type="tel"
                       placeholder="01712-XXXXXX"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs tabular-nums transition-all"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs tabular-nums transition-all"
                     />
                   </div>
                 </div>
@@ -223,15 +223,15 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                  <label className="block text-foreground font-medium mb-1">
                     {tBilingual('City / District', 'জেলা বা অঞ্চল')}
                   </label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <select
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs cursor-pointer"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:ring-2 focus:ring-ring text-xs cursor-pointer"
                     >
                       <option value="Dhaka">Dhaka (Motijheel / Arambagh)</option>
                       <option value="Chattogram">Chattogram</option>
@@ -245,15 +245,15 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                  <label className="block text-foreground font-medium mb-1">
                     {tBilingual('Primary Business Focus', 'প্রধান কাজের ধরন')}
                   </label>
                   <div className="relative">
-                    <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                    <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <select
                       value={formData.businessType}
                       onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs cursor-pointer"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:ring-2 focus:ring-ring text-xs cursor-pointer"
                     >
                       <option value="Digital Flex & Banner">Digital Flex & Banner</option>
                       <option value="Offset Printing Press">Offset Commercial Press</option>
@@ -266,17 +266,17 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
               </div>
 
               <div>
-                <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                <label className="block text-foreground font-medium mb-1">
                   {tBilingual('Email Address (Optional)', 'ইমেইল এড্রেস (ঐচ্ছিক)')}
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <input
                     type="email"
                     placeholder="info@yourpress.com.bd"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs transition-all"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-muted border border-border text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-xs transition-all"
                   />
                 </div>
               </div>
@@ -285,7 +285,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-11 font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-sm cursor-pointer bangla-text flex items-center justify-center gap-2"
+                  className="w-full h-11 font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer bangla-text flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -296,7 +296,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     <span>{tBilingual('Confirm & Schedule Demo', 'ডেমো শিডিউল নিশ্চিত করুন')}</span>
                   )}
                 </Button>
-                <p className="text-2xs text-center text-slate-500 mt-2">
+                <p className="text-2xs text-center text-muted-foreground mt-2">
                   {tBilingual(
                     'No software installation required • 30-minute interactive screen share',
                     'কোনো সফটওয়্যার ইনস্টল করতে হবে না • ৩০ মিনিটের ইন্টারঅ্যাক্টিভ স্ক্রিন শেয়ার'

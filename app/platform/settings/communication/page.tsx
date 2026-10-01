@@ -314,13 +314,13 @@ export default function PlatformEmailGatewayPage() {
       <PlatformSettingsNav />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
             <Mail className="h-7 w-7 text-indigo-400" />
             Platform Email Infrastructure
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Configure system authentication emails, tenant notifications, billing vouchers, and security alert dispatchers.
           </p>
         </div>
@@ -330,7 +330,7 @@ export default function PlatformEmailGatewayPage() {
             size="sm"
             variant="outline"
             onClick={loadData}
-            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh
@@ -362,14 +362,14 @@ export default function PlatformEmailGatewayPage() {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-1.5 p-1.5 bg-slate-900/80 border border-slate-800 rounded-xl overflow-x-auto">
+      <div className="flex items-center gap-1.5 p-1.5 bg-foreground border border-border rounded-xl overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveTab('gateway')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all min-h-[44px] ${
             activeTab === 'gateway'
               ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              : 'text-muted-foreground hover:text-white hover:bg-slate-800/60'
           }`}
         >
           <Server className="h-3.5 w-3.5" />
@@ -382,7 +382,7 @@ export default function PlatformEmailGatewayPage() {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all min-h-[44px] ${
             activeTab === 'templates'
               ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              : 'text-muted-foreground hover:text-white hover:bg-slate-800/60'
           }`}
         >
           <FileText className="h-3.5 w-3.5" />
@@ -395,7 +395,7 @@ export default function PlatformEmailGatewayPage() {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all min-h-[44px] ${
             activeTab === 'logs'
               ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              : 'text-muted-foreground hover:text-white hover:bg-slate-800/60'
           }`}
         >
           <Clock className="h-3.5 w-3.5" />
@@ -408,7 +408,7 @@ export default function PlatformEmailGatewayPage() {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all min-h-[44px] ${
             activeTab === 'deliverability'
               ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              : 'text-muted-foreground hover:text-white hover:bg-slate-800/60'
           }`}
         >
           <ShieldCheck className="h-3.5 w-3.5" />
@@ -423,40 +423,40 @@ export default function PlatformEmailGatewayPage() {
         <div className="space-y-6">
           {/* Status Overview Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="bg-slate-900/90 border-slate-800 p-4 border-l-4 border-l-indigo-500">
-              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+            <Card className="bg-foreground border-border p-4 border-l-4 border-l-indigo-500">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Active Provider
               </span>
               <div className="text-lg font-bold text-white capitalize flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 {gateway?.provider?.toUpperCase() || 'SMTP'} Gateway
               </div>
-              <span className="text-2xs text-slate-500 mt-1 block">
+              <span className="text-2xs text-muted-foreground mt-1 block">
                 AES-256-GCM Encrypted
               </span>
             </Card>
 
-            <Card className="bg-slate-900/90 border-slate-800 p-4 border-l-4 border-l-emerald-500">
-              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+            <Card className="bg-foreground border-border p-4 border-l-4 border-l-emerald-500">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Status
               </span>
               <div className="text-lg font-bold text-emerald-400 flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4" />
                 {gateway?.last_test_status?.toUpperCase() || 'READY'}
               </div>
-              <span className="text-2xs text-slate-500 mt-1 block">
+              <span className="text-2xs text-muted-foreground mt-1 block">
                 Last Tested: {gateway?.last_tested_at ? formatTime(gateway.last_tested_at) : 'Active'}
               </span>
             </Card>
 
-            <Card className="bg-slate-900/90 border-slate-800 p-4 border-l-4 border-l-purple-500">
-              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+            <Card className="bg-foreground border-border p-4 border-l-4 border-l-purple-500">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Platform Sender
               </span>
-              <div className="text-xs font-bold text-slate-200 truncate mt-1">
+              <div className="text-xs font-bold text-foreground truncate mt-1">
                 {gateway?.sender_email || senderEmail}
               </div>
-              <span className="text-2xs text-slate-500 mt-1 block truncate">
+              <span className="text-2xs text-muted-foreground mt-1 block truncate">
                 Display: {gateway?.sender_name || senderName}
               </span>
             </Card>
@@ -475,7 +475,7 @@ export default function PlatformEmailGatewayPage() {
                     RFC 5322 Aligned
                   </Badge>
                 </h4>
-                <p className="text-2xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                <p className="text-2xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
                   Every outgoing email is injected with domain-aligned Message-IDs, multipart plain-text fallback, and anti-spam suppression headers. Configure your SPF, DKIM, and DMARC DNS records to ensure 100% inbox delivery.
                 </p>
               </div>
@@ -498,7 +498,7 @@ export default function PlatformEmailGatewayPage() {
               className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
                 providerMode === 'gmail'
                   ? 'bg-indigo-950/40 border-indigo-500 shadow-md shadow-indigo-600/20'
-                  : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
+                  : 'bg-foreground border-border hover:border-border'
               }`}
             >
               <div>
@@ -506,11 +506,11 @@ export default function PlatformEmailGatewayPage() {
                   <span className="font-bold text-sm text-white">Gmail (Google OAuth 2.0)</span>
                   {providerMode === 'gmail' && <Check className="h-4 w-4 text-indigo-400" />}
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Connect official InkFlow platform Google Workspace or Gmail account for OAuth 2.0 authenticated system delivery.
                 </p>
               </div>
-              <div className="mt-3 text-2xs tabular-nums text-slate-500">
+              <div className="mt-3 text-2xs tabular-nums text-muted-foreground">
                 Scope: Platform Global Email
               </div>
             </div>
@@ -520,7 +520,7 @@ export default function PlatformEmailGatewayPage() {
               className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between ${
                 providerMode === 'smtp'
                   ? 'bg-indigo-950/40 border-indigo-500 shadow-md shadow-indigo-600/20'
-                  : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
+                  : 'bg-foreground border-border hover:border-border'
               }`}
             >
               <div>
@@ -528,11 +528,11 @@ export default function PlatformEmailGatewayPage() {
                   <span className="font-bold text-sm text-white">Platform Dedicated SMTP</span>
                   {providerMode === 'smtp' && <Check className="h-4 w-4 text-indigo-400" />}
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Configure corporate SMTP host for platform registration, OTPs, password resets, and system notices.
                 </p>
               </div>
-              <div className="mt-3 text-2xs tabular-nums text-slate-500">
+              <div className="mt-3 text-2xs tabular-nums text-muted-foreground">
                 Scope: Platform Global Email
               </div>
             </div>
@@ -540,16 +540,16 @@ export default function PlatformEmailGatewayPage() {
 
           {/* Gmail Form */}
           {providerMode === 'gmail' && (
-            <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden">
-              <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+            <Card className="bg-foreground border-border rounded-2xl overflow-hidden">
+              <CardHeader className="border-b border-border pb-3.5 bg-foreground">
                 <CardTitle className="text-base font-bold text-white">Google Gmail API Connection</CardTitle>
-                <CardDescription className="text-xs text-slate-400">
+                <CardDescription className="text-xs text-muted-foreground">
                   Connect Platform Google Account for zero-password OAuth 2.0 system message delivery.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
                 {gateway?.provider === 'gmail' && gateway.status === 'active' ? (
-                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="p-4 rounded-xl bg-foreground border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
                         ✓
@@ -558,7 +558,7 @@ export default function PlatformEmailGatewayPage() {
                         <div className="font-bold text-xs text-white">
                           Connected Account: {gateway.gmail_account_email || gateway.sender_email}
                         </div>
-                        <div className="text-2xs text-slate-400">
+                        <div className="text-2xs text-muted-foreground">
                           Display Name: {gateway.gmail_display_name || gateway.sender_name}
                         </div>
                       </div>
@@ -569,7 +569,7 @@ export default function PlatformEmailGatewayPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setIsTestModalOpen(true)}
-                        className="text-xs border-slate-800 bg-slate-900 text-white"
+                        className="text-xs border-border bg-foreground text-white"
                       >
                         <Send className="mr-1.5 h-3.5 w-3.5" />
                         Test Email
@@ -593,7 +593,7 @@ export default function PlatformEmailGatewayPage() {
                         <Mail className="h-6 w-6" />
                       </div>
                       <h3 className="font-bold text-sm text-white">Connect Platform Gmail Account</h3>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-muted-foreground">
                         Authorize InkFlow to send platform authentication emails and billing receipts using Google OAuth.
                       </p>
                     </div>
@@ -616,7 +616,7 @@ export default function PlatformEmailGatewayPage() {
                         <p className="text-2xs text-amber-400/90 leading-relaxed">
                           To enable Platform Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
                         </p>
-                        <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 tabular-nums text-2xs text-slate-300 space-y-1">
+                        <div className="bg-foreground p-2.5 rounded-lg border border-border tabular-nums text-2xs text-muted-foreground space-y-1">
                           <div className="flex items-center justify-between">
                             <span>GOOGLE_CLIENT_ID</span>
                             <span className={googleOAuthStatus.hasClientId ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
@@ -631,20 +631,20 @@ export default function PlatformEmailGatewayPage() {
                           </div>
                           <div className="flex items-center justify-between">
                             <span>GOOGLE_GMAIL_REDIRECT_URI</span>
-                            <span className={googleOAuthStatus.hasRedirectUri ? 'text-emerald-400 font-bold' : 'text-slate-500'}>
+                            <span className={googleOAuthStatus.hasRedirectUri ? 'text-emerald-400 font-bold' : 'text-muted-foreground'}>
                               {googleOAuthStatus.hasRedirectUri ? '✓ Configured' : '(Auto-resolved)'}
                             </span>
                           </div>
                         </div>
                         {googleOAuthStatus.redirectUri && (
-                          <div className="text-2xs text-slate-400">
-                            <strong className="text-slate-300">Google Cloud Authorized Redirect URI:</strong>
-                            <code className="block mt-1 p-2 bg-slate-950 rounded tabular-nums text-2xs break-all select-all text-slate-300 border border-slate-800">
+                          <div className="text-2xs text-muted-foreground">
+                            <strong className="text-muted-foreground">Google Cloud Authorized Redirect URI:</strong>
+                            <code className="block mt-1 p-2 bg-foreground rounded tabular-nums text-2xs break-all select-all text-muted-foreground border border-border">
                               {googleOAuthStatus.redirectUri}
                             </code>
                           </div>
                         )}
-                        <p className="text-2xs text-slate-400 pt-1">
+                        <p className="text-2xs text-muted-foreground pt-1">
                           Tip: The platform can use <strong>Platform Dedicated SMTP</strong> immediately below without any Google Cloud project setup.
                         </p>
                       </div>
@@ -658,8 +658,8 @@ export default function PlatformEmailGatewayPage() {
           {/* SMTP Form */}
           {providerMode === 'smtp' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+              <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
+                <CardHeader className="border-b border-border pb-3.5 bg-foreground">
                   <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
                     <Lock className="h-4 w-4 text-indigo-400" />
                     SMTP Connection &amp; Authentication
@@ -668,32 +668,32 @@ export default function PlatformEmailGatewayPage() {
                 <CardContent className="p-5 space-y-4">
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-2 space-y-1">
-                      <Label className="text-xs text-slate-300">SMTP Host</Label>
+                      <Label className="text-xs text-muted-foreground">SMTP Host</Label>
                       <Input
                         value={smtpHost}
                         onChange={(e) => setSmtpHost(e.target.value)}
                         placeholder="smtp.printerp.com"
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white tabular-nums rounded-xl"
+                        className="h-9 text-xs bg-foreground border-border text-white tabular-nums rounded-xl"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">Port</Label>
+                      <Label className="text-xs text-muted-foreground">Port</Label>
                       <Input
                         type="number"
                         value={smtpPort}
                         onChange={(e) => setSmtpPort(Number(e.target.value))}
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white tabular-nums rounded-xl"
+                        className="h-9 text-xs bg-foreground border-border text-white tabular-nums rounded-xl"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">Encryption</Label>
+                      <Label className="text-xs text-muted-foreground">Encryption</Label>
                       <select
                         value={encryptionType}
                         onChange={(e) => setEncryptionType(e.target.value as any)}
-                        className="w-full h-9 px-3 rounded-xl border border-slate-800 bg-slate-950 text-xs font-semibold text-white"
+                        className="w-full h-9 px-3 rounded-xl border border-border bg-foreground text-xs font-semibold text-white"
                       >
                         <option value="tls">TLS / STARTTLS (Port 587)</option>
                         <option value="ssl">SSL (Port 465)</option>
@@ -702,19 +702,19 @@ export default function PlatformEmailGatewayPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">Username</Label>
+                      <Label className="text-xs text-muted-foreground">Username</Label>
                       <Input
                         value={smtpUsername}
                         onChange={(e) => setSmtpUsername(e.target.value)}
                         placeholder="inkflow.erp@gmail.com"
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white tabular-nums rounded-xl"
+                        className="h-9 text-xs bg-foreground border-border text-white tabular-nums rounded-xl"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs text-slate-300">Password</Label>
+                      <Label className="text-xs text-muted-foreground">Password</Label>
                       <button
                         type="button"
                         onClick={() => setShowSecret(!showSecret)}
@@ -729,17 +729,17 @@ export default function PlatformEmailGatewayPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={gateway?.encrypted_credentials ? '•••••••••••• (Encrypted on disk)' : 'Enter SMTP password'}
-                      className="h-9 text-xs bg-slate-950 border-slate-800 text-white tabular-nums rounded-xl"
+                      className="h-9 text-xs bg-foreground border-border text-white tabular-nums rounded-xl"
                     />
                   </div>
 
-                  <div className="pt-2 flex items-center justify-between border-t border-slate-800/80">
+                  <div className="pt-2 flex items-center justify-between border-t border-border">
                     <Button
                       type="button"
                       variant="outline"
                       disabled={testing}
                       onClick={handleTestSmtpConnection}
-                      className="h-8 text-xs border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800 hover:text-white"
+                      className="h-8 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white"
                     >
                       <RotateCw className={`h-3.5 w-3.5 mr-1.5 ${testing ? 'animate-spin text-indigo-400' : ''}`} />
                       {testing ? 'Verifying...' : 'Test Connection'}
@@ -759,9 +759,9 @@ export default function PlatformEmailGatewayPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between">
+              <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between">
                 <div>
-                  <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+                  <CardHeader className="border-b border-border pb-3.5 bg-foreground">
                     <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
                       <Globe className="h-4 w-4 text-purple-400" />
                       Platform Sender Identity
@@ -769,40 +769,40 @@ export default function PlatformEmailGatewayPage() {
                   </CardHeader>
                   <CardContent className="p-5 space-y-4">
                     <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">Display Name</Label>
+                      <Label className="text-xs text-muted-foreground">Display Name</Label>
                       <Input
                         value={senderName}
                         onChange={(e) => setSenderName(e.target.value)}
                         placeholder="InkFlow Platform"
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl"
+                        className="h-9 text-xs bg-foreground border-border text-white rounded-xl"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">From Email Address</Label>
+                      <Label className="text-xs text-muted-foreground">From Email Address</Label>
                       <Input
                         type="email"
                         value={senderEmail}
                         onChange={(e) => setSenderEmail(e.target.value)}
                         placeholder="inkflow.erp@gmail.com"
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl tabular-nums"
+                        className="h-9 text-xs bg-foreground border-border text-white rounded-xl tabular-nums"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">Reply-To Address</Label>
+                      <Label className="text-xs text-muted-foreground">Reply-To Address</Label>
                       <Input
                         type="email"
                         value={replyToEmail}
                         onChange={(e) => setReplyToEmail(e.target.value)}
                         placeholder="inkflow.erp@gmail.com"
-                        className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl tabular-nums"
+                        className="h-9 text-xs bg-foreground border-border text-white rounded-xl tabular-nums"
                       />
                     </div>
                   </CardContent>
                 </div>
 
-                <div className="p-4 border-t border-slate-800 flex justify-end">
+                <div className="p-4 border-t border-border flex justify-end">
                   <Button
                     size="sm"
                     disabled={saving}
@@ -824,8 +824,8 @@ export default function PlatformEmailGatewayPage() {
          ======================================================================= */}
       {activeTab === 'templates' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden lg:col-span-1">
-            <CardHeader className="border-b border-slate-800 pb-3 bg-slate-950/40">
+          <Card className="bg-foreground border-border rounded-2xl overflow-hidden lg:col-span-1">
+            <CardHeader className="border-b border-border pb-3 bg-foreground">
               <CardTitle className="text-sm font-bold text-white">System Notification Templates</CardTitle>
             </CardHeader>
             <CardContent className="p-2 space-y-1 max-h-[600px] overflow-y-auto">
@@ -839,12 +839,12 @@ export default function PlatformEmailGatewayPage() {
                     className={`w-full text-left p-3 rounded-xl text-xs transition-all flex flex-col gap-1 min-h-[44px] ${
                       isSelected
                         ? 'bg-indigo-600 text-white font-bold shadow-md'
-                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                        : 'text-muted-foreground hover:bg-slate-800/80 hover:text-white'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="truncate font-semibold">{tpl.name}</span>
-                      <span className={`text-2xs px-1.5 py-0.5 rounded tabular-nums ${isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                      <span className={`text-2xs px-1.5 py-0.5 rounded tabular-nums ${isSelected ? 'bg-indigo-700 text-white' : 'bg-secondary text-muted-foreground'}`}>
                         {tpl.event_type}
                       </span>
                     </div>
@@ -855,8 +855,8 @@ export default function PlatformEmailGatewayPage() {
           </Card>
 
           {selectedTemplate && (
-            <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden lg:col-span-2 p-5 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <Card className="bg-foreground border-border rounded-2xl overflow-hidden lg:col-span-2 p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div>
                   <h4 className="font-bold text-sm text-white">{selectedTemplate.name}</h4>
                   <span className="text-2xs tabular-nums text-indigo-400">{selectedTemplate.event_type}</span>
@@ -869,30 +869,30 @@ export default function PlatformEmailGatewayPage() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs text-slate-300">Subject Line (English)</Label>
+                <Label className="text-xs text-muted-foreground">Subject Line (English)</Label>
                 <Input
                   value={selectedTemplate.subject_template}
                   onChange={(e) => setSelectedTemplate({ ...selectedTemplate, subject_template: e.target.value })}
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl"
+                  className="h-9 text-xs bg-foreground border-border text-white rounded-xl"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs text-slate-300">Subject Line (Bangla)</Label>
+                <Label className="text-xs text-muted-foreground">Subject Line (Bangla)</Label>
                 <Input
                   value={selectedTemplate.subject_template_bn || ''}
                   onChange={(e) => setSelectedTemplate({ ...selectedTemplate, subject_template_bn: e.target.value })}
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-white rounded-xl"
+                  className="h-9 text-xs bg-foreground border-border text-white rounded-xl"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs text-slate-300">Body Template HTML</Label>
+                <Label className="text-xs text-muted-foreground">Body Template HTML</Label>
                 <textarea
                   rows={6}
                   value={selectedTemplate.body_template}
                   onChange={(e) => setSelectedTemplate({ ...selectedTemplate, body_template: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-slate-800 bg-slate-950 text-xs tabular-nums text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full p-3 rounded-xl border border-border bg-foreground text-xs tabular-nums text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
             </Card>
@@ -904,8 +904,8 @@ export default function PlatformEmailGatewayPage() {
           TAB 3: PLATFORM TRANSMISSION LOGS
          ======================================================================= */}
       {activeTab === 'logs' && (
-        <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-          <CardHeader className="border-b border-slate-800 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/40">
+        <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
+          <CardHeader className="border-b border-border pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-foreground">
             <CardTitle className="text-sm font-bold text-white">Platform System Transmission Logs</CardTitle>
             <div className="flex items-center gap-2">
               <Button
@@ -913,7 +913,7 @@ export default function PlatformEmailGatewayPage() {
                 variant="outline"
                 disabled={processingQueue}
                 onClick={handleProcessQueue}
-                className="h-8 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:text-white"
+                className="h-8 text-xs border-border bg-foreground text-muted-foreground hover:text-white"
               >
                 <Zap className="h-3 w-3 mr-1 text-amber-400" />
                 {processingQueue ? 'Processing...' : 'Run Queue Worker'}
@@ -922,14 +922,14 @@ export default function PlatformEmailGatewayPage() {
                 placeholder="Search recipient or subject..."
                 value={logSearch}
                 onChange={(e) => setLogSearch(e.target.value)}
-                className="h-8 text-xs bg-slate-950 border-slate-800 text-white rounded-xl w-48"
+                className="h-8 text-xs bg-foreground border-border text-white rounded-xl w-48"
               />
             </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-950/60 text-slate-400 border-b border-slate-800">
+                <thead className="bg-foreground text-muted-foreground border-b border-border">
                   <tr>
                     <th className="py-2.5 px-4 font-semibold">Date &amp; Scope</th>
                     <th className="py-2.5 px-4 font-semibold">Recipient</th>
@@ -937,10 +937,10 @@ export default function PlatformEmailGatewayPage() {
                     <th className="py-2.5 px-4 font-semibold text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60">
+                <tbody className="divide-y divide-border/60">
                   {logs.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-xs text-slate-500">
+                      <td colSpan={4} className="py-8 text-center text-xs text-muted-foreground">
                         No platform transmission logs recorded yet.
                       </td>
                     </tr>
@@ -954,12 +954,12 @@ export default function PlatformEmailGatewayPage() {
                       )
                       .map((log) => (
                         <tr key={log.id} className="hover:bg-slate-800/30">
-                          <td className="py-3 px-4 tabular-nums text-2xs text-slate-400">
+                          <td className="py-3 px-4 tabular-nums text-2xs text-muted-foreground">
                             <div>{new Date(log.created_at).toLocaleDateString()}</div>
                             <span className="text-indigo-400 text-2xs">{log.event_type}</span>
                           </td>
                           <td className="py-3 px-4 font-medium text-white">{log.recipient}</td>
-                          <td className="py-3 px-4 truncate max-w-xs text-slate-300">{log.subject}</td>
+                          <td className="py-3 px-4 truncate max-w-xs text-muted-foreground">{log.subject}</td>
                           <td className="py-3 px-4 text-center">
                             <Badge
                               className={`text-2xs uppercase ${
@@ -989,7 +989,7 @@ export default function PlatformEmailGatewayPage() {
       {activeTab === 'deliverability' && (
         <div className="space-y-6">
           {/* Domain Overview & Quick Calculator */}
-          <Card className="bg-slate-900/90 border-slate-800">
+          <Card className="bg-foreground border-border">
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -997,7 +997,7 @@ export default function PlatformEmailGatewayPage() {
                     <ShieldCheck className="h-5 w-5 text-indigo-400" />
                     Domain Email Authentication & Anti-Spam Setup
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-400 mt-1">
+                  <CardDescription className="text-xs text-muted-foreground mt-1">
                     Major email providers (Google, Microsoft 365, Yahoo) reject or spam emails lacking sender domain authentication.
                     Add these DNS TXT records to your domain provider (Cloudflare, Namecheap, GoDaddy, Route 53) to guarantee 100% inbox delivery.
                   </CardDescription>
@@ -1013,29 +1013,29 @@ export default function PlatformEmailGatewayPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-300">Active Sending Domain</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground">Active Sending Domain</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="text"
                       value={customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'}
                       onChange={(e) => setCustomDomainInput(e.target.value.trim().toLowerCase())}
                       placeholder="e.g. myprintshop.com"
-                      className="h-9 text-xs bg-slate-950 border-slate-800 text-white font-mono"
+                      className="h-9 text-xs bg-foreground border-border text-white font-mono"
                     />
                   </div>
-                  <span className="text-2xs text-slate-500">
+                  <span className="text-2xs text-muted-foreground">
                     DNS records below are dynamically generated for this sending domain.
                   </span>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-300">Active Provider Configuration</Label>
-                  <div className="h-9 px-3 rounded-lg border border-slate-800 bg-slate-950/60 flex items-center justify-between text-xs text-slate-200">
+                  <Label className="text-xs font-semibold text-muted-foreground">Active Provider Configuration</Label>
+                  <div className="h-9 px-3 rounded-lg border border-border bg-foreground flex items-center justify-between text-xs text-foreground">
                     <span className="capitalize font-medium flex items-center gap-2">
                       <Server className="h-3.5 w-3.5 text-indigo-400" />
                       {gateway?.provider?.toUpperCase() || providerMode.toUpperCase()}
                     </span>
-                    <span className="text-2xs text-slate-400">
+                    <span className="text-2xs text-muted-foreground">
                       Sender: {gateway?.sender_email || senderEmail}
                     </span>
                   </div>
@@ -1047,7 +1047,7 @@ export default function PlatformEmailGatewayPage() {
           {/* DNS Records Table & Copy Box */}
           <div className="grid grid-cols-1 gap-4">
             {/* 1. SPF Record */}
-            <Card className="bg-slate-900/90 border-slate-800">
+            <Card className="bg-foreground border-border">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1066,7 +1066,7 @@ export default function PlatformEmailGatewayPage() {
                           : `v=spf1 include:${smtpHost || 'mail.domain.com'} ~all`
                       handleCopyRecord('spf', spfValue)
                     }}
-                    className="h-8 text-2xs border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200"
+                    className="h-8 text-2xs border-border bg-slate-800/80 hover:bg-slate-700 text-foreground"
                   >
                     {copiedRecord === 'spf' ? (
                       <>
@@ -1081,18 +1081,18 @@ export default function PlatformEmailGatewayPage() {
                     )}
                   </Button>
                 </div>
-                <CardDescription className="text-xs text-slate-400 mt-1">
+                <CardDescription className="text-xs text-muted-foreground mt-1">
                   Authorizes sending servers to send on behalf of your domain so Gmail/Outlook don&apos;t mark incoming mail as unauthenticated spoofing.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-1">
-                <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+                <div className="bg-foreground border border-border rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
                   <div className="sm:col-span-3">
-                    <span className="text-2xs text-slate-500 font-semibold block uppercase">Host / Name</span>
-                    <span className="font-mono text-slate-200 font-bold">@ (or leave empty)</span>
+                    <span className="text-2xs text-muted-foreground font-semibold block uppercase">Host / Name</span>
+                    <span className="font-mono text-foreground font-bold">@ (or leave empty)</span>
                   </div>
                   <div className="sm:col-span-9">
-                    <span className="text-2xs text-slate-500 font-semibold block uppercase">TXT Value / Content</span>
+                    <span className="text-2xs text-muted-foreground font-semibold block uppercase">TXT Value / Content</span>
                     <span className="font-mono text-indigo-300 font-semibold break-all select-all">
                       {(gateway?.provider || providerMode) === 'gmail'
                         ? 'v=spf1 include:_spf.google.com ~all'
@@ -1104,7 +1104,7 @@ export default function PlatformEmailGatewayPage() {
             </Card>
 
             {/* 2. DKIM Record */}
-            <Card className="bg-slate-900/90 border-slate-800">
+            <Card className="bg-foreground border-border">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1120,7 +1120,7 @@ export default function PlatformEmailGatewayPage() {
                       const hostVal = (gateway?.provider || providerMode) === 'gmail' ? 'google._domainkey' : 'default._domainkey'
                       handleCopyRecord('dkim_host', hostVal)
                     }}
-                    className="h-8 text-2xs border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200"
+                    className="h-8 text-2xs border-border bg-slate-800/80 hover:bg-slate-700 text-foreground"
                   >
                     {copiedRecord === 'dkim_host' ? (
                       <>
@@ -1135,21 +1135,21 @@ export default function PlatformEmailGatewayPage() {
                     )}
                   </Button>
                 </div>
-                <CardDescription className="text-xs text-slate-400 mt-1">
+                <CardDescription className="text-xs text-muted-foreground mt-1">
                   Cryptographically signs every outbound message so receiving servers confirm the message was not modified in transit.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-1">
-                <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+                <div className="bg-foreground border border-border rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
                   <div className="sm:col-span-4">
-                    <span className="text-2xs text-slate-500 font-semibold block uppercase">Host / Selector Name</span>
+                    <span className="text-2xs text-muted-foreground font-semibold block uppercase">Host / Selector Name</span>
                     <span className="font-mono text-purple-300 font-bold">
                       {(gateway?.provider || providerMode) === 'gmail' ? 'google._domainkey' : 'default._domainkey'}
                     </span>
                   </div>
                   <div className="sm:col-span-8">
-                    <span className="text-2xs text-slate-500 font-semibold block uppercase">Setup Instruction</span>
-                    <span className="text-slate-300">
+                    <span className="text-2xs text-muted-foreground font-semibold block uppercase">Setup Instruction</span>
+                    <span className="text-muted-foreground">
                       {(gateway?.provider || providerMode) === 'gmail'
                         ? 'Google Admin Console -> Apps -> Google Workspace -> Gmail -> Authenticate email -> Generate DKIM key.'
                         : 'Obtain your unique DKIM public key from your SMTP hosting control panel (cPanel, Postfix, SendGrid, Amazon SES) and paste as TXT.'}
@@ -1160,7 +1160,7 @@ export default function PlatformEmailGatewayPage() {
             </Card>
 
             {/* 3. DMARC Record */}
-            <Card className="bg-slate-900/90 border-slate-800">
+            <Card className="bg-foreground border-border">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1177,7 +1177,7 @@ export default function PlatformEmailGatewayPage() {
                       const dmarcValue = `v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:postmaster@${domain}; aspf=r; adkim=r;`
                       handleCopyRecord('dmarc', dmarcValue)
                     }}
-                    className="h-8 text-2xs border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200"
+                    className="h-8 text-2xs border-border bg-slate-800/80 hover:bg-slate-700 text-foreground"
                   >
                     {copiedRecord === 'dmarc' ? (
                       <>
@@ -1192,18 +1192,18 @@ export default function PlatformEmailGatewayPage() {
                     )}
                   </Button>
                 </div>
-                <CardDescription className="text-xs text-slate-400 mt-1">
+                <CardDescription className="text-xs text-muted-foreground mt-1">
                   Enforces alignment between SPF and DKIM. Mandatory for Gmail & Yahoo 2024 deliverability guidelines.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-1">
-                <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+                <div className="bg-foreground border border-border rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
                   <div className="sm:col-span-3">
-                    <span className="text-2xs text-slate-500 font-semibold block uppercase">Host / Name</span>
-                    <span className="font-mono text-slate-200 font-bold">_dmarc</span>
+                    <span className="text-2xs text-muted-foreground font-semibold block uppercase">Host / Name</span>
+                    <span className="font-mono text-foreground font-bold">_dmarc</span>
                   </div>
                   <div className="sm:col-span-9">
-                    <span className="text-2xs text-slate-500 font-semibold block uppercase">TXT Value / Content</span>
+                    <span className="text-2xs text-muted-foreground font-semibold block uppercase">TXT Value / Content</span>
                     <span className="font-mono text-emerald-300 font-semibold break-all select-all">
                       {`v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:postmaster@${customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'}; aspf=r; adkim=r;`}
                     </span>
@@ -1214,53 +1214,53 @@ export default function PlatformEmailGatewayPage() {
           </div>
 
           {/* Engine Anti-Spam Protections Overview */}
-          <Card className="bg-slate-900/90 border-slate-800">
+          <Card className="bg-foreground border-border">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
                 <Zap className="h-4 w-4 text-amber-400" />
                 Active Built-in Engine Deliverability Protections
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 The platform automatically injects these technical standards into every email dispatched:
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+                <div className="p-3 rounded-lg bg-foreground border border-border flex items-start gap-2.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-white block font-semibold">RFC 5322 Domain-Aligned Message-ID</strong>
-                    <span className="text-2xs text-slate-400">
+                    <span className="text-2xs text-muted-foreground">
                       Message-IDs are generated dynamically matching your sending domain, preventing domain spoofing flags.
                     </span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+                <div className="p-3 rounded-lg bg-foreground border border-border flex items-start gap-2.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-white block font-semibold">Multipart/Alternative Plaintext Fallback</strong>
-                    <span className="text-2xs text-slate-400">
+                    <span className="text-2xs text-muted-foreground">
                       Every email includes both HTML and a clean, link-preserved text part, eliminating the MIME_HTML_ONLY spam penalty.
                     </span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+                <div className="p-3 rounded-lg bg-foreground border border-border flex items-start gap-2.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-white block font-semibold">Transactional Classification Headers</strong>
-                    <span className="text-2xs text-slate-400">
+                    <span className="text-2xs text-muted-foreground">
                       Injects Auto-Submitted: auto-generated and X-Auto-Response-Suppress: All for Microsoft Exchange & Gmail loops.
                     </span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+                <div className="p-3 rounded-lg bg-foreground border border-border flex items-start gap-2.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-white block font-semibold">RFC 8058 One-Click Unsubscribe</strong>
-                    <span className="text-2xs text-slate-400">
+                    <span className="text-2xs text-muted-foreground">
                       Provides legitimate unsubscribe headers to satisfy 2024 Google & Yahoo bulk and transactional sender requirements.
                     </span>
                   </div>
@@ -1282,21 +1282,21 @@ export default function PlatformEmailGatewayPage() {
         >
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Recipient Email</Label>
+              <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">Recipient Email</Label>
               <Input
                 type="email"
                 value={testRecipient}
                 onChange={(e) => setTestRecipient(e.target.value)}
                 placeholder="admin@printerp.com"
-                className="h-10 text-xs tabular-nums text-slate-900 bg-white border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                className="h-10 text-xs tabular-nums text-foreground bg-card border-input dark:text-white"
               />
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
-              Provider: <strong className="text-slate-900 dark:text-white capitalize">{gateway?.provider || 'Platform Provider'}</strong>
+            <div className="p-3 bg-muted rounded-xl border border-border text-xs text-muted-foreground dark:text-muted-foreground">
+              Provider: <strong className="text-foreground dark:text-white capitalize">{gateway?.provider || 'Platform Provider'}</strong>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border dark:border-border">
               <Button size="sm" variant="outline" onClick={() => setIsTestModalOpen(false)}>
                 Cancel
               </Button>

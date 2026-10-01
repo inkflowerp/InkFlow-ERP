@@ -1175,8 +1175,8 @@ function BillingContent() {
 
     if (status === 'cancelled') {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-slate-500/10 text-slate-700 dark:text-slate-400 border border-slate-500/20">
-          <Ban className="h-3 w-3 text-slate-500" /> Cancelled
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-slate-500/10 text-foreground border border-slate-500/20">
+          <Ban className="h-3 w-3 text-muted-foreground" /> Cancelled
         </span>
       )
     }
@@ -1225,12 +1225,12 @@ function BillingContent() {
     <div className="space-y-6 max-w-7xl mx-auto pb-20">
       {/* NOTIFICATION TOAST */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-slate-900/95 text-white dark:bg-slate-100 dark:text-slate-900 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-foreground text-white backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
           <Sparkles className="h-4 w-4 text-emerald-400 dark:text-emerald-600 shrink-0" />
           <span>{notification}</span>
           <button
             onClick={() => setNotification(null)}
-            className="p-1 text-slate-400 hover:text-white dark:hover:text-black cursor-pointer ml-1"
+            className="p-1 text-muted-foreground hover:text-white dark:hover:text-black cursor-pointer ml-1"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -1356,7 +1356,7 @@ function BillingContent() {
             colorVariant="cyan"
             subtitle={healthTier.label}
           >
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+            <div className="w-full bg-muted h-1.5 rounded-full mt-1.5 overflow-hidden">
               <div
                 className={cn('h-full rounded-full transition-all duration-500', healthTier.bar)}
                 style={{ width: `${Math.min(100, Math.max(0, collectionRateNum))}%` }}
@@ -1371,24 +1371,24 @@ function BillingContent() {
          ========================================================================= */}
       <div className="space-y-4">
         {/* Unified Single Row Toolbar: Search | Status Filter (Dropdown) | [ Invoices, Requests, Payments, Receivables ] --- Selected Date | Date filter (dropdown) | Refresh */}
-        <Card className="p-2.5 sm:p-3 shadow-xs border-slate-200 dark:border-slate-800 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+        <Card className="p-2.5 sm:p-3 shadow-xs border-border rounded-2xl bg-card/80 backdrop-blur-md">
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5">
             {/* Left: Search, Status Filter Dropdown & Main Module Tabs */}
             <div className="flex flex-1 flex-wrap items-center gap-2.5 min-w-0">
               {/* 1. Search */}
               <div className="relative flex-1 min-w-[200px] max-w-xs">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   placeholder="Search invoice #, customer, phone, BIN..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-8 text-xs h-9 font-medium rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xs"
+                  className="pl-9 pr-8 text-xs h-9 font-medium rounded-xl border-border bg-card shadow-2xs"
                 />
                 {search && (
                   <button
                     type="button"
                     onClick={() => setSearch('')}
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                    className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-muted-foreground cursor-pointer"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -1401,7 +1401,7 @@ function BillingContent() {
                   <select
                     value={invoiceFilterTab}
                     onChange={(e) => setInvoiceFilterTab(e.target.value)}
-                    className="h-9 pl-3 pr-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer appearance-none"
+                    className="h-9 pl-3 pr-8 rounded-xl border border-border bg-card text-xs font-semibold text-foreground shadow-2xs focus:ring-1 focus:ring-ring outline-none cursor-pointer appearance-none"
                   >
                     <option value="all">All Invoices ({invoices.length})</option>
                     <option value="unpaid">Unpaid / Due ({invoices.filter((i) => (i.due_amount || 0) > 0 && i.status !== 'cancelled').length})</option>
@@ -1411,14 +1411,14 @@ function BillingContent() {
                     <option value="vat">VAT 6.3 Tax Invoices ({invoices.filter((i) => i.invoice_type === 'vat_invoice').length})</option>
                     <option value="cancelled">Cancelled ({invoices.filter((i) => i.status === 'cancelled').length})</option>
                   </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground">
                     <ChevronDown className="h-3.5 w-3.5" />
                   </div>
                 </div>
               )}
 
               {/* 3. Main Module Tabs [Invoices, Invoice Requests, Payments, Receivables] */}
-              <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800/80 p-0.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs shrink-0 overflow-x-auto scrollbar-none">
+              <div className="flex items-center gap-1 bg-muted p-0.5 rounded-xl border border-border dark:border-slate-700/60 text-xs shrink-0 overflow-x-auto scrollbar-none">
                 <button
                   type="button"
                   onClick={() => handleTabChange('invoices')}
@@ -1426,12 +1426,12 @@ function BillingContent() {
                     'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
                     activeTab === 'invoices'
                       ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
                   )}
                 >
                   <Receipt className="h-3.5 w-3.5" />
                   <span>Invoices</span>
-                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300')}>
+                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-muted text-foreground dark:text-muted-foreground')}>
                     {invoices.length}
                   </Badge>
                 </button>
@@ -1443,7 +1443,7 @@ function BillingContent() {
                     'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
                     activeTab === 'requests'
                       ? 'bg-amber-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
                   )}
                 >
                   <FileSpreadsheet className="h-3.5 w-3.5" />
@@ -1453,7 +1453,7 @@ function BillingContent() {
                       {pendingRequestsCount} Hold
                     </Badge>
                   ) : (
-                    <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300')}>
+                    <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-muted text-foreground dark:text-muted-foreground')}>
                       {invoiceRequests.length}
                     </Badge>
                   )}
@@ -1466,12 +1466,12 @@ function BillingContent() {
                     'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
                     activeTab === 'payments'
                       ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
                   )}
                 >
                   <DollarSign className="h-3.5 w-3.5" />
                   <span>Payments</span>
-                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300')}>
+                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-muted text-foreground dark:text-muted-foreground')}>
                     {payments.length}
                   </Badge>
                 </button>
@@ -1483,12 +1483,12 @@ function BillingContent() {
                     'h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0',
                     activeTab === 'receivables'
                       ? 'bg-purple-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
                   )}
                 >
                   <Percent className="h-3.5 w-3.5" />
                   <span>Receivables</span>
-                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300')}>
+                  <Badge className={cn('text-2xs py-0 px-1 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-muted text-foreground dark:text-muted-foreground')}>
                     {customerReceivables.length}
                   </Badge>
                 </button>
@@ -1499,33 +1499,33 @@ function BillingContent() {
             <div className="flex flex-wrap items-center gap-2.5 shrink-0 justify-end">
               {/* 4. Selected Date */}
               {selectedPeriod === 'custom' ? (
-                <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/90 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs shadow-2xs">
+                <div className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-xl border border-border text-xs shadow-2xs">
                   <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                   <input
                     type="date"
                     value={customStartDate}
                     onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none h-7"
+                    className="px-2 py-0.5 rounded-lg bg-card border border-input dark:border-slate-600 text-foreground dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-ring outline-none h-7"
                     title="From Date"
                   />
-                  <span className="text-slate-400 font-bold px-0.5 text-xs">to</span>
+                  <span className="text-muted-foreground font-bold px-0.5 text-xs">to</span>
                   <input
                     type="date"
                     value={customEndDate}
                     onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-blue-500 outline-none h-7"
+                    className="px-2 py-0.5 rounded-lg bg-card border border-input dark:border-slate-600 text-foreground dark:text-white tabular-nums text-xs focus:ring-1 focus:ring-ring outline-none h-7"
                     title="To Date"
                   />
                   <Button
                     size="sm"
                     onClick={() => loadBillingData()}
-                    className="h-7 px-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer rounded-lg"
+                    className="h-7 px-2 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer rounded-lg"
                   >
                     Apply
                   </Button>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 bg-slate-100/70 dark:bg-slate-800/70 px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs font-semibold text-slate-600 dark:text-slate-300 tabular-nums whitespace-nowrap">
+                <div className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-xl border border-border dark:border-slate-700/60 text-xs font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
                   <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                   <span>
                     {effectiveMetrics?.startDate === effectiveMetrics?.endDate
@@ -1540,7 +1540,7 @@ function BillingContent() {
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value as BillingPeriod)}
-                  className="h-9 pl-3 pr-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer appearance-none"
+                  className="h-9 pl-3 pr-8 rounded-xl border border-border bg-card text-xs font-semibold text-foreground shadow-2xs focus:ring-1 focus:ring-ring outline-none cursor-pointer appearance-none"
                 >
                   <option value="today">{tBilingual('Today', 'আজ')}</option>
                   <option value="this_week">{tBilingual('This Week', 'এই সপ্তাহ')}</option>
@@ -1548,7 +1548,7 @@ function BillingContent() {
                   <option value="all_time">{tBilingual('All Time', 'সর্বমোট')}</option>
                   <option value="custom">{tBilingual('Custom Date', 'কাস্টম তারিখ')}</option>
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground">
                   <ChevronDown className="h-3.5 w-3.5" />
                 </div>
               </div>
@@ -1557,7 +1557,7 @@ function BillingContent() {
               <button
                 type="button"
                 onClick={() => loadBillingData()}
-                className="h-9 w-9 flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer shrink-0"
+                className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted transition-colors shadow-2xs cursor-pointer shrink-0"
                 title="Refresh billing data"
               >
                 <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin text-blue-600')} />
@@ -1574,8 +1574,8 @@ function BillingContent() {
             {/* Filter status indicator when filtered */}
             {invoiceFilterTab !== 'all' && (
               <div className="flex items-center justify-between px-1 text-xs">
-                <span className="text-slate-500 font-medium">
-                  Filtered by: <strong className="text-slate-800 dark:text-slate-200">{invoiceFilterTab.replace('_', ' ')}</strong>
+                <span className="text-muted-foreground font-medium">
+                  Filtered by: <strong className="text-foreground dark:text-foreground">{invoiceFilterTab.replace('_', ' ')}</strong>
                 </span>
                 <button
                   type="button"
@@ -1588,11 +1588,11 @@ function BillingContent() {
             )}
 
             {/* Invoices List / Table */}
-            <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+            <Card className="border-border dark:border-border/80 shadow-xs overflow-hidden rounded-2xl bg-card/80 backdrop-blur-md">
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto min-h-[340px] pb-12">
                 <table className="w-full text-left text-xs min-w-[940px]">
-                  <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
+                  <thead className="bg-muted border-b border-border dark:border-border/80 text-muted-foreground uppercase tracking-wider text-2xs font-bold">
                     <tr>
                       <th className="p-3.5 whitespace-nowrap min-w-[125px]">Invoice #</th>
                       <th className="p-3.5 min-w-[160px]">Customer & Phone</th>
@@ -1606,16 +1606,16 @@ function BillingContent() {
                       <th className="p-3.5 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredInvoices.length === 0 ? (
                       <tr>
-                        <td colSpan={10} className="p-12 text-center text-slate-500 text-xs">
+                        <td colSpan={10} className="p-12 text-center text-muted-foreground text-xs">
                           No commercial invoices found matching current filters.
                         </td>
                       </tr>
                     ) : (
                       filteredInvoices.map((inv, index) => (
-                        <tr key={inv.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
+                        <tr key={inv.id} className="hover:bg-muted dark:hover:bg-muted/60 transition-colors">
                           <td className="p-3.5 whitespace-nowrap min-w-[125px]">
                             <div className="flex items-center gap-1.5 flex-nowrap">
                               <Link
@@ -1631,30 +1631,30 @@ function BillingContent() {
                               )}
                             </div>
                             {inv.order_number && (
-                              <span className="text-2xs text-slate-400 tabular-nums block mt-0.5 whitespace-nowrap">
+                              <span className="text-2xs text-muted-foreground tabular-nums block mt-0.5 whitespace-nowrap">
                                 Order: {inv.order_number}
                               </span>
                             )}
                           </td>
                           <td className="p-3.5 min-w-[160px]">
-                            <div className="font-bold text-slate-900 dark:text-white leading-tight">{inv.customer_name}</div>
+                            <div className="font-bold text-foreground dark:text-white leading-tight">{inv.customer_name}</div>
                             {inv.customer_phone ? (
                               <a
                                 href={`tel:${inv.customer_phone}`}
-                                className="text-2xs text-slate-500 tabular-nums hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5 whitespace-nowrap"
+                                className="text-2xs text-muted-foreground tabular-nums hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5 whitespace-nowrap"
                                 title="Call Customer"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <Phone className="h-3 w-3 text-slate-400 shrink-0" />
+                                <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
                                 <span>{inv.customer_phone}</span>
                               </a>
                             ) : (
-                              <span className="text-2xs text-slate-400 tabular-nums">—</span>
+                              <span className="text-2xs text-muted-foreground tabular-nums">—</span>
                             )}
                           </td>
-                          <td className="p-3.5 text-center tabular-nums text-slate-500 whitespace-nowrap">{inv.invoice_date}</td>
-                          <td className="p-3.5 text-center tabular-nums text-slate-500 whitespace-nowrap">{inv.due_date}</td>
-                          <td className="p-3.5 text-right tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          <td className="p-3.5 text-center tabular-nums text-muted-foreground whitespace-nowrap">{inv.invoice_date}</td>
+                          <td className="p-3.5 text-center tabular-nums text-muted-foreground whitespace-nowrap">{inv.due_date}</td>
+                          <td className="p-3.5 text-right tabular-nums font-bold text-foreground dark:text-white whitespace-nowrap">
                             {formatBDT(inv.grand_total)}
                           </td>
                           <td className="p-3.5 text-right tabular-nums text-emerald-600 font-bold whitespace-nowrap">
@@ -1666,7 +1666,7 @@ function BillingContent() {
                           <td className="p-3.5 text-center whitespace-nowrap">
                             {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
                           </td>
-                          <td className="p-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          <td className="p-3.5 text-muted-foreground whitespace-nowrap">
                             {inv.salesperson_name || inv.created_by_name || 'Commercial'}
                           </td>
                           <td className="p-3.5 text-center whitespace-nowrap w-[70px] min-w-[70px]">
@@ -1681,8 +1681,8 @@ function BillingContent() {
                                 className={cn(
                                   'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
                                   activeMenuInvoiceId === inv.id
-                                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
-                                    : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                    ? 'bg-muted text-foreground dark:text-white'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
                                 )}
                                 title="Invoice Actions"
                                 aria-label="Invoice Actions"
@@ -1694,7 +1694,7 @@ function BillingContent() {
                               {activeMenuInvoiceId === inv.id && (
                                 <div
                                   className={cn(
-                                    'absolute right-0 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+                                    'absolute right-0 w-52 bg-card border border-border rounded-xl shadow-xl z-50 py-1 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
                                     index >= filteredInvoices.length - 2 && filteredInvoices.length >= 3
                                       ? 'bottom-full mb-1'
                                       : 'top-full mt-1'
@@ -1704,7 +1704,7 @@ function BillingContent() {
                                   <Link
                                     href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
                                     onClick={() => setActiveMenuInvoiceId(null)}
-                                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors"
+                                    className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors"
                                   >
                                     <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                                     <span className="font-medium">View Invoice</span>
@@ -1740,7 +1740,7 @@ function BillingContent() {
                                         setActiveMenuInvoiceId(null)
                                         handleSendReminder(inv.id)
                                       }}
-                                      className="w-full text-left px-3 py-2 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                      className="w-full text-left px-3 py-2 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 flex items-center gap-2.5 text-foreground hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                                     >
                                       <MessageSquare className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                                       <span>Remind (WhatsApp)</span>
@@ -1749,7 +1749,7 @@ function BillingContent() {
 
                                   {/* Divider if delete/void actions present */}
                                   {can('delete', 'invoices') && inv.status !== 'cancelled' && (
-                                    <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+                                    <div className="my-1 border-t border-border dark:border-border" />
                                   )}
 
                                   {/* Cancel / Void Invoice */}
@@ -1793,9 +1793,9 @@ function BillingContent() {
               </div>
 
               {/* Mobile Card List View */}
-              <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              <div className="md:hidden divide-y divide-border dark:divide-border">
                 {filteredInvoices.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-500">
+                  <div className="p-8 text-center text-xs text-muted-foreground">
                     No invoices matching search filters.
                   </div>
                 ) : (
@@ -1815,7 +1815,7 @@ function BillingContent() {
                       </div>
 
                       <div>
-                        <div className="font-bold text-sm text-slate-900 dark:text-white">{inv.customer_name}</div>
+                        <div className="font-bold text-sm text-foreground dark:text-white">{inv.customer_name}</div>
                         {inv.customer_phone ? (
                           <a
                             href={`tel:${inv.customer_phone}`}
@@ -1825,14 +1825,14 @@ function BillingContent() {
                             <span>{inv.customer_phone}</span>
                           </a>
                         ) : (
-                          <div className="text-xs text-slate-400 tabular-nums">No phone</div>
+                          <div className="text-xs text-muted-foreground tabular-nums">No phone</div>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 text-center tabular-nums text-xs bg-slate-50/70 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
+                      <div className="grid grid-cols-3 gap-2 text-center tabular-nums text-xs bg-muted p-2.5 rounded-xl border border-border dark:border-border/50">
                         <div>
-                          <span className="text-2xs text-slate-400 block">Total</span>
-                          <span className="font-bold text-slate-800 dark:text-slate-200">{formatBDT(inv.grand_total)}</span>
+                          <span className="text-2xs text-muted-foreground block">Total</span>
+                          <span className="font-bold text-foreground dark:text-foreground">{formatBDT(inv.grand_total)}</span>
                         </div>
                         <div>
                           <span className="text-2xs text-emerald-600 block">Paid</span>
@@ -1845,7 +1845,7 @@ function BillingContent() {
                       </div>
 
                       <div className="flex items-center justify-between pt-1">
-                        <span className="text-2xs text-slate-400 tabular-nums">Date: {inv.invoice_date}</span>
+                        <span className="text-2xs text-muted-foreground tabular-nums">Date: {inv.invoice_date}</span>
                         <div className="flex items-center gap-2">
                           {inv.due_amount > 0 && inv.status !== 'cancelled' && (
                             <>
@@ -1881,7 +1881,7 @@ function BillingContent() {
                               size="sm"
                               variant="ghost"
                               onClick={() => setSelectedInvoiceForDelete(inv)}
-                              className="h-8 text-xs px-2 text-slate-400 hover:text-rose-600 rounded-lg"
+                              className="h-8 text-xs px-2 text-muted-foreground hover:text-rose-600 rounded-lg"
                             >
                               Delete
                             </Button>
@@ -1993,15 +1993,15 @@ function BillingContent() {
         {activeTab === 'payments' && (
           <div className="space-y-4">
             {/* Payments Count Header */}
-            <div className="flex items-center justify-between px-1 text-xs text-slate-500 tabular-nums">
+            <div className="flex items-center justify-between px-1 text-xs text-muted-foreground tabular-nums">
               <span>Showing {filteredPayments.length} recorded payments</span>
             </div>
 
             {/* Payments Table */}
-            <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+            <Card className="border-border dark:border-border/80 shadow-xs overflow-hidden rounded-2xl bg-card/80 backdrop-blur-md">
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs min-w-[950px]">
-                  <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
+                  <thead className="bg-muted border-b border-border dark:border-border/80 text-muted-foreground uppercase tracking-wider text-2xs font-bold">
                     <tr>
                       <th className="p-3.5 whitespace-nowrap min-w-[130px]">Receipt #</th>
                       <th className="p-3.5 text-center whitespace-nowrap w-[100px] min-w-[100px]">Date</th>
@@ -2013,35 +2013,35 @@ function BillingContent() {
                       <th className="p-3.5 text-right whitespace-nowrap w-[100px] min-w-[100px]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border dark:divide-border">
                     {filteredPayments.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-12 text-center text-slate-500 text-xs">
+                        <td colSpan={8} className="p-12 text-center text-muted-foreground text-xs">
                           No payment records found.
                         </td>
                       </tr>
                     ) : (
                       filteredPayments.map((pay) => (
-                        <tr key={pay.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
+                        <tr key={pay.id} className="hover:bg-muted dark:hover:bg-muted/60 transition-colors">
                           <td className="p-3.5 tabular-nums font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                             {pay.receipt_number}
                           </td>
-                          <td className="p-3.5 text-center tabular-nums text-slate-500 whitespace-nowrap">{pay.payment_date}</td>
-                          <td className="p-3.5 font-bold text-slate-900 dark:text-white leading-tight">
+                          <td className="p-3.5 text-center tabular-nums text-muted-foreground whitespace-nowrap">{pay.payment_date}</td>
+                          <td className="p-3.5 font-bold text-foreground dark:text-white leading-tight">
                             {pay.customer_name || 'Walk-in Customer'}
                           </td>
                           <td className="p-3.5 whitespace-nowrap">
-                            <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-2xs rounded-md font-semibold whitespace-nowrap">
+                            <Badge className="bg-muted text-foreground uppercase text-2xs rounded-md font-semibold whitespace-nowrap">
                               {pay.payment_method}
                             </Badge>
                           </td>
-                          <td className="p-3.5 tabular-nums text-slate-500 text-2xs whitespace-nowrap">
+                          <td className="p-3.5 tabular-nums text-muted-foreground text-2xs whitespace-nowrap">
                             {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name || '—'}
                           </td>
                           <td className="p-3.5 text-right tabular-nums font-black text-emerald-600 text-sm whitespace-nowrap">
                             {formatBDT(pay.amount)}
                           </td>
-                          <td className="p-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          <td className="p-3.5 text-muted-foreground whitespace-nowrap">
                             {pay.received_by_name || 'Cashier'}
                           </td>
                           <td className="p-3.5 text-right whitespace-nowrap w-[100px] min-w-[100px]">
@@ -2066,9 +2066,9 @@ function BillingContent() {
               </div>
 
               {/* Mobile Card List View for Payments */}
-              <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              <div className="md:hidden divide-y divide-border dark:divide-border">
                 {filteredPayments.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-500">
+                  <div className="p-8 text-center text-xs text-muted-foreground">
                     No payment records found.
                   </div>
                 ) : (
@@ -2078,17 +2078,17 @@ function BillingContent() {
                         <span className="tabular-nums font-bold text-sm text-emerald-600 dark:text-emerald-400">
                           {pay.receipt_number}
                         </span>
-                        <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-2xs rounded-md">
+                        <Badge className="bg-muted text-foreground uppercase text-2xs rounded-md">
                           {pay.payment_method}
                         </Badge>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="font-bold text-sm text-slate-900 dark:text-white">
+                          <div className="font-bold text-sm text-foreground dark:text-white">
                             {pay.customer_name || 'Walk-in Customer'}
                           </div>
-                          <div className="text-2xs text-slate-400 tabular-nums mt-0.5">
+                          <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
                             {pay.payment_date} • By: {pay.received_by_name || 'Cashier'}
                           </div>
                         </div>
@@ -2097,7 +2097,7 @@ function BillingContent() {
                             {formatBDT(pay.amount)}
                           </div>
                           {(pay.mfs_transaction_id || pay.cheque_number || pay.bank_name) && (
-                            <span className="text-2xs text-slate-400 tabular-nums block">
+                            <span className="text-2xs text-muted-foreground tabular-nums block">
                               Ref: {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name}
                             </span>
                           )}
@@ -2135,14 +2135,14 @@ function BillingContent() {
             {receivablesAging && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {receivablesAging.buckets.map((b) => (
-                  <Card key={b.bucket} className="p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs rounded-2xl">
-                    <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <Card key={b.bucket} className="p-3.5 bg-card/80 backdrop-blur-md border-border dark:border-border/80 shadow-xs rounded-2xl">
+                    <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
                       {b.label}
                     </span>
-                    <div className="text-base font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
+                    <div className="text-base font-black font-numeric tabular-nums text-foreground dark:text-white mt-1">
                       {formatBDT(b.amount || 0)}
                     </div>
-                    <span className="text-xs text-slate-400 font-numeric tabular-nums">
+                    <span className="text-xs text-muted-foreground font-numeric tabular-nums">
                       {b.invoiceCount || 0} Bills • {b.customerCount || 0} Cust
                     </span>
                   </Card>
@@ -2151,13 +2151,13 @@ function BillingContent() {
             )}
 
             {/* Customer Due List with Actionable Receive Payment Button */}
-            <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
-              <CardHeader className="p-4 bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <Card className="border-border dark:border-border/80 shadow-xs overflow-hidden rounded-2xl bg-card/80 backdrop-blur-md">
+              <CardHeader className="p-4 bg-muted border-b border-border dark:border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                  <CardTitle className="text-sm font-black text-foreground dark:text-white uppercase tracking-wider">
                     Customer Receivables & Collection Ledger
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-500 mt-0.5">
+                  <CardDescription className="text-xs text-muted-foreground mt-0.5">
                     Select any customer to send payment reminder or collect payment
                   </CardDescription>
                 </div>
@@ -2166,7 +2166,7 @@ function BillingContent() {
               <CardContent className="p-0">
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left text-xs min-w-[950px]">
-                    <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
+                    <thead className="bg-muted border-b border-border dark:border-border/80 text-muted-foreground uppercase tracking-wider text-2xs font-bold">
                       <tr>
                         <th className="p-3.5 min-w-[180px]">Customer</th>
                         <th className="p-3.5 whitespace-nowrap min-w-[120px]">Phone</th>
@@ -2177,27 +2177,27 @@ function BillingContent() {
                         <th className="p-3.5 text-right whitespace-nowrap w-[180px] min-w-[180px]">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-border dark:divide-border">
                       {customerReceivables.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="p-12 text-center text-slate-500 text-xs">
+                          <td colSpan={7} className="p-12 text-center text-muted-foreground text-xs">
                             No customers with outstanding due balances matching filters.
                           </td>
                         </tr>
                       ) : (
                         customerReceivables.map((c) => (
-                          <tr key={c.customerId || c.customerName} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
+                          <tr key={c.customerId || c.customerName} className="hover:bg-muted dark:hover:bg-muted/60 transition-colors">
                             <td className="p-3.5 min-w-[180px]">
-                              <span className="font-bold text-slate-900 dark:text-white leading-tight">{c.customerName}</span>
+                              <span className="font-bold text-foreground dark:text-white leading-tight">{c.customerName}</span>
                             </td>
-                            <td className="p-3.5 tabular-nums text-slate-500 whitespace-nowrap">
+                            <td className="p-3.5 tabular-nums text-muted-foreground whitespace-nowrap">
                               {c.customerPhone ? (
                                 <a
                                   href={`tel:${c.customerPhone}`}
-                                  className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 whitespace-nowrap"
+                                  className="text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 whitespace-nowrap"
                                   title="Call Customer"
                                 >
-                                  <Phone className="h-3 w-3 text-slate-400 shrink-0" />
+                                  <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
                                   <span>{c.customerPhone}</span>
                                 </a>
                               ) : (
@@ -2207,7 +2207,7 @@ function BillingContent() {
                             <td className="p-3.5 text-center tabular-nums font-bold text-blue-600 whitespace-nowrap">
                               {c.unpaidCount} Invoices
                             </td>
-                            <td className="p-3.5 text-center tabular-nums text-slate-500 whitespace-nowrap">{c.oldestDueDate}</td>
+                            <td className="p-3.5 text-center tabular-nums text-muted-foreground whitespace-nowrap">{c.oldestDueDate}</td>
                             <td className="p-3.5 text-center whitespace-nowrap">
                               {c.maxDaysOverdue > 0 ? (
                                 <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-2xs rounded-md whitespace-nowrap">
@@ -2257,16 +2257,16 @@ function BillingContent() {
                 </div>
 
                 {/* Mobile Card List View for Receivables */}
-                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="md:hidden divide-y divide-border dark:divide-border">
                   {customerReceivables.length === 0 ? (
-                    <div className="p-8 text-center text-xs text-slate-500">
+                    <div className="p-8 text-center text-xs text-muted-foreground">
                       No customers with outstanding due balances matching filters.
                     </div>
                   ) : (
                     customerReceivables.map((c) => (
                       <div key={c.customerId || c.customerName} className="p-4 space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-sm text-slate-900 dark:text-white">
+                          <span className="font-bold text-sm text-foreground dark:text-white">
                             {c.customerName}
                           </span>
                           {c.maxDaysOverdue > 0 ? (
@@ -2290,18 +2290,18 @@ function BillingContent() {
                               <span>{c.customerPhone}</span>
                             </a>
                           ) : (
-                            <span className="text-slate-500">Phone: —</span>
+                            <span className="text-muted-foreground">Phone: —</span>
                           )}
                           <span className="text-blue-600 font-bold">{c.unpaidCount} Bills</span>
                         </div>
 
-                        <div className="flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
+                        <div className="flex items-center justify-between bg-muted p-2.5 rounded-xl border border-border dark:border-border/50">
                           <div>
-                            <span className="text-2xs text-slate-400 block tabular-nums">Oldest Due Date</span>
-                            <span className="text-xs tabular-nums text-slate-700 dark:text-slate-300">{c.oldestDueDate}</span>
+                            <span className="text-2xs text-muted-foreground block tabular-nums">Oldest Due Date</span>
+                            <span className="text-xs tabular-nums text-foreground dark:text-muted-foreground">{c.oldestDueDate}</span>
                           </div>
                           <div className="text-right">
-                            <span className="text-2xs text-slate-400 block tabular-nums">Total Outstanding</span>
+                            <span className="text-2xs text-muted-foreground block tabular-nums">Total Outstanding</span>
                             <span className="tabular-nums font-black text-rose-600 text-sm">{formatBDT(c.totalDue)}</span>
                           </div>
                         </div>
@@ -2437,7 +2437,7 @@ function BillingContent() {
               <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-1">
                 <strong>Paid invoices cannot be deleted</strong> because they are part of the permanent financial record.
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">
+              <div className="text-xs text-muted-foreground dark:text-muted-foreground">
                 Invoice: <strong>#{selectedInvoiceForDelete.invoice_number}</strong><br />
                 Customer: <strong>{selectedInvoiceForDelete.customer_name}</strong><br />
                 Total Paid: <strong className="tabular-nums">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong>
@@ -2453,7 +2453,7 @@ function BillingContent() {
               <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-1">
                 <strong>Partially paid invoices cannot be deleted directly</strong> because financial payments are attached to this document. Please perform an authorized payment refund/reversal first.
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">
+              <div className="text-xs text-muted-foreground dark:text-muted-foreground">
                 Invoice: <strong>#{selectedInvoiceForDelete.invoice_number}</strong><br />
                 Customer: <strong>{selectedInvoiceForDelete.customer_name}</strong><br />
                 Paid: <strong className="tabular-nums text-emerald-600">{formatBDT(selectedInvoiceForDelete.paid_amount || 0)}</strong><br />
@@ -2467,13 +2467,13 @@ function BillingContent() {
             </div>
           ) : (
             <form onSubmit={handleConfirmDelete} className="space-y-4 pt-1">
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 tabular-nums">
-                <div>Invoice: <strong className="text-slate-900 dark:text-white">#{selectedInvoiceForDelete.invoice_number}</strong></div>
-                <div>Customer: <strong className="text-slate-900 dark:text-white">{selectedInvoiceForDelete.customer_name}</strong></div>
-                <div>Amount: <strong className="text-slate-900 dark:text-white font-bold">{formatBDT(selectedInvoiceForDelete.grand_total)}</strong></div>
+              <div className="p-3.5 bg-muted rounded-xl border border-border text-xs space-y-1.5 tabular-nums">
+                <div>Invoice: <strong className="text-foreground dark:text-white">#{selectedInvoiceForDelete.invoice_number}</strong></div>
+                <div>Customer: <strong className="text-foreground dark:text-white">{selectedInvoiceForDelete.customer_name}</strong></div>
+                <div>Amount: <strong className="text-foreground dark:text-white font-bold">{formatBDT(selectedInvoiceForDelete.grand_total)}</strong></div>
               </div>
 
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                 This invoice will be removed from normal billing views.
               </p>
 
@@ -2515,7 +2515,7 @@ function BillingContent() {
           hideFooter
         >
           <form onSubmit={handleConfirmCancel} className="space-y-4 pt-1">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               Are you sure you want to void this invoice? This will reverse any customer receivables.
             </p>
 
@@ -2556,7 +2556,7 @@ export default function BillingPage() {
       fallback={
         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
           <Receipt className="h-7 w-7 text-blue-600 animate-pulse" />
-          <p className="text-xs font-medium text-slate-500">Loading Billing Workspace...</p>
+          <p className="text-xs font-medium text-muted-foreground">Loading Billing Workspace...</p>
         </div>
       }
     >

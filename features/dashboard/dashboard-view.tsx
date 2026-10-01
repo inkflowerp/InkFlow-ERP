@@ -340,10 +340,10 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       sortable: true,
       render: (row) => (
         <div className="flex flex-col">
-          <span className="font-semibold text-slate-900 dark:text-slate-100 bangla-text">
+          <span className="font-semibold text-foreground bangla-text">
             {tBilingual(row.customerName, row.customerNameBn)}
           </span>
-          <span className="text-xs text-slate-500 dark:text-slate-400">{row.specs}</span>
+          <span className="text-xs text-muted-foreground dark:text-muted-foreground">{row.specs}</span>
         </div>
       ),
     },
@@ -352,7 +352,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       header: 'Printing Item',
       headerBn: 'আইটেম বিবরণ',
       render: (row) => (
-        <span className="text-xs text-slate-700 dark:text-slate-300">
+        <span className="text-xs text-foreground dark:text-muted-foreground">
           {tBilingual(row.product, row.productBn)}
         </span>
       ),
@@ -447,21 +447,21 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
         <div className="space-y-6 pb-12 animate-pulse">
           {/* Header Skeleton */}
           <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-5 sm:p-6 text-white shadow-xl">
-            <div className="h-4 w-40 bg-white/20 rounded-full mb-3" />
-            <div className="h-8 w-64 bg-white/30 rounded-lg mb-2" />
-            <div className="h-4 w-96 bg-white/20 rounded-md" />
+            <div className="h-4 w-40 bg-card/20 rounded-full mb-3" />
+            <div className="h-8 w-64 bg-card/30 rounded-lg mb-2" />
+            <div className="h-4 w-96 bg-card/20 rounded-md" />
           </div>
 
           {/* 4 KPIs Skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-[72px] rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3" />
+              <div key={i} className="h-[72px] rounded-xl bg-muted border border-border p-3" />
             ))}
           </div>
 
           {/* Needs Attention & Production Feed Skeletons */}
-          <div className="h-48 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
-          <div className="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+          <div className="h-48 rounded-xl bg-muted border border-border p-4" />
+          <div className="h-64 rounded-xl bg-muted border border-border p-4" />
         </div>
       )
     }
@@ -473,15 +473,15 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
             <div className="inline-flex p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 mb-4">
               <AlertCircle className="h-8 w-8" />
             </div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 bangla-text mb-1">
+            <h2 className="text-lg font-bold text-foreground bangla-text mb-1">
               {tBilingual('Unable to load business dashboard', 'ড্যাশবোর্ড তথ্য লোড করা যায়নি')}
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto bangla-text">
+            <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto bangla-text">
               {ownerError}
             </p>
             <Button
               onClick={() => fetchOwnerSnapshot(false)}
-              className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               {tBilingual('Retry Loading', 'পুনরায় চেষ্টা করুন')}
@@ -496,21 +496,21 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
         <div className="space-y-6 pb-12 animate-pulse">
           {/* Header Skeleton */}
           <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-5 sm:p-6 text-white shadow-xl">
-            <div className="h-4 w-40 bg-white/20 rounded-full mb-3" />
-            <div className="h-8 w-64 bg-white/30 rounded-lg mb-2" />
-            <div className="h-4 w-96 bg-white/20 rounded-md" />
+            <div className="h-4 w-40 bg-card/20 rounded-full mb-3" />
+            <div className="h-8 w-64 bg-card/30 rounded-lg mb-2" />
+            <div className="h-4 w-96 bg-card/20 rounded-md" />
           </div>
 
           {/* 4 KPIs Skeleton */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-[72px] rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3" />
+              <div key={i} className="h-[72px] rounded-xl bg-muted border border-border p-3" />
             ))}
           </div>
 
           {/* Needs Attention & Production Feed Skeletons */}
-          <div className="h-48 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
-          <div className="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4" />
+          <div className="h-48 rounded-xl bg-muted border border-border p-4" />
+          <div className="h-64 rounded-xl bg-muted border border-border p-4" />
         </div>
       )
     }
@@ -568,13 +568,13 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     const renderWorkspaceSwitcher = () => {
       if (availableWorkspaces.length <= 1) return null
       return (
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-card border border-border shadow-sm">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold text-xs gap-1.5 border-blue-200 py-1">
               <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
               {tBilingual('Multi-Responsibility Workspace', 'বহুমুখী দায়িত্ব কর্মক্ষেত্র')}
             </Badge>
-            <span className="text-xs text-slate-500 hidden md:inline">
+            <span className="text-xs text-muted-foreground hidden md:inline">
               {tBilingual('Switch active role view:', 'বর্তমান প্যানেল পরিবর্তন করুন:')}
             </span>
           </div>
@@ -587,8 +587,8 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
                 className={cn(
                   'h-8 text-xs font-semibold gap-1.5 transition-all cursor-pointer',
                   activeWorkspaceId === ws.id
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                    : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs'
+                    : 'hover:bg-muted text-foreground dark:text-muted-foreground'
                 )}
                 onClick={() => setSelectedRoleWorkspace(ws.id)}
               >
@@ -775,7 +775,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
         <div className="space-y-2">
           <div className="flex items-center gap-2 px-1">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
               {tBilingual('Needs Attention', 'জরুরি মনোযোগ')}
             </h2>
           </div>
@@ -799,11 +799,11 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
                         item.severity === 'urgent' ? 'bg-red-600' : 'bg-amber-600'
                       )}
                     />
-                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text">
+                    <h3 className="font-bold text-xs sm:text-sm text-foreground bangla-text">
                       {tBilingual(item.titleEn, item.titleBn)}
                     </h3>
                   </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text pl-4">
+                  <p className="text-xs text-muted-foreground bangla-text pl-4">
                     {tBilingual(item.subtitleEn, item.subtitleBn)}
                   </p>
                 </div>
@@ -839,7 +839,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       <div className="space-y-2">
         <div className="flex items-center gap-2 px-1">
           <TrendingUp className="h-4 w-4 text-blue-600" />
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
             {tBilingual("Today's Overview", 'আজকের সার্বিক হিসাব')}
           </h2>
         </div>
@@ -885,11 +885,11 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
               <Printer className="h-4 w-4 text-purple-600" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
                 {tBilingual("My Work Queue & Shift Tasks", 'আমার দায়িত্বপ্রাপ্ত কাজের তালিকা')}
               </h2>
             </div>
-            <span className="text-xs text-slate-400 bangla-text">
+            <span className="text-xs text-muted-foreground bangla-text">
               {num(myWorkItems.length)} {tBilingual('Active Items', 'টি কাজ')}
             </span>
           </div>
@@ -898,7 +898,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
             {myWorkItems.map((item) => (
               <Card
                 key={item.id}
-                className="p-4 border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col justify-between gap-3 bg-white dark:bg-slate-900"
+                className="p-4 border-border shadow-xs flex flex-col justify-between gap-3 bg-card dark:bg-card"
               >
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
@@ -923,19 +923,19 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
                     </Badge>
                   </div>
 
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 bangla-text line-clamp-1">
+                  <h3 className="font-bold text-sm text-foreground bangla-text line-clamp-1">
                     {tBilingual(item.titleEn, item.titleBn)}
                   </h3>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text">
-                    <strong className="text-slate-800 dark:text-slate-200">{item.customerName}</strong>
+                  <p className="text-xs text-muted-foreground bangla-text">
+                    <strong className="text-foreground dark:text-foreground">{item.customerName}</strong>
                   </p>
 
-                  <p className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">{item.specs}</p>
+                  <p className="text-xs text-muted-foreground tabular-nums">{item.specs}</p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                  <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
                     {item.deadline}
                   </span>
@@ -946,7 +946,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
                         size="sm"
                         variant="ghost"
                         onClick={() => handleWorkItemAction(item, item.secondaryActionType!)}
-                        className="h-8 px-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 min-h-[36px] bangla-text cursor-pointer"
+                        className="h-8 px-2.5 text-xs font-semibold text-muted-foreground min-h-[36px] bangla-text cursor-pointer"
                       >
                         {tBilingual(item.secondaryActionLabelEn, item.secondaryActionLabelBn || item.secondaryActionLabelEn)}
                       </Button>
@@ -960,7 +960,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
                           'h-8 px-3 text-xs font-bold shadow-xs min-h-[36px] bangla-text cursor-pointer',
                           item.primaryActionType === 'complete_job' || item.primaryActionType === 'confirm_delivered'
                             ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                         )}
                       >
                         {item.primaryActionType === 'start_job' && <Play className="h-3 w-3 mr-1" />}
@@ -982,8 +982,8 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       {canSeeFinancials && <DashboardCharts />}
 
       {/* 7. LIVE RECENT JOB ORDERS TABLE (Scope-Filtered) */}
-      <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+      <Card className="border-border shadow-xs">
+        <CardHeader className="pb-3 border-b border-border dark:border-border">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base font-bold bangla-text">
@@ -1013,7 +1013,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
             />
           ) : (
             <div className="p-8 text-center space-y-2">
-              <p className="text-xs text-slate-500 bangla-text">
+              <p className="text-xs text-muted-foreground bangla-text">
                 {tBilingual('No active work orders found for your account scope.', 'আপনার জন্য কোনো চলতি অর্ডার নেই।')}
               </p>
               {can('create', 'orders') && (

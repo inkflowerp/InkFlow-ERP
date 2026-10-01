@@ -76,12 +76,12 @@ export function PlatformTicketInfo({
   return (
     <div
       className={cn(
-        'w-80 shrink-0 h-full overflow-y-auto bg-slate-900/95 p-4 border-l border-slate-800 space-y-4 text-xs select-text font-sans scrollbar-thin scrollbar-thumb-slate-800',
+        'w-80 shrink-0 h-full overflow-y-auto bg-foreground p-4 border-l border-border space-y-4 text-xs select-text font-sans scrollbar-thin scrollbar-thumb-slate-800',
         isDrawer && 'w-full max-w-md shadow-2xl z-50'
       )}
     >
       {/* 1. Ticket Overview Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+      <div className="flex items-center justify-between pb-2 border-b border-border">
         <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-2xs text-indigo-400">
           <Tag className="w-3.5 h-3.5 text-indigo-400" />
           <span>Ticket Inspector</span>
@@ -90,7 +90,7 @@ export function PlatformTicketInfo({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
             title="Close Details"
           >
             <X className="w-4 h-4" />
@@ -99,33 +99,33 @@ export function PlatformTicketInfo({
       </div>
 
       {/* 2. Ticket Core Attributes Card */}
-      <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-2.5 shadow-xs">
+      <div className="p-3.5 rounded-2xl bg-foreground border border-border space-y-2.5 shadow-xs">
         <div className="flex items-center justify-between">
-          <span className="text-slate-400 font-medium">Ticket #</span>
+          <span className="text-muted-foreground font-medium">Ticket #</span>
           <span className="tabular-nums font-bold text-indigo-400 text-xs">{conversation.ticket_number}</span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-slate-400 font-medium">Status</span>
+          <span className="text-muted-foreground font-medium">Status</span>
           <span className={cn('px-2 py-0.5 rounded-md font-medium border text-2xs', statusConfig.badgeClass)}>
             {statusConfig.labelEn}
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-slate-400 font-medium">Priority</span>
+          <span className="text-muted-foreground font-medium">Priority</span>
           <span className={cn('px-2 py-0.5 rounded-md font-medium border text-2xs', priorityConfig.badgeClass)}>
             {priorityConfig.labelEn}
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-slate-400 font-medium">Category</span>
-          <span className="font-medium text-slate-200">{categoryMeta?.labelEn || conversation.category}</span>
+          <span className="text-muted-foreground font-medium">Category</span>
+          <span className="font-medium text-foreground">{categoryMeta?.labelEn || conversation.category}</span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-slate-400 font-medium">Assigned Agent</span>
+          <span className="text-muted-foreground font-medium">Assigned Agent</span>
           <span className="font-medium text-indigo-300 flex items-center gap-1">
             <User className="w-3 h-3 text-indigo-400" />
             {conversation.assigned_to_name || 'Unassigned'}
@@ -134,25 +134,25 @@ export function PlatformTicketInfo({
       </div>
 
       {/* 3. Tenant Context Card */}
-      <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-3 shadow-xs">
+      <div className="p-3.5 rounded-2xl bg-foreground border border-border space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-2xs font-bold text-slate-300 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             <Building2 className="w-3.5 h-3.5 text-blue-400" />
             <span>Tenant Workspace</span>
           </div>
-          <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400">
+          <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded-md bg-foreground border border-border text-muted-foreground">
             /{conversation.company_slug || 'tenant'}
           </span>
         </div>
 
         <div>
           <div className="font-bold text-slate-100 text-sm truncate">{conversation.company_name || 'Organization'}</div>
-          <div className="text-2xs text-slate-400 tabular-nums flex items-center gap-1 mt-0.5">
+          <div className="text-2xs text-muted-foreground tabular-nums flex items-center gap-1 mt-0.5">
             <span>ID: {conversation.company_id.slice(0, 8)}...</span>
             <button
               type="button"
               onClick={() => copyToClipboard(conversation.company_id)}
-              className="text-slate-500 hover:text-slate-300 p-0.5"
+              className="text-muted-foreground hover:text-muted-foreground p-0.5"
               title="Copy Full Company ID"
             >
               <Copy className="w-3 h-3" />
@@ -160,14 +160,14 @@ export function PlatformTicketInfo({
           </div>
         </div>
 
-        <div className="pt-2 border-t border-slate-800/80 space-y-2 text-slate-300 text-xs">
+        <div className="pt-2 border-t border-border space-y-2 text-muted-foreground text-xs">
           <div className="flex items-center gap-2">
-            <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="font-semibold text-slate-200 truncate">{conversation.created_by_name}</span>
+            <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="font-semibold text-foreground truncate">{conversation.created_by_name}</span>
           </div>
           {conversation.created_by_email && (
-            <div className="flex items-center gap-2 text-slate-400">
-              <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <span className="truncate text-2xs">{conversation.created_by_email}</span>
             </div>
           )}
@@ -175,7 +175,7 @@ export function PlatformTicketInfo({
 
         {/* Direct Support Impersonation Launcher */}
         {onOpenImpersonationModal && (
-          <div className="pt-2 border-t border-slate-800/80">
+          <div className="pt-2 border-t border-border">
             <button
               type="button"
               onClick={() =>
@@ -194,16 +194,16 @@ export function PlatformTicketInfo({
       </div>
 
       {/* 4. SLA & Timestamps */}
-      <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-2.5 shadow-xs">
-        <div className="flex items-center gap-1.5 text-2xs font-bold text-slate-300 uppercase tracking-wider">
+      <div className="p-3.5 rounded-2xl bg-foreground border border-border space-y-2.5 shadow-xs">
+        <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground uppercase tracking-wider">
           <Timer className="w-3.5 h-3.5 text-purple-400" />
           <span>SLA &amp; Timestamps</span>
         </div>
 
-        <div className="space-y-2 text-slate-400 text-xs">
+        <div className="space-y-2 text-muted-foreground text-xs">
           <div className="flex items-center justify-between">
             <span>Created</span>
-            <span className="text-slate-200">{formatDateTime(conversation.created_at)}</span>
+            <span className="text-foreground">{formatDateTime(conversation.created_at)}</span>
           </div>
 
           <div className="flex items-center justify-between">
@@ -221,7 +221,7 @@ export function PlatformTicketInfo({
           )}
 
           {conversation.closed_at && (
-            <div className="flex items-center justify-between text-slate-400">
+            <div className="flex items-center justify-between text-muted-foreground">
               <span>Closed</span>
               <span>{formatDateTime(conversation.closed_at)}</span>
             </div>
@@ -231,17 +231,17 @@ export function PlatformTicketInfo({
 
       {/* 5. Attached Context Metadata (if any) */}
       {conversation.context_metadata && Object.keys(conversation.context_metadata).length > 0 && (
-        <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-2.5 shadow-xs">
-          <div className="flex items-center gap-1.5 text-2xs font-bold text-slate-300 uppercase tracking-wider">
+        <div className="p-3.5 rounded-2xl bg-foreground border border-border space-y-2.5 shadow-xs">
+          <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             <FileText className="w-3.5 h-3.5 text-cyan-400" />
             <span>Attached Context</span>
           </div>
 
-          <div className="space-y-1.5 text-slate-300 tabular-nums text-2xs bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
+          <div className="space-y-1.5 text-muted-foreground tabular-nums text-2xs bg-foreground p-2.5 rounded-xl border border-border">
             {Object.entries(conversation.context_metadata).map(([key, val]) => (
               <div key={key} className="flex justify-between gap-2">
-                <span className="text-slate-400 shrink-0">{key}:</span>
-                <span className="text-slate-200 truncate" title={String(val)}>
+                <span className="text-muted-foreground shrink-0">{key}:</span>
+                <span className="text-foreground truncate" title={String(val)}>
                   {String(val)}
                 </span>
               </div>

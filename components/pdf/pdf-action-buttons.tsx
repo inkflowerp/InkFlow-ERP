@@ -42,10 +42,10 @@ export function PdfActionButtons({
           size="sm"
           variant="outline"
           onClick={() => setIsPreviewOpen(true)}
-          className="h-9 text-xs font-semibold border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+          className="h-9 text-xs font-semibold border-input hover:bg-muted text-foreground dark:text-foreground"
           title="Preview Vector PDF before printing or downloading"
         >
-          <Printer className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+          <Printer className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
           Print / Preview
         </Button>
 
@@ -53,7 +53,7 @@ export function PdfActionButtons({
           size="sm"
           disabled={isDownloading}
           onClick={handleDownload}
-          className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-9 font-bold shadow-sm"
+          className="bg-foreground hover:bg-secondary text-xs text-white h-9 font-bold shadow-sm"
           title="Directly download high-resolution vector PDF"
         >
           {isDownloading ? (

@@ -131,13 +131,13 @@ export function PaySupplierModal({
 
         {/* Supplier Selector */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
             {tBilingual('Select Supplier', 'সরবরাহকারী')} *
           </Label>
           <select
             value={supplierId || suppliers[0]?.id || ''}
             onChange={(e) => setSupplierId(e.target.value)}
-            className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+            className="w-full h-10 px-3 text-sm rounded-xl border border-input bg-card text-foreground dark:text-foreground"
           >
             {suppliers.map((s) => (
               <option key={s.id} value={s.id}>
@@ -149,11 +149,11 @@ export function PaySupplierModal({
 
         {/* Amount Input */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
             {tBilingual('Payment Amount', 'পরিশোধের পরিমাণ')} *
           </Label>
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg pointer-events-none">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-muted-foreground text-lg pointer-events-none">
               ৳
             </span>
             <Input
@@ -163,20 +163,20 @@ export function PaySupplierModal({
               placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="pl-8 text-xl font-bold h-12 rounded-xl bg-slate-50 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-900"
+              className="pl-8 text-xl font-bold h-12 rounded-xl bg-muted border-input focus:bg-card dark:focus:bg-foreground"
             />
           </div>
         </div>
 
         {/* Payment Account */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
             {tBilingual('Paid From (Account)', 'কোন তহবিল থেকে দেওয়া হলো?')} *
           </Label>
           <select
             value={paymentAccountId || liquidAccounts[0]?.id || ''}
             onChange={(e) => setPaymentAccountId(e.target.value)}
-            className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+            className="w-full h-10 px-3 text-sm rounded-xl border border-input bg-card text-foreground dark:text-foreground"
           >
             {liquidAccounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
@@ -189,7 +189,7 @@ export function PaySupplierModal({
         {/* Date & Reference */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <Label className="text-xs text-slate-600 dark:text-slate-400">
+            <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual('Payment Date', 'তারিখ')}
             </Label>
             <Input
@@ -200,7 +200,7 @@ export function PaySupplierModal({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-slate-600 dark:text-slate-400">
+            <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual('Bill / Check / PO #', 'বিল বা চেক নম্বর')}
             </Label>
             <Input
@@ -214,7 +214,7 @@ export function PaySupplierModal({
 
         {/* Notes */}
         <div className="space-y-1">
-          <Label className="text-xs text-slate-600 dark:text-slate-400">
+          <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
             {tBilingual('Payment Note', 'নোট')}
           </Label>
           <Input
@@ -226,7 +226,7 @@ export function PaySupplierModal({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border dark:border-border">
           <Button type="button" variant="outline" onClick={onClose} className="rounded-xl">
             {tBilingual('Cancel', 'বাতিল')}
           </Button>

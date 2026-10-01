@@ -486,7 +486,7 @@ export default function PlatformSubscriptionsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -496,7 +496,7 @@ export default function PlatformSubscriptionsPage() {
             <CreditCard className="h-7 w-7 text-emerald-400" />
             Subscription Management
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Oversee tenant billing plans, MRR revenue metrics, expiry alerts, manual payment reconciliation, and custom quota overrides.
           </p>
         </div>
@@ -505,7 +505,7 @@ export default function PlatformSubscriptionsPage() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors cursor-pointer"
+            className="px-3 py-2 rounded-xl bg-foreground hover:bg-secondary text-foreground hover:text-white border border-border text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors cursor-pointer"
           >
             <Download className="h-3.5 w-3.5 text-indigo-400" />
             <span>Export CSV</span>
@@ -513,7 +513,7 @@ export default function PlatformSubscriptionsPage() {
 
           <Link
             href="/platform/plans"
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors"
+            className="px-3 py-2 rounded-xl bg-foreground hover:bg-secondary text-foreground hover:text-white border border-border text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors"
           >
             <Layers className="h-3.5 w-3.5 text-purple-400" />
             <span>Plans Catalog</span>
@@ -521,7 +521,7 @@ export default function PlatformSubscriptionsPage() {
 
           <Link
             href="/platform/billing"
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors"
+            className="px-3 py-2 rounded-xl bg-foreground hover:bg-secondary text-foreground hover:text-white border border-border text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors"
           >
             <DollarSign className="h-3.5 w-3.5 text-emerald-400" />
             <span>Reconciliation</span>
@@ -531,7 +531,7 @@ export default function PlatformSubscriptionsPage() {
             type="button"
             onClick={loadData}
             disabled={loading}
-            className="h-9 w-9 p-0 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+            className="h-9 w-9 p-0 rounded-xl bg-foreground hover:bg-secondary text-foreground hover:text-white border border-border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shrink-0"
             title="Refresh"
             aria-label="Refresh"
           >
@@ -559,7 +559,7 @@ export default function PlatformSubscriptionsPage() {
           </div>
           <button
             onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-white cursor-pointer"
+            className="text-muted-foreground hover:text-white cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -569,23 +569,23 @@ export default function PlatformSubscriptionsPage() {
       {/* Metric Cards Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* MRR & ARR Card */}
-        <Card className="bg-slate-900 border-slate-800 p-4 relative overflow-hidden">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-400">
+        <Card className="bg-foreground border-border p-4 relative overflow-hidden">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Monthly Recurring (MRR)</span>
             <TrendingUp className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-2xl font-black text-white mt-1">
             <CurrencyDisplay amount={metrics.total_mrr} />
           </div>
-          <div className="text-2xs text-slate-400 mt-1 flex items-center justify-between">
+          <div className="text-2xs text-muted-foreground mt-1 flex items-center justify-between">
             <span>ARR: <CurrencyDisplay amount={metrics.total_arr} /></span>
             <span className="text-emerald-400 tabular-nums font-bold">100% Live</span>
           </div>
         </Card>
 
         {/* Active Paid Tenants */}
-        <Card className="bg-slate-900 border-slate-800 p-4">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-400">
+        <Card className="bg-foreground border-border p-4">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Active Paid Tenants</span>
             <Building2 className="h-4 w-4 text-indigo-400" />
           </div>
@@ -596,8 +596,8 @@ export default function PlatformSubscriptionsPage() {
         </Card>
 
         {/* Free Trials Active */}
-        <Card className="bg-slate-900 border-slate-800 p-4">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-400">
+        <Card className="bg-foreground border-border p-4">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Free Trials Active</span>
             <Clock className="h-4 w-4 text-cyan-400" />
           </div>
@@ -608,8 +608,8 @@ export default function PlatformSubscriptionsPage() {
         </Card>
 
         {/* Expiring Soon & Past Due */}
-        <Card className="bg-slate-900 border-slate-800 p-4">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-400">
+        <Card className="bg-foreground border-border p-4">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Attention Needed</span>
             <AlertTriangle className="h-4 w-4 text-amber-400" />
           </div>
@@ -622,8 +622,8 @@ export default function PlatformSubscriptionsPage() {
         </Card>
 
         {/* ARPA Card */}
-        <Card className="bg-slate-900 border-slate-800 p-4">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-400">
+        <Card className="bg-foreground border-border p-4">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Avg. Revenue (ARPA)</span>
             <DollarSign className="h-4 w-4 text-purple-400" />
           </div>
@@ -637,7 +637,7 @@ export default function PlatformSubscriptionsPage() {
       </div>
 
       {/* Filter Tabs & Search Bar */}
-      <div className="space-y-3 bg-slate-900/70 p-3.5 rounded-2xl border border-slate-800">
+      <div className="space-y-3 bg-foreground p-3.5 rounded-2xl border border-border">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Status Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto text-xs pb-1 lg:pb-0 scrollbar-thin">
@@ -657,15 +657,15 @@ export default function PlatformSubscriptionsPage() {
                 className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
                   statusFilter === tab.id
                     ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    : 'text-muted-foreground hover:text-white hover:bg-secondary'
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-2xs px-1.5 py-0.2 rounded-full tabular-nums ${
                     statusFilter === tab.id
-                      ? 'bg-white/20 text-white'
-                      : 'bg-slate-800 text-slate-300'
+                      ? 'bg-card/20 text-white'
+                      : 'bg-secondary text-muted-foreground'
                   }`}
                 >
                   {tab.count}
@@ -676,17 +676,17 @@ export default function PlatformSubscriptionsPage() {
 
           {/* Search Box */}
           <div className="relative w-full lg:w-72">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               placeholder="Search by company, slug, email, phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-xs bg-slate-950 border-slate-800 text-white placeholder:text-slate-600 focus:border-indigo-500"
+              className="pl-8 h-8 text-xs bg-foreground border-border text-white placeholder:text-muted-foreground focus:border-indigo-500"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-2 text-slate-500 hover:text-white text-xs cursor-pointer"
+                className="absolute right-2.5 top-2 text-muted-foreground hover:text-white text-xs cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -695,15 +695,15 @@ export default function PlatformSubscriptionsPage() {
         </div>
 
         {/* Secondary Filter Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/60 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border text-xs">
           <div className="flex flex-wrap items-center gap-2">
             {/* Plan Tier Selector */}
-            <div className="flex items-center gap-1.5 text-slate-400">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
               <span>Plan:</span>
               <select
                 value={planFilter}
                 onChange={(e) => setPlanFilter(e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-white text-xs capitalize"
+                className="bg-foreground border border-border rounded-lg px-2.5 py-1 text-white text-xs capitalize"
               >
                 <option value="all">All Plans</option>
                 {plans.map((p) => (
@@ -715,12 +715,12 @@ export default function PlatformSubscriptionsPage() {
             </div>
 
             {/* Billing Interval Selector */}
-            <div className="flex items-center gap-1.5 text-slate-400">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
               <span>Interval:</span>
               <select
                 value={intervalFilter}
                 onChange={(e) => setIntervalFilter(e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-white text-xs capitalize"
+                className="bg-foreground border border-border rounded-lg px-2.5 py-1 text-white text-xs capitalize"
               >
                 <option value="all">All Intervals</option>
                 <option value="monthly">Monthly</option>
@@ -730,12 +730,12 @@ export default function PlatformSubscriptionsPage() {
           </div>
 
           {/* Sort Control */}
-          <div className="flex items-center gap-1.5 text-slate-400">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <span>Sort by:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-white text-xs"
+              className="bg-foreground border border-border rounded-lg px-2.5 py-1 text-white text-xs"
             >
               <option value="days">Renewal Deadline / Expiry</option>
               <option value="mrr">Monthly Rate (Highest)</option>
@@ -745,7 +745,7 @@ export default function PlatformSubscriptionsPage() {
             <button
               type="button"
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="h-7 w-7 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+              className="h-7 w-7 rounded-lg bg-foreground border border-border text-muted-foreground hover:text-white flex items-center justify-center cursor-pointer transition-colors"
               title={`Toggle sort order (${sortOrder === 'asc' ? 'Ascending' : 'Descending'})`}
             >
               <ArrowUpDown className="h-3.5 w-3.5" />
@@ -755,10 +755,10 @@ export default function PlatformSubscriptionsPage() {
       </div>
 
       {/* Subscriptions Table */}
-      <Card className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
+      <Card className="bg-foreground border-border overflow-hidden shadow-xl">
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
+            <thead className="bg-foreground text-muted-foreground font-semibold uppercase text-2xs border-b border-border">
               <tr>
                 <th className="py-3 px-4">Tenant Company</th>
                 <th className="py-3 px-4">Plan &amp; Interval</th>
@@ -769,19 +769,19 @@ export default function PlatformSubscriptionsPage() {
                 <th className="py-3 px-4 text-right">Governance Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 text-slate-200">
+            <tbody className="divide-y divide-border text-foreground">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-500">
+                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
                     <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
                     <span>Loading platform subscriptions and telemetry...</span>
                   </td>
                 </tr>
               ) : filteredSubscriptions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-500">
-                    <Building2 className="h-8 w-8 mx-auto mb-2 text-slate-700" />
-                    <p className="font-semibold text-slate-400">No subscriptions match the selected criteria.</p>
+                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                    <Building2 className="h-8 w-8 mx-auto mb-2 text-foreground" />
+                    <p className="font-semibold text-muted-foreground">No subscriptions match the selected criteria.</p>
                     <p className="text-xs mt-1">Try changing filters or search terms.</p>
                   </td>
                 </tr>
@@ -799,12 +799,12 @@ export default function PlatformSubscriptionsPage() {
                           className="font-bold text-white hover:text-indigo-400 text-sm flex items-center gap-1.5"
                         >
                           <span>{s.company_name}</span>
-                          <ExternalLink className="h-3 w-3 text-slate-500 opacity-60 hover:opacity-100" />
+                          <ExternalLink className="h-3 w-3 text-muted-foreground opacity-60 hover:opacity-100" />
                         </Link>
                         <div className="text-2xs tabular-nums text-indigo-400">
                           {s.company_slug}.printerp.com.bd
                         </div>
-                        <div className="text-2xs text-slate-400 mt-0.5">
+                        <div className="text-2xs text-muted-foreground mt-0.5">
                           {s.owner_name} • {s.owner_phone}
                         </div>
                       </td>
@@ -825,7 +825,7 @@ export default function PlatformSubscriptionsPage() {
                           >
                             {s.plan_name}
                           </span>
-                          <span className="text-2xs text-slate-400 capitalize tabular-nums">
+                          <span className="text-2xs text-muted-foreground capitalize tabular-nums">
                             ({s.billing_interval})
                           </span>
                         </div>
@@ -843,7 +843,7 @@ export default function PlatformSubscriptionsPage() {
                       <td className="py-3 px-4 tabular-nums">
                         <div className="font-bold text-white text-sm">
                           <CurrencyDisplay amount={s.monthly_rate} />
-                          <span className="text-2xs text-slate-400 font-normal"> /mo</span>
+                          <span className="text-2xs text-muted-foreground font-normal"> /mo</span>
                         </div>
                         {s.billing_interval === 'yearly' && (
                           <div className="text-2xs text-indigo-400 mt-0.5">
@@ -865,7 +865,7 @@ export default function PlatformSubscriptionsPage() {
                                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 animate-pulse'
                                 : s.status === 'suspended'
                                 ? 'bg-red-500/10 text-red-400 border-red-500/30'
-                                : 'bg-slate-700/40 text-slate-400 border-slate-700'
+                                : 'bg-slate-700/40 text-muted-foreground border-border'
                             }`}
                           >
                             {s.status.replace('_', ' ')}
@@ -877,7 +877,7 @@ export default function PlatformSubscriptionsPage() {
                               className={`text-2xs tabular-nums px-1.5 py-0.2 rounded ${
                                 s.days_remaining <= 3
                                   ? 'bg-red-950 text-red-300 font-bold border border-red-800'
-                                  : 'bg-slate-800 text-slate-300 border border-slate-700'
+                                  : 'bg-secondary text-muted-foreground border border-border'
                               }`}
                             >
                               {s.days_remaining >= 0
@@ -889,7 +889,7 @@ export default function PlatformSubscriptionsPage() {
                               className={`text-2xs tabular-nums px-1.5 py-0.2 rounded ${
                                 s.days_remaining <= 7
                                   ? 'bg-amber-950 text-amber-300 font-bold border border-amber-800'
-                                  : 'bg-slate-800 text-slate-400 border border-slate-700'
+                                  : 'bg-secondary text-muted-foreground border border-border'
                               }`}
                             >
                               Renews in {s.days_remaining}d
@@ -897,7 +897,7 @@ export default function PlatformSubscriptionsPage() {
                           ) : null}
                         </div>
 
-                        <div className="text-2xs text-slate-500 mt-1 flex items-center gap-1">
+                        <div className="text-2xs text-muted-foreground mt-1 flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           <span>
                             {s.is_trial && s.trial_ends_at
@@ -908,14 +908,14 @@ export default function PlatformSubscriptionsPage() {
                       </td>
 
                       {/* Quota & Resource Usage */}
-                      <td className="py-3 px-4 text-slate-300">
+                      <td className="py-3 px-4 text-muted-foreground">
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-2xs">
                             <span>Users: <strong className="text-white">{s.users_count}</strong>/{s.users_limit}</span>
-                            <span className="text-2xs text-slate-400">{userUsagePct}%</span>
+                            <span className="text-2xs text-muted-foreground">{userUsagePct}%</span>
                           </div>
                           {/* Mini Progress Bar */}
-                          <div className="w-28 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                          <div className="w-28 h-1.5 bg-secondary rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full ${
                                 userUsagePct >= 90
@@ -928,7 +928,7 @@ export default function PlatformSubscriptionsPage() {
                             />
                           </div>
 
-                          <div className="text-2xs text-slate-400 flex items-center gap-2">
+                          <div className="text-2xs text-muted-foreground flex items-center gap-2">
                             <span>{s.branches_count}/{s.branches_limit} branches</span>
                             <span>•</span>
                             <span>{s.orders_this_month}/{s.orders_limit} orders</span>
@@ -942,11 +942,11 @@ export default function PlatformSubscriptionsPage() {
                           <span className="text-2xs text-cyan-400 tabular-nums font-bold">Free Trial</span>
                         ) : (
                           <div>
-                            <span className="capitalize px-1.5 py-0.2 rounded text-2xs font-bold bg-slate-800 text-emerald-300 border border-slate-700">
+                            <span className="capitalize px-1.5 py-0.2 rounded text-2xs font-bold bg-secondary text-emerald-300 border border-border">
                               {s.payment_method_type || 'bKash'}
                             </span>
                             {s.last_payment_reference && (
-                              <div className="text-2xs tabular-nums text-slate-400 mt-1 truncate max-w-[130px]" title={s.last_payment_reference}>
+                              <div className="text-2xs tabular-nums text-muted-foreground mt-1 truncate max-w-[130px]" title={s.last_payment_reference}>
                                 Ref: {s.last_payment_reference}
                               </div>
                             )}
@@ -961,7 +961,7 @@ export default function PlatformSubscriptionsPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenConfigure(s)}
-                            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-100 hover:text-white border border-slate-700 shadow-sm transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-100 hover:text-white border border-border shadow-sm transition-colors cursor-pointer"
                             title="Configure plan, interval, status & custom limits"
                           >
                             <Sliders className="h-3.5 w-3.5 text-indigo-400" />
@@ -1027,16 +1027,16 @@ export default function PlatformSubscriptionsPage() {
       {/* 1. EDIT / CONFIGURE SUBSCRIPTION MODAL */}
       {/* ========================================================================= */}
       {configuringSub && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <Sliders className="h-4 w-4 text-indigo-400" />
                 <span>Configure Subscription: {configuringSub.company_name}</span>
               </div>
               <button
                 onClick={() => setConfiguringSub(null)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-muted-foreground hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1045,11 +1045,11 @@ export default function PlatformSubscriptionsPage() {
             <form onSubmit={handleSaveConfigure} className="space-y-4 text-xs">
               {/* Plan Selection */}
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Subscription Plan</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Subscription Plan</label>
                 <select
                   value={configPlan}
                   onChange={(e) => setConfigPlan(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-semibold capitalize focus:border-indigo-500"
+                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white font-semibold capitalize focus:border-indigo-500"
                 >
                   {plans.map((p) => (
                     <option key={p.id} value={p.code}>
@@ -1062,11 +1062,11 @@ export default function PlatformSubscriptionsPage() {
               {/* Status & Billing Interval Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Subscription Status</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Subscription Status</label>
                   <select
                     value={configStatus}
                     onChange={(e) => setConfigStatus(e.target.value as PlatformCompanyStatus)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-semibold capitalize"
+                    className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white font-semibold capitalize"
                   >
                     <option value="trial">Trial (Evaluation Mode)</option>
                     <option value="active">Active (Standard Paid)</option>
@@ -1078,11 +1078,11 @@ export default function PlatformSubscriptionsPage() {
                 </div>
 
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Billing Interval</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Billing Interval</label>
                   <select
                     value={configInterval}
                     onChange={(e) => setConfigInterval(e.target.value as 'monthly' | 'yearly')}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-semibold"
+                    className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white font-semibold"
                   >
                     <option value="monthly">Monthly Recurring (30 Days)</option>
                     <option value="yearly">Yearly / Annual (365 Days)</option>
@@ -1093,22 +1093,22 @@ export default function PlatformSubscriptionsPage() {
               {/* Timeline Expiry Dates */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Current Period End Date</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Current Period End Date</label>
                   <Input
                     type="date"
                     value={configPeriodEnd}
                     onChange={(e) => setConfigPeriodEnd(e.target.value)}
-                    className="bg-slate-950 border-slate-700 text-white text-xs h-9"
+                    className="bg-foreground border-border text-white text-xs h-9"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Trial Expiry Date</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Trial Expiry Date</label>
                   <Input
                     type="date"
                     value={configTrialEnd}
                     onChange={(e) => setConfigTrialEnd(e.target.value)}
-                    className="bg-slate-950 border-slate-700 text-white text-xs h-9"
+                    className="bg-foreground border-border text-white text-xs h-9"
                   />
                 </div>
               </div>
@@ -1116,11 +1116,11 @@ export default function PlatformSubscriptionsPage() {
               {/* Payment Gateway & Reference */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Payment Method / Gateway</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Payment Method / Gateway</label>
                   <select
                     value={configGateway}
                     onChange={(e) => setConfigGateway(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white text-xs capitalize"
+                    className="w-full bg-foreground border border-border rounded-xl p-2 text-white text-xs capitalize"
                   >
                     <option value="bkash">bKash (Merchant / Direct)</option>
                     <option value="nagad">Nagad</option>
@@ -1131,18 +1131,18 @@ export default function PlatformSubscriptionsPage() {
                 </div>
 
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Last Payment Reference / TxID</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Last Payment Reference / TxID</label>
                   <Input
                     placeholder="e.g. TXN-8921829"
                     value={configPaymentRef}
                     onChange={(e) => setConfigPaymentRef(e.target.value)}
-                    className="bg-slate-950 border-slate-700 text-white text-xs h-9 tabular-nums"
+                    className="bg-foreground border-border text-white text-xs h-9 tabular-nums"
                   />
                 </div>
               </div>
 
               {/* Custom Resource Limits Overrides Toggle */}
-              <div className="border border-slate-800 rounded-xl p-3.5 bg-slate-950/60 space-y-3">
+              <div className="border border-border rounded-xl p-3.5 bg-foreground space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-amber-400" />
@@ -1158,13 +1158,13 @@ export default function PlatformSubscriptionsPage() {
                 </div>
 
                 {showOverrideSection && (
-                  <div className="space-y-3 pt-2 border-t border-slate-800 animate-in fade-in">
-                    <p className="text-2xs text-slate-400">
+                  <div className="space-y-3 pt-2 border-t border-border animate-in fade-in">
+                    <p className="text-2xs text-muted-foreground">
                       Override plan default maximum quotas specifically for this VIP or enterprise tenant:
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       <div>
-                        <label className="text-slate-400 text-2xs block mb-0.5">Max Users</label>
+                        <label className="text-muted-foreground text-2xs block mb-0.5">Max Users</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.max_users ?? configuringSub.users_limit}
@@ -1174,11 +1174,11 @@ export default function PlatformSubscriptionsPage() {
                               max_users: Number(e.target.value),
                             })
                           }
-                          className="bg-slate-900 border-slate-700 text-white text-xs h-8"
+                          className="bg-foreground border-border text-white text-xs h-8"
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-2xs block mb-0.5">Max Branches</label>
+                        <label className="text-muted-foreground text-2xs block mb-0.5">Max Branches</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.max_branches ?? configuringSub.branches_limit}
@@ -1188,11 +1188,11 @@ export default function PlatformSubscriptionsPage() {
                               max_branches: Number(e.target.value),
                             })
                           }
-                          className="bg-slate-900 border-slate-700 text-white text-xs h-8"
+                          className="bg-foreground border-border text-white text-xs h-8"
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-2xs block mb-0.5">Storage GB</label>
+                        <label className="text-muted-foreground text-2xs block mb-0.5">Storage GB</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.storage_gb ?? configuringSub.storage_limit_gb}
@@ -1202,11 +1202,11 @@ export default function PlatformSubscriptionsPage() {
                               storage_gb: Number(e.target.value),
                             })
                           }
-                          className="bg-slate-900 border-slate-700 text-white text-xs h-8"
+                          className="bg-foreground border-border text-white text-xs h-8"
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-2xs block mb-0.5">Monthly Orders</label>
+                        <label className="text-muted-foreground text-2xs block mb-0.5">Monthly Orders</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.monthly_orders ?? configuringSub.orders_limit}
@@ -1216,11 +1216,11 @@ export default function PlatformSubscriptionsPage() {
                               monthly_orders: Number(e.target.value),
                             })
                           }
-                          className="bg-slate-900 border-slate-700 text-white text-xs h-8"
+                          className="bg-foreground border-border text-white text-xs h-8"
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-2xs block mb-0.5">Max Customers</label>
+                        <label className="text-muted-foreground text-2xs block mb-0.5">Max Customers</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.max_customers ?? configuringSub.customers_limit}
@@ -1230,11 +1230,11 @@ export default function PlatformSubscriptionsPage() {
                               max_customers: Number(e.target.value),
                             })
                           }
-                          className="bg-slate-900 border-slate-700 text-white text-xs h-8"
+                          className="bg-foreground border-border text-white text-xs h-8"
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-2xs block mb-0.5">Max Products</label>
+                        <label className="text-muted-foreground text-2xs block mb-0.5">Max Products</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.max_products ?? configuringSub.products_limit}
@@ -1244,7 +1244,7 @@ export default function PlatformSubscriptionsPage() {
                               max_products: Number(e.target.value),
                             })
                           }
-                          className="bg-slate-900 border-slate-700 text-white text-xs h-8"
+                          className="bg-foreground border-border text-white text-xs h-8"
                         />
                       </div>
                     </div>
@@ -1254,22 +1254,22 @@ export default function PlatformSubscriptionsPage() {
 
               {/* Justification Notes */}
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Audit Trail Justification / Reason</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Audit Trail Justification / Reason</label>
                 <textarea
                   rows={2}
                   value={configReason}
                   onChange={(e) => setConfigReason(e.target.value)}
                   placeholder="e.g. Upgraded to Business Plan upon contract signing..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white text-xs"
+                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white text-xs"
                 />
               </div>
 
               {/* Modal Actions */}
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setConfiguringSub(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1290,23 +1290,23 @@ export default function PlatformSubscriptionsPage() {
       {/* 2. QUICK EXTEND TRIAL MODAL */}
       {/* ========================================================================= */}
       {extendingTrialSub && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <Clock className="h-4 w-4 text-cyan-400" />
                 <span>Extend Evaluation: {extendingTrialSub.company_name}</span>
               </div>
               <button
                 onClick={() => setExtendingTrialSub(null)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-muted-foreground hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <form onSubmit={handleSaveExtendTrial} className="space-y-4 text-xs">
-              <p className="text-slate-300">
+              <p className="text-muted-foreground">
                 Extend evaluation trial period for this prospect to allow continued software onboarding:
               </p>
 
@@ -1319,7 +1319,7 @@ export default function PlatformSubscriptionsPage() {
                     className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                       extendDays === days
                         ? 'bg-cyan-600 border-cyan-500 text-white shadow-xs'
-                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800'
+                        : 'bg-foreground border-border text-muted-foreground hover:text-white hover:bg-secondary'
                     }`}
                   >
                     +{days} Days
@@ -1328,32 +1328,32 @@ export default function PlatformSubscriptionsPage() {
               </div>
 
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Custom Days to Add</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Custom Days to Add</label>
                 <Input
                   type="number"
                   min={1}
                   max={365}
                   value={extendDays}
                   onChange={(e) => setExtendDays(Number(e.target.value))}
-                  className="bg-slate-950 border-slate-700 text-white text-xs h-9"
+                  className="bg-foreground border-border text-white text-xs h-9"
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Reason / Notes</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Reason / Notes</label>
                 <Input
                   placeholder="e.g. Extended for owner review meeting..."
                   value={extendReason}
                   onChange={(e) => setExtendReason(e.target.value)}
-                  className="bg-slate-950 border-slate-700 text-white text-xs h-9"
+                  className="bg-foreground border-border text-white text-xs h-9"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setExtendingTrialSub(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1374,44 +1374,44 @@ export default function PlatformSubscriptionsPage() {
       {/* 3. RECORD MANUAL PAYMENT MODAL */}
       {/* ========================================================================= */}
       {recordingPaymentSub && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-emerald-400" />
                 <span>Record Payment: {recordingPaymentSub.company_name}</span>
               </div>
               <button
                 onClick={() => setRecordingPaymentSub(null)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-muted-foreground hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <form onSubmit={handleSaveRecordPayment} className="space-y-3.5 text-xs">
-              <p className="text-slate-300">
+              <p className="text-muted-foreground">
                 Reconcile manual or offline subscription payments received via bank transfer or direct mobile gateway:
               </p>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Amount Paid (BDT)</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Amount Paid (BDT)</label>
                   <Input
                     type="number"
                     min={0}
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(Number(e.target.value))}
-                    className="bg-slate-950 border-slate-700 text-white text-xs h-9 font-bold"
+                    className="bg-foreground border-border text-white text-xs h-9 font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Billing Interval</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Billing Interval</label>
                   <select
                     value={paymentInterval}
                     onChange={(e) => setPaymentInterval(e.target.value as any)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white text-xs"
+                    className="w-full bg-foreground border border-border rounded-xl p-2 text-white text-xs"
                   >
                     <option value="monthly">Monthly Plan</option>
                     <option value="yearly">Yearly (Annual)</option>
@@ -1421,11 +1421,11 @@ export default function PlatformSubscriptionsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Gateway / Channel</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Gateway / Channel</label>
                   <select
                     value={paymentGateway}
                     onChange={(e) => setPaymentGateway(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white text-xs capitalize"
+                    className="w-full bg-foreground border border-border rounded-xl p-2 text-white text-xs capitalize"
                   >
                     <option value="bkash">bKash</option>
                     <option value="nagad">Nagad</option>
@@ -1436,44 +1436,44 @@ export default function PlatformSubscriptionsPage() {
                 </div>
 
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Advance Period (Months)</label>
+                  <label className="text-muted-foreground font-semibold block mb-1">Advance Period (Months)</label>
                   <Input
                     type="number"
                     min={1}
                     max={36}
                     value={paymentMonths}
                     onChange={(e) => setPaymentMonths(Number(e.target.value))}
-                    className="bg-slate-950 border-slate-700 text-white text-xs h-9 font-bold"
+                    className="bg-foreground border-border text-white text-xs h-9 font-bold"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Transaction ID / Cheque Ref</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Transaction ID / Cheque Ref</label>
                 <Input
                   required
                   placeholder="e.g. TXN-9281928"
                   value={paymentRef}
                   onChange={(e) => setPaymentRef(e.target.value)}
-                  className="bg-slate-950 border-slate-700 text-white text-xs h-9 tabular-nums"
+                  className="bg-foreground border-border text-white text-xs h-9 tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Notes</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Notes</label>
                 <Input
                   placeholder="e.g. Advance 3-month payment confirmed in Dutch-Bangla account"
                   value={paymentReason}
                   onChange={(e) => setPaymentReason(e.target.value)}
-                  className="bg-slate-950 border-slate-700 text-white text-xs h-9"
+                  className="bg-foreground border-border text-white text-xs h-9"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setRecordingPaymentSub(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1494,9 +1494,9 @@ export default function PlatformSubscriptionsPage() {
       {/* 4. SUSPEND / REACTIVATE CONFIRMATION MODAL */}
       {/* ========================================================================= */}
       {statusToggleSub && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 {statusToggleSub.targetStatus === 'suspended' ? (
                   <Ban className="h-4 w-4 text-red-400" />
@@ -1509,14 +1509,14 @@ export default function PlatformSubscriptionsPage() {
               </div>
               <button
                 onClick={() => setStatusToggleSub(null)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-muted-foreground hover:text-white cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <p className="text-slate-300">
+              <p className="text-muted-foreground">
                 Are you sure you want to set <strong>{statusToggleSub.sub.company_name}</strong> to{' '}
                 <strong className={statusToggleSub.targetStatus === 'suspended' ? 'text-red-400' : 'text-emerald-400'}>
                   {statusToggleSub.targetStatus}
@@ -1534,21 +1534,21 @@ export default function PlatformSubscriptionsPage() {
               )}
 
               <div>
-                <label className="text-slate-300 font-semibold block mb-1">Reason for Status Change</label>
+                <label className="text-muted-foreground font-semibold block mb-1">Reason for Status Change</label>
                 <Input
                   required
                   placeholder="e.g. Non-payment of subscription invoice after grace period..."
                   value={statusReason}
                   onChange={(e) => setStatusReason(e.target.value)}
-                  className="bg-slate-950 border-slate-700 text-white text-xs h-9"
+                  className="bg-foreground border-border text-white text-xs h-9"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setStatusToggleSub(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>

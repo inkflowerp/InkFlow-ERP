@@ -84,10 +84,10 @@ export default function PlatformBillingPage() {
   if (loading && !tenantBillingData && billingHistory.length === 0) {
     return (
       <div className="space-y-6 animate-pulse p-6">
-        <div className="h-10 w-80 bg-slate-800 rounded-xl" />
+        <div className="h-10 w-80 bg-secondary rounded-xl" />
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 bg-slate-900 border border-slate-800 rounded-2xl" />
+            <div key={i} className="h-28 bg-foreground border border-border rounded-2xl" />
           ))}
         </div>
       </div>
@@ -97,7 +97,7 @@ export default function PlatformBillingPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-indigo-400 animate-ping" />
@@ -107,7 +107,7 @@ export default function PlatformBillingPage() {
             <DollarSign className="h-7 w-7 text-indigo-400" />
             Platform Billing &amp; Revenue Reconciliation
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Authoritative financial ledger, tenant MRR settlements, gateway deposits, and verification audit.
           </p>
         </div>
@@ -117,7 +117,7 @@ export default function PlatformBillingPage() {
             size="sm"
             variant="outline"
             onClick={loadAllData}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9"
+            className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh Data
@@ -126,13 +126,13 @@ export default function PlatformBillingPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-1 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-border pb-1 overflow-x-auto">
         <button
           onClick={() => setActiveTab('tenant_recon')}
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 ${
             activeTab === 'tenant_recon'
               ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+              : 'text-muted-foreground hover:text-foreground hover:bg-foreground'
           }`}
         >
           <Building2 className="h-3.5 w-3.5" />
@@ -144,7 +144,7 @@ export default function PlatformBillingPage() {
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 ${
             activeTab === 'tenant_invoices'
               ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+              : 'text-muted-foreground hover:text-foreground hover:bg-foreground'
           }`}
         >
           <CreditCard className="h-3.5 w-3.5" />
@@ -156,7 +156,7 @@ export default function PlatformBillingPage() {
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 ${
             activeTab === 'platform_recon'
               ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+              : 'text-muted-foreground hover:text-foreground hover:bg-foreground'
           }`}
         >
           <ShieldCheck className="h-3.5 w-3.5" />
@@ -171,57 +171,57 @@ export default function PlatformBillingPage() {
       {activeTab === 'tenant_recon' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bg-slate-900 border-slate-800 p-4">
-              <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+            <Card className="bg-foreground border-border p-4">
+              <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
                 <span>Expected Tenant MRR</span>
                 <DollarSign className="h-4 w-4 text-indigo-400" />
               </div>
               <div className="text-2xl font-black text-white mt-1">
                 <CurrencyDisplay amount={tenantBillingData?.expected_mrr ?? 0} />
               </div>
-              <div className="text-xs text-slate-400 mt-0.5">All Active Tenant Subscriptions</div>
+              <div className="text-xs text-muted-foreground mt-0.5">All Active Tenant Subscriptions</div>
             </Card>
 
-            <Card className="bg-slate-900 border-slate-800 p-4">
-              <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+            <Card className="bg-foreground border-border p-4">
+              <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
                 <span>Collected &amp; Settled</span>
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               </div>
               <div className="text-2xl font-black text-emerald-400 mt-1">
                 <CurrencyDisplay amount={tenantBillingData?.collected_mrr ?? 0} />
               </div>
-              <div className="text-xs text-slate-400 mt-0.5">Verified Gateway Deposits</div>
+              <div className="text-xs text-muted-foreground mt-0.5">Verified Gateway Deposits</div>
             </Card>
 
-            <Card className="bg-slate-900 border-slate-800 p-4">
-              <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+            <Card className="bg-foreground border-border p-4">
+              <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
                 <span>Outstanding Balance</span>
                 <Clock className="h-4 w-4 text-amber-400" />
               </div>
               <div className="text-2xl font-black text-amber-400 mt-1">
                 <CurrencyDisplay amount={tenantBillingData?.outstanding_mrr ?? 0} />
               </div>
-              <div className="text-xs text-slate-400 mt-0.5">
+              <div className="text-xs text-muted-foreground mt-0.5">
                 Collection Rate: {tenantBillingData?.collection_efficiency_pct ?? 100}%
               </div>
             </Card>
 
-            <Card className="bg-slate-900 border-slate-800 p-4">
-              <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+            <Card className="bg-foreground border-border p-4">
+              <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
                 <span>Past Due / Overdue</span>
                 <AlertTriangle className="h-4 w-4 text-rose-400" />
               </div>
               <div className="text-2xl font-black text-rose-400 mt-1">
                 {tenantBillingData?.past_due_tenants_count ?? 0} Tenants
               </div>
-              <div className="text-xs text-slate-400 mt-0.5">
+              <div className="text-xs text-muted-foreground mt-0.5">
                 {tenantBillingData?.failed_payments_count ?? 0} Failed Transactions
               </div>
             </Card>
           </div>
 
           {/* Tenant Reconciliation Ledger */}
-          <Card className="bg-slate-900 border-slate-800 p-6 space-y-4">
+          <Card className="bg-foreground border-border p-6 space-y-4">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <Building2 className="h-4 w-4 text-emerald-400" />
               Tenant Subscription Reconciliation Table
@@ -229,7 +229,7 @@ export default function PlatformBillingPage() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
-                <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-xs">
+                <thead className="bg-foreground text-muted-foreground border-b border-border uppercase tracking-wider text-xs">
                   <tr>
                     <th className="p-3">Company</th>
                     <th className="p-3">Plan</th>
@@ -240,10 +240,10 @@ export default function PlatformBillingPage() {
                     <th className="p-3">Verification</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800 text-slate-300">
+                <tbody className="divide-y divide-border text-muted-foreground">
                   {!tenantBillingData || tenantBillingData.items.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="p-6 text-center text-slate-500">
+                      <td colSpan={7} className="p-6 text-center text-muted-foreground">
                         No tenant billing records found.
                       </td>
                     </tr>
@@ -256,7 +256,7 @@ export default function PlatformBillingPage() {
                           <CurrencyDisplay amount={it.expected_amount_bdt} />
                         </td>
                         <td className="p-3">
-                          <Badge className="bg-slate-800 text-slate-300 text-2xs uppercase">
+                          <Badge className="bg-secondary text-muted-foreground text-2xs uppercase">
                             {it.payment_status}
                           </Badge>
                         </td>
@@ -279,14 +279,14 @@ export default function PlatformBillingPage() {
 
       {/* TAB 2: Invoices & Payment Ledger */}
       {activeTab === 'tenant_invoices' && (
-        <Card className="bg-slate-900 border-slate-800 p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <Card className="bg-foreground border-border p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <FileText className="h-4 w-4 text-indigo-400" />
                 Invoices &amp; Payment Ledger
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Authoritative transaction ledger for payments, tenant subscriptions, and gateway settlements.
               </p>
             </div>
@@ -294,7 +294,7 @@ export default function PlatformBillingPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-xs">
+              <thead className="bg-foreground text-muted-foreground border-b border-border uppercase tracking-wider text-xs">
                 <tr>
                   <th className="p-3">Invoice / Trx ID</th>
                   <th className="p-3">Type</th>
@@ -306,10 +306,10 @@ export default function PlatformBillingPage() {
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-300">
+              <tbody className="divide-y divide-border text-muted-foreground">
                 {billingHistory.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-6 text-center text-slate-500">
+                    <td colSpan={8} className="p-6 text-center text-muted-foreground">
                       No billing transactions found. Initial system running on authoritative database ledger.
                     </td>
                   </tr>
@@ -320,11 +320,11 @@ export default function PlatformBillingPage() {
                         {tx.invoice_id || tx.internal_trx_id}
                       </td>
                       <td className="p-3">
-                        <Badge className="bg-slate-800 text-slate-300 border-slate-700 text-2xs">
+                        <Badge className="bg-secondary text-muted-foreground border-border text-2xs">
                           {tx.transaction_type}
                         </Badge>
                       </td>
-                      <td className="p-3 font-bold uppercase text-slate-200">{tx.provider}</td>
+                      <td className="p-3 font-bold uppercase text-foreground">{tx.provider}</td>
                       <td className="p-3 font-bold text-white">
                         <CurrencyDisplay amount={tx.amount} />
                       </td>
@@ -350,7 +350,7 @@ export default function PlatformBillingPage() {
                           {tx.verification_status}
                         </Badge>
                       </td>
-                      <td className="p-3 text-slate-400">
+                      <td className="p-3 text-muted-foreground">
                         {formatDate(tx.created_at)}
                       </td>
                       <td className="p-3 text-right">
@@ -374,14 +374,14 @@ export default function PlatformBillingPage() {
 
       {/* TAB 3: Payment Verification & Audit */}
       {activeTab === 'platform_recon' && (
-        <Card className="bg-slate-900 border-slate-800 p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <Card className="bg-foreground border-border p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-border pb-4">
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <ShieldAlert className="h-4 w-4 text-indigo-400" />
                 Payment Verification &amp; Anti-Tampering Audit
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Automated cross-check comparing gateway deposits with active subscription and payment transactions.
               </p>
             </div>
@@ -389,7 +389,7 @@ export default function PlatformBillingPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wider text-xs">
+              <thead className="bg-foreground text-muted-foreground border-b border-border uppercase tracking-wider text-xs">
                 <tr>
                   <th className="p-3">Internal Trx ID</th>
                   <th className="p-3">Provider Trx ID</th>
@@ -400,10 +400,10 @@ export default function PlatformBillingPage() {
                   <th className="p-3">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-300">
+              <tbody className="divide-y divide-border text-muted-foreground">
                 {platformRecon.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-slate-500">
+                    <td colSpan={7} className="p-6 text-center text-muted-foreground">
                       No transaction anomalies detected. System ledger is completely balanced.
                     </td>
                   </tr>
@@ -411,7 +411,7 @@ export default function PlatformBillingPage() {
                   platformRecon.map((r) => (
                     <tr key={r.internal_trx_id} className="hover:bg-slate-800/50">
                       <td className="p-3 tabular-nums font-bold text-white">{r.internal_trx_id}</td>
-                      <td className="p-3 tabular-nums text-slate-300">{r.provider_trx_id || '—'}</td>
+                      <td className="p-3 tabular-nums text-muted-foreground">{r.provider_trx_id || '—'}</td>
                       <td className="p-3 font-bold uppercase">{r.provider}</td>
                       <td className="p-3 font-bold">
                         <CurrencyDisplay amount={r.expected_amount} /> /{' '}
@@ -439,7 +439,7 @@ export default function PlatformBillingPage() {
                           </span>
                         )}
                       </td>
-                      <td className="p-3 text-slate-400">
+                      <td className="p-3 text-muted-foreground">
                         {formatDate(r.created_at)}
                       </td>
                     </tr>

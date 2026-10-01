@@ -36,7 +36,7 @@ export function WorkforceKpiGrid({
       icon: Users,
       iconColor: 'text-blue-600',
       bgColor: 'bg-blue-50',
-      borderColor: 'border-slate-200',
+      borderColor: 'border-border',
       href: `/${tenantSlug}/hr/employees`,
     },
     {
@@ -47,7 +47,7 @@ export function WorkforceKpiGrid({
       icon: UserCheck,
       iconColor: 'text-emerald-600',
       bgColor: 'bg-emerald-50',
-      borderColor: 'border-slate-200',
+      borderColor: 'border-border',
       href: `/${tenantSlug}/hr/attendance`,
     },
     {
@@ -58,7 +58,7 @@ export function WorkforceKpiGrid({
       icon: UserX,
       iconColor: 'text-red-600',
       bgColor: 'bg-red-50',
-      borderColor: 'border-slate-200',
+      borderColor: 'border-border',
       href: `/${tenantSlug}/hr/attendance`,
     },
     {
@@ -69,7 +69,7 @@ export function WorkforceKpiGrid({
       icon: Clock,
       iconColor: 'text-amber-600',
       bgColor: 'bg-amber-50',
-      borderColor: 'border-slate-200',
+      borderColor: 'border-border',
       href: `/${tenantSlug}/hr/attendance`,
     },
     {
@@ -80,7 +80,7 @@ export function WorkforceKpiGrid({
       icon: Wallet,
       iconColor: 'text-rose-600',
       bgColor: 'bg-rose-50',
-      borderColor: 'border-slate-200',
+      borderColor: 'border-border',
       href: `/${tenantSlug}/hr/payroll`,
     },
     {
@@ -91,7 +91,7 @@ export function WorkforceKpiGrid({
       icon: Clock4,
       iconColor: 'text-indigo-600',
       bgColor: 'bg-indigo-50',
-      borderColor: 'border-slate-200',
+      borderColor: 'border-border',
       href: `/${tenantSlug}/hr/attendance?tab=overtime`,
     },
   ]
@@ -100,7 +100,7 @@ export function WorkforceKpiGrid({
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i} className="p-3.5 bg-white border-slate-200 shadow-none">
+          <Card key={i} className="p-3.5 bg-card border-border shadow-none">
             <div className="flex items-center justify-between mb-2">
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-8 w-8 rounded-lg" />
@@ -119,10 +119,10 @@ export function WorkforceKpiGrid({
         return (
           <Link key={c.id} href={c.href} className="block group">
             <Card
-              className={`p-3.5 bg-white border ${c.borderColor} hover:border-slate-300 transition-all rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] h-full flex flex-col justify-between`}
+              className={`p-3.5 bg-card border ${c.borderColor} hover:border-input transition-all rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] h-full flex flex-col justify-between`}
             >
               <div className="flex items-center justify-between gap-1 mb-2">
-                <span className="text-[12px] font-medium text-slate-500 truncate" title={`${c.label} (${c.labelBn})`}>
+                <span className="text-[12px] font-medium text-muted-foreground truncate" title={`${c.label} (${c.labelBn})`}>
                   {c.label}
                 </span>
                 <div className={`p-1.5 rounded-lg ${c.bgColor} shrink-0`}>
@@ -130,10 +130,10 @@ export function WorkforceKpiGrid({
                 </div>
               </div>
               <div>
-                <span className="text-xl lg:text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
+                <span className="text-xl lg:text-2xl font-bold tracking-tight text-foreground tabular-nums">
                   {c.value}
                 </span>
-                <span className="block text-[11px] text-slate-400 font-normal truncate mt-0.5">
+                <span className="block text-[11px] text-muted-foreground font-normal truncate mt-0.5">
                   {c.labelBn}
                 </span>
               </div>

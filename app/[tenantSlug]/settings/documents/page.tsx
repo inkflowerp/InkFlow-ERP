@@ -259,9 +259,9 @@ export default function DocumentDesignerPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-6xl animate-pulse">
-        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
-        <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-20 bg-muted rounded-2xl w-full" />
+        <div className="h-12 bg-muted rounded-xl w-3/4" />
+        <div className="h-96 bg-muted rounded-2xl w-full" />
       </div>
     )
   }
@@ -281,7 +281,7 @@ export default function DocumentDesignerPage() {
             <Button
               size="sm"
               onClick={() => window.print()}
-              className="bg-slate-900 hover:bg-slate-800 text-xs text-white"
+              className="bg-foreground hover:bg-secondary text-xs text-white"
             >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('Print Preview', 'প্রিন্ট প্রিভিউ')}
@@ -298,7 +298,7 @@ export default function DocumentDesignerPage() {
         )}
 
         {/* Document Selector & Language Switcher Toolbar */}
-        <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
+        <div className="p-3 bg-muted rounded-xl border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
           {/* Document Types */}
           <div className="flex items-center gap-1.5 overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 touch-scroll w-full sm:w-auto">
             {[
@@ -315,7 +315,7 @@ export default function DocumentDesignerPage() {
                 variant={selectedDoc === doc.id ? 'default' : 'ghost'}
                 onClick={() => setSelectedDoc(doc.id as DocumentType)}
                 className={`text-xs h-9 sm:h-7 px-3 whitespace-nowrap shrink-0 ${
-                  selectedDoc === doc.id ? 'bg-blue-600 text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400'
+                  selectedDoc === doc.id ? 'bg-blue-600 text-white shadow-xs font-bold' : 'text-muted-foreground dark:text-muted-foreground'
                 }`}
               >
                 {tBilingual(doc.label, doc.label_bn)}
@@ -324,10 +324,10 @@ export default function DocumentDesignerPage() {
           </div>
 
           {/* Language Mode Switcher */}
-          <div className="flex items-center justify-between sm:justify-start gap-1 bg-white dark:bg-slate-950 p-1 rounded-lg border shrink-0">
+          <div className="flex items-center justify-between sm:justify-start gap-1 bg-card p-1 rounded-lg border shrink-0">
             <div className="flex items-center">
-              <Languages className="h-3.5 w-3.5 text-slate-400 ml-1.5 mr-1" />
-              <span className="text-2xs text-slate-500 mr-2 sm:hidden">Language:</span>
+              <Languages className="h-3.5 w-3.5 text-muted-foreground ml-1.5 mr-1" />
+              <span className="text-2xs text-muted-foreground mr-2 sm:hidden">Language:</span>
             </div>
             <div className="flex items-center gap-1">
               {[
@@ -340,7 +340,7 @@ export default function DocumentDesignerPage() {
                   variant={langMode === lang.id ? 'default' : 'ghost'}
                   onClick={() => setLangMode(lang.id as DocumentLanguageMode)}
                   className={`text-xs h-8 sm:h-6 px-3 sm:px-2.5 font-bold ${
-                    langMode === lang.id ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-500'
+                    langMode === lang.id ? 'bg-secondary text-white shadow-xs' : 'text-muted-foreground'
                   }`}
                 >
                   {lang.label}
@@ -355,16 +355,16 @@ export default function DocumentDesignerPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Controls Column (Hidden on Print) */}
         <div className="print:hidden space-y-4">
-          <Card className="p-4 space-y-4 rounded-2xl shadow-xs border-slate-200 dark:border-slate-800">
+          <Card className="p-4 space-y-4 rounded-2xl shadow-xs border-border dark:border-border">
             {/* Control Tabs: PDF Print vs Email / WhatsApp */}
-            <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+            <div className="flex items-center p-1 bg-muted rounded-xl">
               <button
                 type="button"
                 onClick={() => setActiveControlTab('pdf')}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                   activeControlTab === 'pdf'
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-card text-foreground dark:text-white shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                 }`}
               >
                 <Sliders className="h-3.5 w-3.5" />
@@ -376,8 +376,8 @@ export default function DocumentDesignerPage() {
                   onClick={() => setActiveControlTab('communication')}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                     activeControlTab === 'communication'
-                      ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   }`}
                 >
                   <Mail className="h-3.5 w-3.5" />
@@ -416,7 +416,7 @@ export default function DocumentDesignerPage() {
                     rows={3}
                     value={activeTpl.footer_terms_en}
                     onChange={(e) => handleUpdateTemplate({ footer_terms_en: e.target.value })}
-                    className="w-full p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full p-2.5 rounded-xl border text-xs bg-card focus:outline-none focus:ring-1 focus:ring-ring"
                   />
                 </div>
 
@@ -426,7 +426,7 @@ export default function DocumentDesignerPage() {
                     rows={3}
                     value={activeTpl.footer_terms_bn}
                     onChange={(e) => handleUpdateTemplate({ footer_terms_bn: e.target.value })}
-                    className="w-full p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full p-2.5 rounded-xl border text-xs bg-card focus:outline-none focus:ring-1 focus:ring-ring"
                   />
                 </div>
 
@@ -448,9 +448,9 @@ export default function DocumentDesignerPage() {
             {activeControlTab === 'communication' && (
               <div className="space-y-4 text-xs">
                 {/* Email Subject Template */}
-                <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="space-y-1.5 p-3 bg-muted rounded-xl border border-border dark:border-border">
                   <div className="flex items-center justify-between">
-                    <Label className="font-bold flex items-center gap-1.5 text-slate-900 dark:text-white">
+                    <Label className="font-bold flex items-center gap-1.5 text-foreground dark:text-white">
                       <Mail className="h-3.5 w-3.5 text-blue-600" />
                       Email Subject Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})
                     </Label>
@@ -472,11 +472,11 @@ export default function DocumentDesignerPage() {
                       }
                     }}
                     placeholder="e.g. Official Quotation #{{quotation_number}} [৳ {{quotation_total}}]"
-                    className="h-9 text-xs font-medium bg-white dark:bg-slate-950"
+                    className="h-9 text-xs font-medium bg-card dark:bg-background"
                   />
                   {/* Quick-insert tags for Subject */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
-                    <span className="text-2xs text-slate-400 font-medium mr-1">Quick Add:</span>
+                    <span className="text-2xs text-muted-foreground font-medium mr-1">Quick Add:</span>
                     {[
                       selectedDoc === 'quotation' ? '{{quotation_number}}' : '{{invoice_number}}',
                       '{{company_name}}',
@@ -488,7 +488,7 @@ export default function DocumentDesignerPage() {
                         key={tag}
                         type="button"
                         onClick={() => handleInsertTag('email_subject', tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs tabular-nums text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card border border-border text-2xs tabular-nums text-foreground hover:border-blue-400 hover:text-blue-600 transition-colors"
                         title={`Insert ${tag}`}
                       >
                         + {tag}
@@ -498,13 +498,13 @@ export default function DocumentDesignerPage() {
                 </div>
 
                 {/* Email Body Template */}
-                <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="space-y-1.5 p-3 bg-muted rounded-xl border border-border dark:border-border">
                   <div className="flex items-center justify-between">
-                    <Label className="font-bold flex items-center gap-1.5 text-slate-900 dark:text-white">
+                    <Label className="font-bold flex items-center gap-1.5 text-foreground dark:text-white">
                       <Code2 className="h-3.5 w-3.5 text-blue-600" />
                       Email Body Template (HTML Supported)
                     </Label>
-                    <span className="text-2xs text-slate-400">PDF attached automatically</span>
+                    <span className="text-2xs text-muted-foreground">PDF attached automatically</span>
                   </div>
                   <textarea
                     rows={6}
@@ -521,11 +521,11 @@ export default function DocumentDesignerPage() {
                       }
                     }}
                     placeholder="<p>Dear {{customer_name}},</p><p>Please find attached...</p>"
-                    className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-card focus:outline-none focus:ring-1 focus:ring-ring"
                   />
                   {/* Quick-insert tags for Email Body */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
-                    <span className="text-2xs text-slate-400 font-medium mr-1">Quick Add:</span>
+                    <span className="text-2xs text-muted-foreground font-medium mr-1">Quick Add:</span>
                     {[
                       '{{customer_name}}',
                       '{{company_name}}',
@@ -538,7 +538,7 @@ export default function DocumentDesignerPage() {
                         key={tag}
                         type="button"
                         onClick={() => handleInsertTag('email_body', tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs tabular-nums text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card border border-border text-2xs tabular-nums text-foreground hover:border-blue-400 hover:text-blue-600 transition-colors"
                         title={`Insert ${tag}`}
                       >
                         + {tag}
@@ -548,13 +548,13 @@ export default function DocumentDesignerPage() {
                 </div>
 
                 {/* WhatsApp Message Template */}
-                <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="space-y-1.5 p-3 bg-muted rounded-xl border border-border dark:border-border">
                   <div className="flex items-center justify-between">
                     <Label className="font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
                       <MessageSquare className="h-3.5 w-3.5" />
                       WhatsApp Message Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})
                     </Label>
-                    <span className="text-2xs text-slate-400">*bold* _italic_</span>
+                    <span className="text-2xs text-muted-foreground">*bold* _italic_</span>
                   </div>
                   <textarea
                     rows={6}
@@ -571,11 +571,11 @@ export default function DocumentDesignerPage() {
                       }
                     }}
                     placeholder="*QUOTATION - {{company_name}}*&#10;Dear {{customer_name}},&#10;Total: ৳ {{quotation_total}}..."
-                    className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-white dark:bg-slate-950 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full p-2.5 rounded-xl border text-xs tabular-nums bg-card focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                   {/* Quick-insert tags for WhatsApp */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
-                    <span className="text-2xs text-slate-400 font-medium mr-1">Quick Add:</span>
+                    <span className="text-2xs text-muted-foreground font-medium mr-1">Quick Add:</span>
                     {[
                       '{{customer_name}}',
                       '{{company_name}}',
@@ -587,7 +587,7 @@ export default function DocumentDesignerPage() {
                         key={tag}
                         type="button"
                         onClick={() => handleInsertTag('whatsapp', tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs tabular-nums text-slate-700 dark:text-slate-300 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card border border-border text-2xs tabular-nums text-foreground hover:border-emerald-400 hover:text-emerald-600 transition-colors"
                         title={`Insert ${tag}`}
                       >
                         + {tag}
@@ -599,30 +599,30 @@ export default function DocumentDesignerPage() {
                 {/* =========================================================================
                     VISIBLE AVAILABLE VARIABLES HELPER PANEL
                    ========================================================================= */}
-                <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="p-3.5 rounded-2xl bg-muted border border-border space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <Sparkles className="h-3.5 w-3.5 text-blue-600" />
-                      <span className="font-bold text-xs text-slate-900 dark:text-white">Available Variables Helper</span>
+                      <span className="font-bold text-xs text-foreground dark:text-white">Available Variables Helper</span>
                     </div>
                     {copiedVar ? (
                       <Badge variant="outline" className="text-2xs bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300">
                         Copied {copiedVar}!
                       </Badge>
                     ) : (
-                      <span className="text-2xs text-slate-400">{filteredVariables.length} supported tags</span>
+                      <span className="text-2xs text-muted-foreground">{filteredVariables.length} supported tags</span>
                     )}
                   </div>
 
                   {/* Search Bar */}
                   <div className="relative">
-                    <Search className="h-3 w-3 absolute left-2.5 top-2.5 text-slate-400" />
+                    <Search className="h-3 w-3 absolute left-2.5 top-2.5 text-muted-foreground" />
                     <input
                       type="text"
                       value={variableSearch}
                       onChange={(e) => setVariableSearch(e.target.value)}
                       placeholder="Search variables (e.g. phone, vat, due)..."
-                      className="w-full pl-7 pr-3 py-1 text-2xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-200"
+                      className="w-full pl-7 pr-3 py-1 text-2xs rounded-lg border border-border bg-card focus:outline-none focus:ring-1 focus:ring-ring text-foreground dark:text-foreground"
                     />
                   </div>
 
@@ -642,7 +642,7 @@ export default function DocumentDesignerPage() {
                         className={`px-2 py-1 rounded-md font-semibold whitespace-nowrap transition-colors ${
                           variableCategory === cat.id
                             ? 'bg-blue-600 text-white shadow-xs'
-                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                            : 'bg-card text-muted-foreground border border-border hover:border-input'
                         }`}
                       >
                         {cat.label}
@@ -655,18 +655,18 @@ export default function DocumentDesignerPage() {
                     {filteredVariables.map((v) => (
                       <div
                         key={v.tag}
-                        className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between gap-2 text-2xs"
+                        className="p-2 rounded-xl bg-card border border-border hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between gap-2 text-2xs"
                       >
                         <div className="min-w-0 space-y-0.5">
                           <div className="flex items-center gap-1.5">
                             <span className="tabular-nums font-bold text-blue-700 dark:text-blue-400 text-2xs">
                               {v.tag}
                             </span>
-                            <span className="text-2xs font-semibold text-slate-700 dark:text-slate-300">
+                            <span className="text-2xs font-semibold text-foreground dark:text-muted-foreground">
                               {v.name}
                             </span>
                           </div>
-                          <p className="text-2xs text-slate-500 truncate" title={v.description}>
+                          <p className="text-2xs text-muted-foreground truncate" title={v.description}>
                             {v.description}
                           </p>
                         </div>
@@ -674,7 +674,7 @@ export default function DocumentDesignerPage() {
                           <button
                             type="button"
                             onClick={() => copyToClipboard(v.tag)}
-                            className="p-1 rounded bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+                            className="p-1 rounded bg-muted text-muted-foreground hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
                             title="Copy variable tag"
                           >
                             <Copy className="h-3 w-3" />
@@ -683,7 +683,7 @@ export default function DocumentDesignerPage() {
                       </div>
                     ))}
                     {filteredVariables.length === 0 && (
-                      <div className="p-4 text-center text-slate-400 text-2xs">
+                      <div className="p-4 text-center text-muted-foreground text-2xs">
                         No supported variables found matching &ldquo;{variableSearch}&rdquo;.
                       </div>
                     )}
@@ -699,8 +699,8 @@ export default function DocumentDesignerPage() {
            ========================================================================= */}
         <div className="lg:col-span-2 print:col-span-3 print:w-full overflow-x-auto print:overflow-visible space-y-3">
           {/* Live Preview Mode Switcher */}
-          <div className="print:hidden flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-900 rounded-xl border">
-            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5 pl-1">
+          <div className="print:hidden flex items-center justify-between p-2 bg-muted rounded-xl border">
+            <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 pl-1">
               <Eye className="h-3.5 w-3.5 text-blue-600" />
               Live Output Preview:
             </span>
@@ -709,7 +709,7 @@ export default function DocumentDesignerPage() {
                 size="sm"
                 variant={previewMode === 'pdf' ? 'default' : 'ghost'}
                 onClick={() => setPreviewMode('pdf')}
-                className={`text-xs h-7 px-3 ${previewMode === 'pdf' ? 'bg-slate-800 text-white font-bold' : 'text-slate-600'}`}
+                className={`text-xs h-7 px-3 ${previewMode === 'pdf' ? 'bg-secondary text-white font-bold' : 'text-muted-foreground'}`}
               >
                 <FileText className="h-3 w-3 mr-1" />
                 PDF Document
@@ -718,7 +718,7 @@ export default function DocumentDesignerPage() {
                 size="sm"
                 variant={previewMode === 'email' ? 'default' : 'ghost'}
                 onClick={() => setPreviewMode('email')}
-                className={`text-xs h-7 px-3 ${previewMode === 'email' ? 'bg-blue-600 text-white font-bold' : 'text-slate-600'}`}
+                className={`text-xs h-7 px-3 ${previewMode === 'email' ? 'bg-blue-600 text-white font-bold' : 'text-muted-foreground'}`}
               >
                 <Mail className="h-3 w-3 mr-1" />
                 Email View
@@ -727,7 +727,7 @@ export default function DocumentDesignerPage() {
                 size="sm"
                 variant={previewMode === 'whatsapp' ? 'default' : 'ghost'}
                 onClick={() => setPreviewMode('whatsapp')}
-                className={`text-xs h-7 px-3 ${previewMode === 'whatsapp' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-600'}`}
+                className={`text-xs h-7 px-3 ${previewMode === 'whatsapp' ? 'bg-emerald-600 text-white font-bold' : 'text-muted-foreground'}`}
               >
                 <MessageSquare className="h-3 w-3 mr-1" />
                 WhatsApp
@@ -736,7 +736,7 @@ export default function DocumentDesignerPage() {
                 size="sm"
                 variant={previewMode === 'variables' ? 'default' : 'ghost'}
                 onClick={() => setPreviewMode('variables')}
-                className={`text-xs h-7 px-3 ${previewMode === 'variables' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600'}`}
+                className={`text-xs h-7 px-3 ${previewMode === 'variables' ? 'bg-indigo-600 text-white font-bold' : 'text-muted-foreground'}`}
               >
                 <Sparkles className="h-3 w-3 mr-1" />
                 Variables Guide
@@ -746,30 +746,30 @@ export default function DocumentDesignerPage() {
 
           {/* VIEW 1: PRINTABLE PDF DOCUMENT CANVAS */}
           {previewMode === 'pdf' && (
-            <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 p-4 sm:p-8 lg:p-12 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs print:border-none print:shadow-none print:p-0 text-xs space-y-6 min-w-[300px] print:min-w-full">
+            <div className="bg-card text-foreground dark:text-white print:bg-white print:text-foreground print:dark:bg-card print:dark:text-foreground p-4 sm:p-8 lg:p-12 rounded-2xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 text-xs space-y-6 min-w-[300px] print:min-w-full">
               {/* Document Header */}
-              <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100 print:border-slate-900">
-                <h1 className="text-lg sm:text-xl font-black tracking-tight print:text-slate-900">
+              <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 print:border-slate-900">
+                <h1 className="text-lg sm:text-xl font-black tracking-tight print:text-foreground">
                   {langMode === 'bengali'
                     ? activeTpl.company_name_bn || company?.name_bn || company?.name || 'প্রতিষ্ঠানের নাম'
                     : company?.name || 'Company Name'}
                 </h1>
 
-                <p className="text-slate-500 print:text-slate-600 text-2xs">
+                <p className="text-muted-foreground print:text-muted-foreground text-2xs">
                   {company?.address || 'Company Address'} • Phone: {company?.phone || 'Phone Number'} • Email: {company?.email || 'billing@company.com'}
                 </p>
 
                 {/* NBR Tax Credentials */}
-                <div className="pt-1 text-2xs tabular-nums text-slate-500 print:text-slate-600 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-                  <span>BIN: <strong className="print:text-slate-900">{taxSettings.bin_number || '18291004821'}</strong></span>
+                <div className="pt-1 text-2xs tabular-nums text-muted-foreground print:text-muted-foreground flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                  <span>BIN: <strong className="print:text-foreground">{taxSettings.bin_number || '18291004821'}</strong></span>
                   <span>•</span>
-                  <span>TIN: <strong className="print:text-slate-900">{taxSettings.tin_number || 'N/A'}</strong></span>
+                  <span>TIN: <strong className="print:text-foreground">{taxSettings.tin_number || 'N/A'}</strong></span>
                   <span>•</span>
-                  <span>Trade License: <strong className="print:text-slate-900">{taxSettings.trade_license_number || 'N/A'}</strong></span>
+                  <span>Trade License: <strong className="print:text-foreground">{taxSettings.trade_license_number || 'N/A'}</strong></span>
                 </div>
 
                 {/* Document Banner */}
-                <div className="inline-block mt-3 px-4 sm:px-6 py-1 rounded-full bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-black text-2xs sm:text-xs tracking-wider uppercase border border-slate-300 dark:border-slate-700 print:border-slate-400 print:text-slate-900">
+                <div className="inline-block mt-3 px-4 sm:px-6 py-1 rounded-full bg-muted print:bg-muted font-black text-2xs sm:text-xs tracking-wider uppercase border border-input print:border-input print:text-foreground">
                   {selectedDoc === 'quotation' && (langMode === 'bengali' ? 'আনুষ্ঠানিক বাণিজ্যিক দরপত্র' : 'COMMERCIAL QUOTATION')}
                   {selectedDoc === 'invoice' && (langMode === 'bengali' ? 'বাণিজ্যিক বিক্রয় চালান বিল' : 'COMMERCIAL SALES INVOICE')}
                   {selectedDoc === 'vat_mushak' && 'গণপ্রজাতন্ত্রী বাংলাদেশ সরকার — কর চালানপত্র [মূসক-৬.৩]'}
@@ -780,28 +780,28 @@ export default function DocumentDesignerPage() {
               </div>
 
               {/* Recipient & Document Meta */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 print:bg-slate-50 border border-slate-200 dark:border-slate-800 print:border-slate-300 text-xs print:text-slate-900">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted print:bg-muted border border-border print:border-input text-xs print:text-foreground">
                 <div className="space-y-1">
-                  <span className="text-2xs uppercase font-bold text-slate-400 print:text-slate-600">
+                  <span className="text-2xs uppercase font-bold text-muted-foreground print:text-muted-foreground">
                     {langMode === 'bengali' ? 'প্রাপকের বিবরণ:' : 'Customer / Consignee:'}
                   </span>
-                  <div className="font-bold text-sm text-slate-900 dark:text-white print:text-slate-900">Metro Advertising Ltd.</div>
-                  <div className="text-slate-600 dark:text-slate-300 print:text-slate-700">12 Motijheel C/A, Dhaka-1000</div>
-                  <div className="text-slate-400 print:text-slate-600 tabular-nums text-2xs">BIN: 0029104821 • Contact: +880 1711-223344</div>
+                  <div className="font-bold text-sm text-foreground dark:text-white print:text-foreground">Metro Advertising Ltd.</div>
+                  <div className="text-muted-foreground print:text-foreground">12 Motijheel C/A, Dhaka-1000</div>
+                  <div className="text-muted-foreground print:text-muted-foreground tabular-nums text-2xs">BIN: 0029104821 • Contact: +880 1711-223344</div>
                 </div>
 
-                <div className="space-y-1 sm:text-right tabular-nums print:text-slate-900">
-                  <div>Document No: <strong className="text-blue-600 print:text-slate-900 font-black">{selectedDoc === 'quotation' ? 'Q-2026-0842' : 'INV-2026-1055'}</strong></div>
-                  <div>Date: <strong className="print:text-slate-900">{formatDate(new Date(), locale)}</strong></div>
-                  <div>Payment Terms: <strong className="print:text-slate-900">Agreed Terms</strong></div>
-                  <div>Pricing Mode: <strong className="uppercase print:text-slate-900">{taxSettings.pricing_mode}</strong></div>
+                <div className="space-y-1 sm:text-right tabular-nums print:text-foreground">
+                  <div>Document No: <strong className="text-blue-600 print:text-foreground font-black">{selectedDoc === 'quotation' ? 'Q-2026-0842' : 'INV-2026-1055'}</strong></div>
+                  <div>Date: <strong className="print:text-foreground">{formatDate(new Date(), locale)}</strong></div>
+                  <div>Payment Terms: <strong className="print:text-foreground">Agreed Terms</strong></div>
+                  <div>Pricing Mode: <strong className="uppercase print:text-foreground">{taxSettings.pricing_mode}</strong></div>
                 </div>
               </div>
 
               {/* Line Items Table */}
               <div className="overflow-x-auto -mx-1 px-1 print:overflow-visible">
-                <table className="w-full text-left border-collapse border border-slate-300 dark:border-slate-700 print:border-slate-400 text-xs tabular-nums print:text-slate-900">
-                  <thead className="bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-bold border-b border-slate-300 dark:border-slate-700 print:border-slate-400 print:text-slate-900">
+                <table className="w-full text-left border-collapse border border-input print:border-input text-xs tabular-nums print:text-foreground">
+                  <thead className="bg-muted print:bg-muted font-bold border-b border-input print:border-input print:text-foreground">
                     <tr>
                       <th className="p-2 border text-center">SL</th>
                       <th className="p-2 border">Description (বিবরণ)</th>
@@ -832,18 +832,18 @@ export default function DocumentDesignerPage() {
                       <td className="p-2 border text-right font-bold">Subtotal:</td>
                       <td className="p-2 border text-right font-bold">৳ 45,500</td>
                     </tr>
-                    <tr className="bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-black text-sm print:text-slate-900">
+                    <tr className="bg-muted print:bg-muted font-black text-sm print:text-foreground">
                       <td colSpan={3} className="border" />
                       <td className="p-2 border text-right">Net Payable:</td>
-                      <td className="p-2 border text-right text-emerald-600 print:text-slate-900 font-bold">৳ 45,500</td>
+                      <td className="p-2 border text-right text-emerald-600 print:text-foreground font-bold">৳ 45,500</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
 
               {/* Terms and Conditions */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 rounded-lg text-2xs text-slate-600 dark:text-slate-400 print:text-slate-800 space-y-1 border border-slate-200 dark:border-slate-800 print:border-slate-300 page-break-inside-avoid print-avoid-break">
-                <strong className="block text-slate-800 dark:text-slate-200 print:text-slate-900">
+              <div className="p-3 bg-muted print:bg-muted rounded-lg text-2xs text-muted-foreground print:text-foreground space-y-1 border border-border print:border-input page-break-inside-avoid print-avoid-break">
+                <strong className="block text-foreground print:text-foreground">
                   {langMode === 'bengali' ? 'শর্তাবলী:' : 'Terms & Conditions:'}
                 </strong>
                 <div className="whitespace-pre-line">
@@ -856,14 +856,14 @@ export default function DocumentDesignerPage() {
               {/* Dual Signatures */}
               <div className="pt-8 sm:pt-10 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6 text-xs print:pt-12 page-break-inside-avoid print-avoid-break">
                 <div className="text-center space-y-2 w-full sm:w-auto">
-                  <div className="border-t border-slate-400 w-full sm:w-48 pt-1 font-bold print:text-slate-900">
+                  <div className="border-t border-input w-full sm:w-48 pt-1 font-bold print:text-foreground">
                     {langMode === 'bengali' ? 'গ্রাহকের স্বাক্ষর' : 'Customer Acceptance'}
                   </div>
                 </div>
 
                 <div className="text-center space-y-2 w-full sm:w-auto">
-                  <div className="tabular-nums text-slate-400 print:text-slate-600 text-2xs">{activeTpl.authorized_signatory_title}</div>
-                  <div className="border-t border-slate-400 w-full sm:w-60 pt-1 font-bold print:text-slate-900">
+                  <div className="tabular-nums text-muted-foreground print:text-muted-foreground text-2xs">{activeTpl.authorized_signatory_title}</div>
+                  <div className="border-t border-input w-full sm:w-60 pt-1 font-bold print:text-foreground">
                     {langMode === 'bengali' ? 'অনুমোদিত স্বাক্ষর ও সিল' : 'Authorized Signature & Seal'}
                   </div>
                 </div>
@@ -873,23 +873,23 @@ export default function DocumentDesignerPage() {
 
           {/* VIEW 2: EMAIL PREVIEW */}
           {previewMode === 'email' && (
-            <Card className="border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
-              <div className="p-3 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
+            <Card className="border-border rounded-2xl overflow-hidden shadow-xs">
+              <div className="p-3 bg-muted border-b border-border text-xs space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-400 w-16">Subject:</span>
-                  <span className="font-bold text-slate-900 dark:text-white tabular-nums">{liveSubject}</span>
+                  <span className="font-bold text-muted-foreground w-16">Subject:</span>
+                  <span className="font-bold text-foreground dark:text-white tabular-nums">{liveSubject}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-400 w-16">Attachment:</span>
+                  <span className="font-bold text-muted-foreground w-16">Attachment:</span>
                   <Badge variant="outline" className="text-2xs bg-red-50 text-red-700 border-red-200 tabular-nums">
                     <FileText className="h-3 w-3 mr-1" />
                     {selectedDoc === 'quotation' ? 'Quotation-Q-2026-0842.pdf' : 'Invoice-INV-2026-1055.pdf'} (A4 PDF)
                   </Badge>
                 </div>
               </div>
-              <div className="p-6 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm">
+              <div className="p-6 bg-card text-foreground text-sm">
                 <div
-                  className="prose prose-sm dark:prose-invert max-w-none [&_.info-card]:p-3 [&_.info-card]:bg-slate-50 [&_.info-card]:dark:bg-slate-900 [&_.info-card]:rounded-xl [&_.info-card]:border [&_.info-card]:border-slate-200 [&_.info-card]:my-3 [&_.btn]:inline-block [&_.btn]:px-4 [&_.btn]:py-2 [&_.btn]:bg-blue-600 [&_.btn]:text-white [&_.btn]:rounded-lg [&_.btn]:font-bold [&_.btn]:no-underline [&_.btn]:my-2"
+                  className="prose prose-sm dark:prose-invert max-w-none [&_.info-card]:p-3 [&_.info-card]:bg-muted [&_.info-card]:dark:bg-card [&_.info-card]:rounded-xl [&_.info-card]:border [&_.info-card]:border-border [&_.info-card]:my-3 [&_.btn]:inline-block [&_.btn]:px-4 [&_.btn]:py-2 [&_.btn]:bg-blue-600 [&_.btn]:text-white [&_.btn]:rounded-lg [&_.btn]:font-bold [&_.btn]:no-underline [&_.btn]:my-2"
                   dangerouslySetInnerHTML={{ __html: liveEmailHtml }}
                 />
               </div>
@@ -898,16 +898,16 @@ export default function DocumentDesignerPage() {
 
           {/* VIEW 3: WHATSAPP PREVIEW */}
           {previewMode === 'whatsapp' && (
-            <Card className="border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs bg-[#e5ddd5] dark:bg-slate-950 p-4">
-              <div className="max-w-md mx-auto bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-emerald-100 dark:border-slate-800 space-y-2">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+            <Card className="border-border rounded-2xl overflow-hidden shadow-xs bg-[#e5ddd5] p-4">
+              <div className="max-w-md mx-auto bg-card p-4 rounded-2xl shadow-sm border border-emerald-100 space-y-2">
+                <div className="flex items-center gap-2 pb-2 border-b border-border text-xs font-bold text-emerald-700 dark:text-emerald-400">
                   <MessageSquare className="h-4 w-4" />
                   <span>WhatsApp Message Preview</span>
                 </div>
-                <div className="text-xs whitespace-pre-wrap font-sans text-slate-800 dark:text-slate-200 leading-relaxed">
+                <div className="text-xs whitespace-pre-wrap font-sans text-foreground leading-relaxed">
                   {liveWhatsapp}
                 </div>
-                <div className="text-2xs text-right text-slate-400 pt-1">
+                <div className="text-2xs text-right text-muted-foreground pt-1">
                   10:45 AM • Delivered
                 </div>
               </div>
@@ -916,14 +916,14 @@ export default function DocumentDesignerPage() {
 
           {/* VIEW 4: VARIABLES REFERENCE GUIDE TABLE */}
           {previewMode === 'variables' && (
-            <Card className="border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
-              <div className="p-4 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <Card className="border-border rounded-2xl overflow-hidden shadow-xs">
+              <div className="p-4 bg-muted border-b border-border flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                  <h3 className="font-bold text-sm text-foreground dark:text-white flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-indigo-600" />
                     Supported Backend Template Variables
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Click any tag to copy it. All variables are reliably provided and populated by the backend.
                   </p>
                 </div>
@@ -935,7 +935,7 @@ export default function DocumentDesignerPage() {
               <div className="p-4 overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-2xs">
+                    <tr className="border-b border-border text-muted-foreground font-bold uppercase text-2xs">
                       <th className="pb-2 tabular-nums">Variable Tag</th>
                       <th className="pb-2">Name</th>
                       <th className="pb-2">Category</th>
@@ -944,24 +944,24 @@ export default function DocumentDesignerPage() {
                       <th className="pb-2 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  <tbody className="divide-y divide-border dark:divide-border/60">
                     {activeDocVariables.map((v) => (
-                      <tr key={v.tag} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                      <tr key={v.tag} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                         <td className="py-2.5 tabular-nums font-bold text-blue-600 dark:text-blue-400">
                           {v.tag}
                         </td>
-                        <td className="py-2.5 font-semibold text-slate-900 dark:text-slate-100">
+                        <td className="py-2.5 font-semibold text-foreground dark:text-foreground">
                           {v.name}
                         </td>
                         <td className="py-2.5">
-                          <span className="capitalize px-2 py-0.5 rounded-full text-2xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                          <span className="capitalize px-2 py-0.5 rounded-full text-2xs font-semibold bg-muted text-muted-foreground dark:text-muted-foreground">
                             {v.category}
                           </span>
                         </td>
-                        <td className="py-2.5 text-slate-600 dark:text-slate-400">
+                        <td className="py-2.5 text-muted-foreground dark:text-muted-foreground">
                           {v.description}
                         </td>
-                        <td className="py-2.5 tabular-nums text-slate-700 dark:text-slate-300">
+                        <td className="py-2.5 tabular-nums text-foreground dark:text-muted-foreground">
                           {sampleVariables[v.tag.replace(/[{}]/g, '')] || v.example}
                         </td>
                         <td className="py-2.5 text-right">

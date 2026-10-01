@@ -19,7 +19,7 @@ export function MarketingFooter() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-t border-slate-200/80 dark:border-slate-800 pt-12 sm:pt-16 pb-10 sm:pb-12 text-xs">
+    <footer className="bg-muted text-muted-foreground border-t border-border pt-12 sm:pt-16 pb-10 sm:pb-12 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-12">
         {/* Top 4 Columns Directory */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10">
@@ -30,26 +30,26 @@ export function MarketingFooter() {
                 <img
                   src={appLogoUrl}
                   alt={appName}
-                  className="h-8 w-8 rounded-lg object-contain bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-0.5 shadow-2xs shrink-0"
+                  className="h-8 w-8 rounded-lg object-contain bg-card border border-border p-0.5 shadow-2xs shrink-0"
                 />
               ) : (
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs shrink-0">
                   <Printer className="h-4 w-4" />
                 </div>
               )}
-              <span className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+              <span className="text-base font-bold text-foreground dark:text-white tracking-tight">
                 {appName}
               </span>
             </Link>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm bangla-text">
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-sm bangla-text">
               {tBilingual(
                 tagline || 'The operating system for print and signage businesses in Bangladesh.',
                 'বাংলাদেশের প্রিন্টিং প্রেস, সাইনেজ ও ফ্যাব্রিকেশন কারখানার জন্য সমন্বিত অপারেটিং সিস্টেম।'
               )}
             </p>
 
-            <div className="space-y-2 text-xs text-slate-500 dark:text-slate-400 pt-1">
+            <div className="space-y-2 text-xs text-muted-foreground pt-1">
               <div className="flex items-start gap-2">
                 <MapPin className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
                 <span>{contactAddress || 'Arambagh Press Cluster, Motijheel, Dhaka-1000'}</span>
@@ -67,7 +67,7 @@ export function MarketingFooter() {
 
           {/* Col 2: Product */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Product</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground dark:text-white">Product</h4>
             <ul className="space-y-2 text-xs">
               <li>
                 <Link href="/#features" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -94,7 +94,7 @@ export function MarketingFooter() {
 
           {/* Col 3: Solutions */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Solutions</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground dark:text-white">Solutions</h4>
             <ul className="space-y-2 text-xs">
               <li>
                 <Link href="/#solutions" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -121,7 +121,7 @@ export function MarketingFooter() {
 
           {/* Col 4: Resources & Company */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Company</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground dark:text-white">Company</h4>
             <ul className="space-y-2 text-xs">
               <li>
                 <Link href="/#faq" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -153,7 +153,7 @@ export function MarketingFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 border-t border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500">
+        <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-muted-foreground">
           <div className="flex items-center gap-2">
             <span>© {currentYear} {appName}. All rights reserved.</span>
           </div>
@@ -162,7 +162,7 @@ export function MarketingFooter() {
             <button
               type="button"
               onClick={() => setLocale(locale === 'en' ? 'bn' : 'en')}
-              className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:text-blue-600 cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-blue-600 cursor-pointer"
             >
               <Globe2 className="h-3.5 w-3.5" />
               <span>{locale === 'en' ? 'বাংলায় দেখুন' : 'Switch to English'}</span>

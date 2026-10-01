@@ -287,7 +287,7 @@ function OrderDetailContent() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
         <Briefcase className="h-7 w-7 text-blue-600 animate-pulse" />
-        <p className="text-xs font-semibold text-slate-500">
+        <p className="text-xs font-semibold text-muted-foreground">
           {tBilingual('Loading authoritative order details...', 'অর্ডারের তথ্য লোড হচ্ছে...')}
         </p>
       </div>
@@ -299,17 +299,17 @@ function OrderDetailContent() {
       <div className="space-y-6 max-w-7xl">
         <Link
           href={getTenantNavHref('/orders', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           {tBilingual('Back to Orders & Job Flow', 'অর্ডার ও কাজের ফ্লো-তে ফিরে যান')}
         </Link>
         <Card className="p-12 text-center border-dashed">
-          <FileText className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+          <h2 className="text-base font-bold text-foreground dark:text-foreground">
             {tBilingual('Sales Order Not Found', 'অর্ডার পাওয়া যায়নি')}
           </h2>
-          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
             {tBilingual(
               'The sales order record you are looking for does not exist in your organization.',
               'আপনার প্রতিষ্ঠানে এই অর্ডারের কোনো তথ্য পাওয়া যায়নি।'
@@ -419,7 +419,7 @@ function OrderDetailContent() {
       case 'normal':
       default:
         return (
-          <span className="px-2.5 py-1 rounded text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <span className="px-2.5 py-1 rounded text-xs font-medium bg-muted text-foreground dark:text-muted-foreground">
             Normal Priority
           </span>
         )
@@ -435,23 +435,23 @@ function OrderDetailContent() {
       <div>
         <Link
           href={getTenantNavHref('/orders', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           {tBilingual('Back to Orders & Jobs', 'অর্ডার ও কাজে ফিরে যান')}
         </Link>
 
         {/* Master Order Header Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs space-y-4">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div className="bg-card border border-border rounded-xl p-5 shadow-xs space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border pb-4">
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Order</span>
-                <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Order</span>
+                <h1 className="text-2xl font-black tracking-tight text-foreground dark:text-white tabular-nums">
                   #{order.order_number}
                 </h1>
                 {getPriorityBadge(order.priority)}
-                <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300">
+                <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-muted text-foreground border border-border dark:text-muted-foreground">
                   {order.status.replace('_', ' ')}
                 </span>
 
@@ -494,11 +494,11 @@ function OrderDetailContent() {
                 )}
               </div>
 
-              <div className="text-base font-bold text-slate-800 dark:text-slate-100 flex flex-wrap items-center gap-2">
+              <div className="text-base font-bold text-foreground flex flex-wrap items-center gap-2">
                 <span>{order.customer_name}</span>
                 {order.customer_phone && (
-                  <span className="text-xs font-normal text-slate-500 inline-flex items-center gap-1">
-                    <Phone className="h-3 w-3 text-slate-400" />
+                  <span className="text-xs font-normal text-muted-foreground inline-flex items-center gap-1">
+                    <Phone className="h-3 w-3 text-muted-foreground" />
                     {order.customer_phone}
                   </span>
                 )}
@@ -513,7 +513,7 @@ function OrderDetailContent() {
                   const wfElem = document.getElementById('workflow-section')
                   if (wfElem) wfElem.scrollIntoView({ behavior: 'smooth' })
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold min-h-[44px] px-4 shadow-sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold min-h-[44px] px-4 shadow-sm"
               >
                 <Layers className="mr-1.5 h-4 w-4" />
                 Open Job Flow
@@ -535,7 +535,7 @@ function OrderDetailContent() {
                 size="sm"
                 variant="outline"
                 onClick={() => setIsAddJobOpen(true)}
-                className="text-xs min-h-[44px] px-3 font-medium border-slate-300"
+                className="text-xs min-h-[44px] px-3 font-medium border-input"
               >
                 <Plus className="mr-1.5 h-4 w-4 text-blue-600" />
                 Add Job
@@ -557,9 +557,9 @@ function OrderDetailContent() {
 
           {/* Quick Metrics & Target Delivery Row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg">
-              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Total</span>
-              <span className="text-lg font-black text-slate-900 dark:text-white tabular-nums">
+            <div className="p-3 bg-muted rounded-lg">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">Total</span>
+              <span className="text-lg font-black text-foreground dark:text-white tabular-nums">
                 <CurrencyDisplay amount={order.final_price} />
               </span>
             </div>
@@ -569,15 +569,15 @@ function OrderDetailContent() {
                 <CurrencyDisplay amount={order.advance_amount} />
               </span>
             </div>
-            <div className={`p-3 rounded-lg ${order.due_amount > 0 ? 'bg-amber-50/60 dark:bg-amber-950/30' : 'bg-slate-50 dark:bg-slate-800/60'}`}>
-              <span className={`text-2xs font-semibold uppercase tracking-wider block ${order.due_amount > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500'}`}>Due</span>
-              <span className={`text-lg font-black tabular-nums ${order.due_amount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>
+            <div className={`p-3 rounded-lg ${order.due_amount > 0 ? 'bg-amber-50/60 dark:bg-amber-950/30' : 'bg-muted dark:bg-muted'}`}>
+              <span className={`text-2xs font-semibold uppercase tracking-wider block ${order.due_amount > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground'}`}>Due</span>
+              <span className={`text-lg font-black tabular-nums ${order.due_amount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
                 <CurrencyDisplay amount={order.due_amount} />
               </span>
             </div>
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg">
-              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Delivery Due</span>
-              <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1 block">
+            <div className="p-3 bg-muted rounded-lg">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">Delivery Due</span>
+              <span className="text-sm font-bold text-foreground mt-1 block">
                 {order.delivery_date || 'Not specified'}
               </span>
             </div>
@@ -592,15 +592,15 @@ function OrderDetailContent() {
             }`}>
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div>
-                  <span className="text-2xs font-bold uppercase tracking-wider text-slate-500 block">CURRENT</span>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">CURRENT</span>
+                  <span className="text-sm font-bold text-foreground dark:text-white">
                     {workflow.overallStageLabelEn}
                   </span>
                 </div>
-                <div className="hidden sm:block text-slate-300 dark:text-slate-700">|</div>
+                <div className="hidden sm:block text-muted-foreground dark:text-foreground">|</div>
                 <div>
                   <span className="text-2xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 block">NEXT</span>
-                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  <span className="text-sm font-semibold text-foreground dark:text-foreground">
                     {workflow.nextActionEn}
                   </span>
                 </div>
@@ -621,7 +621,7 @@ function OrderDetailContent() {
                 </div>
               ) : (
                 workflow.nextActionHref && (
-                  <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold min-h-[38px] self-start sm:self-auto">
+                  <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold min-h-[38px] self-start sm:self-auto">
                     <Link href={workflow.nextActionHref}>
                       {workflow.nextActionEn}
                     </Link>
@@ -685,11 +685,11 @@ function OrderDetailContent() {
          ========================================================================= */}
       <section id="workflow-section" className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-base font-bold text-foreground dark:text-white flex items-center gap-2">
             <Layers className="h-4.5 w-4.5 text-blue-600" />
             <span>Workflow & Stage Progress</span>
           </h2>
-          <span className="text-xs text-slate-500 font-medium">
+          <span className="text-xs text-muted-foreground font-medium">
             Status: <strong>{workflow?.derivedOrderStatus || order.status}</strong>
           </span>
         </div>
@@ -719,7 +719,7 @@ function OrderDetailContent() {
          ========================================================================= */}
       <section id="finance-section" className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-base font-bold text-foreground dark:text-white flex items-center gap-2">
             <Receipt className="h-4.5 w-4.5 text-emerald-600" />
             <span>Finance & Line Items</span>
           </h2>
@@ -739,15 +739,15 @@ function OrderDetailContent() {
         {/* Financial Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="p-4">
-            <span className="text-xs font-semibold text-slate-500">Contract Final Price</span>
-            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+            <span className="text-xs font-semibold text-muted-foreground">Contract Final Price</span>
+            <div className="text-2xl font-black text-foreground dark:text-white mt-1">
               <CurrencyDisplay amount={order.final_price} />
             </div>
-            <span className="text-2xs text-slate-400">Terms: {order.payment_terms || 'cash'}</span>
+            <span className="text-2xs text-muted-foreground">Terms: {order.payment_terms || 'cash'}</span>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-emerald-500">
-            <span className="text-xs font-semibold text-slate-500">Advance Received (পরিশোধিত)</span>
+            <span className="text-xs font-semibold text-muted-foreground">Advance Received (পরিশোধিত)</span>
             <div className="text-2xl font-black text-emerald-600 mt-1">
               <CurrencyDisplay amount={order.advance_amount} />
             </div>
@@ -757,21 +757,21 @@ function OrderDetailContent() {
           </Card>
 
           <Card className={`p-4 border-l-4 ${order.due_amount > 0 ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
-            <span className="text-xs font-semibold text-slate-500">Remaining Balance (বাকি টাকা)</span>
+            <span className="text-xs font-semibold text-muted-foreground">Remaining Balance (বাকি টাকা)</span>
             <div className={`text-2xl font-black mt-1 ${order.due_amount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
               <CurrencyDisplay amount={order.due_amount} />
             </div>
-            <span className="text-2xs text-slate-400">Payment is decoupled from delivery completion</span>
+            <span className="text-2xs text-muted-foreground">Payment is decoupled from delivery completion</span>
           </Card>
         </div>
 
         {/* Line Items: Desktop Table & Mobile Stack Cards (Section 54) */}
-        <Card className="overflow-hidden border border-slate-200 dark:border-slate-800">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+        <Card className="overflow-hidden border border-border dark:border-border">
+          <div className="p-4 border-b border-border bg-muted flex items-center justify-between">
+            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
               Order Line Items ({order.items?.length || 0})
             </h3>
-            <span className="text-xs text-slate-500 font-medium">
+            <span className="text-xs text-muted-foreground font-medium">
               Commercial Breakdown
             </span>
           </div>
@@ -779,7 +779,7 @@ function OrderDetailContent() {
           {/* Desktop Table View (>= 640px) */}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-muted text-muted-foreground font-semibold border-b border-border dark:border-border">
                 <tr>
                   <th className="py-2.5 px-4">#</th>
                   <th className="py-2.5 px-4">Item & Specifications</th>
@@ -790,34 +790,34 @@ function OrderDetailContent() {
                   <th className="py-2.5 px-4 text-right">Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-border dark:divide-border">
                 {(order.items && order.items.length > 0) ? (
                   order.items.map((it: any, idx: number) => (
-                    <tr key={it.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                      <td className="py-3 px-4 font-mono text-slate-400">{idx + 1}</td>
-                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                    <tr key={it.id || idx} className="hover:bg-muted dark:hover:bg-muted/30">
+                      <td className="py-3 px-4 font-mono text-muted-foreground">{idx + 1}</td>
+                      <td className="py-3 px-4 font-bold text-foreground dark:text-white">
                         {it.item_name}
                       </td>
-                      <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                      <td className="py-3 px-4 text-muted-foreground dark:text-muted-foreground">
                         {it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : '—'}
                       </td>
-                      <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                      <td className="py-3 px-4 text-muted-foreground dark:text-muted-foreground">
                         {it.material_spec || 'Standard Media'}
                       </td>
-                      <td className="py-3 px-4 text-center font-bold text-slate-900 dark:text-white">
+                      <td className="py-3 px-4 text-center font-bold text-foreground dark:text-white">
                         {it.quantity || 1} {it.unit || 'pcs'}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums text-slate-700 dark:text-slate-300">
+                      <td className="py-3 px-4 text-right tabular-nums text-foreground dark:text-muted-foreground">
                         ৳{Number(it.unit_price || 0).toLocaleString()}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white">
+                      <td className="py-3 px-4 text-right tabular-nums font-bold text-foreground dark:text-white">
                         ৳{Number(it.total_price || 0).toLocaleString()}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-slate-400">
+                    <td colSpan={7} className="py-6 text-center text-muted-foreground">
                       No line items recorded for this order.
                     </td>
                   </tr>
@@ -827,19 +827,19 @@ function OrderDetailContent() {
           </div>
 
           {/* Mobile Card Stack View (< 640px) */}
-          <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="block sm:hidden divide-y divide-border dark:divide-border">
             {(order.items && order.items.length > 0) ? (
               order.items.map((it: any, idx: number) => (
                 <div key={it.id || idx} className="p-3.5 space-y-1.5">
                   <div className="flex justify-between items-start">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white">
+                    <span className="font-bold text-xs text-foreground dark:text-white">
                       {idx + 1}. {it.item_name}
                     </span>
-                    <span className="font-bold text-xs text-slate-900 dark:text-white tabular-nums">
+                    <span className="font-bold text-xs text-foreground dark:text-white tabular-nums">
                       ৳{Number(it.total_price || 0).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2 text-2xs text-slate-500">
+                  <div className="flex flex-wrap gap-2 text-2xs text-muted-foreground">
                     <span>Size: {it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : '—'}</span>
                     <span>•</span>
                     <span>Qty: {it.quantity || 1} {it.unit || 'pcs'}</span>
@@ -849,7 +849,7 @@ function OrderDetailContent() {
                 </div>
               ))
             ) : (
-              <div className="p-4 text-center text-xs text-slate-400">No line items recorded.</div>
+              <div className="p-4 text-center text-xs text-muted-foreground">No line items recorded.</div>
             )}
           </div>
         </Card>
@@ -862,11 +862,11 @@ function OrderDetailContent() {
       <section id="files-section" className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground dark:text-white flex items-center gap-2">
               <FileCheck className="h-4.5 w-4.5 text-purple-600" />
               <span>Artwork & Design Proofs</span>
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Version history is strictly preserved (V1, V2, V3). Files are immutable and never overwritten.
             </p>
           </div>
@@ -875,13 +875,13 @@ function OrderDetailContent() {
         {designJobs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {designJobs.map((dj) => (
-              <Card key={dj.id} className="p-4 border border-slate-200 dark:border-slate-800 space-y-3">
+              <Card key={dj.id} className="p-4 border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <span className="text-2xs font-bold text-purple-600 dark:text-purple-400">
                       {dj.design_number}
                     </span>
-                    <h3 className="text-xs font-bold text-slate-900 dark:text-white">
+                    <h3 className="text-xs font-bold text-foreground dark:text-white">
                       {dj.title || 'Artwork Proof'}
                     </h3>
                   </div>
@@ -892,7 +892,7 @@ function OrderDetailContent() {
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
                         : dj.status === 'customer_approval'
                         ? 'bg-amber-50 text-amber-700 border-amber-300'
-                        : 'bg-slate-50 text-slate-700 border-slate-300'
+                        : 'bg-muted text-foreground border-input'
                     }`}
                   >
                     {dj.status.replace('_', ' ').toUpperCase()}
@@ -901,14 +901,14 @@ function OrderDetailContent() {
 
                 {/* Versions List */}
                 {dj.versions && dj.versions.length > 0 ? (
-                  <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <div className="space-y-2 pt-1 border-t border-border dark:border-border">
                     {dj.versions.map((ver) => (
-                      <div key={ver.id} className="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-slate-800/50 text-xs">
+                      <div key={ver.id} className="flex items-center justify-between p-2 rounded bg-muted text-xs">
                         <div className="flex items-center gap-2">
                           <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 text-2xs font-bold rounded">
                             {ver.version_label || `V${ver.version_number}`}
                           </span>
-                          <span className="text-slate-700 dark:text-slate-300 truncate max-w-[180px]">
+                          <span className="text-foreground truncate max-w-[180px]">
                             {ver.proof_file_name || ver.file_name || 'Artwork Proof File'}
                           </span>
                         </div>
@@ -923,24 +923,24 @@ function OrderDetailContent() {
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         ) : (
-                          <span className="text-2xs text-slate-400">No URL</span>
+                          <span className="text-2xs text-muted-foreground">No URL</span>
                         )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-2xs text-slate-400 py-1">No versioned proof files uploaded yet.</div>
+                  <div className="text-2xs text-muted-foreground py-1">No versioned proof files uploaded yet.</div>
                 )}
               </Card>
             ))}
           </div>
         ) : (
           <Card className="p-6 text-center border-dashed">
-            <FileCheck className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+            <FileCheck className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
               No design ticket or proof files linked directly.
             </p>
-            <p className="text-2xs text-slate-400 mt-0.5">
+            <p className="text-2xs text-muted-foreground mt-0.5">
               Production will proceed using customer-provided artwork or direct print traveler specs.
             </p>
           </Card>
@@ -953,33 +953,33 @@ function OrderDetailContent() {
          ========================================================================= */}
       <section id="activity-section" className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-base font-bold text-foreground dark:text-white flex items-center gap-2">
             <Clock className="h-4.5 w-4.5 text-blue-600" />
             <span>Activity & Audit Trail</span>
           </h2>
-          <span className="text-xs text-slate-400">Immutable chronological events</span>
+          <span className="text-xs text-muted-foreground">Immutable chronological events</span>
         </div>
 
-        <Card className="p-5 border border-slate-200 dark:border-slate-800">
+        <Card className="p-5 border border-border dark:border-border">
           <div className="space-y-4">
             {timeline.length > 0 ? (
               timeline.map((ev, idx) => (
                 <div key={ev.id || idx} className="flex gap-3 relative pb-4 last:pb-0">
                   {idx < timeline.length - 1 && (
-                    <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800" />
+                    <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-muted dark:bg-muted" />
                   )}
                   <div className="h-5 w-5 rounded-full bg-blue-100 dark:bg-blue-950/60 border border-blue-400 flex items-center justify-center shrink-0 mt-0.5">
                     <div className="h-2 w-2 rounded-full bg-blue-600" />
                   </div>
                   <div className="space-y-0.5 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center justify-between gap-1">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">{ev.title}</span>
-                      <span className="text-2xs text-slate-400 tabular-nums">{ev.created_at}</span>
+                      <span className="text-xs font-bold text-foreground dark:text-white">{ev.title}</span>
+                      <span className="text-2xs text-muted-foreground tabular-nums">{ev.created_at}</span>
                     </div>
                     {ev.description && (
-                      <p className="text-xs text-slate-600 dark:text-slate-300">{ev.description}</p>
+                      <p className="text-xs text-muted-foreground dark:text-muted-foreground">{ev.description}</p>
                     )}
-                    <span className="text-2xs font-medium text-slate-400 block pt-0.5">
+                    <span className="text-2xs font-medium text-muted-foreground block pt-0.5">
                       By {ev.actor_name || 'System Operator'}
                     </span>
                   </div>
@@ -992,9 +992,9 @@ function OrderDetailContent() {
                     <div className="h-2 w-2 rounded-full bg-blue-600" />
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">Order Booked & Confirmed</span>
-                    <p className="text-xs text-slate-500">Order #{order.order_number} initialized for customer {order.customer_name}.</p>
-                    <span className="text-2xs text-slate-400 tabular-nums">{order.created_at || order.order_date}</span>
+                    <span className="text-xs font-bold text-foreground dark:text-white">Order Booked & Confirmed</span>
+                    <p className="text-xs text-muted-foreground">Order #{order.order_number} initialized for customer {order.customer_name}.</p>
+                    <span className="text-2xs text-muted-foreground tabular-nums">{order.created_at || order.order_date}</span>
                   </div>
                 </div>
                 {order.invoice_number && (
@@ -1003,8 +1003,8 @@ function OrderDetailContent() {
                       <div className="h-2 w-2 rounded-full bg-emerald-600" />
                     </div>
                     <div className="space-y-0.5">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">Commercial Invoice Generated</span>
-                      <p className="text-xs text-slate-500">Official invoice #{order.invoice_number} created.</p>
+                      <span className="text-xs font-bold text-foreground dark:text-white">Commercial Invoice Generated</span>
+                      <p className="text-xs text-muted-foreground">Official invoice #{order.invoice_number} created.</p>
                     </div>
                   </div>
                 )}
@@ -1014,8 +1014,8 @@ function OrderDetailContent() {
                       <div className="h-2 w-2 rounded-full bg-purple-600" />
                     </div>
                     <div className="space-y-0.5">
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">Production Job Tickets Dispatched</span>
-                      <p className="text-xs text-slate-500">{jobs.length} production job tickets active on machine floor bays.</p>
+                      <span className="text-xs font-bold text-foreground dark:text-white">Production Job Tickets Dispatched</span>
+                      <p className="text-xs text-muted-foreground">{jobs.length} production job tickets active on machine floor bays.</p>
                     </div>
                   </div>
                 )}
@@ -1062,7 +1062,7 @@ function OrderDetailContent() {
                 id="jpDept"
                 value={jobDept}
                 onChange={(e) => setJobDept(e.target.value as JobDepartment)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
               >
                 <option value="wide_format_print">Wide Format Printing (Flex/Vinyl)</option>
                 <option value="laser_cnc">Laser Cutting & CNC Routing</option>
@@ -1105,11 +1105,11 @@ function OrderDetailContent() {
               placeholder="e.g. 8-pass high resolution mode, double-fold welding..."
               value={jobInstructions}
               onChange={(e) => setJobInstructions(e.target.value)}
-              className="w-full p-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+              className="w-full p-2 rounded-md border border-input bg-card text-xs"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsAddJobOpen(false)}>
               Cancel
             </Button>
@@ -1146,7 +1146,7 @@ function OrderDetailContent() {
                 id="pMeth"
                 value={collectionMethod}
                 onChange={(e) => setCollectionMethod(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs"
               >
                 <option>Cash Counter</option>
                 <option>bKash Merchant</option>
@@ -1156,7 +1156,7 @@ function OrderDetailContent() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)}>
               Cancel
             </Button>
@@ -1175,52 +1175,52 @@ function OrderDetailContent() {
         description="Physical traveler ticket attached to raw media rolls and work-in-progress carts."
       >
         {selectedJobForPrint && (
-          <div className="space-y-4 p-4 rounded-xl border-2 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs print:bg-white print:text-slate-900 print:border-slate-900">
-            <div className="flex justify-between items-start border-b-2 border-slate-900 dark:border-slate-700 print:border-slate-900 pb-3">
+          <div className="space-y-4 p-4 rounded-xl border-2 border-slate-900 bg-card text-foreground text-xs print:bg-white print:text-foreground print:border-slate-900">
+            <div className="flex justify-between items-start border-b-2 border-slate-900 print:border-slate-900 pb-3">
               <div>
                 <span className="tabular-nums font-black text-xl text-blue-800 dark:text-blue-400 print:text-blue-800">
                   {selectedJobForPrint.job_number}
                 </span>
-                <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">Sales Order: {order.order_number}</div>
+                <div className="text-muted-foreground print:text-muted-foreground">Sales Order: {order.order_number}</div>
               </div>
               <div className="text-right">
-                <div className="font-bold uppercase tracking-wider text-slate-900 dark:text-white print:text-slate-900">{selectedJobForPrint.assigned_department}</div>
+                <div className="font-bold uppercase tracking-wider text-foreground dark:text-white print:text-foreground">{selectedJobForPrint.assigned_department}</div>
                 <div className="text-red-600 dark:text-red-400 font-bold print:text-red-600">Deadline: {selectedJobForPrint.deadline}</div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 py-2 border-b border-slate-200 dark:border-slate-800 print:border-slate-200">
+            <div className="grid grid-cols-2 gap-3 py-2 border-b border-border print:border-border">
               <div>
-                <span className="text-slate-500 dark:text-slate-400 print:text-slate-500">Customer:</span>
-                <strong className="block text-slate-900 dark:text-white print:text-slate-900">{selectedJobForPrint.customer_name}</strong>
+                <span className="text-muted-foreground print:text-muted-foreground">Customer:</span>
+                <strong className="block text-foreground dark:text-white print:text-foreground">{selectedJobForPrint.customer_name}</strong>
               </div>
               <div>
-                <span className="text-slate-500 dark:text-slate-400 print:text-slate-500">Operator:</span>
-                <strong className="block text-slate-900 dark:text-white print:text-slate-900">{selectedJobForPrint.assigned_employee_name}</strong>
+                <span className="text-muted-foreground print:text-muted-foreground">Operator:</span>
+                <strong className="block text-foreground dark:text-white print:text-foreground">{selectedJobForPrint.assigned_employee_name}</strong>
               </div>
             </div>
 
             <div className="space-y-1 py-1">
-              <span className="text-slate-500 dark:text-slate-400 print:text-slate-500">Item Specification:</span>
-              <div className="font-bold text-sm text-slate-900 dark:text-white print:text-slate-900">{selectedJobForPrint.product_name}</div>
-              <div className="tabular-nums text-slate-700 dark:text-slate-300 print:text-slate-700">Dimensions: {selectedJobForPrint.size_spec} • Qty: {selectedJobForPrint.quantity}</div>
-              <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">Material: {selectedJobForPrint.material_spec}</div>
+              <span className="text-muted-foreground print:text-muted-foreground">Item Specification:</span>
+              <div className="font-bold text-sm text-foreground dark:text-white print:text-foreground">{selectedJobForPrint.product_name}</div>
+              <div className="tabular-nums text-foreground print:text-foreground">Dimensions: {selectedJobForPrint.size_spec} • Qty: {selectedJobForPrint.quantity}</div>
+              <div className="text-foreground print:text-foreground">Material: {selectedJobForPrint.material_spec}</div>
             </div>
 
             {selectedJobForPrint.production_instructions && (
-              <div className="p-2.5 rounded bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 print:bg-slate-100 print:border-slate-300 print:text-slate-900">
+              <div className="p-2.5 rounded bg-muted border border-input text-foreground print:bg-muted print:border-input print:text-foreground">
                 <strong>Machine Operator Instructions:</strong>
                 <p className="mt-0.5">{selectedJobForPrint.production_instructions}</p>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 text-center text-2xs text-slate-600 dark:text-slate-400 print:text-slate-600">
+            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-dashed border-input print:border-input text-center text-2xs text-muted-foreground print:text-muted-foreground">
               <div>Operator Initial & Machine #</div>
               <div>QC Inspector Passed</div>
             </div>
 
             <div className="flex justify-end pt-2 print:hidden">
-              <Button onClick={() => window.print()} className="bg-slate-900 dark:bg-slate-800 hover:dark:bg-slate-700 text-white text-xs">
+              <Button onClick={() => window.print()} className="bg-foreground hover:dark:bg-muted text-white text-xs">
                 <Printer className="h-3.5 w-3.5 mr-1" />
                 Print Traveler Ticket
               </Button>
@@ -1252,18 +1252,18 @@ function OrderDetailContent() {
               placeholder="e.g. Design is ready and customer approved quotation amount. Please issue invoice # so floor can print."
               value={invoiceNotes}
               onChange={(e) => setInvoiceNotes(e.target.value)}
-              className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full p-2.5 rounded-lg border border-input bg-card text-xs focus:ring-2 focus:ring-ring focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsInvoiceRequestOpen(false)}>
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmittingInvoiceRequest}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs"
             >
               {isSubmittingInvoiceRequest ? 'Dispatching...' : 'Dispatch Request'}
             </Button>
@@ -1286,7 +1286,7 @@ export default function OrderDetailPage() {
         fallback={
           <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
             <Briefcase className="h-6 w-6 text-indigo-500 animate-pulse" />
-            <p className="text-xs text-slate-500">Loading Order Details...</p>
+            <p className="text-xs text-muted-foreground">Loading Order Details...</p>
           </div>
         }
       >

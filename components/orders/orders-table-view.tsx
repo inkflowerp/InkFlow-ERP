@@ -49,17 +49,17 @@ export const OrdersTableView = React.memo(function OrdersTableView({
 
   if (orders.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
+      <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
         {tBilingual('No order records found matching the filters.', 'কোনো অর্ডার রেকর্ড পাওয়া যায়নি।')}
       </div>
     )
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-          <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-2xs font-bold text-slate-500 uppercase tracking-wider">
+        <table className="w-full text-left text-xs text-foreground dark:text-muted-foreground">
+          <thead className="bg-muted border-b border-border text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             <tr>
               <th className="py-3 px-4">{tBilingual('Order / Invoice', 'অর্ডার / ইনভয়েস')}</th>
               <th className="py-3 px-4">{tBilingual('Customer & Phone', 'কাস্টমার ও মোবাইল')}</th>
@@ -69,7 +69,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
               <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-border dark:divide-border">
             {orders.map((order) => {
               const isPaid = order.paymentStatus === 'paid'
               const isPartial = order.paymentStatus === 'partial'
@@ -82,7 +82,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
               return (
                 <tr
                   key={order.orderNumber ? `ord-${order.orderNumber}` : order.id}
-                  className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                  className="hover:bg-muted dark:hover:bg-muted/50 transition-colors"
                 >
                   {/* Order # */}
                   <td className="py-3 px-4 align-middle">
@@ -94,7 +94,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                       <ExternalLink className="h-3 w-3" />
                     </Link>
                     {order.invoiceNumber && (
-                      <div className="tabular-nums text-2xs text-slate-500">
+                      <div className="tabular-nums text-2xs text-muted-foreground">
                         Inv: #{order.invoiceNumber}
                       </div>
                     )}
@@ -107,7 +107,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
 
                   {/* Customer */}
                   <td className="py-3 px-4 align-middle">
-                    <div className="font-semibold text-slate-900 dark:text-white">
+                    <div className="font-semibold text-foreground dark:text-white">
                       {order.customerName}
                     </div>
                     {order.customerPhone && (
@@ -124,10 +124,10 @@ export const OrdersTableView = React.memo(function OrdersTableView({
 
                   {/* Items Specs */}
                   <td className="py-3 px-4 align-middle">
-                    <div className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1 flex items-center gap-1.5">
+                    <div className="font-bold text-foreground line-clamp-1 flex items-center gap-1.5">
                       <span>{order.items[0]?.itemName || 'Print Work'}</span>
                       {order.items.length > 1 && (
-                        <span className="text-2xs text-slate-500 font-normal">
+                        <span className="text-2xs text-muted-foreground font-normal">
                           (+{order.items.length - 1} more)
                         </span>
                       )}
@@ -154,13 +154,13 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                       }
                       const specs = resolveOrderItemSpecs(firstItem, order.rawJob, order.rawInvoice, tBilingual)
                       return (
-                        <div className="text-2xs text-slate-500 tabular-nums space-y-0.5 mt-0.5">
+                        <div className="text-2xs text-muted-foreground tabular-nums space-y-0.5 mt-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-slate-700 dark:text-slate-300 font-semibold" title={specs.material}>
+                            <span className="text-foreground font-semibold" title={specs.material}>
                               📄 {specs.material}
                             </span>
                             <span>•</span>
-                            <span className="text-slate-700 dark:text-slate-300 font-semibold" title={specs.size}>
+                            <span className="text-foreground font-semibold" title={specs.size}>
                               📐 {specs.size}
                             </span>
                             <span>•</span>
@@ -201,7 +201,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                           </option>
                         ))}
                       </select>
-                      <div className="text-2xs text-slate-400">
+                      <div className="text-2xs text-muted-foreground">
                         {tBilingual('Target: ', 'টার্গেট: ')}{order.deliveryDate || 'N/A'}
                       </div>
                     </div>
@@ -209,7 +209,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
 
                   {/* Financials */}
                   <td className="py-3 px-4 align-middle">
-                    <div className="tabular-nums font-bold text-slate-900 dark:text-white">
+                    <div className="tabular-nums font-bold text-foreground dark:text-white">
                       ৳{order.totalAmount.toLocaleString()}
                     </div>
                     <div className="text-2xs tabular-nums">
@@ -265,7 +265,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                         size="sm"
                         variant="outline"
                         onClick={() => onOpenQuickStatus(order)}
-                        className="h-7 px-2 text-xs border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300"
+                        className="h-7 px-2 text-xs border-input text-foreground hover:bg-muted dark:text-muted-foreground"
                         title={tBilingual('Change Workflow Stage', 'স্ট্যাটাস পরিবর্তন')}
                       >
                         <ArrowRight className="h-3 w-3" />

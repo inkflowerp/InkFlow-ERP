@@ -275,7 +275,7 @@ export function CameraQrScanner({
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-slate-950 border border-slate-800 ${className}`}>
+    <div className={`relative overflow-hidden rounded-2xl bg-foreground border border-border ${className}`}>
       {/* Viewport Area */}
       {!manualMode && (
         <div className="relative aspect-square sm:aspect-[4/3] w-full bg-black flex items-center justify-center overflow-hidden">
@@ -290,7 +290,7 @@ export function CameraQrScanner({
 
           {/* Camera Loading Spinner State */}
           {cameraStatus === 'requesting' && (
-            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-slate-300 z-10">
+            <div className="absolute inset-0 bg-foreground backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-muted-foreground z-10">
               <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
               <span className="text-xs font-medium tracking-wide">Starting camera feed...</span>
             </div>
@@ -330,7 +330,7 @@ export function CameraQrScanner({
 
           {/* Top Control Overlay */}
           <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-auto z-20">
-            <div className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-2xs font-medium text-slate-200 flex items-center gap-1.5">
+            <div className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-2xs font-medium text-foreground flex items-center gap-1.5">
               <span className={`h-2 w-2 rounded-full ${cameraStatus === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
               <span>{cameraStatus === 'active' ? 'Align QR in frame' : 'Connecting camera'}</span>
             </div>
@@ -342,7 +342,7 @@ export function CameraQrScanner({
                   onClick={toggleTorch}
                   className={`p-2 rounded-full backdrop-blur-md border transition-all cursor-pointer ${
                     torchOn
-                      ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg'
+                      ? 'bg-amber-500 text-foreground border-amber-400 shadow-lg'
                       : 'bg-black/60 text-white border-white/10 hover:bg-black/80'
                   }`}
                   title={torchOn ? 'Turn off flash' : 'Turn on flash'}
@@ -364,7 +364,7 @@ export function CameraQrScanner({
 
           {/* Camera Permission Denied / Error State */}
           {(cameraStatus === 'denied' || cameraStatus === 'unsupported') && (
-            <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-30">
+            <div className="absolute inset-0 bg-foreground backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-30">
               <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
                 <ShieldAlert className="h-8 w-8" />
               </div>
@@ -372,7 +372,7 @@ export function CameraQrScanner({
                 <h4 className="text-base font-bold text-white">
                   {cameraStatus === 'denied' ? 'Camera Permission Required' : 'Camera Unavailable'}
                 </h4>
-                <p className="text-xs text-slate-400 max-w-xs">{errorMessage}</p>
+                <p className="text-xs text-muted-foreground max-w-xs">{errorMessage}</p>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
                 <Button
@@ -387,7 +387,7 @@ export function CameraQrScanner({
                   type="button"
                   variant="outline"
                   onClick={() => setManualMode(true)}
-                  className="border-slate-700 bg-slate-800 text-slate-300 text-xs h-10 rounded-xl cursor-pointer"
+                  className="border-border bg-secondary text-muted-foreground text-xs h-10 rounded-xl cursor-pointer"
                 >
                   Manual Code
                 </Button>
@@ -410,7 +410,7 @@ export function CameraQrScanner({
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
                 placeholder="e.g. INKFLOW:ATT:v1:... or Terminal Code"
-                className="bg-slate-900 border-slate-700 text-white tabular-nums text-xs h-11"
+                className="bg-foreground border-border text-white tabular-nums text-xs h-11"
                 autoFocus
               />
             </div>
@@ -419,7 +419,7 @@ export function CameraQrScanner({
                 type="button"
                 variant="outline"
                 onClick={() => setManualMode(false)}
-                className="border-slate-700 bg-slate-900 text-slate-300 text-xs h-10 rounded-xl flex-1 cursor-pointer flex items-center justify-center gap-1.5"
+                className="border-border bg-foreground text-muted-foreground text-xs h-10 rounded-xl flex-1 cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Camera className="h-3.5 w-3.5" />
                 <span>Back to Camera</span>
@@ -437,7 +437,7 @@ export function CameraQrScanner({
       )}
 
       {/* Bottom Option Bar */}
-      <div className="p-3 bg-slate-900/60 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+      <div className="p-3 bg-foreground border-t border-border flex items-center justify-between text-xs text-muted-foreground">
         <label className="flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 cursor-pointer font-medium">
           <Upload className="h-3.5 w-3.5" />
           <span>Upload QR Image</span>
@@ -454,7 +454,7 @@ export function CameraQrScanner({
           <button
             type="button"
             onClick={() => setManualMode(true)}
-            className="text-slate-400 hover:text-white transition-colors cursor-pointer font-medium"
+            className="text-muted-foreground hover:text-white transition-colors cursor-pointer font-medium"
           >
             Manual Code
           </button>

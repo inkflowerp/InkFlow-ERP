@@ -178,16 +178,16 @@ export function ScheduleTaskModal({
     >
       <form onSubmit={handleFormSubmit} className="space-y-4">
         {/* Task Summary Card */}
-        <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1">
+        <div className="p-3 bg-muted rounded-lg border border-border space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+            <span className="text-xs font-bold text-foreground dark:text-foreground">
               {task.task_name}
             </span>
             <Badge variant="outline" className="text-2xs uppercase tabular-nums">
               {task.task_number}
             </Badge>
           </div>
-          <div className="text-2xs text-slate-500 flex items-center gap-3 flex-wrap">
+          <div className="text-2xs text-muted-foreground flex items-center gap-3 flex-wrap">
             <span>Job #{task.job_number || 'N/A'}</span>
             <span>•</span>
             <span>Qty: {task.quantity} {task.unit}</span>
@@ -233,7 +233,7 @@ export function ScheduleTaskModal({
             value={selectedMachineId}
             onChange={(e) => setSelectedMachineId(e.target.value)}
             disabled={loadingMachines}
-            className="w-full text-xs rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-xs focus:border-blue-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="w-full text-xs rounded-md border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-blue-500 focus:outline-hidden dark:text-foreground"
           >
             <option value="">-- No Machine Required (Manual / Hand Work) --</option>
             {machineries.map((m) => {
@@ -280,13 +280,13 @@ export function ScheduleTaskModal({
         {/* Assigned Operator */}
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5 text-slate-600" />
+            <User className="h-3.5 w-3.5 text-muted-foreground" />
             {tBilingual('Assigned Operator / Worker', 'দায়িত্বপ্রাপ্ত অপারেটর')}
           </Label>
           <select
             value={selectedOperatorId}
             onChange={(e) => setSelectedOperatorId(e.target.value)}
-            className="w-full text-xs rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-xs focus:border-blue-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="w-full text-xs rounded-md border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-blue-500 focus:outline-hidden dark:text-foreground"
           >
             <option value="">-- Unassigned (Available for Any Floor Operator) --</option>
             {operators.map((op) => (
@@ -301,7 +301,7 @@ export function ScheduleTaskModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5 text-slate-600" />
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
               {tBilingual('Start Date & Time', 'শুরুর সময়')}
             </Label>
             <Input
@@ -315,7 +315,7 @@ export function ScheduleTaskModal({
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-slate-600" />
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
               {tBilingual('Estimated Duration', 'আনুমানিক সময় (মিনিট)')}
             </Label>
             <div className="flex items-center gap-2">
@@ -328,7 +328,7 @@ export function ScheduleTaskModal({
                 onChange={(e) => setDurationMinutes(parseInt(e.target.value) || 30)}
                 className="text-xs"
               />
-              <span className="text-xs text-slate-500 shrink-0">
+              <span className="text-xs text-muted-foreground shrink-0">
                 ({(durationMinutes / 60).toFixed(1)} hrs)
               </span>
             </div>
@@ -349,7 +349,7 @@ export function ScheduleTaskModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"
@@ -365,7 +365,7 @@ export function ScheduleTaskModal({
             variant="default"
             size="sm"
             disabled={isSubmitting}
-            className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
           >
             {isSubmitting ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...') : tBilingual('Confirm Schedule', 'শিডিউল নিশ্চিত করুন')}
           </Button>

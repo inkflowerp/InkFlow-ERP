@@ -580,7 +580,7 @@ export function OutsourceProductModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-slate-900 dark:text-white">
+              <span className="text-base font-bold text-foreground dark:text-white">
                 {initialData ? `Edit Outsource Product: ${initialData.name}` : 'New Outsource Product'}
               </span>
               <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
@@ -592,7 +592,7 @@ export function OutsourceProductModal({
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               Subcontracted offset printing, neon signs, computer embroidery, hot foil, and special jobs routed to third-party vendors without internal stock depletion.
             </p>
           </div>
@@ -606,7 +606,7 @@ export function OutsourceProductModal({
                 type="button"
                 variant="outline"
                 onClick={() => setActiveTab(TABS_CONFIG[currentTabIndex - 1].id)}
-                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+                className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -664,7 +664,7 @@ export function OutsourceProductModal({
     >
       <div className="space-y-4 py-1">
         {/* 4-Tab Stepper Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700/60">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-muted rounded-xl text-xs font-bold border border-border dark:border-slate-700/60">
           {TABS_CONFIG.map((tab) => {
             const Icon = tab.icon
             const isSelected = activeTab === tab.id
@@ -676,11 +676,11 @@ export function OutsourceProductModal({
                 className={cn(
                   'px-2 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap text-xs relative',
                   isSelected
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium'
+                    ? 'bg-card text-foreground dark:text-white shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-white font-medium'
                 )}
               >
-                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400')} />
+                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-purple-600 dark:text-purple-400' : 'text-muted-foreground')} />
                 <span>{tab.label}</span>
               </button>
             )
@@ -693,10 +693,10 @@ export function OutsourceProductModal({
         {activeTab === 'basic' && (
           <div className="space-y-4">
             {/* Product Identity Form */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
+            <div className="p-4 rounded-xl border border-border bg-card space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
                     Outsource Product Name <span className="text-rose-500">*</span>
                   </Label>
                   <Input
@@ -721,7 +721,7 @@ export function OutsourceProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
                     নাম (বাংলায়)
                   </Label>
                   <Input
@@ -735,7 +735,7 @@ export function OutsourceProductModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">SKU Code</Label>
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">SKU Code</Label>
                   <Input
                     value={sku}
                     onChange={(e) => setSku(e.target.value.toUpperCase())}
@@ -745,11 +745,11 @@ export function OutsourceProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Category</Label>
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Category</Label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="mt-1 w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-1 focus:ring-purple-500"
+                    className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
                   >
                     {OUTSOURCE_CATEGORIES.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -760,7 +760,7 @@ export function OutsourceProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Selling Unit</Label>
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Selling Unit</Label>
                   <select
                     value={unit}
                     onChange={(e) => {
@@ -768,7 +768,7 @@ export function OutsourceProductModal({
                       setUnit(val)
                       setPurchaseUnit(val)
                     }}
-                    className="mt-1 w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-1 focus:ring-purple-500 tabular-nums"
+                    className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500 tabular-nums"
                   >
                     {OUTSOURCE_PRODUCT_UNITS.map((u) => (
                       <option key={u.value} value={u.value}>
@@ -780,10 +780,10 @@ export function OutsourceProductModal({
               </div>
 
               {/* Vendor Mapping Section */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="pt-3 border-t border-border space-y-3">
                 <div className="flex items-center gap-2">
                   <Building className="w-4 h-4 text-purple-600" />
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <span className="text-xs font-bold text-foreground dark:text-foreground">
                     Preferred Outsource Vendor & Contact
                   </span>
                 </div>
@@ -791,11 +791,11 @@ export function OutsourceProductModal({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {suppliers.length > 0 && (
                     <div>
-                      <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Select Existing Vendor</Label>
+                      <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Select Existing Vendor</Label>
                       <select
                         value={preferredVendorId}
                         onChange={(e) => handleSupplierSelect(e.target.value)}
-                        className="mt-1 w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-1 focus:ring-purple-500"
+                        className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
                       >
                         <option value="">-- Choose Vendor / Press --</option>
                         {suppliers.map((s) => (
@@ -808,7 +808,7 @@ export function OutsourceProductModal({
                   )}
 
                   <div className={cn(suppliers.length === 0 ? 'sm:col-span-2' : '')}>
-                    <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Vendor / Workshop Name</Label>
+                    <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Vendor / Workshop Name</Label>
                     <Input
                       value={vendorName}
                       onChange={(e) => setVendorName(e.target.value)}
@@ -818,7 +818,7 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Vendor Phone</Label>
+                    <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Vendor Phone</Label>
                     <Input
                       value={vendorPhone}
                       onChange={(e) => setVendorPhone(e.target.value)}
@@ -830,7 +830,7 @@ export function OutsourceProductModal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Vendor Item / Reference Code</Label>
+                    <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Vendor Item / Reference Code</Label>
                     <Input
                       value={vendorItemCode}
                       onChange={(e) => setVendorItemCode(e.target.value)}
@@ -839,7 +839,7 @@ export function OutsourceProductModal({
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Vendor Address / Location</Label>
+                    <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Vendor Address / Location</Label>
                     <Input
                       value={vendorAddress}
                       onChange={(e) => setVendorAddress(e.target.value)}
@@ -851,7 +851,7 @@ export function OutsourceProductModal({
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Catalog Description</Label>
+                <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Catalog Description</Label>
                 <Input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -868,15 +868,15 @@ export function OutsourceProductModal({
         {/* ======================================================== */}
         {activeTab === 'costing' && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
+            <div className="p-4 rounded-xl border border-border bg-card space-y-4">
               {/* Live Commercial Margin Bar */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/80">
                 <div>
                   <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Vendor Cost (Buy)</span>
-                  <div className="text-lg font-bold tabular-nums text-slate-900 dark:text-white mt-0.5">
+                  <div className="text-lg font-bold tabular-nums text-foreground dark:text-white mt-0.5">
                     ৳{Number(vendorCost) || 0}
                   </div>
-                  <span className="text-2xs text-slate-500">per {unit}</span>
+                  <span className="text-2xs text-muted-foreground">per {unit}</span>
                 </div>
 
                 <div>
@@ -884,7 +884,7 @@ export function OutsourceProductModal({
                   <div className="text-lg font-bold tabular-nums text-blue-600 mt-0.5">
                     ৳{Number(sellingPrice) || 0}
                   </div>
-                  <span className="text-2xs text-slate-500">per {unit}</span>
+                  <span className="text-2xs text-muted-foreground">per {unit}</span>
                 </div>
 
                 <div>
@@ -892,7 +892,7 @@ export function OutsourceProductModal({
                   <div className="text-lg font-bold tabular-nums text-emerald-600 mt-0.5">
                     ৳{marginMetrics.grossProfit}
                   </div>
-                  <span className="text-2xs text-slate-500">Markup: {marginMetrics.markupPercent}%</span>
+                  <span className="text-2xs text-muted-foreground">Markup: {marginMetrics.markupPercent}%</span>
                 </div>
 
                 <div>
@@ -900,14 +900,14 @@ export function OutsourceProductModal({
                   <div className="text-lg font-bold tabular-nums text-emerald-600 mt-0.5">
                     {marginMetrics.grossMarginPercent}%
                   </div>
-                  <span className="text-2xs text-slate-500">Target: {targetMargin}%</span>
+                  <span className="text-2xs text-muted-foreground">Target: {targetMargin}%</span>
                 </div>
               </div>
 
               {/* Pricing Form Inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
                     Vendor Purchase Cost (৳) <span className="text-rose-500">*</span>
                   </Label>
                   <Input
@@ -919,11 +919,11 @@ export function OutsourceProductModal({
                     placeholder="e.g. 1800"
                     className="mt-1 h-9 text-xs tabular-nums font-bold"
                   />
-                  <span className="text-2xs text-slate-400 mt-0.5 block">Price paid to third-party subcontractor</span>
+                  <span className="text-2xs text-muted-foreground mt-0.5 block">Price paid to third-party subcontractor</span>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Target Margin %</Label>
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Target Margin %</Label>
                   <Input
                     type="number"
                     min="1"
@@ -941,7 +941,7 @@ export function OutsourceProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
                     Catalog Base Selling Price (৳) <span className="text-rose-500">*</span>
                   </Label>
                   <Input
@@ -966,16 +966,16 @@ export function OutsourceProductModal({
                       <span>{fieldErrors.sellingPrice}</span>
                     </p>
                   )}
-                  <span className="text-2xs text-slate-400 mt-0.5 block">Default selling price billed to clients</span>
+                  <span className="text-2xs text-muted-foreground mt-0.5 block">Default selling price billed to clients</span>
                 </div>
               </div>
 
               {/* Multi-Tier Customer Pricing */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="pt-3 border-t border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-purple-600" />
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <span className="text-xs font-bold text-foreground dark:text-foreground">
                       Multi-Tier Customer Pricing (৳ / {unit})
                     </span>
                   </div>
@@ -993,7 +993,7 @@ export function OutsourceProductModal({
 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                   <div>
-                    <Label className="text-2xs font-semibold text-slate-500">Retail Rate (৳)</Label>
+                    <Label className="text-2xs font-semibold text-muted-foreground">Retail Rate (৳)</Label>
                     <Input
                       type="number"
                       value={priceTiers.retail}
@@ -1004,7 +1004,7 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-2xs font-semibold text-slate-500">Corporate (-5%)</Label>
+                    <Label className="text-2xs font-semibold text-muted-foreground">Corporate (-5%)</Label>
                     <Input
                       type="number"
                       value={priceTiers.corporate}
@@ -1015,7 +1015,7 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-2xs font-semibold text-slate-500">Dealer (-10%)</Label>
+                    <Label className="text-2xs font-semibold text-muted-foreground">Dealer (-10%)</Label>
                     <Input
                       type="number"
                       value={priceTiers.dealer}
@@ -1026,7 +1026,7 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-2xs font-semibold text-slate-500">Wholesale (-15%)</Label>
+                    <Label className="text-2xs font-semibold text-muted-foreground">Wholesale (-15%)</Label>
                     <Input
                       type="number"
                       value={priceTiers.wholesale}
@@ -1037,7 +1037,7 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-2xs font-semibold text-slate-500">Custom / VIP</Label>
+                    <Label className="text-2xs font-semibold text-muted-foreground">Custom / VIP</Label>
                     <Input
                       type="number"
                       value={priceTiers.custom}
@@ -1050,9 +1050,9 @@ export function OutsourceProductModal({
               </div>
 
               {/* Order Minimums & Floor Margin */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border dark:border-border">
                 <div>
-                  <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Min Order Quantity (MOQ)</Label>
+                  <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Min Order Quantity (MOQ)</Label>
                   <Input
                     type="number"
                     min="1"
@@ -1063,7 +1063,7 @@ export function OutsourceProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Min Allowed Margin Floor %</Label>
+                  <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Min Allowed Margin Floor %</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1075,14 +1075,14 @@ export function OutsourceProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">Minimum Floor Selling Price (৳)</Label>
+                  <Label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Minimum Floor Selling Price (৳)</Label>
                   <Input
                     type="number"
                     min="0"
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="Floor Price"
-                    className="mt-1 h-8 text-xs tabular-nums text-slate-700 dark:text-slate-300"
+                    className="mt-1 h-8 text-xs tabular-nums text-foreground dark:text-muted-foreground"
                   />
                 </div>
               </div>
@@ -1095,7 +1095,7 @@ export function OutsourceProductModal({
         {/* ======================================================== */}
         {activeTab === 'vendor_specs' && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
+            <div className="p-4 rounded-xl border border-border bg-card space-y-4">
               {/* Non-Inventory Clarification Banner */}
               <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/50 dark:bg-purple-950/20 flex items-start gap-3">
                 <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 shrink-0 mt-0.5">
@@ -1105,7 +1105,7 @@ export function OutsourceProductModal({
                   <span className="font-bold text-purple-900 dark:text-purple-200 block">
                     Non-Inventory Item Routing Architecture
                   </span>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-2xs">
+                  <p className="text-muted-foreground leading-relaxed text-2xs">
                     This product is configured as a <strong>Non-Inventory Item</strong>. When included in quotations and job orders, it will <strong>not</strong> consume internal warehouse stock rolls (e.g. flex banner or vinyl rolls) and will bypass internal machine queues, routing directly into vendor procurement and dispatch tickets.
                   </p>
                 </div>
@@ -1113,7 +1113,7 @@ export function OutsourceProductModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
                     Estimated Vendor Turnaround / Lead Time
                   </Label>
                   <div className="flex items-center gap-2 mt-1">
@@ -1125,16 +1125,16 @@ export function OutsourceProductModal({
                       placeholder="2"
                       className="h-9 text-xs tabular-nums font-bold w-28"
                     />
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Working Days</span>
+                    <span className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Working Days</span>
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Fulfillment / Logistics Method</Label>
+                  <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">Fulfillment / Logistics Method</Label>
                   <select
                     value={deliveryMethod}
                     onChange={(e) => setDeliveryMethod(e.target.value)}
-                    className="mt-1 w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-1 focus:ring-purple-500"
+                    className="mt-1 w-full h-9 px-3 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
                   >
                     <option value="vendor_delivery">Vendor delivers to our print shop (ভেন্ডর শপে ডেলিভারি করবে)</option>
                     <option value="shop_pickup">Our shop representative picks up from vendor (আমাদের লোক ভেন্ডর থেকে পিকআপ করবে)</option>
@@ -1144,7 +1144,7 @@ export function OutsourceProductModal({
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
                   Subcontract Technical Specifications & Artwork Guidelines
                 </Label>
                 <textarea
@@ -1152,12 +1152,12 @@ export function OutsourceProductModal({
                   onChange={(e) => setSpecifications(e.target.value)}
                   placeholder="e.g. 120 GSM Art paper, 4-color offset print, 3mm bleed margin, CMYK color space, vector outline font..."
                   rows={3}
-                  className="mt-1 w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-1 focus:ring-purple-500"
+                  className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
                 />
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
                   Vendor Instructions / Plate Preparation Notes
                 </Label>
                 <textarea
@@ -1165,7 +1165,7 @@ export function OutsourceProductModal({
                   onChange={(e) => setVendorNotes(e.target.value)}
                   placeholder="Special instructions communicated to the vendor when issuing purchase order..."
                   rows={2}
-                  className="mt-1 w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-1 focus:ring-purple-500"
+                  className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
                 />
               </div>
             </div>
@@ -1177,10 +1177,10 @@ export function OutsourceProductModal({
         {/* ======================================================== */}
         {activeTab === 'taxes' && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
+            <div className="p-4 rounded-xl border border-border bg-card space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">VAT / Tax Settings</span>
+                <div className="p-3.5 rounded-xl border border-border space-y-3">
+                  <span className="text-xs font-bold text-foreground block">VAT / Tax Settings</span>
                   
                   <div className="flex items-center gap-2">
                     <input
@@ -1196,9 +1196,9 @@ export function OutsourceProductModal({
                   </div>
 
                   {vatApplicable && (
-                    <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <div className="space-y-2 pt-2 border-t border-border dark:border-border">
                       <div>
-                        <Label className="text-xs font-medium text-slate-600">Standard VAT Rate (%)</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">Standard VAT Rate (%)</Label>
                         <Input
                           type="number"
                           step="0.1"
@@ -1225,8 +1225,8 @@ export function OutsourceProductModal({
                   )}
                 </div>
 
-                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Pricing Permissions & Safety</span>
+                <div className="p-3.5 rounded-xl border border-border space-y-3">
+                  <span className="text-xs font-bold text-foreground block">Pricing Permissions & Safety</span>
 
                   <div className="flex items-center gap-2">
                     <input
@@ -1257,7 +1257,7 @@ export function OutsourceProductModal({
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
                   Internal Workshop Notes (Shielded from Customer Invoices)
                 </Label>
                 <textarea
@@ -1265,7 +1265,7 @@ export function OutsourceProductModal({
                   onChange={(e) => setInternalNotes(e.target.value)}
                   placeholder="Private internal notes regarding vendor negotiation, margin caps, or courier contacts..."
                   rows={3}
-                  className="mt-1 w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:ring-1 focus:ring-purple-500"
+                  className="mt-1 w-full p-2.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-1 focus:ring-purple-500"
                 />
               </div>
             </div>

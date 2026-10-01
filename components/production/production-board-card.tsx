@@ -75,7 +75,7 @@ export function ProductionBoardCard({
         )
       case 'low':
         return (
-          <Badge variant="outline" className="text-slate-500 text-2xs">
+          <Badge variant="outline" className="text-muted-foreground text-2xs">
             Low
           </Badge>
         )
@@ -108,7 +108,7 @@ export function ProductionBoardCard({
   }
 
   return (
-    <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:shadow-md transition-shadow">
+    <Card className="border border-border bg-card shadow-xs hover:shadow-md transition-shadow">
       <CardContent className="p-3.5 space-y-2.5">
         {/* Top Header: Priority & Job ID */}
         <div className="flex items-center justify-between">
@@ -116,7 +116,7 @@ export function ProductionBoardCard({
             {getPriorityBadge(task.priority)}
             <Link
               href={jobHref}
-              className="text-2xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-0.5"
+              className="text-2xs font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-0.5"
             >
               <span>Job #{task.job_number || 'N/A'}</span>
               <ExternalLink className="h-2.5 w-2.5 opacity-60" />
@@ -127,12 +127,12 @@ export function ProductionBoardCard({
 
         {/* Task Title & Product */}
         <div>
-          <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-snug">
+          <h4 className="text-xs font-bold text-foreground leading-snug">
             <Link href={jobHref} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
               {task.task_name}
             </Link>
           </h4>
-          <p className="text-2xs text-slate-500 truncate">
+          <p className="text-2xs text-muted-foreground truncate">
             {task.customer_name} • {task.product_name || 'Standard Print'}
           </p>
         </div>
@@ -159,8 +159,8 @@ export function ProductionBoardCard({
         )}
 
         {task.is_blocked_by_dependency && task.status !== 'completed' && (
-          <div className="p-2 bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded text-2xs text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-            <Lock className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+          <div className="p-2 bg-muted border border-input rounded text-2xs text-foreground flex items-center gap-1.5">
+            <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <span className="truncate">
               Waiting for <strong className="font-semibold">{task.blocking_dependency_task_name}</strong> to complete.
             </span>
@@ -179,16 +179,16 @@ export function ProductionBoardCard({
         )}
 
         {/* Machine & Operator Details */}
-        <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-2xs text-slate-600 dark:text-slate-400">
+        <div className="pt-1.5 border-t border-border flex items-center justify-between text-2xs text-muted-foreground dark:text-muted-foreground">
           <div className="flex items-center gap-1 truncate max-w-[130px]">
-            <Cpu className="h-3 w-3 text-slate-400 shrink-0" />
+            <Cpu className="h-3 w-3 text-muted-foreground shrink-0" />
             <span className="truncate font-medium">
               {task.assigned_machine_name || 'Manual (No Machine)'}
             </span>
           </div>
 
           <div className="flex items-center gap-1 truncate max-w-[110px]">
-            <User className="h-3 w-3 text-slate-400 shrink-0" />
+            <User className="h-3 w-3 text-muted-foreground shrink-0" />
             <span className="truncate">
               {task.assigned_operator_name || 'Unassigned'}
             </span>
@@ -196,21 +196,21 @@ export function ProductionBoardCard({
         </div>
 
         {/* Schedule & Quantity Footer */}
-        <div className="flex items-center justify-between text-2xs text-slate-500">
+        <div className="flex items-center justify-between text-2xs text-muted-foreground">
           <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3 text-slate-400" />
+            <Clock className="h-3 w-3 text-muted-foreground" />
             <span>{task.estimated_duration_minutes || 30}m</span>
             {task.scheduled_start && (
               <span>• {new Date(task.scheduled_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             )}
           </div>
-          <span className="font-semibold text-slate-700 dark:text-slate-300">
+          <span className="font-semibold text-foreground dark:text-muted-foreground">
             {task.quantity} {task.unit}
           </span>
         </div>
 
         {/* Action Controls */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-1.5">
+        <div className="pt-2 border-t border-border flex flex-wrap items-center justify-between gap-1.5">
           <div className="flex items-center gap-1">
             {onPrintTicket && (
               <Button
@@ -218,7 +218,7 @@ export function ProductionBoardCard({
                 variant="ghost"
                 onClick={() => onPrintTicket(task)}
                 title="Print Job Ticket"
-                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 shrink-0"
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground shrink-0"
               >
                 <FileCheck2 className="h-3.5 w-3.5" />
               </Button>
@@ -253,7 +253,7 @@ export function ProductionBoardCard({
               size="sm"
               variant="ghost"
               onClick={() => onHold(task)}
-              className="h-7 text-2xs px-1.5 text-slate-500 hover:text-amber-600 rounded-lg shrink-0"
+              className="h-7 text-2xs px-1.5 text-muted-foreground hover:text-amber-600 rounded-lg shrink-0"
             >
               Hold
             </Button>
@@ -276,7 +276,7 @@ export function ProductionBoardCard({
               variant="default"
               onClick={() => onStart(task)}
               disabled={task.is_blocked_by_dependency || task.is_blocked_by_commercial_gate || task.is_blocked_by_design_gate}
-              className="h-7 text-2xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 font-semibold rounded-lg shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-7 text-2xs px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1 font-semibold rounded-lg shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Play className="h-3 w-3 fill-current" />
               <span>Start</span>

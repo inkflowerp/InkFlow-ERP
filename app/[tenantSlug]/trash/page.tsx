@@ -362,7 +362,7 @@ function TrashContent() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-          <Badge variant="outline" className="bg-white/80 dark:bg-amber-900/40 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 font-semibold text-2xs px-2.5 py-0.5">
+          <Badge variant="outline" className="bg-card/80 dark:bg-amber-900/40 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 font-semibold text-2xs px-2.5 py-0.5">
             <ShieldAlert className="h-3 w-3 mr-1 text-amber-600 dark:text-amber-400" />
             {TRASH_RETENTION_DAYS} Days Retention
           </Badge>
@@ -461,7 +461,7 @@ function TrashContent() {
                 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
                 selectedCategory === tab.id
                   ? 'bg-rose-600 text-white shadow-sm'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  : 'bg-muted text-foreground hover:bg-muted dark:hover:bg-slate-700'
               )}
             >
               <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
@@ -470,7 +470,7 @@ function TrashContent() {
                   'px-1.5 py-0.2 rounded-full text-2xs',
                   selectedCategory === tab.id
                     ? 'bg-rose-800 text-rose-100'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                    : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                 )}
               >
                 {tab.count}
@@ -480,7 +480,7 @@ function TrashContent() {
         </div>
 
         <div className="relative w-full">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={tBilingual(
               'Search trashed items by title, reference #, deleted user...',
@@ -495,7 +495,7 @@ function TrashContent() {
 
       {/* TRASH DIRECTORY TABLE */}
       <Card>
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <CardHeader className="pb-3 border-b border-border dark:border-border">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               <span>{tBilingual('Deleted Items in Trash', 'ট্র্যাশে থাকা আইটেমসমূহ')}</span>
@@ -503,7 +503,7 @@ function TrashContent() {
                 {filteredItems.length}
               </Badge>
             </CardTitle>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-muted-foreground">
               {tBilingual('Soft-deleted items are safely preserved until permanent wipe', 'রিস্টোর বা স্থায়ীভাবে ডিলিট করুন')}
             </span>
           </div>
@@ -512,7 +512,7 @@ function TrashContent() {
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Category', 'ক্যাটাগরি')}</th>
                   <th className="py-3 px-4">{tBilingual('Item Title / Name', 'নাম ও বিবরণ')}</th>
@@ -523,11 +523,11 @@ function TrashContent() {
                   <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-border dark:divide-border">
                 {filteredItems.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-xs text-slate-400">
-                      <Trash2 className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                    <td colSpan={7} className="py-12 text-center text-xs text-muted-foreground">
+                      <Trash2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                       {tBilingual('Trash is clean! No deleted items found.', 'ট্র্যাশ খালি! কোন মুছে ফেলা আইটেম নেই।')}
                     </td>
                   </tr>
@@ -537,7 +537,7 @@ function TrashContent() {
                     const isUrgent = daysLeft <= 3
 
                     return (
-                      <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                      <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                         {/* Category */}
                         <td className="py-3.5 px-4">
                           {getCategoryBadge(item.category)}
@@ -545,25 +545,25 @@ function TrashContent() {
 
                         {/* Title & Subtitle */}
                         <td className="py-3.5 px-4">
-                          <div className="font-bold text-slate-900 dark:text-white">
+                          <div className="font-bold text-foreground dark:text-white">
                             {item.title}
                           </div>
                           {item.subtitle && (
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                            <div className="text-xs text-muted-foreground dark:text-muted-foreground">
                               {item.subtitle}
                             </div>
                           )}
                         </td>
 
                         {/* Reference Number */}
-                        <td className="py-3.5 px-4 tabular-nums text-xs text-slate-600 dark:text-slate-300">
+                        <td className="py-3.5 px-4 tabular-nums text-xs text-muted-foreground dark:text-muted-foreground">
                           {item.reference_number || '—'}
                         </td>
 
                         {/* Deleted Date */}
-                        <td className="py-3.5 px-4 text-xs text-slate-500">
+                        <td className="py-3.5 px-4 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                             <span>{new Date(item.deleted_at).toLocaleString()}</span>
                           </div>
                         </td>
@@ -587,9 +587,9 @@ function TrashContent() {
                         </td>
 
                         {/* Deleted By */}
-                        <td className="py-3.5 px-4 text-xs text-slate-500">
+                        <td className="py-3.5 px-4 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <User className="h-3.5 w-3.5 text-slate-400" />
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
                             <span>{item.deleted_by_name || 'System User'}</span>
                           </div>
                         </td>
@@ -605,7 +605,7 @@ function TrashContent() {
                                 setInspectedItem(item)
                                 setIsInspectModalOpen(true)
                               }}
-                              className="h-7 px-2 text-xs text-slate-500 hover:text-indigo-600"
+                              className="h-7 px-2 text-xs text-muted-foreground hover:text-indigo-600"
                               title="Inspect Payload"
                             >
                               <Eye className="h-3.5 w-3.5" />
@@ -646,9 +646,9 @@ function TrashContent() {
           </div>
 
           {/* Mobile Card View */}
-          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="md:hidden divide-y divide-border dark:divide-border">
             {filteredItems.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-400">
+              <div className="p-6 text-center text-xs text-muted-foreground">
                 {tBilingual('Trash is clean! No deleted items found.', 'ট্র্যাশ খালি! কোন মুছে ফেলা আইটেম নেই।')}
               </div>
             ) : (
@@ -657,7 +657,7 @@ function TrashContent() {
                 const isUrgent = daysLeft <= 3
 
                 return (
-                  <div key={item.id} className="p-4 space-y-2 hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                  <div key={item.id} className="p-4 space-y-2 hover:bg-muted dark:hover:bg-muted/50">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {getCategoryBadge(item.category)}
@@ -673,14 +673,14 @@ function TrashContent() {
                           {daysLeft === 0 ? 'Expires today' : `${daysLeft}d left`}
                         </span>
                       </div>
-                      <span className="text-2xs tabular-nums text-slate-400">
+                      <span className="text-2xs tabular-nums text-muted-foreground">
                         {new Date(item.deleted_at).toLocaleDateString()}
                       </span>
                     </div>
 
                     <div>
-                      <div className="font-bold text-sm text-slate-900 dark:text-white">{item.title}</div>
-                      {item.subtitle && <div className="text-xs text-slate-500">{item.subtitle}</div>}
+                      <div className="font-bold text-sm text-foreground dark:text-white">{item.title}</div>
+                      {item.subtitle && <div className="text-xs text-muted-foreground">{item.subtitle}</div>}
                       {item.reference_number && (
                         <div className="text-xs tabular-nums text-indigo-600 dark:text-indigo-400 mt-0.5">
                           Ref: {item.reference_number}
@@ -688,8 +688,8 @@ function TrashContent() {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <span className="text-2xs text-slate-400">
+                    <div className="flex items-center justify-between pt-2 border-t border-border dark:border-border">
+                      <span className="text-2xs text-muted-foreground">
                         By: {item.deleted_by_name || 'System User'}
                       </span>
                       <div className="flex items-center gap-1.5">
@@ -743,7 +743,7 @@ function TrashContent() {
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button variant="outline" size="sm" onClick={() => setIsPermanentModalOpen(false)}>
               Cancel
             </Button>
@@ -772,7 +772,7 @@ function TrashContent() {
             <strong>Target Category:</strong> {selectedCategory === 'all' ? 'All Trashed Items' : selectedCategory} ({filteredItems.length} items to purge).
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border dark:border-border">
             <Button variant="outline" size="sm" onClick={() => setIsEmptyTrashModalOpen(false)}>
               Cancel
             </Button>
@@ -797,7 +797,7 @@ function TrashContent() {
         hideFooter
       >
         <div className="space-y-4 pt-1 max-h-[60vh] overflow-y-auto">
-          <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg text-2xs tabular-nums overflow-x-auto">
+          <pre className="p-3 bg-foreground text-slate-100 rounded-lg text-2xs tabular-nums overflow-x-auto">
             {JSON.stringify(inspectedItem?.payload || {}, null, 2)}
           </pre>
           <div className="flex justify-end">
@@ -816,8 +816,8 @@ export default function TrashPage() {
     <React.Suspense
       fallback={
         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-          <Trash2 className="h-6 w-6 text-slate-400 animate-pulse" />
-          <p className="text-xs text-slate-500">Loading Trash Bin...</p>
+          <Trash2 className="h-6 w-6 text-muted-foreground animate-pulse" />
+          <p className="text-xs text-muted-foreground">Loading Trash Bin...</p>
         </div>
       }
     >

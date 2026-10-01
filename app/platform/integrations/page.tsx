@@ -1180,7 +1180,7 @@ export default function PlatformIntegrationsPage() {
           <span className="flex-1">{notification.message}</span>
           <button
             onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded-md"
+            className="text-muted-foreground hover:text-muted-foreground p-1 rounded-md"
           >
             <X className="w-4 h-4" />
           </button>
@@ -1191,12 +1191,12 @@ export default function PlatformIntegrationsPage() {
       <PlatformSettingsNav />
 
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Platform Integrations
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Manage communication, payment and external service connections for PrintERP.
           </p>
         </div>
@@ -1206,7 +1206,7 @@ export default function PlatformIntegrationsPage() {
             size="sm"
             onClick={loadGateways}
             disabled={loading}
-            className="h-10 px-3.5 text-slate-700 bg-white border-slate-200 hover:bg-slate-50"
+            className="h-10 px-3.5 text-foreground bg-card border-border hover:bg-muted"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -1214,7 +1214,7 @@ export default function PlatformIntegrationsPage() {
           <Button
             size="sm"
             onClick={() => handleOpenAddModal()}
-            className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm"
+            className="h-10 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm"
           >
             <Plus className="w-4 h-4 mr-1.5" />
             Add Integration
@@ -1223,7 +1223,7 @@ export default function PlatformIntegrationsPage() {
       </div>
 
       {/* Primary Section Segmented Navigation Tabs */}
-      <div className="flex border-b border-slate-200 overflow-x-auto no-scrollbar space-x-1 sm:space-x-4">
+      <div className="flex border-b border-border overflow-x-auto no-scrollbar space-x-1 sm:space-x-4">
         {[
           { id: 'overview', label: 'Overview', icon: Layers },
           { id: 'channels', label: 'Channels', icon: Radio, count: gateways.length },
@@ -1239,7 +1239,7 @@ export default function PlatformIntegrationsPage() {
               className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-h-[44px] ${
                 isActive
                   ? 'border-blue-600 text-blue-600 font-semibold'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-input'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -1247,7 +1247,7 @@ export default function PlatformIntegrationsPage() {
               {tab.count !== undefined && (
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full ${
-                    isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+                    isActive ? 'bg-blue-100 text-blue-700' : 'bg-muted text-muted-foreground'
                   }`}
                 >
                   {tab.count}
@@ -1283,59 +1283,59 @@ export default function PlatformIntegrationsPage() {
         <div className="space-y-6">
           {/* Real KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <Card className="bg-white border-slate-200 shadow-sm">
+            <Card className="bg-card border-border shadow-sm">
               <CardContent className="p-4 sm:p-5">
-                <div className="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-medium">
+                <div className="flex items-center justify-between text-muted-foreground text-xs sm:text-sm font-medium">
                   <span>Configured</span>
                   <SlidersHorizontal className="w-4 h-4 text-blue-600" />
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">
+                <div className="text-2xl sm:text-3xl font-bold text-foreground mt-2">
                   {kpiStats.configured}
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Saved gateway integrations</p>
+                <p className="text-xs text-muted-foreground mt-1">Saved gateway integrations</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-slate-200 shadow-sm">
+            <Card className="bg-card border-border shadow-sm">
               <CardContent className="p-4 sm:p-5">
-                <div className="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-medium">
+                <div className="flex items-center justify-between text-muted-foreground text-xs sm:text-sm font-medium">
                   <span>Connected</span>
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold text-emerald-600 mt-2">
                   {kpiStats.connected}
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Active verified connections</p>
+                <p className="text-xs text-muted-foreground mt-1">Active verified connections</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-slate-200 shadow-sm">
+            <Card className="bg-card border-border shadow-sm">
               <CardContent className="p-4 sm:p-5">
-                <div className="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-medium">
+                <div className="flex items-center justify-between text-muted-foreground text-xs sm:text-sm font-medium">
                   <span>Needs Attention</span>
                   <AlertTriangle className="w-4 h-4 text-amber-500" />
                 </div>
                 <div
                   className={`text-2xl sm:text-3xl font-bold mt-2 ${
-                    kpiStats.needsAttention > 0 ? 'text-amber-600' : 'text-slate-900'
+                    kpiStats.needsAttention > 0 ? 'text-amber-600' : 'text-foreground'
                   }`}
                 >
                   {kpiStats.needsAttention}
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Errors or credential issues</p>
+                <p className="text-xs text-muted-foreground mt-1">Errors or credential issues</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-slate-200 shadow-sm">
+            <Card className="bg-card border-border shadow-sm">
               <CardContent className="p-4 sm:p-5">
-                <div className="flex items-center justify-between text-slate-500 text-xs sm:text-sm font-medium">
+                <div className="flex items-center justify-between text-muted-foreground text-xs sm:text-sm font-medium">
                   <span>Disabled</span>
-                  <Power className="w-4 h-4 text-slate-400" />
+                  <Power className="w-4 h-4 text-muted-foreground" />
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-slate-500 mt-2">
+                <div className="text-2xl sm:text-3xl font-bold text-muted-foreground mt-2">
                   {kpiStats.disabled}
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Temporarily suspended</p>
+                <p className="text-xs text-muted-foreground mt-1">Temporarily suspended</p>
               </CardContent>
             </Card>
           </div>
@@ -1343,19 +1343,19 @@ export default function PlatformIntegrationsPage() {
           {/* Quick Actions & Recent Failures */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Quick Actions Card */}
-            <Card className="bg-white border-slate-200 shadow-sm lg:col-span-1">
-              <CardHeader className="pb-3 border-b border-slate-100">
-                <CardTitle className="text-base font-semibold text-slate-900">
+            <Card className="bg-card border-border shadow-sm lg:col-span-1">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-base font-semibold text-foreground">
                   Quick Actions
                 </CardTitle>
-                <CardDescription className="text-xs text-slate-500">
+                <CardDescription className="text-xs text-muted-foreground">
                   Common gateway operations & shortcuts
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 space-y-2.5">
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left h-11 border-slate-200 hover:bg-slate-50 text-slate-700"
+                  className="w-full justify-start text-left h-11 border-border hover:bg-muted text-foreground"
                   onClick={() => handleOpenAddModal('email')}
                 >
                   <Mail className="w-4 h-4 mr-2.5 text-blue-600" />
@@ -1363,7 +1363,7 @@ export default function PlatformIntegrationsPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left h-11 border-slate-200 hover:bg-slate-50 text-slate-700"
+                  className="w-full justify-start text-left h-11 border-border hover:bg-muted text-foreground"
                   onClick={() => handleOpenAddModal('sms')}
                 >
                   <Smartphone className="w-4 h-4 mr-2.5 text-emerald-600" />
@@ -1371,7 +1371,7 @@ export default function PlatformIntegrationsPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left h-11 border-slate-200 hover:bg-slate-50 text-slate-700"
+                  className="w-full justify-start text-left h-11 border-border hover:bg-muted text-foreground"
                   onClick={() => handleOpenAddModal('payment')}
                 >
                   <CreditCard className="w-4 h-4 mr-2.5 text-purple-600" />
@@ -1379,26 +1379,26 @@ export default function PlatformIntegrationsPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left h-11 border-slate-200 hover:bg-slate-50 text-slate-700"
+                  className="w-full justify-start text-left h-11 border-border hover:bg-muted text-foreground"
                   onClick={() => {
                     setActiveSection('operations')
                     setOperationsTab('logs')
                   }}
                 >
-                  <FileText className="w-4 h-4 mr-2.5 text-slate-600" />
+                  <FileText className="w-4 h-4 mr-2.5 text-muted-foreground" />
                   View Delivery Logs
                 </Button>
               </CardContent>
             </Card>
 
             {/* Configured Gateways Summary / Recent Failures */}
-            <Card className="bg-white border-slate-200 shadow-sm lg:col-span-2">
-              <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+            <Card className="bg-card border-border shadow-sm lg:col-span-2">
+              <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold text-slate-900">
+                  <CardTitle className="text-base font-semibold text-foreground">
                     Integration Status Summary
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-500">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Overview of configured communication and payment connections
                   </CardDescription>
                 </div>
@@ -1414,22 +1414,22 @@ export default function PlatformIntegrationsPage() {
               <CardContent className="p-0">
                 {gateways.length === 0 ? (
                   <div className="p-8 text-center">
-                    <Radio className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                    <h3 className="text-sm font-medium text-slate-900">No integrations configured</h3>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                    <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                    <h3 className="text-sm font-medium text-foreground">No integrations configured</h3>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
                       Connect your first email, SMS, WhatsApp, payment or Telegram provider to start sending.
                     </p>
                     <Button
                       size="sm"
                       onClick={() => handleOpenAddModal()}
-                      className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       <Plus className="w-4 h-4 mr-1.5" />
                       Add First Integration
                     </Button>
                   </div>
                 ) : (
-                  <div className="divide-y divide-slate-100">
+                  <div className="divide-y divide-border">
                     {gateways.slice(0, 5).map((gw) => {
                       const meta = PROVIDERS_METADATA[gw.provider]
                       const Icon = meta?.icon || Radio
@@ -1438,16 +1438,16 @@ export default function PlatformIntegrationsPage() {
                       return (
                         <div
                           key={gw.id}
-                          className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+                          className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
+                            <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-foreground">
                               <Icon className="w-5 h-5" />
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-slate-900">{gw.name}</span>
-                                <Badge variant="outline" className="text-[11px] capitalize border-slate-200">
+                                <span className="text-sm font-medium text-foreground">{gw.name}</span>
+                                <Badge variant="outline" className="text-[11px] capitalize border-border">
                                   {gw.category}
                                 </Badge>
                                 {gw.is_default && (
@@ -1456,7 +1456,7 @@ export default function PlatformIntegrationsPage() {
                                   </Badge>
                                 )}
                               </div>
-                              <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                                 <span>Env: {gw.environment}</span>
                                 <span>•</span>
                                 <span>
@@ -1483,7 +1483,7 @@ export default function PlatformIntegrationsPage() {
                                 Configured
                               </Badge>
                             ) : !gw.is_enabled ? (
-                              <Badge className="bg-slate-100 text-slate-600 border-slate-200 text-xs">
+                              <Badge className="bg-muted text-muted-foreground border-border text-xs">
                                 Disabled
                               </Badge>
                             ) : (
@@ -1496,7 +1496,7 @@ export default function PlatformIntegrationsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleOpenEditModal(gw)}
-                              className="text-xs h-8 px-2.5 border-slate-200 text-slate-700"
+                              className="text-xs h-8 px-2.5 border-border text-foreground"
                             >
                               Configure
                             </Button>
@@ -1534,8 +1534,8 @@ export default function PlatformIntegrationsPage() {
                   onClick={() => setChannelFilter(c.id as any)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap min-h-[38px] ${
                     channelFilter === c.id
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                      ? 'bg-foreground text-white'
+                      : 'bg-card border border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
                   {c.label}
@@ -1545,33 +1545,33 @@ export default function PlatformIntegrationsPage() {
 
             {/* Search Input */}
             <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search integrations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-xs border-slate-200 bg-white"
+                className="pl-9 h-9 text-xs border-border bg-card"
               />
             </div>
           </div>
 
           {/* Integration Table / List */}
-          <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
+          <Card className="bg-card border-border shadow-sm overflow-hidden">
             {filteredGateways.length === 0 ? (
               <div className="p-10 text-center">
-                <Radio className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                <h3 className="text-sm font-semibold text-slate-800">
+                <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                <h3 className="text-sm font-semibold text-foreground">
                   {channelFilter === 'all'
                     ? 'No integrations match your search'
                     : `No ${channelFilter.toUpperCase()} providers configured yet`}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
                   Add an integration to connect your platform with live sending routes.
                 </p>
                 <Button
                   size="sm"
                   onClick={() => handleOpenAddModal(channelFilter !== 'all' ? channelFilter : undefined)}
-                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+                  className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   <Plus className="w-4 h-4 mr-1.5" />
                   Add {channelFilter !== 'all' ? channelFilter.toUpperCase() : ''} Integration
@@ -1579,8 +1579,8 @@ export default function PlatformIntegrationsPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-700 divide-y divide-slate-200">
-                  <thead className="bg-slate-50/75 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                <table className="w-full text-left text-sm text-foreground divide-y divide-border">
+                  <thead className="bg-slate-50/75 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                     <tr>
                       <th scope="col" className="px-4 py-3.5">
                         Provider
@@ -1605,7 +1605,7 @@ export default function PlatformIntegrationsPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
+                  <tbody className="divide-y divide-border bg-card">
                     {filteredGateways.map((gw) => {
                       const meta = PROVIDERS_METADATA[gw.provider]
                       const Icon = meta?.icon || Radio
@@ -1614,18 +1614,18 @@ export default function PlatformIntegrationsPage() {
                       const isSettingDefault = settingDefaultId === gw.id
 
                       return (
-                        <tr key={gw.id} className="hover:bg-slate-50/70 transition-colors">
+                        <tr key={gw.id} className="hover:bg-muted/70 transition-colors">
                           {/* Provider Icon & Name */}
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+                              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
                                 <Icon className="w-4 h-4" />
                               </div>
                               <div>
-                                <span className="font-medium text-slate-900 block leading-tight">
+                                <span className="font-medium text-foreground block leading-tight">
                                   {gw.name}
                                 </span>
-                                <span className="text-xs text-slate-400 block font-mono mt-0.5">
+                                <span className="text-xs text-muted-foreground block font-mono mt-0.5">
                                   {gw.provider}
                                 </span>
                               </div>
@@ -1634,7 +1634,7 @@ export default function PlatformIntegrationsPage() {
 
                           {/* Category */}
                           <td className="px-3 py-3.5">
-                            <Badge variant="outline" className="text-xs font-normal capitalize border-slate-200">
+                            <Badge variant="outline" className="text-xs font-normal capitalize border-border">
                               {gw.category}
                             </Badge>
                           </td>
@@ -1667,7 +1667,7 @@ export default function PlatformIntegrationsPage() {
                                 Configured
                               </Badge>
                             ) : !gw.is_enabled ? (
-                              <Badge className="bg-slate-100 text-slate-600 border-slate-200 text-xs">
+                              <Badge className="bg-muted text-muted-foreground border-border text-xs">
                                 Disabled
                               </Badge>
                             ) : (
@@ -1678,18 +1678,18 @@ export default function PlatformIntegrationsPage() {
                           </td>
 
                           {/* Last Tested */}
-                          <td className="px-3 py-3.5 text-xs text-slate-500 whitespace-nowrap">
+                          <td className="px-3 py-3.5 text-xs text-muted-foreground whitespace-nowrap">
                             {gw.last_tested_at ? (
                               <div>
                                 <span>{formatDateTime(gw.last_tested_at)}</span>
                                 {gw.last_test_latency_ms !== undefined && gw.last_test_latency_ms > 0 && (
-                                  <span className="text-slate-400 block text-[11px]">
+                                  <span className="text-muted-foreground block text-[11px]">
                                     {gw.last_test_latency_ms} ms
                                   </span>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-slate-400">Never</span>
+                              <span className="text-muted-foreground">Never</span>
                             )}
                           </td>
 
@@ -1705,7 +1705,7 @@ export default function PlatformIntegrationsPage() {
                                 size="sm"
                                 onClick={() => handleSetDefault(gw)}
                                 disabled={isSettingDefault || !gw.is_enabled}
-                                className="h-7 text-xs px-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                                className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground hover:bg-muted"
                               >
                                 {isSettingDefault ? 'Setting...' : 'Set default'}
                               </Button>
@@ -1721,7 +1721,7 @@ export default function PlatformIntegrationsPage() {
                                 size="sm"
                                 onClick={() => handleTestConnection(gw.id, gw.name)}
                                 disabled={isTesting || !gw.is_enabled}
-                                className="h-8 px-2.5 text-xs border-slate-200 text-slate-700 hover:bg-slate-50"
+                                className="h-8 px-2.5 text-xs border-border text-foreground hover:bg-muted"
                               >
                                 <RefreshCw className={`w-3.5 h-3.5 mr-1 ${isTesting ? 'animate-spin' : ''}`} />
                                 Test
@@ -1734,7 +1734,7 @@ export default function PlatformIntegrationsPage() {
                                   size="sm"
                                   onClick={() => handleOpenSendTest(gw)}
                                   disabled={!gw.is_enabled || gw.status === 'not_configured'}
-                                  className="h-8 px-2.5 text-xs border-slate-200 text-slate-700 hover:bg-slate-50"
+                                  className="h-8 px-2.5 text-xs border-border text-foreground hover:bg-muted"
                                 >
                                   <Send className="w-3 h-3 mr-1" />
                                   Send
@@ -1746,7 +1746,7 @@ export default function PlatformIntegrationsPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleOpenEditModal(gw)}
-                                className="h-8 px-2.5 text-xs border-slate-200 text-slate-700 hover:bg-slate-50"
+                                className="h-8 px-2.5 text-xs border-border text-foreground hover:bg-muted"
                               >
                                 Configure
                               </Button>
@@ -1759,7 +1759,7 @@ export default function PlatformIntegrationsPage() {
                                 disabled={isToggling}
                                 title={gw.is_enabled ? 'Disable Integration' : 'Enable Integration'}
                                 className={`h-8 w-8 p-0 ${
-                                  gw.is_enabled ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-slate-600'
+                                  gw.is_enabled ? 'text-muted-foreground hover:text-foreground' : 'text-muted-foreground hover:text-muted-foreground'
                                 }`}
                               >
                                 <Power className="w-4 h-4" />
@@ -1771,7 +1771,7 @@ export default function PlatformIntegrationsPage() {
                                 size="sm"
                                 onClick={() => setDeletingGateway(gw)}
                                 title="Delete Integration"
-                                className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600 hover:bg-rose-50"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -1794,7 +1794,7 @@ export default function PlatformIntegrationsPage() {
       {activeSection === 'operations' && (
         <div className="space-y-5">
           {/* Operations Segmented Sub-Nav */}
-          <div className="flex border-b border-slate-200 space-x-3">
+          <div className="flex border-b border-border space-x-3">
             {[
               { id: 'logs', label: 'Delivery Logs' },
               { id: 'webhooks', label: 'Webhooks' },
@@ -1806,7 +1806,7 @@ export default function PlatformIntegrationsPage() {
                 className={`py-2.5 px-3 text-xs sm:text-sm font-medium border-b-2 transition-colors min-h-[40px] ${
                   operationsTab === sub.id
                     ? 'border-blue-600 text-blue-600 font-semibold'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {sub.label}
@@ -1816,40 +1816,40 @@ export default function PlatformIntegrationsPage() {
 
           {/* Sub-Ledger Content: Delivery Logs */}
           {operationsTab === 'logs' && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-3 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <CardTitle className="text-base font-semibold text-slate-900">
+                  <CardTitle className="text-base font-semibold text-foreground">
                     Communication Logs
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-500">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Outbound message audit trail across Email, SMS, WhatsApp, and Telegram
                   </CardDescription>
                 </div>
                 <div className="relative w-full sm:w-64">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder="Search recipient or content..."
                     value={ledgerSearch}
                     onChange={(e) => setLedgerSearch(e.target.value)}
-                    className="pl-9 h-8 text-xs border-slate-200"
+                    className="pl-9 h-8 text-xs border-border"
                   />
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 {subLedgerLoading ? (
-                  <div className="p-10 text-center text-slate-400 text-sm">
-                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-slate-400" />
+                  <div className="p-10 text-center text-muted-foreground text-sm">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
                     Loading delivery logs...
                   </div>
                 ) : commLogs.length === 0 ? (
-                  <div className="p-10 text-center text-slate-500 text-sm">
+                  <div className="p-10 text-center text-muted-foreground text-sm">
                     No communication logs found in authoritative ledger.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-slate-700 divide-y divide-slate-100">
-                      <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider">
+                    <table className="w-full text-left text-xs text-foreground divide-y divide-border">
+                      <thead className="bg-muted text-muted-foreground font-semibold uppercase tracking-wider">
                         <tr>
                           <th className="px-4 py-3">Time</th>
                           <th className="px-3 py-3">Channel</th>
@@ -1859,17 +1859,17 @@ export default function PlatformIntegrationsPage() {
                           <th className="px-4 py-3">Message ID</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-border">
                         {commLogs.map((log) => (
-                          <tr key={log.id} className="hover:bg-slate-50/50">
-                            <td className="px-4 py-3 whitespace-nowrap text-slate-500">
+                          <tr key={log.id} className="hover:bg-muted/50">
+                            <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
                               {formatDateTime(log.created_at)}
                             </td>
                             <td className="px-3 py-3 capitalize font-medium">{log.channel}</td>
-                            <td className="px-3 py-3 font-mono text-slate-800">
+                            <td className="px-3 py-3 font-mono text-foreground">
                               {log.recipient_destination}
                             </td>
-                            <td className="px-3 py-3 uppercase text-slate-600 font-mono">
+                            <td className="px-3 py-3 uppercase text-muted-foreground font-mono">
                               {log.provider_used}
                             </td>
                             <td className="px-3 py-3">
@@ -1883,7 +1883,7 @@ export default function PlatformIntegrationsPage() {
                                 {log.status}
                               </Badge>
                             </td>
-                            <td className="px-4 py-3 font-mono text-slate-400">
+                            <td className="px-4 py-3 font-mono text-muted-foreground">
                               {log.provider_message_id ? log.provider_message_id.slice(0, 16) : '—'}
                             </td>
                           </tr>
@@ -1898,29 +1898,29 @@ export default function PlatformIntegrationsPage() {
 
           {/* Sub-Ledger Content: Webhooks */}
           {operationsTab === 'webhooks' && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100">
-                <CardTitle className="text-base font-semibold text-slate-900">
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-base font-semibold text-foreground">
                   Webhook Event Ledger
                 </CardTitle>
-                <CardDescription className="text-xs text-slate-500">
+                <CardDescription className="text-xs text-muted-foreground">
                   Incoming provider webhook handshakes and processing status
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {subLedgerLoading ? (
-                  <div className="p-10 text-center text-slate-400 text-sm">
-                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-slate-400" />
+                  <div className="p-10 text-center text-muted-foreground text-sm">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
                     Loading webhook records...
                   </div>
                 ) : webhookRecords.length === 0 ? (
-                  <div className="p-10 text-center text-slate-500 text-sm">
+                  <div className="p-10 text-center text-muted-foreground text-sm">
                     No webhook events received yet.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-slate-700 divide-y divide-slate-100">
-                      <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider">
+                    <table className="w-full text-left text-xs text-foreground divide-y divide-border">
+                      <thead className="bg-muted text-muted-foreground font-semibold uppercase tracking-wider">
                         <tr>
                           <th className="px-4 py-3">Provider</th>
                           <th className="px-3 py-3">Event</th>
@@ -1930,14 +1930,14 @@ export default function PlatformIntegrationsPage() {
                           <th className="px-4 py-3 text-right">Payload</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-border">
                         {webhookRecords.map((wh) => (
-                          <tr key={wh.id} className="hover:bg-slate-50/50">
-                            <td className="px-4 py-3 uppercase font-mono font-medium text-slate-800">
+                          <tr key={wh.id} className="hover:bg-muted/50">
+                            <td className="px-4 py-3 uppercase font-mono font-medium text-foreground">
                               {wh.provider}
                             </td>
-                            <td className="px-3 py-3 font-mono text-slate-600">{wh.event_type}</td>
-                            <td className="px-3 py-3 text-slate-500 whitespace-nowrap">
+                            <td className="px-3 py-3 font-mono text-muted-foreground">{wh.event_type}</td>
+                            <td className="px-3 py-3 text-muted-foreground whitespace-nowrap">
                               {formatDateTime(wh.created_at)}
                             </td>
                             <td className="px-3 py-3">
@@ -1946,7 +1946,7 @@ export default function PlatformIntegrationsPage() {
                                   <Check className="w-3 h-3" /> Verified
                                 </span>
                               ) : (
-                                <span className="text-slate-400 text-[11px]">Unverified</span>
+                                <span className="text-muted-foreground text-[11px]">Unverified</span>
                               )}
                             </td>
                             <td className="px-3 py-3 capitalize">
@@ -1954,7 +1954,7 @@ export default function PlatformIntegrationsPage() {
                                 className={`text-[10px] capitalize ${
                                   wh.status === 'processed'
                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                    : 'bg-slate-100 text-slate-600 border-slate-200'
+                                    : 'bg-muted text-muted-foreground border-border'
                                 }`}
                               >
                                 {wh.status}
@@ -1982,40 +1982,40 @@ export default function PlatformIntegrationsPage() {
 
           {/* Sub-Ledger Content: Payment Transactions */}
           {operationsTab === 'transactions' && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-3 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <CardTitle className="text-base font-semibold text-slate-900">
+                  <CardTitle className="text-base font-semibold text-foreground">
                     Payment Gateway Transactions
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-500">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Platform billing transactions via bKash, SSLCOMMERZ, Nagad, UddoktaPay, and Stripe
                   </CardDescription>
                 </div>
                 <div className="relative w-full sm:w-64">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder="Search transaction ID..."
                     value={ledgerSearch}
                     onChange={(e) => setLedgerSearch(e.target.value)}
-                    className="pl-9 h-8 text-xs border-slate-200"
+                    className="pl-9 h-8 text-xs border-border"
                   />
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 {subLedgerLoading ? (
-                  <div className="p-10 text-center text-slate-400 text-sm">
-                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-slate-400" />
+                  <div className="p-10 text-center text-muted-foreground text-sm">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
                     Loading payment records...
                   </div>
                 ) : paymentTransactions.length === 0 ? (
-                  <div className="p-10 text-center text-slate-500 text-sm">
+                  <div className="p-10 text-center text-muted-foreground text-sm">
                     No financial gateway transactions found.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-slate-700 divide-y divide-slate-100">
-                      <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider">
+                    <table className="w-full text-left text-xs text-foreground divide-y divide-border">
+                      <thead className="bg-muted text-muted-foreground font-semibold uppercase tracking-wider">
                         <tr>
                           <th className="px-4 py-3">Date</th>
                           <th className="px-3 py-3">Provider</th>
@@ -2025,20 +2025,20 @@ export default function PlatformIntegrationsPage() {
                           <th className="px-4 py-3">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-border">
                         {paymentTransactions.map((tx) => (
-                          <tr key={tx.id} className="hover:bg-slate-50/50">
-                            <td className="px-4 py-3 whitespace-nowrap text-slate-500">
+                          <tr key={tx.id} className="hover:bg-muted/50">
+                            <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
                               {formatDateTime(tx.created_at)}
                             </td>
-                            <td className="px-3 py-3 uppercase font-mono font-medium text-slate-800">
+                            <td className="px-3 py-3 uppercase font-mono font-medium text-foreground">
                               {tx.provider}
                             </td>
-                            <td className="px-3 py-3 font-mono text-slate-600">{tx.invoice_id || '—'}</td>
-                            <td className="px-3 py-3 font-semibold text-slate-900">
+                            <td className="px-3 py-3 font-mono text-muted-foreground">{tx.invoice_id || '—'}</td>
+                            <td className="px-3 py-3 font-semibold text-foreground">
                               ৳ {Number(tx.amount).toLocaleString('en-BD')}
                             </td>
-                            <td className="px-3 py-3 font-mono text-slate-500 text-[11px]">
+                            <td className="px-3 py-3 font-mono text-muted-foreground text-[11px]">
                               {tx.internal_trx_id}
                             </td>
                             <td className="px-4 py-3">
@@ -2072,7 +2072,7 @@ export default function PlatformIntegrationsPage() {
       {activeSection === 'security' && (
         <div className="space-y-5">
           {/* Security Sub-Nav */}
-          <div className="flex border-b border-slate-200 space-x-3">
+          <div className="flex border-b border-border space-x-3">
             {[
               { id: 'credentials', label: 'Credential Health' },
               { id: 'audit', label: 'Security Audit Log' },
@@ -2083,7 +2083,7 @@ export default function PlatformIntegrationsPage() {
                 className={`py-2.5 px-3 text-xs sm:text-sm font-medium border-b-2 transition-colors min-h-[40px] ${
                   securityTab === sub.id
                     ? 'border-blue-600 text-blue-600 font-semibold'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {sub.label}
@@ -2093,19 +2093,19 @@ export default function PlatformIntegrationsPage() {
 
           {/* Credential Status View */}
           {securityTab === 'credentials' && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100">
-                <CardTitle className="text-base font-semibold text-slate-900">
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-base font-semibold text-foreground">
                   Integration Credential Protection Status
                 </CardTitle>
-                <CardDescription className="text-xs text-slate-500">
+                <CardDescription className="text-xs text-muted-foreground">
                   Application secrets are protected using AES-256-GCM server-side encryption
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-slate-700 divide-y divide-slate-100">
-                    <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider">
+                  <table className="w-full text-left text-xs text-foreground divide-y divide-border">
+                    <thead className="bg-muted text-muted-foreground font-semibold uppercase tracking-wider">
                       <tr>
                         <th className="px-4 py-3">Provider</th>
                         <th className="px-3 py-3">Encryption Envelope</th>
@@ -2114,16 +2114,16 @@ export default function PlatformIntegrationsPage() {
                         <th className="px-4 py-3 text-right">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-border">
                       {gateways.map((gw) => (
-                        <tr key={gw.id} className="hover:bg-slate-50/50">
+                        <tr key={gw.id} className="hover:bg-muted/50">
                           <td className="px-4 py-3">
-                            <span className="font-medium text-slate-900 block">{gw.name}</span>
-                            <span className="text-[11px] text-slate-400 font-mono capitalize">
+                            <span className="font-medium text-foreground block">{gw.name}</span>
+                            <span className="text-[11px] text-muted-foreground font-mono capitalize">
                               {gw.category} / {gw.provider}
                             </span>
                           </td>
-                          <td className="px-3 py-3 font-mono text-slate-600">
+                          <td className="px-3 py-3 font-mono text-muted-foreground">
                             AES-256-GCM (v2:k1)
                           </td>
                           <td className="px-3 py-3">
@@ -2132,7 +2132,7 @@ export default function PlatformIntegrationsPage() {
                                 <Lock className="w-3.5 h-3.5" /> Encrypted
                               </span>
                             ) : (
-                              <span className="text-slate-400 text-[11px]">Not configured</span>
+                              <span className="text-muted-foreground text-[11px]">Not configured</span>
                             )}
                           </td>
                           <td className="px-3 py-3">
@@ -2145,7 +2145,7 @@ export default function PlatformIntegrationsPage() {
                                 Healthy
                               </Badge>
                             ) : (
-                              <Badge className="bg-slate-100 text-slate-600 border-slate-200 text-[10px]">
+                              <Badge className="bg-muted text-muted-foreground border-border text-[10px]">
                                 Empty
                               </Badge>
                             )}
@@ -2155,7 +2155,7 @@ export default function PlatformIntegrationsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleOpenEditModal(gw)}
-                              className="h-7 text-xs border-slate-200 text-slate-700"
+                              className="h-7 text-xs border-border text-foreground"
                             >
                               {gw.needs_reentry ? 'Re-enter Secret' : 'Update Secret'}
                             </Button>
@@ -2171,29 +2171,29 @@ export default function PlatformIntegrationsPage() {
 
           {/* Audit Log View */}
           {securityTab === 'audit' && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-100">
-                <CardTitle className="text-base font-semibold text-slate-900">
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-base font-semibold text-foreground">
                   Integration Audit Trail
                 </CardTitle>
-                <CardDescription className="text-xs text-slate-500">
+                <CardDescription className="text-xs text-muted-foreground">
                   Immutable record of configuration changes, tests, and deletions (secrets never logged)
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {subLedgerLoading ? (
-                  <div className="p-10 text-center text-slate-400 text-sm">
-                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-slate-400" />
+                  <div className="p-10 text-center text-muted-foreground text-sm">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-muted-foreground" />
                     Loading audit trail...
                   </div>
                 ) : auditLogs.length === 0 ? (
-                  <div className="p-10 text-center text-slate-500 text-sm">
+                  <div className="p-10 text-center text-muted-foreground text-sm">
                     No gateway audit logs recorded.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-slate-700 divide-y divide-slate-100">
-                      <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider">
+                    <table className="w-full text-left text-xs text-foreground divide-y divide-border">
+                      <thead className="bg-muted text-muted-foreground font-semibold uppercase tracking-wider">
                         <tr>
                           <th className="px-4 py-3">Timestamp</th>
                           <th className="px-3 py-3">Action</th>
@@ -2201,19 +2201,19 @@ export default function PlatformIntegrationsPage() {
                           <th className="px-4 py-3">Details</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-border">
                         {auditLogs.map((log) => (
-                          <tr key={log.id} className="hover:bg-slate-50/50">
-                            <td className="px-4 py-3 whitespace-nowrap text-slate-500">
+                          <tr key={log.id} className="hover:bg-muted/50">
+                            <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
                               {formatDateTime(log.created_at)}
                             </td>
-                            <td className="px-3 py-3 font-semibold text-slate-800 capitalize">
+                            <td className="px-3 py-3 font-semibold text-foreground capitalize">
                               {log.action.replace(/_/g, ' ')}
                             </td>
-                            <td className="px-3 py-3 uppercase font-mono text-slate-600">
+                            <td className="px-3 py-3 uppercase font-mono text-muted-foreground">
                               {log.details?.provider || '—'}
                             </td>
-                            <td className="px-4 py-3 font-mono text-[11px] text-slate-500">
+                            <td className="px-4 py-3 font-mono text-[11px] text-muted-foreground">
                               {JSON.stringify(log.details)}
                             </td>
                           </tr>
@@ -2243,7 +2243,7 @@ export default function PlatformIntegrationsPage() {
           {!editingGateway && modalStep === 1 && (
             <div className="space-y-4">
               <div>
-                <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                <Label className="text-xs font-semibold text-foreground uppercase tracking-wider">
                   Select Channel
                 </Label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-2">
@@ -2264,7 +2264,7 @@ export default function PlatformIntegrationsPage() {
                         className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 text-xs font-medium transition-all ${
                           isSelected
                             ? 'border-blue-600 bg-blue-50 text-blue-700 ring-2 ring-blue-600/20'
-                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                            : 'border-border bg-card text-muted-foreground hover:bg-muted'
                         }`}
                       >
                         <Icon className="w-5 h-5" />
@@ -2276,7 +2276,7 @@ export default function PlatformIntegrationsPage() {
               </div>
 
               <div>
-                <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                <Label className="text-xs font-semibold text-foreground uppercase tracking-wider">
                   Select Provider
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-2">
@@ -2287,16 +2287,16 @@ export default function PlatformIntegrationsPage() {
                         key={meta.id}
                         type="button"
                         onClick={() => handleSelectProviderToAdd(meta)}
-                        className="p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/30 text-left transition-all group flex items-start gap-3"
+                        className="p-3.5 rounded-xl border border-border hover:border-blue-500 hover:bg-blue-50/30 text-left transition-all group flex items-start gap-3"
                       >
-                        <div className="w-9 h-9 rounded-lg bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center text-slate-700 group-hover:text-blue-700 shrink-0">
+                        <div className="w-9 h-9 rounded-lg bg-muted group-hover:bg-blue-100 flex items-center justify-center text-foreground group-hover:text-blue-700 shrink-0">
                           <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="font-semibold text-slate-900 block text-sm group-hover:text-blue-700">
+                          <span className="font-semibold text-foreground block text-sm group-hover:text-blue-700">
                             {meta.name}
                           </span>
-                          <span className="text-xs text-slate-500 block line-clamp-1 mt-0.5">
+                          <span className="text-xs text-muted-foreground block line-clamp-1 mt-0.5">
                             {meta.tagline}
                           </span>
                         </div>
@@ -2322,14 +2322,14 @@ export default function PlatformIntegrationsPage() {
               )}
 
               {/* Provider Header Banner */}
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+              <div className="p-3.5 bg-muted border border-border rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-800">
+                  <div className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center text-foreground">
                     <selectedMeta.icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-slate-900">{selectedMeta.name}</h4>
-                    <p className="text-xs text-slate-500">{selectedMeta.tagline}</p>
+                    <h4 className="text-sm font-semibold text-foreground">{selectedMeta.name}</h4>
+                    <p className="text-xs text-muted-foreground">{selectedMeta.tagline}</p>
                   </div>
                 </div>
                 {selectedMeta.docsUrl && (
@@ -2363,7 +2363,7 @@ export default function PlatformIntegrationsPage() {
                     onClick={() => {
                       window.location.href = '/api/email/oauth/google/start?scope=platform'
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9 px-4 shrink-0 font-medium shadow-sm flex items-center gap-1.5"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-9 px-4 shrink-0 font-medium shadow-sm flex items-center gap-1.5"
                   >
                     <Mail className="w-3.5 h-3.5" />
                     Sign in with Google
@@ -2374,17 +2374,17 @@ export default function PlatformIntegrationsPage() {
               {/* Integration Name & Environment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Integration Name</Label>
+                  <Label className="text-xs font-semibold text-foreground">Integration Name</Label>
                   <Input
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="mt-1 h-9 text-xs border-slate-200"
+                    className="mt-1 h-9 text-xs border-border"
                     placeholder="e.g. Primary Transactional Route"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-700">Environment</Label>
+                  <Label className="text-xs font-semibold text-foreground">Environment</Label>
                   <div className="flex gap-2 mt-1">
                     {(['sandbox', 'live'] as GatewayEnvironment[]).map((env) => (
                       <button
@@ -2393,8 +2393,8 @@ export default function PlatformIntegrationsPage() {
                         onClick={() => setFormData({ ...formData, environment: env })}
                         className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium border transition-colors ${
                           formData.environment === env
-                            ? 'bg-slate-900 text-white border-slate-900'
-                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                            ? 'bg-foreground text-white border-slate-900'
+                            : 'bg-card border-border text-muted-foreground hover:bg-muted'
                         }`}
                       >
                         {env === 'live' ? 'Live Production' : 'Sandbox / Test'}
@@ -2406,13 +2406,13 @@ export default function PlatformIntegrationsPage() {
 
               {/* SECTION: CREDENTIALS (Visually Separated) */}
               {selectedMeta.credentialFields.length > 0 && (
-                <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-3.5">
-                  <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5">
+                <div className="p-4 bg-slate-50/70 border border-border rounded-xl space-y-3.5">
+                  <div className="flex items-center gap-2 border-b border-border pb-2.5">
                     <Lock className="w-4 h-4 text-blue-600" />
-                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                       Credentials & API Secrets
                     </span>
-                    <span className="text-[11px] text-slate-400 ml-auto">
+                    <span className="text-[11px] text-muted-foreground ml-auto">
                       Encrypted with AES-256-GCM
                     </span>
                   </div>
@@ -2428,7 +2428,7 @@ export default function PlatformIntegrationsPage() {
                       return (
                         <div key={field.key} className="space-y-1">
                           <div className="flex items-center justify-between">
-                            <Label className="text-xs font-medium text-slate-700">
+                            <Label className="text-xs font-medium text-foreground">
                               {field.label} {field.required && <span className="text-rose-500">*</span>}
                             </Label>
                             {editingGateway && !isReplacing && (
@@ -2460,10 +2460,10 @@ export default function PlatformIntegrationsPage() {
                                   credentials: { ...formData.credentials, [field.key]: e.target.value },
                                 })
                               }
-                              className={`h-9 text-xs border-slate-200 pr-10 font-mono ${
+                              className={`h-9 text-xs border-border pr-10 font-mono ${
                                 isMaskedExisting
-                                  ? 'bg-slate-100 text-slate-500 cursor-not-allowed select-none'
-                                  : 'bg-white text-slate-900'
+                                  ? 'bg-muted text-muted-foreground cursor-not-allowed select-none'
+                                  : 'bg-card text-foreground'
                               }`}
                             />
                             {field.type === 'password' && !isMaskedExisting && (
@@ -2475,7 +2475,7 @@ export default function PlatformIntegrationsPage() {
                                     [field.key]: !showPassword,
                                   })
                                 }
-                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground p-1"
                                 title={showPassword ? 'Hide secret' : 'Show secret'}
                               >
                                 {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -2483,7 +2483,7 @@ export default function PlatformIntegrationsPage() {
                             )}
                           </div>
                           {field.description && (
-                            <p className="text-[11px] text-slate-400">{field.description}</p>
+                            <p className="text-[11px] text-muted-foreground">{field.description}</p>
                           )}
                         </div>
                       )
@@ -2495,9 +2495,9 @@ export default function PlatformIntegrationsPage() {
               {/* SECTION: PUBLIC CONFIGURATION */}
               {selectedMeta.configFields.length > 0 && (
                 <div className="space-y-3.5">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                    <SlidersHorizontal className="w-4 h-4 text-slate-500" />
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <div className="flex items-center gap-2 border-b border-border pb-2">
+                    <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                       Public Configuration
                     </span>
                   </div>
@@ -2505,7 +2505,7 @@ export default function PlatformIntegrationsPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {selectedMeta.configFields.map((field) => (
                       <div key={field.key} className="space-y-1">
-                        <Label className="text-xs font-medium text-slate-700">
+                        <Label className="text-xs font-medium text-foreground">
                           {field.label} {field.required && <span className="text-rose-500">*</span>}
                         </Label>
                         {field.type === 'select' && field.options ? (
@@ -2517,7 +2517,7 @@ export default function PlatformIntegrationsPage() {
                                 public_config: { ...formData.public_config, [field.key]: e.target.value },
                               })
                             }
-                            className="w-full h-9 px-3 rounded-md text-xs border border-slate-200 bg-white text-slate-800"
+                            className="w-full h-9 px-3 rounded-md text-xs border border-border bg-card text-foreground"
                           >
                             {field.options.map((opt) => (
                               <option key={opt.value} value={opt.value}>
@@ -2536,11 +2536,11 @@ export default function PlatformIntegrationsPage() {
                                 public_config: { ...formData.public_config, [field.key]: e.target.value },
                               })
                             }
-                            className="h-9 text-xs border-slate-200"
+                            className="h-9 text-xs border-border"
                           />
                         )}
                         {field.description && (
-                          <p className="text-[11px] text-slate-400">{field.description}</p>
+                          <p className="text-[11px] text-muted-foreground">{field.description}</p>
                         )}
                       </div>
                     ))}
@@ -2550,8 +2550,8 @@ export default function PlatformIntegrationsPage() {
 
               {/* Webhook Callback Information (if supported) */}
               {selectedMeta.webhookPath && (
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1">
-                  <div className="flex items-center justify-between text-slate-700 font-medium">
+                <div className="p-3 bg-muted border border-border rounded-lg text-xs space-y-1">
+                  <div className="flex items-center justify-between text-foreground font-medium">
                     <span>Webhook Callback URL:</span>
                     <button
                       type="button"
@@ -2565,22 +2565,22 @@ export default function PlatformIntegrationsPage() {
                       <Copy className="w-3 h-3" /> Copy URL
                     </button>
                   </div>
-                  <p className="font-mono text-slate-500 text-[11px]">
+                  <p className="font-mono text-muted-foreground text-[11px]">
                     {selectedMeta.webhookPath}
                   </p>
                 </div>
               )}
 
               {/* Options: Default & Enabled */}
-              <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="pt-2 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.is_default}
                     onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                    className="w-4 h-4 rounded border-slate-300 text-blue-600"
+                    className="w-4 h-4 rounded border-input text-blue-600"
                   />
-                  <span className="font-medium text-slate-800">
+                  <span className="font-medium text-foreground">
                     Set as default {selectedMeta.category.toUpperCase()} gateway
                   </span>
                 </label>
@@ -2590,9 +2590,9 @@ export default function PlatformIntegrationsPage() {
                     type="checkbox"
                     checked={formData.is_enabled}
                     onChange={(e) => setFormData({ ...formData, is_enabled: e.target.checked })}
-                    className="w-4 h-4 rounded border-slate-300 text-blue-600"
+                    className="w-4 h-4 rounded border-input text-blue-600"
                   />
-                  <span className="text-slate-600">Enabled for traffic</span>
+                  <span className="text-muted-foreground">Enabled for traffic</span>
                 </label>
               </div>
 
@@ -2618,14 +2618,14 @@ export default function PlatformIntegrationsPage() {
               )}
 
               {/* Modal Action Buttons */}
-              <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div className="pt-4 border-t border-border flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleTestInModal}
                     disabled={testingInModal || sendingTestInModal || savingConfig}
-                    className="h-10 text-xs border-slate-200 text-slate-700 hover:bg-slate-50"
+                    className="h-10 text-xs border-border text-foreground hover:bg-muted"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${testingInModal ? 'animate-spin' : ''}`} />
                     {testingInModal ? 'Testing...' : 'Test Connection'}
@@ -2651,14 +2651,14 @@ export default function PlatformIntegrationsPage() {
                     type="button"
                     variant="ghost"
                     onClick={() => setIsConfigModalOpen(false)}
-                    className="h-10 text-xs text-slate-600"
+                    className="h-10 text-xs text-muted-foreground"
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     disabled={savingConfig}
-                    className="h-10 px-5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                    className="h-10 px-5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
                   >
                     {savingConfig ? 'Saving...' : 'Save Configuration'}
                   </Button>
@@ -2691,14 +2691,14 @@ export default function PlatformIntegrationsPage() {
           </div>
 
           <div>
-            <Label className="text-xs font-semibold text-slate-700">
+            <Label className="text-xs font-semibold text-foreground">
               Recipient {testPayload.category === 'email' ? 'Email Address' : testPayload.category === 'telegram' ? 'Telegram Chat ID / Channel' : 'Mobile Phone Number'}
             </Label>
             <Input
               required
               value={testPayload.recipient}
               onChange={(e) => setTestPayload({ ...testPayload, recipient: e.target.value })}
-              className="mt-1 h-9 text-xs border-slate-200"
+              className="mt-1 h-9 text-xs border-border"
               placeholder={
                 testPayload.category === 'email'
                   ? 'admin@printerp.com'
@@ -2711,24 +2711,24 @@ export default function PlatformIntegrationsPage() {
 
           {testPayload.category === 'email' && (
             <div>
-              <Label className="text-xs font-semibold text-slate-700">Subject</Label>
+              <Label className="text-xs font-semibold text-foreground">Subject</Label>
               <Input
                 required
                 value={testPayload.subject}
                 onChange={(e) => setTestPayload({ ...testPayload, subject: e.target.value })}
-                className="mt-1 h-9 text-xs border-slate-200"
+                className="mt-1 h-9 text-xs border-border"
               />
             </div>
           )}
 
           <div>
-            <Label className="text-xs font-semibold text-slate-700">Message Content</Label>
+            <Label className="text-xs font-semibold text-foreground">Message Content</Label>
             <textarea
               required
               rows={3}
               value={testPayload.message}
               onChange={(e) => setTestPayload({ ...testPayload, message: e.target.value })}
-              className="mt-1 w-full p-2.5 text-xs rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="mt-1 w-full p-2.5 text-xs rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-ring/20"
             />
           </div>
 
@@ -2738,9 +2738,9 @@ export default function PlatformIntegrationsPage() {
               required
               checked={testConfirmed}
               onChange={(e) => setTestConfirmed(e.target.checked)}
-              className="w-4 h-4 rounded border-slate-300 text-blue-600"
+              className="w-4 h-4 rounded border-input text-blue-600"
             />
-            <span className="font-medium text-slate-800">
+            <span className="font-medium text-foreground">
               I confirm this will send a real message to the recipient.
             </span>
           </label>
@@ -2757,7 +2757,7 @@ export default function PlatformIntegrationsPage() {
             </div>
           )}
 
-          <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
+          <div className="pt-3 border-t border-border flex items-center justify-end gap-2">
             <Button
               type="button"
               variant="ghost"
@@ -2769,7 +2769,7 @@ export default function PlatformIntegrationsPage() {
             <Button
               type="submit"
               disabled={sendingTest || !testConfirmed}
-              className="h-9 px-4 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              className="h-9 px-4 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
             >
               {sendingTest ? 'Sending...' : 'Send Test'}
             </Button>
@@ -2790,9 +2790,9 @@ export default function PlatformIntegrationsPage() {
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             This will permanently remove the configuration for{' '}
-            <strong className="text-slate-900">{deletingGateway?.name}</strong> from PrintERP.
+            <strong className="text-foreground">{deletingGateway?.name}</strong> from PrintERP.
           </p>
 
           {deletingGateway?.is_default && (
@@ -2806,15 +2806,15 @@ export default function PlatformIntegrationsPage() {
             </div>
           )}
 
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Historical communication logs and financial payment records are preserved.
           </p>
 
-          <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
+          <div className="pt-3 border-t border-border flex items-center justify-end gap-2">
             <Button
               variant="outline"
               onClick={() => setDeletingGateway(null)}
-              className="h-9 text-xs border-slate-200"
+              className="h-9 text-xs border-border"
             >
               Cancel
             </Button>
@@ -2843,12 +2843,12 @@ export default function PlatformIntegrationsPage() {
         size="lg"
       >
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Provider: <strong className="uppercase text-slate-800">{selectedWebhook?.provider}</strong></span>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Provider: <strong className="uppercase text-foreground">{selectedWebhook?.provider}</strong></span>
             <span>{selectedWebhook && formatDateTime(selectedWebhook.created_at)}</span>
           </div>
 
-          <div className="p-3 bg-slate-900 rounded-lg text-emerald-400 font-mono text-xs overflow-x-auto max-h-80">
+          <div className="p-3 bg-foreground rounded-lg text-emerald-400 font-mono text-xs overflow-x-auto max-h-80">
             <pre>{JSON.stringify(selectedWebhook?.payload, null, 2)}</pre>
           </div>
 

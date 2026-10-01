@@ -80,12 +80,12 @@ export function ProductionFilterToolbar({
   ]
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs space-y-3">
+    <div className="bg-card p-3 sm:p-3.5 rounded-2xl border border-border dark:border-border/80 shadow-2xs space-y-3">
       {/* Top Row: Search + Quick Chips + View Mode Switcher */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
         {/* Search Input */}
         <div className="relative flex-1 min-w-[240px]">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -94,13 +94,13 @@ export function ProductionFilterToolbar({
                 ? 'জব নম্বর, ইনভয়েস #, অর্ডার #, কাস্টমার বা মেশিন খুঁজুন...'
                 : 'Search job #, invoice #, order #, client, or machine...'
             }
-            className="text-xs pl-9 pr-8 h-8 rounded-xl bg-slate-50/80 dark:bg-slate-950/60 border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 shadow-none focus-visible:ring-0"
+            className="text-xs pl-9 pr-8 h-8 rounded-xl bg-muted border-border text-foreground placeholder:text-muted-foreground shadow-none focus-visible:ring-0"
           />
           {search && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground dark:hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -108,14 +108,14 @@ export function ProductionFilterToolbar({
         </div>
 
         {/* 4-Way View Mode Switcher */}
-        <div className="flex flex-wrap items-center gap-1 bg-slate-100/90 dark:bg-slate-800/90 p-1 rounded-xl shrink-0">
+        <div className="flex flex-wrap items-center gap-1 bg-muted p-1 rounded-xl shrink-0">
           <button
             type="button"
             onClick={() => onViewModeChange('board')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'board'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-card text-foreground dark:text-white shadow-xs font-bold'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
             }`}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
@@ -128,7 +128,7 @@ export function ProductionFilterToolbar({
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'terminal'
                 ? 'bg-blue-600 text-white shadow-xs font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
             }`}
           >
             <Printer className="h-3.5 w-3.5" />
@@ -141,8 +141,8 @@ export function ProductionFilterToolbar({
             onClick={() => onViewModeChange('machine_queues')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'machine_queues'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-card text-foreground dark:text-white shadow-xs font-bold'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
             }`}
           >
             <Cpu className="h-3.5 w-3.5 text-purple-600" />
@@ -154,8 +154,8 @@ export function ProductionFilterToolbar({
             onClick={() => onViewModeChange('table')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'table'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-card text-foreground dark:text-white shadow-xs font-bold'
+                : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
             }`}
           >
             <TableIcon className="h-3.5 w-3.5" />
@@ -178,7 +178,7 @@ export function ProductionFilterToolbar({
       </div>
 
       {/* Bottom Row: Quick Filter Chips (No duplicate emojis) + Sector Selector */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2 border-t border-border dark:border-border">
         {/* Quick Filter Chips */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs scrollbar-none">
           {quickFilterChips.map((chip) => {
@@ -200,8 +200,8 @@ export function ProductionFilterToolbar({
                 }}
                 className={`px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs ${
                   isSelected
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs'
-                    : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+                    ? 'bg-foreground text-white font-bold shadow-xs'
+                    : 'bg-card border border-border dark:border-border/80 text-muted-foreground hover:bg-muted dark:hover:bg-muted/80'
                 }`}
               >
                 <Icon className={`h-3.5 w-3.5 ${chip.color || ''}`} />
@@ -213,13 +213,13 @@ export function ProductionFilterToolbar({
 
         {/* Sector / Department Selector */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-2xs text-slate-400 hidden md:inline">
+          <span className="text-2xs text-muted-foreground hidden md:inline">
             {isBn ? 'বিভাগ:' : 'Sector:'}
           </span>
           <select
             value={selectedDept}
             onChange={(e) => onSelectDept(e.target.value)}
-            className="text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 h-8 text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+            className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors"
           >
             {departments.map((dept) => (
               <option key={dept.id} value={dept.id}>

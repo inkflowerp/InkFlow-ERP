@@ -11,7 +11,7 @@ function DesignPanelLoading() {
       <div className="h-10 w-10 rounded-xl bg-pink-600 text-white flex items-center justify-center animate-pulse">
         <Palette className="h-5 w-5 animate-spin" />
       </div>
-      <p className="text-sm font-semibold text-slate-500">Loading Design Panel...</p>
+      <p className="text-sm font-semibold text-muted-foreground">Loading Design Panel...</p>
     </div>
   )
 }

@@ -331,13 +331,13 @@ export default function BusinessReportsPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 pb-20 animate-pulse">
-        <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="h-10 bg-muted rounded-xl w-1/3" />
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5 2xl:gap-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+            <div key={i} className="h-24 bg-muted rounded-2xl" />
           ))}
         </div>
-        <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+        <div className="h-96 bg-muted rounded-2xl" />
       </div>
     )
   }
@@ -353,7 +353,7 @@ export default function BusinessReportsPage() {
         <div className="space-y-6 pb-20">
         {/* Toast Notification */}
         {notification && (
-          <div className="fixed top-20 right-6 z-50 p-4 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2">
+          <div className="fixed top-20 right-6 z-50 p-4 bg-foreground text-white text-xs font-semibold rounded-2xl shadow-xl border border-border flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>{notification}</span>
           </div>
@@ -365,15 +365,15 @@ export default function BusinessReportsPage() {
         <div className="hidden print:block border-b-2 border-slate-900 pb-4 mb-6">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+              <h1 className="text-2xl font-black text-foreground uppercase tracking-tight">
                 {company?.name || 'Printing & Signage Solutions'}
               </h1>
-              <p className="text-xs text-slate-600 font-semibold mt-0.5">
+              <p className="text-xs text-muted-foreground font-semibold mt-0.5">
                 Executive Business Intelligence & Performance Report
               </p>
             </div>
-            <div className="text-right text-xs text-slate-600">
-              <div className="font-bold text-slate-900">Period: {reportData.dateRangeDisplay}</div>
+            <div className="text-right text-xs text-muted-foreground">
+              <div className="font-bold text-foreground">Period: {reportData.dateRangeDisplay}</div>
               <div>Generated: {new Date().toLocaleDateString('en-GB')}</div>
             </div>
           </div>
@@ -389,10 +389,10 @@ export default function BusinessReportsPage() {
               <BarChart3 className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h1 className="text-2xl font-black text-foreground dark:text-white tracking-tight">
                 Business Reports
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                 Track your business performance, sales, production, finance and profit in one place.
               </p>
             </div>
@@ -405,7 +405,7 @@ export default function BusinessReportsPage() {
               <select
                 value={selectedBranch}
                 onChange={(e) => setSelectedBranch(e.target.value)}
-                className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors focus:outline-none"
+                className="h-9 px-3 rounded-xl border border-border bg-card text-xs font-semibold text-foreground shadow-2xs hover:bg-muted dark:hover:bg-muted/60 cursor-pointer transition-colors focus:outline-none"
               >
                 <option value="all">All Outlets ({branches.length})</option>
                 {branches.map((b) => (
@@ -417,8 +417,8 @@ export default function BusinessReportsPage() {
             )}
 
             {/* Date Range Display Pill */}
-            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card border border-border text-xs font-semibold text-foreground shadow-2xs">
+              <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
               <span>{reportData.dateRangeDisplay}</span>
             </div>
 
@@ -427,11 +427,11 @@ export default function BusinessReportsPage() {
               <button
                 type="button"
                 onClick={() => setIsTimeframeMenuOpen(!isTimeframeMenuOpen)}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-card border border-border text-xs font-semibold text-foreground shadow-2xs hover:bg-muted dark:hover:bg-muted/60 cursor-pointer transition-colors"
               >
                 <span>{periodTitle}</span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 text-slate-400 ml-1 transition-transform ${
+                  className={`w-3.5 h-3.5 text-muted-foreground ml-1 transition-transform ${
                     isTimeframeMenuOpen ? 'rotate-180' : ''
                   }`}
                 />
@@ -443,7 +443,7 @@ export default function BusinessReportsPage() {
                     className="fixed inset-0 z-20"
                     onClick={() => setIsTimeframeMenuOpen(false)}
                   />
-                  <div className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-30 py-1 text-xs">
+                  <div className="absolute right-0 top-full mt-1.5 w-44 bg-card border border-border rounded-xl shadow-xl z-30 py-1 text-xs">
                     {[
                       { id: 'today', label: 'Today' },
                       { id: 'yesterday', label: 'Yesterday' },
@@ -467,10 +467,10 @@ export default function BusinessReportsPage() {
                             setShowDatePickerModal(true)
                           }
                         }}
-                        className={`w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium cursor-pointer ${
+                        className={`w-full text-left px-3.5 py-2 hover:bg-muted dark:hover:bg-muted/60 transition-colors font-medium cursor-pointer ${
                           period === item.id
                             ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/50 dark:bg-blue-950/20'
-                            : 'text-slate-700 dark:text-slate-300'
+                            : 'text-foreground dark:text-muted-foreground'
                         }`}
                       >
                         {item.label}
@@ -499,7 +499,7 @@ export default function BusinessReportsPage() {
                     onClick={() => setIsExportMenuOpen(false)}
                   />
                   <div
-                    className="absolute right-0 top-full mt-1.5 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-30 py-1 divide-y divide-slate-100 dark:divide-slate-800 text-xs"
+                    className="absolute right-0 top-full mt-1.5 w-44 rounded-xl bg-card border border-border shadow-xl z-30 py-1 divide-y divide-border text-xs"
                   >
                     <div className="p-1">
                       <button
@@ -511,18 +511,18 @@ export default function BusinessReportsPage() {
                       </button>
                       <button
                         onClick={() => handleExport('csv')}
-                        className="w-full px-3 py-2 text-left rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2 font-medium cursor-pointer"
+                        className="w-full px-3 py-2 text-left rounded-lg hover:bg-muted text-foreground flex items-center gap-2 font-medium cursor-pointer"
                       >
-                        <Download className="w-4 h-4 text-slate-500" />
+                        <Download className="w-4 h-4 text-muted-foreground" />
                         Standard CSV
                       </button>
                     </div>
                     <div className="p-1">
                       <button
                         onClick={() => handleExport('print')}
-                        className="w-full px-3 py-2 text-left rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2 font-medium cursor-pointer"
+                        className="w-full px-3 py-2 text-left rounded-lg hover:bg-muted text-foreground flex items-center gap-2 font-medium cursor-pointer"
                       >
-                        <Printer className="w-4 h-4 text-slate-500" />
+                        <Printer className="w-4 h-4 text-muted-foreground" />
                         Print / PDF Report
                       </button>
                     </div>
@@ -537,12 +537,12 @@ export default function BusinessReportsPage() {
               size="sm"
               onClick={loadServerData}
               disabled={loading}
-              className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 text-xs font-semibold h-9 w-9 p-0 rounded-xl cursor-pointer flex items-center justify-center shrink-0"
+              className="border-border bg-card hover:bg-muted text-xs font-semibold h-9 w-9 p-0 rounded-xl cursor-pointer flex items-center justify-center shrink-0"
               title="Refresh Business Reports Data"
               aria-label="Refresh Business Reports Data"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-600' : 'text-slate-500'}`}
+                className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-600' : 'text-muted-foreground'}`}
               />
             </Button>
           </div>
@@ -551,7 +551,7 @@ export default function BusinessReportsPage() {
         {/* =========================================================================
             MODERNIZED PILL TABS NAVIGATION MATCHING FINANCE DASHBOARD
            ========================================================================= */}
-        <div className="print:hidden flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-x-auto touch-scroll backdrop-blur-md">
+        <div className="print:hidden flex items-center gap-1.5 p-1.5 rounded-2xl bg-card/90 border border-border dark:border-border/80 shadow-xs overflow-x-auto touch-scroll backdrop-blur-md">
           <Button
             variant={activeTab === 'overview' ? 'default' : 'ghost'}
             size="sm"
@@ -766,7 +766,7 @@ export default function BusinessReportsPage() {
         {(activeTab === 'overview' || activeTab === 'sales' || activeTab === 'profitability') && (
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 2xl:gap-6">
             {/* Monthly Sales vs Profit Bar Chart (xl:col-span-7 2xl:col-span-8) */}
-            <div className="xl:col-span-7 2xl:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
+            <div className="xl:col-span-7 2xl:col-span-8 bg-card rounded-2xl border border-border dark:border-border/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
               <MonthlySalesProfitChart
                 data={reportData.monthlySalesVsProfit}
                 monthsCount={monthlyChartMonths}
@@ -775,7 +775,7 @@ export default function BusinessReportsPage() {
             </div>
 
             {/* Sales Distribution Donut (xl:col-span-5 2xl:col-span-4) */}
-            <div className="xl:col-span-5 2xl:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
+            <div className="xl:col-span-5 2xl:col-span-4 bg-card rounded-2xl border border-border dark:border-border/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -785,7 +785,7 @@ export default function BusinessReportsPage() {
                       className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
                         donutDistributionMode === 'customer_type'
                           ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                          : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                       }`}
                     >
                       Customer Types
@@ -796,13 +796,13 @@ export default function BusinessReportsPage() {
                       className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
                         donutDistributionMode === 'product_category'
                           ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                          : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                       }`}
                     >
                       Products & Services
                     </button>
                   </div>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <span className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
                     {periodTitle}
                   </span>
                 </div>
@@ -847,10 +847,10 @@ export default function BusinessReportsPage() {
         {(activeTab === 'overview' || activeTab === 'customers' || activeTab === 'production') && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 2xl:gap-6">
             {/* Col 1: Top Customers by Sales */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
+            <div className="bg-card rounded-2xl border border-border dark:border-border/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-foreground dark:text-white">
                     Top Customers by Sales
                   </h3>
                   <button
@@ -863,12 +863,12 @@ export default function BusinessReportsPage() {
                 </div>
 
                 {reportData.topCustomers.length === 0 ? (
-                  <div className="py-8 text-center text-slate-400 flex flex-col items-center justify-center gap-1.5">
+                  <div className="py-8 text-center text-muted-foreground flex flex-col items-center justify-center gap-1.5">
                     <CheckCircle2 className="w-6 h-6 text-emerald-500/80 stroke-[1.5]" />
-                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    <span className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
                       No customer sales records found
                     </span>
-                    <span className="text-2xs text-slate-400">
+                    <span className="text-2xs text-muted-foreground">
                       Sales records will appear here automatically
                     </span>
                   </div>
@@ -884,17 +884,17 @@ export default function BusinessReportsPage() {
                             {item.rank}
                           </div>
                           <div className="min-w-0">
-                            <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">
+                            <span className="font-bold text-foreground block truncate">
                               {item.customerName}
                             </span>
-                            <span className="text-3xs text-slate-400 font-medium">
+                            <span className="text-3xs text-muted-foreground font-medium">
                               {item.invoicesCount} Invoices
                             </span>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="tabular-nums font-bold text-slate-900 dark:text-white">
+                          <span className="tabular-nums font-bold text-foreground dark:text-white">
                             ৳ {item.amount.toLocaleString()}
                           </span>
 
@@ -910,10 +910,10 @@ export default function BusinessReportsPage() {
             </div>
 
             {/* Col 2: Top Selling Products / Services */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
+            <div className="bg-card rounded-2xl border border-border dark:border-border/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-foreground dark:text-white">
                     Top Selling Products
                   </h3>
                   <button
@@ -926,12 +926,12 @@ export default function BusinessReportsPage() {
                 </div>
 
                 {reportData.topSellingProducts.length === 0 ? (
-                  <div className="py-8 text-center text-slate-400 flex flex-col items-center justify-center gap-1.5">
-                    <Package className="w-6 h-6 text-slate-400 stroke-[1.5]" />
-                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  <div className="py-8 text-center text-muted-foreground flex flex-col items-center justify-center gap-1.5">
+                    <Package className="w-6 h-6 text-muted-foreground stroke-[1.5]" />
+                    <span className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
                       No product sales records found
                     </span>
-                    <span className="text-2xs text-slate-400">
+                    <span className="text-2xs text-muted-foreground">
                       Line items from confirmed orders will appear here
                     </span>
                   </div>
@@ -947,17 +947,17 @@ export default function BusinessReportsPage() {
                             {item.rank}
                           </div>
                           <div className="min-w-0">
-                            <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">
+                            <span className="font-bold text-foreground block truncate">
                               {item.name}
                             </span>
-                            <span className="text-3xs text-slate-400 font-medium">
+                            <span className="text-3xs text-muted-foreground font-medium">
                               Qty: {item.quantityFormatted}
                             </span>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="tabular-nums font-bold text-slate-900 dark:text-white">
+                          <span className="tabular-nums font-bold text-foreground dark:text-white">
                             ৳ {item.amount.toLocaleString()}
                           </span>
 
@@ -973,10 +973,10 @@ export default function BusinessReportsPage() {
             </div>
 
             {/* Col 3: Jobs Pipeline & Status */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between md:col-span-2 xl:col-span-1">
+            <div className="bg-card rounded-2xl border border-border dark:border-border/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between md:col-span-2 xl:col-span-1">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-foreground dark:text-white">
                     Jobs Pipeline & Status
                   </h3>
                   <button
@@ -1004,16 +1004,16 @@ export default function BusinessReportsPage() {
                               className="w-4 h-4 shrink-0"
                               style={{ color: st.color }}
                             />
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            <span className="font-semibold text-foreground dark:text-foreground">
                               {st.label}
                             </span>
                           </div>
-                          <span className="tabular-nums text-2xs font-bold text-slate-600 dark:text-slate-400">
+                          <span className="tabular-nums text-2xs font-bold text-muted-foreground dark:text-muted-foreground">
                             {st.count} ({st.percentage}%)
                           </span>
                         </div>
 
-                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                           <div
                             className="h-full rounded-full transition-all duration-300"
                             style={{
@@ -1037,16 +1037,16 @@ export default function BusinessReportsPage() {
         {(activeTab === 'overview' || activeTab === 'profitability' || activeTab === 'quick_reports') && (
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 2xl:gap-6">
             {/* Left: Monthly Summary & Performance Table (Col 1 to 7 on XL) */}
-            <div className="xl:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
+            <div className="xl:col-span-7 bg-card rounded-2xl border border-border dark:border-border/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 2xl:mb-3.5">
+                <h3 className="text-sm font-bold text-foreground dark:text-white mb-3 2xl:mb-3.5">
                   Monthly Performance Summary
                 </h3>
 
                 <div className="overflow-x-auto -mx-3.5 sm:mx-0 px-3.5 sm:px-0">
                   <table className="w-full text-xs text-left min-w-[460px] 2xl:min-w-[500px]">
                     <thead>
-                      <tr className="text-2xs font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-2">
+                      <tr className="text-2xs font-semibold text-muted-foreground border-b border-border pb-2">
                         <th className="pb-2 2xl:pb-2.5 font-semibold">Month</th>
                         <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Sales</th>
                         <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Cost</th>
@@ -1054,10 +1054,10 @@ export default function BusinessReportsPage() {
                         <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Margin</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    <tbody className="divide-y divide-border dark:divide-border/60">
                       {reportData.monthlyOverview.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="py-8 text-center text-slate-400 text-xs">
+                          <td colSpan={5} className="py-8 text-center text-muted-foreground text-xs">
                             No monthly records recorded yet
                           </td>
                         </tr>
@@ -1065,15 +1065,15 @@ export default function BusinessReportsPage() {
                         reportData.monthlyOverview.map((row: MonthlyOverviewRow) => (
                           <tr
                             key={row.month}
-                            className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
+                            className="hover:bg-muted dark:hover:bg-muted/40 transition-colors"
                           >
-                            <td className="py-2.5 2xl:py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                            <td className="py-2.5 2xl:py-3 font-bold text-foreground dark:text-white whitespace-nowrap">
                               {row.month}
                             </td>
-                            <td className="py-2.5 2xl:py-3 text-right tabular-nums font-semibold text-slate-800 dark:text-slate-200">
+                            <td className="py-2.5 2xl:py-3 text-right tabular-nums font-semibold text-foreground dark:text-foreground">
                               ৳ {row.sales.toLocaleString()}
                             </td>
-                            <td className="py-2.5 2xl:py-3 text-right tabular-nums text-slate-500">
+                            <td className="py-2.5 2xl:py-3 text-right tabular-nums text-muted-foreground">
                               ৳ {row.cost.toLocaleString()}
                             </td>
                             <td
@@ -1099,9 +1099,9 @@ export default function BusinessReportsPage() {
             </div>
 
             {/* Right: Quick Actions 8-Button Matrix matching Finance Dashboard */}
-            <div className="xl:col-span-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
+            <div className="xl:col-span-5 bg-card rounded-2xl border border-border dark:border-border/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 2xl:mb-3.5">
+                <h3 className="text-sm font-bold text-foreground dark:text-white mb-3 2xl:mb-3.5">
                   Quick Reports Hub
                 </h3>
 
@@ -1196,16 +1196,16 @@ export default function BusinessReportsPage() {
            ========================================================================= */}
         {showDatePickerModal && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full p-5 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+            <div className="bg-card rounded-2xl border border-border shadow-2xl max-w-sm w-full p-5 space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-border dark:border-border">
+                <h3 className="font-bold text-foreground dark:text-white text-sm flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-blue-600" />
                   Select Custom Date Range
                 </h3>
                 <button
                   type="button"
                   onClick={() => setShowDatePickerModal(false)}
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                  className="text-muted-foreground hover:text-muted-foreground p-1"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1213,7 +1213,7 @@ export default function BusinessReportsPage() {
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block font-semibold text-foreground mb-1">
                     Start Date
                   </label>
                   <Input
@@ -1224,7 +1224,7 @@ export default function BusinessReportsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block font-semibold text-foreground mb-1">
                     End Date
                   </label>
                   <Input
@@ -1236,7 +1236,7 @@ export default function BusinessReportsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
                 <Button
                   variant="outline"
                   size="sm"
@@ -1254,7 +1254,7 @@ export default function BusinessReportsPage() {
                     }
                   }}
                   disabled={!customStartDate || !customEndDate}
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs h-8"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs h-8"
                 >
                   Apply Range
                 </Button>

@@ -77,7 +77,7 @@ export function CustomerProductAnalytics({
   return (
     <div className="space-y-4">
       {/* Top Filter & Metrics Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-border bg-card dark:bg-background">
         {/* Timeframe Buttons */}
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           {(
@@ -96,7 +96,7 @@ export function CustomerProductAnalytics({
               onClick={() => setTimeframe(t.key)}
               className={cn(
                 'h-7 px-2.5 text-xs rounded-lg',
-                timeframe === t.key && 'bg-blue-600 hover:bg-blue-700 text-white font-semibold'
+                timeframe === t.key && 'bg-primary hover:bg-primary/90 text-primary-foreground font-semibold'
               )}
             >
               {t.label}
@@ -106,11 +106,11 @@ export function CustomerProductAnalytics({
 
         {/* Aggregate KPI Badges */}
         <div className="flex items-center gap-3 text-xs shrink-0">
-          <div className="flex items-center gap-1.5 text-slate-500">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <Package className="h-3.5 w-3.5 text-blue-500" />
-            <span>Products: <strong className="text-slate-900 dark:text-white">{stats.length}</strong></span>
+            <span>Products: <strong className="text-foreground dark:text-white">{stats.length}</strong></span>
           </div>
-          <div className="flex items-center gap-1.5 text-slate-500">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
             <span>Spend: <strong className="text-emerald-600 dark:text-emerald-400">৳{totalSpend.toLocaleString('en-IN')}</strong></span>
           </div>
@@ -119,20 +119,20 @@ export function CustomerProductAnalytics({
 
       {/* Custom Date Range Picker */}
       {timeframe === 'custom' && (
-        <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-xs animate-in fade-in duration-150">
-          <span className="font-semibold text-slate-700 dark:text-slate-300">From:</span>
+        <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border bg-muted text-xs animate-in fade-in duration-150">
+          <span className="font-semibold text-foreground dark:text-muted-foreground">From:</span>
           <Input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="h-8 w-36 text-xs bg-white dark:bg-slate-950"
+            className="h-8 w-36 text-xs bg-card dark:bg-background"
           />
-          <span className="font-semibold text-slate-700 dark:text-slate-300">To:</span>
+          <span className="font-semibold text-foreground dark:text-muted-foreground">To:</span>
           <Input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="h-8 w-36 text-xs bg-white dark:bg-slate-950"
+            className="h-8 w-36 text-xs bg-card dark:bg-background"
           />
           <Button
             size="sm"
@@ -145,13 +145,13 @@ export function CustomerProductAnalytics({
       )}
 
       {/* Sort Options */}
-      <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+      <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
         <div className="flex items-center gap-2">
           <span>Sort By:</span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortByOption)}
-            className="h-7 px-2 text-xs rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-medium"
+            className="h-7 px-2 text-xs rounded-md border border-border bg-card font-medium"
           >
             <option value="amount">Total Amount (৳)</option>
             <option value="quantity">Total Quantity</option>
@@ -179,9 +179,9 @@ export function CustomerProductAnalytics({
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+      <div className="hidden md:block overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <table className="w-full text-xs text-left">
-          <thead className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-semibold">
+          <thead className="bg-muted border-b border-border text-muted-foreground font-semibold">
             <tr>
               <th className="py-3 px-4">Product / Item Description</th>
               <th className="py-3 px-3 text-right">Quantity</th>
@@ -190,38 +190,38 @@ export function CustomerProductAnalytics({
               <th className="py-3 px-4 text-right">Last Purchase Date</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+          <tbody className="divide-y divide-border dark:divide-border">
             {stats.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-10 text-center text-slate-400">
+                <td colSpan={5} className="py-10 text-center text-muted-foreground">
                   <ShoppingBag className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   <div>No purchase records found for this timeframe.</div>
                 </td>
               </tr>
             ) : (
               stats.map((item, idx) => (
-                <tr key={item.productId || idx} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
+                <tr key={item.productId || idx} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
                   <td className="py-3 px-4">
-                    <div className="font-semibold text-slate-900 dark:text-white">
+                    <div className="font-semibold text-foreground dark:text-white">
                       {item.productName}
                     </div>
                     {item.productNameBn && (
-                      <div className="text-2xs text-slate-500">{item.productNameBn}</div>
+                      <div className="text-2xs text-muted-foreground">{item.productNameBn}</div>
                     )}
-                    <div className="text-2xs text-slate-400 mt-0.5">
+                    <div className="text-2xs text-muted-foreground mt-0.5">
                       {item.invoiceCount} {item.invoiceCount === 1 ? 'invoice' : 'invoices'}
                     </div>
                   </td>
-                  <td className="py-3 px-3 text-right font-semibold text-slate-900 dark:text-white">
-                    {item.totalQuantity.toLocaleString()} <span className="text-2xs text-slate-400 font-normal uppercase">{item.unit}</span>
+                  <td className="py-3 px-3 text-right font-semibold text-foreground dark:text-white">
+                    {item.totalQuantity.toLocaleString()} <span className="text-2xs text-muted-foreground font-normal uppercase">{item.unit}</span>
                   </td>
-                  <td className="py-3 px-3 text-right font-medium text-slate-600 dark:text-slate-300">
+                  <td className="py-3 px-3 text-right font-medium text-muted-foreground dark:text-muted-foreground">
                     {formatBDT(item.lastRate)}
                   </td>
                   <td className="py-3 px-3 text-right font-bold text-sm text-emerald-600 dark:text-emerald-400">
                     {formatBDT(item.totalAmount)}
                   </td>
-                  <td className="py-3 px-4 text-right text-slate-500 font-medium">
+                  <td className="py-3 px-4 text-right text-muted-foreground font-medium">
                     {item.lastPurchaseDate}
                   </td>
                 </tr>
@@ -234,21 +234,21 @@ export function CustomerProductAnalytics({
       {/* Mobile Card List View */}
       <div className="block md:hidden space-y-2.5">
         {stats.length === 0 ? (
-          <div className="py-8 text-center text-slate-400 text-xs bg-white dark:bg-slate-950 rounded-xl border p-4">
+          <div className="py-8 text-center text-muted-foreground text-xs bg-card rounded-xl border p-4">
             No product purchases recorded.
           </div>
         ) : (
           stats.map((item, idx) => (
-            <Card key={item.productId || idx} className="border-slate-200 dark:border-slate-800 shadow-sm p-3.5 space-y-2.5">
+            <Card key={item.productId || idx} className="border-border shadow-sm p-3.5 space-y-2.5">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="font-bold text-sm text-slate-900 dark:text-white">
+                  <div className="font-bold text-sm text-foreground dark:text-white">
                     {item.productName}
                   </div>
                   {item.productNameBn && (
-                    <div className="text-xs text-slate-500">{item.productNameBn}</div>
+                    <div className="text-xs text-muted-foreground">{item.productNameBn}</div>
                   )}
-                  <div className="text-2xs text-slate-400 mt-0.5">
+                  <div className="text-2xs text-muted-foreground mt-0.5">
                     {item.invoiceCount} {item.invoiceCount === 1 ? 'invoice' : 'invoices'}
                   </div>
                 </div>
@@ -258,22 +258,22 @@ export function CustomerProductAnalytics({
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs">
+              <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-muted text-xs">
                 <div>
-                  <div className="text-2xs text-slate-400">Total Qty</div>
-                  <div className="font-semibold text-slate-900 dark:text-white">
-                    {item.totalQuantity} <span className="uppercase text-2xs text-slate-400">{item.unit}</span>
+                  <div className="text-2xs text-muted-foreground">Total Qty</div>
+                  <div className="font-semibold text-foreground dark:text-white">
+                    {item.totalQuantity} <span className="uppercase text-2xs text-muted-foreground">{item.unit}</span>
                   </div>
                 </div>
                 <div>
-                  <div className="text-2xs text-slate-400">Last Rate</div>
-                  <div className="font-semibold text-slate-700 dark:text-slate-300">
+                  <div className="text-2xs text-muted-foreground">Last Rate</div>
+                  <div className="font-semibold text-foreground dark:text-muted-foreground">
                     {formatBDT(item.lastRate)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-2xs text-slate-400">Last Date</div>
-                  <div className="font-medium text-slate-600 dark:text-slate-400 truncate">
+                  <div className="text-2xs text-muted-foreground">Last Date</div>
+                  <div className="font-medium text-muted-foreground truncate">
                     {item.lastPurchaseDate}
                   </div>
                 </div>

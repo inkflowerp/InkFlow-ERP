@@ -71,12 +71,12 @@ export function DeliveryChallanTable({
         )
       case 'customer_pickup':
         return (
-          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted text-foreground dark:text-muted-foreground">
             {isBn ? 'দোকান/কাউন্টার গ্রহণ' : 'Customer Pickup'}
           </span>
         )
       default:
-        return <span className="px-2 py-0.5 rounded text-2xs font-bold bg-slate-100">{method}</span>
+        return <span className="px-2 py-0.5 rounded text-2xs font-bold bg-muted">{method}</span>
     }
   }
 
@@ -119,7 +119,7 @@ export function DeliveryChallanTable({
       case 'scheduled':
       default:
         return (
-          <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300">
+          <Badge variant="outline" className="bg-muted text-foreground border-border dark:text-muted-foreground">
             <span>{isBn ? 'শিডিউল করা' : 'Scheduled'}</span>
           </Badge>
         )
@@ -131,7 +131,7 @@ export function DeliveryChallanTable({
       {/* Desktop Table View */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+          <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
             <tr>
               <th className="py-3 px-4">{isBn ? 'চালান ও ইনভয়েস' : 'Challan & Invoice'}</th>
               <th className="py-3 px-4">{isBn ? 'কাস্টমার ও গন্তব্য' : 'Customer & Destination'}</th>
@@ -142,7 +142,7 @@ export function DeliveryChallanTable({
               <th className="py-3 px-4 text-right">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-border dark:divide-border">
             {challans.map((ch) => {
               const items = ch.items || []
               const readyCount = items.filter(
@@ -167,7 +167,7 @@ export function DeliveryChallanTable({
               const dueAmt = Number(ch.due_amount) || 0
 
               return (
-                <tr key={ch.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                <tr key={ch.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                   {/* Challan & Invoice # */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-1.5">
@@ -185,7 +185,7 @@ export function DeliveryChallanTable({
                         {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                       </Badge>
                       {ch.order_number && (
-                        <span className="text-2xs text-slate-400">({ch.order_number})</span>
+                        <span className="text-2xs text-muted-foreground">({ch.order_number})</span>
                       )}
                       {dueAmt > 0 ? (
                         <Badge className="text-2xs py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold animate-pulse">
@@ -201,18 +201,18 @@ export function DeliveryChallanTable({
 
                   {/* Customer & Destination */}
                   <td className="py-3.5 px-4 max-w-[240px]">
-                    <div className="font-semibold text-slate-900 dark:text-white text-xs truncate">
+                    <div className="font-semibold text-foreground dark:text-white text-xs truncate">
                       {ch.customer_name}
                     </div>
-                    <div className="text-2xs text-slate-500 flex items-center gap-1 mt-0.5 truncate">
-                      <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+                    <div className="text-2xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                      <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
                       <span className="truncate">{ch.delivery_address || 'Factory Pickup'}</span>
                     </div>
 
                     {/* Products summary badge chips */}
                     {items.length > 0 && (
                       <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                        <span className="text-2xs text-slate-400 font-medium">{items.length} {isBn ? 'আইটেম:' : 'Items:'}</span>
+                        <span className="text-2xs text-muted-foreground font-medium">{items.length} {isBn ? 'আইটেম:' : 'Items:'}</span>
                         {readyCount > 0 && (
                           <Badge className="text-2xs py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
                             {readyCount} {isBn ? 'প্রস্তুত' : 'Ready'}
@@ -224,7 +224,7 @@ export function DeliveryChallanTable({
                           </Badge>
                         )}
                         {deliveredCount > 0 && (
-                          <Badge className="text-2xs py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
+                          <Badge className="text-2xs py-0 px-1 bg-muted text-muted-foreground border-border">
                             {deliveredCount} {isBn ? 'ডেলিভার্ড' : 'Delivered'}
                           </Badge>
                         )}
@@ -239,18 +239,18 @@ export function DeliveryChallanTable({
 
                   {/* Vehicle & Transit */}
                   <td className="py-3.5 px-4 text-xs tabular-nums">
-                    <div className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[160px]">
+                    <div className="font-medium text-foreground truncate max-w-[160px]">
                       {ch.vehicle_info || 'Company Transit'}
                     </div>
                     {ch.delivery_person_name && (
-                      <div className="text-2xs text-slate-400 truncate">
+                      <div className="text-2xs text-muted-foreground truncate">
                         {ch.delivery_person_name}
                       </div>
                     )}
                   </td>
 
                   {/* Scheduled Date */}
-                  <td className="py-3.5 px-4 text-xs tabular-nums text-slate-600 dark:text-slate-300">
+                  <td className="py-3.5 px-4 text-xs tabular-nums text-muted-foreground dark:text-muted-foreground">
                     {ch.scheduled_date}
                   </td>
 
@@ -278,7 +278,7 @@ export function DeliveryChallanTable({
                       {ch.customer_phone ? (
                         <a
                           href={`tel:${ch.customer_phone}`}
-                          className="inline-flex items-center justify-center h-7 px-2 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors border border-slate-200 dark:border-slate-700"
+                          className="inline-flex items-center justify-center h-7 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors border border-border dark:border-border"
                           title="Call Customer"
                         >
                           <Phone className="h-3 w-3" />
@@ -287,7 +287,7 @@ export function DeliveryChallanTable({
 
                       <Link
                         href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
-                        className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                        className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold border border-input text-foreground hover:bg-muted dark:text-muted-foreground"
                       >
                         <Printer className="h-3 w-3 mr-1" />
                         <span>PDF</span>
@@ -299,12 +299,12 @@ export function DeliveryChallanTable({
                         className={cn(
                           'h-7 text-2xs px-2.5 font-bold shadow-xs cursor-pointer',
                           ch.status === 'delivered'
-                            ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
+                            ? 'bg-muted text-foreground hover:bg-muted dark:text-foreground'
                             : ch.status === 'partially_delivered'
                             ? 'bg-amber-600 hover:bg-amber-700 text-white'
                             : readyCount > 0
                             ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                         )}
                       >
                         {ch.status === 'delivered'
@@ -323,7 +323,7 @@ export function DeliveryChallanTable({
       </div>
 
       {/* Mobile Card List View */}
-      <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+      <div className="md:hidden divide-y divide-border dark:divide-border">
         {challans.map((ch) => {
           const items = ch.items || []
           const readyCount = items.filter(
@@ -347,7 +347,7 @@ export function DeliveryChallanTable({
           const dueAmt = Number(ch.due_amount) || 0
 
           return (
-            <div key={ch.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+            <div key={ch.id} className="p-4 space-y-3 hover:bg-muted dark:hover:bg-muted/50 transition-colors">
               {/* Header: Challan # & Status */}
               <div className="flex items-center justify-between gap-2">
                 <Link
@@ -366,7 +366,7 @@ export function DeliveryChallanTable({
                   {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                 </Badge>
                 {ch.order_number && (
-                  <span className="text-2xs text-slate-400">({ch.order_number})</span>
+                  <span className="text-2xs text-muted-foreground">({ch.order_number})</span>
                 )}
                 {dueAmt > 0 ? (
                   <Badge className="text-2xs py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold">
@@ -381,7 +381,7 @@ export function DeliveryChallanTable({
 
               {/* Customer & Address */}
               <div>
-                <div className="font-semibold text-sm text-slate-900 dark:text-white flex items-center justify-between">
+                <div className="font-semibold text-sm text-foreground dark:text-white flex items-center justify-between">
                   <span>{ch.customer_name}</span>
                   {ch.customer_phone && (
                     <a href={`tel:${ch.customer_phone}`} className="text-xs tabular-nums text-blue-600 hover:underline">
@@ -389,13 +389,13 @@ export function DeliveryChallanTable({
                     </a>
                   )}
                 </div>
-                <div className="text-xs text-slate-500 flex items-start gap-1 mt-0.5">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 mt-0.5" />
+                <div className="text-xs text-muted-foreground flex items-start gap-1 mt-0.5">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground mt-0.5" />
                   <span>{ch.delivery_address || 'Factory Pickup'}</span>
                 </div>
                 {items.length > 0 && (
                   <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                    <span className="text-2xs text-slate-400 font-medium">{items.length} {isBn ? 'আইটেম:' : 'Items:'}</span>
+                    <span className="text-2xs text-muted-foreground font-medium">{items.length} {isBn ? 'আইটেম:' : 'Items:'}</span>
                     {readyCount > 0 && (
                       <Badge className="text-2xs py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
                         {readyCount} Ready
@@ -407,7 +407,7 @@ export function DeliveryChallanTable({
                       </Badge>
                     )}
                     {deliveredCount > 0 && (
-                      <Badge className="text-2xs py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
+                      <Badge className="text-2xs py-0 px-1 bg-muted text-muted-foreground border-border">
                         {deliveredCount} Delivered
                       </Badge>
                     )}
@@ -416,25 +416,25 @@ export function DeliveryChallanTable({
               </div>
 
               {/* Meta Grid */}
-              <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted text-xs border border-border dark:border-border">
                 <div>
-                  <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'মাধ্যম' : 'Method'}</span>
+                  <span className="text-2xs uppercase font-semibold text-muted-foreground block">{isBn ? 'মাধ্যম' : 'Method'}</span>
                   <div className="mt-0.5">{getMethodBadge(ch.delivery_method)}</div>
                 </div>
                 <div>
-                  <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'ডেলিভারি তারিখ' : 'Scheduled Date'}</span>
-                  <span className="tabular-nums text-slate-700 dark:text-slate-300">{ch.scheduled_date}</span>
+                  <span className="text-2xs uppercase font-semibold text-muted-foreground block">{isBn ? 'ডেলিভারি তারিখ' : 'Scheduled Date'}</span>
+                  <span className="tabular-nums text-foreground dark:text-muted-foreground">{ch.scheduled_date}</span>
                 </div>
                 {ch.vehicle_info && (
-                  <div className="col-span-2 text-2xs text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                    {isBn ? 'গাড়ি:' : 'Vehicle:'} <strong className="tabular-nums text-slate-800 dark:text-slate-200">{ch.vehicle_info}</strong>
+                  <div className="col-span-2 text-2xs text-muted-foreground pt-1 border-t border-border dark:border-border">
+                    {isBn ? 'গাড়ি:' : 'Vehicle:'} <strong className="tabular-nums text-foreground dark:text-foreground">{ch.vehicle_info}</strong>
                     {ch.delivery_person_name && <span> ({ch.delivery_person_name})</span>}
                   </div>
                 )}
               </div>
 
               {/* Actions Grid */}
-              <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-border dark:border-border">
                 {cleanPhone ? (
                   <a
                     href={waUrl}
@@ -454,7 +454,7 @@ export function DeliveryChallanTable({
 
                 <Link
                   href={getTenantNavHref(`/delivery/${ch.id}`, pathname, tenantSlug)}
-                  className="inline-flex items-center justify-center h-9 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                  className="inline-flex items-center justify-center h-9 rounded-lg text-xs font-semibold border border-input text-foreground hover:bg-muted dark:text-muted-foreground"
                 >
                   <Printer className="h-3.5 w-3.5 mr-1" />
                   PDF
@@ -466,12 +466,12 @@ export function DeliveryChallanTable({
                   className={cn(
                     'h-9 text-xs font-bold shadow-xs',
                     ch.status === 'delivered'
-                      ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
+                      ? 'bg-muted text-foreground hover:bg-muted dark:text-foreground'
                       : ch.status === 'partially_delivered'
                       ? 'bg-amber-600 hover:bg-amber-700 text-white'
                       : readyCount > 0
                       ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                   )}
                 >
                   {ch.status === 'delivered'

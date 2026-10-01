@@ -30,7 +30,7 @@ export function BangladeshFeaturesSection() {
   }
 
   return (
-    <section className="py-16 sm:py-24 bg-white dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800">
+    <section className="py-16 sm:py-24 bg-card border-t border-border dark:border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
@@ -38,11 +38,11 @@ export function BangladeshFeaturesSection() {
             <span>{tBilingual('Bangladesh First', 'বাংলাদেশ ফার্স্ট')}</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight bangla-text">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground dark:text-white tracking-tight leading-tight bangla-text">
             {tBilingual('Built for Businesses in Bangladesh.', 'বাংলাদেশের প্রেস ও কারখানার বাস্তব উপযোগী করে নির্মিত।')}
           </h2>
 
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed bangla-text">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
               'No foreign currency confusion or unnatural translations. Every invoice, payment, and challan follows Bangladeshi business standards.',
               'কোনো বিদেশি মুদ্রার ঝামেলা বা কৃত্রিম অনুবাদ নয়। প্রতিটি ইনভয়েস, পেমেন্ট ও চালান দেশীয় ব্যবসায়িক নিয়ম অনুযায়ী প্রস্তুত।'
@@ -57,7 +57,7 @@ export function BangladeshFeaturesSection() {
             return (
               <div
                 key={idx}
-                className="p-5 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-2xs flex flex-col justify-between"
+                className="p-5 sm:p-6 rounded-2xl border border-border bg-muted hover:bg-card hover:border-input transition-all shadow-2xs flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3.5">
@@ -69,11 +69,11 @@ export function BangladeshFeaturesSection() {
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white bangla-text mb-1.5">
+                  <h3 className="text-sm font-bold text-foreground dark:text-white bangla-text mb-1.5">
                     {tBilingual(feat.titleEn, feat.titleBn)}
                   </h3>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed bangla-text">
+                  <p className="text-xs text-muted-foreground leading-relaxed bangla-text">
                     {tBilingual(feat.descEn, feat.descBn)}
                   </p>
                 </div>

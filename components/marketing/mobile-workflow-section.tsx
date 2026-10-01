@@ -44,7 +44,7 @@ export function MobileWorkflowSection() {
   ]
 
   return (
-    <section className="py-16 sm:py-24 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200/80 dark:border-slate-800">
+    <section className="py-16 sm:py-24 bg-muted border-t border-border dark:border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
@@ -53,14 +53,14 @@ export function MobileWorkflowSection() {
             <span>{tBilingual('Anywhere Access', 'যেকোনো স্থান থেকে নিয়ন্ত্রণ')}</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight bangla-text">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground dark:text-white tracking-tight leading-tight bangla-text">
             {tBilingual(
               "Your Business, Even When You're Away From the Office.",
               'অফিস বা দোকানের বাইরে থাকলেও ব্যবসার পূর্ণ নিয়ন্ত্রণ আপনার হাতে।'
             )}
           </h2>
 
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed bangla-text">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
               'Whether meeting clients in Motijheel, visiting an installation site in Gazipur, or traveling outside Dhaka, stay fully connected to sales, production, and cash collections.',
               'মতিঝিলে ক্লায়েন্ট মিটিংয়ে থাকুন কিংবা গাজীপুরের সাইট পরিদর্শনে—মোবাইল থেকেই সেলস, প্রোডাকশন ও ক্যাশ কালেকশন তদারকি করুন।'
@@ -75,16 +75,16 @@ export function MobileWorkflowSection() {
             {MOBILE_BENEFITS.map((item, idx) => (
               <div
                 key={idx}
-                className="p-4 sm:p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-start gap-4"
+                className="p-4 sm:p-5 rounded-xl border border-border bg-card shadow-2xs hover:border-input transition-all flex items-start gap-4"
               >
                 <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5 border border-blue-100 dark:border-blue-900/60 font-bold text-xs">
                   0{idx + 1}
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white bangla-text mb-1">
+                  <h3 className="text-sm sm:text-base font-bold text-foreground dark:text-white bangla-text mb-1">
                     {tBilingual(item.titleEn, item.titleBn)}
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed bangla-text">
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed bangla-text">
                     {tBilingual(item.descEn, item.descBn)}
                   </p>
                 </div>
@@ -94,10 +94,10 @@ export function MobileWorkflowSection() {
 
           {/* Right Column (5 cols): Clean, Realistic Mobile Card Snapshot (No exaggerated device chrome) */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-sm rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl p-5 sm:p-6 space-y-4">
+            <div className="w-full max-w-sm rounded-3xl border border-border bg-card shadow-xl p-5 sm:p-6 space-y-4">
               {/* Phone Status Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 text-xs">
-                <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+              <div className="flex items-center justify-between pb-3 border-b border-border text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-foreground dark:text-white">
                   <Printer className="h-4 w-4 text-blue-600" />
                   <span>PrintERP Mobile</span>
                 </div>
@@ -112,7 +112,7 @@ export function MobileWorkflowSection() {
                   {tBilingual("Today's Collections", 'আজকের কালেকশন')}
                 </span>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-lg font-black text-slate-900 dark:text-white tabular-nums">
+                  <span className="text-lg font-black text-foreground dark:text-white tabular-nums">
                     ৳ 48,500
                   </span>
                   <span className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400">
@@ -122,29 +122,29 @@ export function MobileWorkflowSection() {
               </div>
 
               {/* Representative Active Machine Task */}
-              <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60 space-y-2">
+              <div className="p-3.5 rounded-xl border border-border bg-muted space-y-2">
                 <div className="flex items-center justify-between text-2xs">
-                  <span className="font-bold text-slate-900 dark:text-white">Flora 10ft Solvent #1</span>
+                  <span className="font-bold text-foreground dark:text-white">Flora 10ft Solvent #1</span>
                   <span className="text-blue-600 font-semibold">Running</span>
                 </div>
-                <div className="space-y-1 text-2xs text-slate-600 dark:text-slate-400">
+                <div className="space-y-1 text-2xs text-muted-foreground dark:text-muted-foreground">
                   <div className="flex justify-between">
                     <span>Job #084 (Star Flex):</span>
-                    <span className="font-semibold text-slate-900 dark:text-white">200 SFT</span>
+                    <span className="font-semibold text-foreground dark:text-white">200 SFT</span>
                   </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
                     <div className="bg-blue-600 h-full w-3/4 rounded-full" />
                   </div>
                 </div>
               </div>
 
               {/* Outstanding Due Snapshot */}
-              <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60 space-y-1.5">
+              <div className="p-3.5 rounded-xl border border-border bg-muted space-y-1.5">
                 <div className="flex items-center justify-between text-2xs">
-                  <span className="font-bold text-slate-900 dark:text-white">Akram Advertising</span>
+                  <span className="font-bold text-foreground dark:text-white">Akram Advertising</span>
                   <span className="text-rose-600 font-semibold">৳ 12,500 Due</span>
                 </div>
-                <div className="flex items-center justify-between text-2xs text-slate-500">
+                <div className="flex items-center justify-between text-2xs text-muted-foreground">
                   <span>14 days credit</span>
                   <span className="text-blue-600 hover:underline font-semibold cursor-pointer">
                     WhatsApp Reminder →
@@ -154,7 +154,7 @@ export function MobileWorkflowSection() {
 
               {/* Operator Station Button */}
               <div className="pt-2">
-                <div className="w-full h-10 rounded-xl bg-slate-900 dark:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm">
+                <div className="w-full h-10 rounded-xl bg-foreground text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm">
                   <UserCheck className="h-3.5 w-3.5 text-blue-400" />
                   <span>{tBilingual('Operator Floor Station Active', 'অপারেটর ফ্লোর স্টেশন সক্রিয়')}</span>
                 </div>

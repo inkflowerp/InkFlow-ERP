@@ -24,7 +24,7 @@ export function BranchSwitcher({
   if (branches.length <= 1 && userScope !== 'company' && userScope !== 'all_branches') {
     const single = branches[0]
     return (
-      <div className="flex items-center space-x-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200">
+      <div className="flex items-center space-x-2 px-3 py-1.5 bg-muted rounded-lg text-sm font-medium text-foreground dark:text-foreground">
         <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
         <span>{single ? `${single.name} (${single.code})` : 'Main Branch'}</span>
       </div>
@@ -40,7 +40,7 @@ export function BranchSwitcher({
           type="button"
           disabled={disabled}
           onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex items-center justify-between space-x-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-100 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors min-h-[44px]"
+          className="inline-flex items-center justify-between space-x-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors min-h-[44px]"
         >
           <div className="flex items-center space-x-2">
             <span
@@ -55,7 +55,7 @@ export function BranchSwitcher({
             </span>
           </div>
           <svg
-            className="w-4 h-4 ml-1 text-slate-400"
+            className="w-4 h-4 ml-1 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -76,7 +76,7 @@ export function BranchSwitcher({
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           ></div>
-          <div className="absolute left-0 z-50 mt-2 w-64 origin-top-left rounded-xl bg-white dark:bg-slate-900 shadow-xl ring-1 ring-black ring-opacity-5 divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 focus:outline-none">
+          <div className="absolute left-0 z-50 mt-2 w-64 origin-top-left rounded-xl bg-card shadow-xl ring-1 ring-black ring-opacity-5 divide-y divide-border border border-border focus:outline-none">
             {(userScope === 'company' || userScope === 'all_branches') && (
               <div className="p-1">
                 <button
@@ -88,7 +88,7 @@ export function BranchSwitcher({
                   className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                     selectedBranchId === null
                       ? 'bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 font-semibold'
-                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'text-foreground hover:bg-muted dark:hover:bg-muted'
                   }`}
                 >
                   <div className="flex items-center space-x-2">
@@ -114,14 +114,14 @@ export function BranchSwitcher({
                   className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-colors ${
                     selectedBranchId === b.id
                       ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-semibold'
-                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'text-foreground hover:bg-muted dark:hover:bg-muted'
                   }`}
                 >
                   <div className="flex flex-col text-left">
-                    <span className="font-medium text-slate-800 dark:text-slate-100">
+                    <span className="font-medium text-foreground dark:text-foreground">
                       {b.name}
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-muted-foreground">
                       {b.code} {b.name_bn ? `• ${b.name_bn}` : ''} {b.is_main ? '• HQ' : ''}
                     </span>
                   </div>

@@ -68,7 +68,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
                 'px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs',
                 isActive
                   ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+                  : 'bg-card border border-border dark:border-border/80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
               )}
             >
               <span>{tab.label}</span>
@@ -76,8 +76,8 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
                 className={cn(
                   'text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums',
                   isActive
-                    ? 'bg-white text-blue-600 dark:bg-white dark:text-blue-600'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    ? 'bg-card text-blue-600 dark:text-blue-600'
+                    : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                 )}
               >
                 {tab.count}
@@ -88,15 +88,15 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
       </div>
 
       {/* 2. Unified Search and Dropdown Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="bg-card px-3.5 py-2.5 rounded-2xl border border-border dark:border-border/80 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Search Input */}
         <div className="relative w-full md:flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             value={filters.searchQuery}
             onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
             placeholder="Search invoice, customer, job, product..."
-            className="pl-9 text-xs bg-transparent border-0 focus-visible:ring-0 shadow-none h-8 text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
+            className="pl-9 text-xs bg-transparent border-0 focus-visible:ring-0 shadow-none h-8 text-foreground placeholder:text-muted-foreground"
           />
         </div>
 
@@ -106,7 +106,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
           <select
             value={filters.selectedDesigner}
             onChange={(e) => onFilterChange({ selectedDesigner: e.target.value })}
-            className="text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 h-8 text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+            className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors"
           >
             <option value="all">All Designers</option>
             {designers.map((d) => (
@@ -120,7 +120,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
           <select
             value={filters.selectedPriority || 'all'}
             onChange={(e) => onFilterChange({ selectedPriority: e.target.value })}
-            className="text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 h-8 text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+            className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors"
           >
             <option value="all">All Priority</option>
             <option value="urgent">Urgent</option>
@@ -132,7 +132,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
           <select
             value={filters.selectedDate || 'all'}
             onChange={(e) => onFilterChange({ selectedDate: e.target.value })}
-            className="text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 h-8 text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+            className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors"
           >
             <option value="all">All Dates</option>
             <option value="today">Today</option>
@@ -147,7 +147,7 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
             size="sm"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="h-8 w-8 p-0 rounded-lg border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer shadow-none"
+            className="h-8 w-8 p-0 rounded-lg border-border text-muted-foreground hover:text-foreground cursor-pointer shadow-none"
             title="Refresh"
           >
             <RotateCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin text-blue-600')} />

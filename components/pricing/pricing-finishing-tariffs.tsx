@@ -202,8 +202,8 @@ export function PricingFinishingTariffs({
   return (
     <div className="space-y-6">
       {/* 1. FINISHING OPTIONS TARIFFS */}
-      <Card className="rounded-xl shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden">
-        <CardHeader className="py-3 px-4 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+      <Card className="rounded-xl shadow-xs border-border overflow-hidden">
+        <CardHeader className="py-3 px-4 bg-muted/50 border-b border-border dark:border-border">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -231,7 +231,7 @@ export function PricingFinishingTariffs({
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/90 dark:bg-slate-900/90 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-slate-50/90 font-bold text-muted-foreground border-b border-border dark:border-border">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Finishing Option', 'ফিনিশিং বিবরণ')}</th>
                   <th className="py-3 px-4">{tBilingual('Billing Unit / Method', 'বিলিং মেথড')}</th>
@@ -241,29 +241,29 @@ export function PricingFinishingTariffs({
                   <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-border dark:divide-border">
                 {finishingOptions.map((fin) => {
                   const sell = Number(fin.selling_price) || 0
                   const cost = Number(fin.cost) || 0
                   const marginPct = sell > 0 ? Math.round(((sell - cost) / sell) * 100) : 0
 
                   return (
-                    <tr key={fin.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors">
+                    <tr key={fin.id} className="hover:bg-muted/60 dark:hover:bg-muted/60 transition-colors">
                       <td className="py-3 px-4">
-                        <div className="font-bold text-slate-900 dark:text-white">{fin.name}</div>
+                        <div className="font-bold text-foreground dark:text-white">{fin.name}</div>
                         {fin.name_bn && (
                           <div className="text-2xs text-teal-700 dark:text-teal-400 font-medium bangla-text">
                             {fin.name_bn}
                           </div>
                         )}
                       </td>
-                      <td className="py-3 px-4 uppercase tabular-nums font-semibold text-slate-600 dark:text-slate-300">
+                      <td className="py-3 px-4 uppercase tabular-nums font-semibold text-muted-foreground dark:text-muted-foreground">
                         {fin.pricing_method || 'sqft'}
                       </td>
                       <td className="py-3 px-4 tabular-nums font-black text-teal-700 dark:text-teal-400 text-sm">
                         {formatBDT(sell)}
                       </td>
-                      <td className="py-3 px-4 tabular-nums text-slate-500">
+                      <td className="py-3 px-4 tabular-nums text-muted-foreground">
                         {formatBDT(cost)}
                       </td>
                       <td className="py-3 px-4">
@@ -313,8 +313,8 @@ export function PricingFinishingTariffs({
       </Card>
 
       {/* 2. MACHINE PRINTING METHOD SURCHARGES */}
-      <Card className="rounded-xl shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden">
-        <CardHeader className="py-3 px-4 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+      <Card className="rounded-xl shadow-xs border-border overflow-hidden">
+        <CardHeader className="py-3 px-4 bg-muted/50 border-b border-border dark:border-border">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -332,7 +332,7 @@ export function PricingFinishingTariffs({
             <Button
               size="sm"
               onClick={handleOpenAddMethod}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-8 shadow-xs"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-8 shadow-xs"
             >
               <Plus className="h-3.5 w-3.5 mr-1" />
               {tBilingual('Add Printing Method', 'নতুন মেথড')}
@@ -342,7 +342,7 @@ export function PricingFinishingTariffs({
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/90 dark:bg-slate-900/90 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-slate-50/90 font-bold text-muted-foreground border-b border-border dark:border-border">
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Method Name', 'মেথডের নাম')}</th>
                   <th className="py-3 px-4">{tBilingual('Identifier Code', 'কোড')}</th>
@@ -351,11 +351,11 @@ export function PricingFinishingTariffs({
                   <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-border dark:divide-border">
                 {printingMethods.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{m.name}</td>
-                    <td className="py-3 px-4 tabular-nums text-slate-400">{m.code || '—'}</td>
+                  <tr key={m.id} className="hover:bg-muted/60 dark:hover:bg-muted/60 transition-colors">
+                    <td className="py-3 px-4 font-bold text-foreground dark:text-white">{m.name}</td>
+                    <td className="py-3 px-4 tabular-nums text-muted-foreground">{m.code || '—'}</td>
                     <td className="py-3 px-4 uppercase tabular-nums font-semibold">sft</td>
                     <td className="py-3 px-4 tabular-nums font-black text-blue-700 dark:text-blue-400 text-sm">
                       +{formatBDT(m.cost_per_sqft || 0)}
@@ -439,7 +439,7 @@ export function PricingFinishingTariffs({
               <select
                 value={finForm.pricing_method}
                 onChange={(e) => setFinForm({ ...finForm, pricing_method: e.target.value })}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs tabular-nums"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs tabular-nums"
               >
                 <option value="sqft">sqft (per sqft)</option>
                 <option value="per_piece">per_piece (per piece / eyelet)</option>
@@ -477,7 +477,7 @@ export function PricingFinishingTariffs({
             </div>
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsFinishingModalOpen(false)} className="text-xs h-9">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
@@ -542,11 +542,11 @@ export function PricingFinishingTariffs({
             </div>
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-2 flex justify-end gap-2 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsMethodModalOpen(false)} className="text-xs h-9">
               {tBilingual('Cancel', 'বাতিল')}
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-9 px-5">
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-9 px-5">
               {tBilingual('Save Method', 'সংরক্ষণ করুন')}
             </Button>
           </div>

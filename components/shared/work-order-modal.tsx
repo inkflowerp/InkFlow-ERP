@@ -861,7 +861,7 @@ export function WorkOrderModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-black text-slate-900 dark:text-white">
+              <span className="text-base font-black text-foreground dark:text-white">
                 {tBilingual('Add Work Order', 'নতুন ওয়ার্ক অর্ডার যোগ করুন')}
               </span>
               <Badge
@@ -871,7 +871,7 @@ export function WorkOrderModal({
                 Pre-Press Flow
               </Badge>
             </div>
-            <p className="text-2xs text-slate-500 dark:text-slate-400">
+            <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual(
                 'Fast pre-press booking with instant invoice dispatch to manager',
                 'দ্রুত প্রি-প্রেস বুকিং ও ম্যানেজারের নিকট তাৎক্ষণিক ইনভয়েস প্রেরণের সুবিধা'
@@ -921,17 +921,17 @@ export function WorkOrderModal({
               className={cn(
                 'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
                 workflowRouting === 'ready_production'
-                  ? 'border-blue-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-blue-500/20'
-                  : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 opacity-70 hover:opacity-100'
+                  ? 'border-blue-600 bg-card shadow-xs ring-2 ring-blue-500/20'
+                  : 'border-border bg-card/70 opacity-70 hover:opacity-100'
               )}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span className="font-bold text-xs text-foreground dark:text-white flex items-center gap-1.5">
                   🚀 Ready Production
                 </span>
                 {workflowRouting === 'ready_production' && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
               </div>
-              <p className="text-2xs text-slate-500 mt-1">
+              <p className="text-2xs text-muted-foreground mt-1">
                 Fast-track. Auto-routes custom items to Production Planning and ready items to Delivery.
               </p>
             </button>
@@ -942,17 +942,17 @@ export function WorkOrderModal({
               className={cn(
                 'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
                 workflowRouting === 'design_ok'
-                  ? 'border-emerald-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-emerald-500/20'
-                  : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 opacity-70 hover:opacity-100'
+                  ? 'border-emerald-600 bg-card shadow-xs ring-2 ring-emerald-500/20'
+                  : 'border-border bg-card/70 opacity-70 hover:opacity-100'
               )}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span className="font-bold text-xs text-foreground dark:text-white flex items-center gap-1.5">
                   ⚡ Design OK (Print Ready)
                 </span>
                 {workflowRouting === 'design_ok' && <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
               </div>
-              <p className="text-2xs text-slate-500 mt-1">
+              <p className="text-2xs text-muted-foreground mt-1">
                 Print-ready file verified. Routes straight to prepress flightcheck & print floor.
               </p>
             </button>
@@ -963,17 +963,17 @@ export function WorkOrderModal({
               className={cn(
                 'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
                 workflowRouting === 'design_required'
-                  ? 'border-indigo-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-indigo-500/20'
-                  : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 opacity-70 hover:opacity-100'
+                  ? 'border-indigo-600 bg-card shadow-xs ring-2 ring-indigo-500/20'
+                  : 'border-border bg-card/70 opacity-70 hover:opacity-100'
               )}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span className="font-bold text-xs text-foreground dark:text-white flex items-center gap-1.5">
                   🎨 Design Required
                 </span>
                 {workflowRouting === 'design_required' && <CheckCircle2 className="h-4 w-4 text-indigo-600" />}
               </div>
-              <p className="text-2xs text-slate-500 mt-1">
+              <p className="text-2xs text-muted-foreground mt-1">
                 Creates Designer task. Requires customer proof approval before printing.
               </p>
             </button>
@@ -983,27 +983,27 @@ export function WorkOrderModal({
         {/* =========================================================================
             SECTION 1: CUSTOMER INFORMATION (Exact Structure Matching Invoice Form)
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 1
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 CUSTOMER INFORMATION
               </h3>
             </div>
 
             {/* Customer Type Selector (matching Invoice form) */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-xl border border-border dark:border-border">
               <button
                 type="button"
                 onClick={() => setCustomerType('retail')}
                 className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
                   customerType === 'retail'
-                    ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    ? 'bg-card text-blue-600 shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {tBilingual('Retail', 'খুচরা')}
@@ -1014,8 +1014,8 @@ export function WorkOrderModal({
                 className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
                   customerType === 'corporate'
-                    ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    ? 'bg-card text-purple-600 shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {tBilingual('Corporate', 'কর্পোরেট')}
@@ -1026,8 +1026,8 @@ export function WorkOrderModal({
                 className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
                   customerType === 'reseller'
-                    ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    ? 'bg-card text-emerald-600 shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {tBilingual('Reseller', 'রিসেলার')}
@@ -1038,8 +1038,8 @@ export function WorkOrderModal({
                 className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
                   customerType === 'government'
-                    ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    ? 'bg-card text-amber-600 shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {tBilingual('Govt', 'সরকারি')}
@@ -1073,7 +1073,7 @@ export function WorkOrderModal({
                   <button
                     type="button"
                     onClick={handleClearCustomer}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -1082,7 +1082,7 @@ export function WorkOrderModal({
 
               {/* Suggestions dropdown */}
               {showCustomerDropdown && customerSearchResults.length > 0 && (
-                <div className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-card rounded-xl border border-border shadow-xl divide-y divide-border dark:divide-border">
                   {customerSearchResults.map((c, idx) => (
                     <div
                       key={c.id}
@@ -1091,12 +1091,12 @@ export function WorkOrderModal({
                         'p-2.5 cursor-pointer text-xs transition-colors flex items-center justify-between',
                         idx === customerHighlightedIndex
                           ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-900 dark:text-blue-100 font-bold'
-                          : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
+                          : 'hover:bg-muted text-foreground dark:text-foreground'
                       )}
                     >
                       <div>
-                        <div className="font-bold text-slate-900 dark:text-slate-100">{c.name}</div>
-                        <div className="text-2xs text-slate-500 tabular-nums">
+                        <div className="font-bold text-foreground dark:text-foreground">{c.name}</div>
+                        <div className="text-2xs text-muted-foreground tabular-nums">
                           {c.mobile} {c.company_name ? `• ${c.company_name}` : ''}
                         </div>
                       </div>
@@ -1179,13 +1179,13 @@ export function WorkOrderModal({
         {/* =========================================================================
             SECTION 2: WORK ORDER ITEMS & SPECS (Matching Invoice without pricing)
            ========================================================================= */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-slate-200 dark:border-slate-800">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-border dark:border-border">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 2
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Work Order Items & Specs', 'আইটেম ও স্পেসিফিকেশন')}
               </h3>
               {totalSft > 0 && (
@@ -1247,12 +1247,12 @@ export function WorkOrderModal({
               return (
                 <div
                   key={item.id}
-                  className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5 transition-all"
+                  className="p-4 rounded-xl bg-muted border border-border shadow-xs space-y-3.5 transition-all"
                 >
                   {/* Item Header & Badges */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800 pb-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2.5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="tabular-nums text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
+                      <span className="tabular-nums text-xs font-bold text-muted-foreground bg-muted/80 px-2 py-0.5 rounded">
                         Item #{index + 1}
                       </span>
 
@@ -1297,7 +1297,7 @@ export function WorkOrderModal({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleAdvanced(index)}
-                        className="h-7 px-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 text-xs font-semibold cursor-pointer"
+                        className="h-7 px-2 text-muted-foreground hover:text-foreground text-xs font-semibold cursor-pointer"
                       >
                         {item.showAdvanced ? 'Simple Specs' : 'More Specs'}
                       </Button>
@@ -1324,7 +1324,7 @@ export function WorkOrderModal({
                       <select
                         value={item.productId || ''}
                         onChange={(e) => handleProductSelect(index, e.target.value)}
-                        className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200"
+                        className="w-full h-9 px-2.5 rounded-lg border border-input bg-card text-xs font-medium text-foreground dark:text-foreground"
                       >
                         <option value="">-- Custom Item (No Catalog) --</option>
 
@@ -1367,13 +1367,13 @@ export function WorkOrderModal({
                         </Label>
                         {isCustom && (
                           <div className="flex items-center gap-1">
-                            <span className="text-2xs text-slate-400 mr-1">Mode:</span>
+                            <span className="text-2xs text-muted-foreground mr-1">Mode:</span>
                             <button
                               type="button"
                               onClick={() => handleToggleItemKind(index, 'service')}
                               className={cn(
                                 'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
-                                isService ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
+                                isService ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📐 Sqft Area
@@ -1383,7 +1383,7 @@ export function WorkOrderModal({
                               onClick={() => handleToggleItemKind(index, 'ready_product')}
                               className={cn(
                                 'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
-                                isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
+                                isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
                               )}
                             >
                               📦 Unit
@@ -1404,7 +1404,7 @@ export function WorkOrderModal({
                   {/* Dimension Presets for Services */}
                   {isService && Array.isArray(item.available_dimension_presets) && item.available_dimension_presets.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                      <span className="text-2xs font-bold text-slate-400 mr-1">Standard Sizes:</span>
+                      <span className="text-2xs font-bold text-muted-foreground mr-1">Standard Sizes:</span>
                       {item.available_dimension_presets.map((preset, pIdx) => (
                         <button
                           key={pIdx}
@@ -1414,7 +1414,7 @@ export function WorkOrderModal({
                             'px-2 py-0.5 rounded-md text-2xs font-semibold border transition-all cursor-pointer',
                             item.width === String(preset.width) && item.height === String(preset.length)
                               ? 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                              : 'bg-card border-input text-foreground hover:border-blue-400'
                           )}
                         >
                           {preset.label || `${preset.width} × ${preset.length} ${preset.unit || 'ft'}`}
@@ -1455,7 +1455,7 @@ export function WorkOrderModal({
                         <select
                           value={item.dimension_unit || 'ft'}
                           onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="ft">{tBilingual('ft', 'ফুট')}</option>
                           <option value="inch">{tBilingual('inch', 'ইঞ্চি')}</option>
@@ -1481,7 +1481,7 @@ export function WorkOrderModal({
                         <select
                           value={item.finishing || 'None'}
                           onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="None">None</option>
                           {Array.isArray(item.available_finishing_options) && item.available_finishing_options.length > 0
@@ -1505,7 +1505,7 @@ export function WorkOrderModal({
                         <select
                           value={item.add_on || 'None'}
                           onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="None">None</option>
                           {Array.isArray(STANDARD_ADD_ON_OPTIONS) && STANDARD_ADD_ON_OPTIONS.map((a) => (
@@ -1520,18 +1520,18 @@ export function WorkOrderModal({
 
                   {/* Ready Product Controls */}
                   {isReadyProduct && (
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-card rounded-xl border border-border dark:border-border">
                       <div className="sm:col-span-6 flex flex-col justify-center">
-                        <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
+                        <span className="text-2xs uppercase font-bold text-muted-foreground block mb-0.5">
                           Physical Specs & Packaging
                         </span>
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-foreground font-medium">
                           {item.dimensions_spec ? (
-                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded tabular-nums text-2xs">
+                            <span className="bg-muted px-2 py-0.5 rounded tabular-nums text-2xs">
                               📐 {item.dimensions_spec}
                             </span>
                           ) : (
-                            <span className="text-slate-400 italic text-2xs">Standard Factory Size</span>
+                            <span className="text-muted-foreground italic text-2xs">Standard Factory Size</span>
                           )}
                         </div>
                       </div>
@@ -1553,7 +1553,7 @@ export function WorkOrderModal({
                         <select
                           value={item.unit}
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
                           <option value="set">{tBilingual('set', 'সেট')}</option>
@@ -1600,7 +1600,7 @@ export function WorkOrderModal({
                         <select
                           value={item.unit}
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-2 rounded-lg border border-input bg-card text-xs font-medium"
                         >
                           <option value="roll">{tBilingual('roll', 'রোল')}</option>
                           <option value="sheet">{tBilingual('sheet', 'শিট')}</option>
@@ -1626,7 +1626,7 @@ export function WorkOrderModal({
 
                   {/* Substrate / Printable Material pill for service */}
                   {isService && item.printable_material_name && (
-                    <div className="flex items-center gap-2 text-2xs text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2 text-2xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border dark:border-border">
                       <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
                       <span>
                         Linked Substrate: <strong>{item.printable_material_name}</strong>
@@ -1636,8 +1636,8 @@ export function WorkOrderModal({
 
                   {/* Advanced Specs Drawer */}
                   {item.showAdvanced && (
-                    <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 text-xs animate-in fade-in-0">
-                      <span className="text-2xs uppercase font-bold text-slate-400 block">
+                    <div className="p-3 rounded-xl bg-card border border-border space-y-2 text-xs animate-in fade-in-0">
+                      <span className="text-2xs uppercase font-bold text-muted-foreground block">
                         Advanced Production Specs
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1669,12 +1669,12 @@ export function WorkOrderModal({
         </div>
 
         {/* Section 3: Reference Artwork & Pre-Press Notes */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center gap-2">
             <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
               3
             </div>
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
               {tBilingual('Artwork & Pre-Press Notes', 'রেফারেন্স আর্টওয়ার্ক ও নির্দেশনাবলী')}
             </h3>
           </div>
@@ -1698,7 +1698,7 @@ export function WorkOrderModal({
               'p-3.5 rounded-xl border-2 border-dashed transition-all cursor-pointer text-center',
               isRefDragging
                 ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40'
-                : 'border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-900'
+                : 'border-input bg-muted hover:bg-muted dark:hover:bg-muted'
             )}
           >
             <input
@@ -1714,7 +1714,7 @@ export function WorkOrderModal({
             />
             {referenceProofUrl ? (
               <div className="space-y-1.5">
-                <div className="relative max-h-36 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center p-1">
+                <div className="relative max-h-36 overflow-hidden rounded-lg border border-border bg-foreground flex items-center justify-center p-1">
                   <img
                     src={referenceProofUrl}
                     alt="Reference Artwork"
@@ -1732,14 +1732,14 @@ export function WorkOrderModal({
                   <Upload className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <p className="text-xs font-bold text-foreground dark:text-foreground">
                     {tBilingual('Click to browse or Drag & Drop .JPG / .PNG', 'ফাইল নির্বাচন করুন অথবা ড্র্যাগ করুন')}
                   </p>
                   <p className="text-2xs text-blue-600 dark:text-blue-400 font-semibold">
-                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 tabular-nums text-2xs">Ctrl+V</kbd> anywhere to paste screenshot
+                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-muted tabular-nums text-2xs">Ctrl+V</kbd> anywhere to paste screenshot
                   </p>
                 </div>
-                <p className="text-2xs text-slate-400">
+                <p className="text-2xs text-muted-foreground">
                   Supported formats: <strong>.JPG, .JPEG, .PNG</strong>
                 </p>
               </div>
@@ -1758,13 +1758,13 @@ export function WorkOrderModal({
                 'e.g. Color profile CMYK, add 1 inch bleed on all sides...',
                 'যেমন: সিএমওয়াইকে কালার মোড, চারপাশে ১ ইঞ্চি ব্লিড মার্জিন...'
               )}
-              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>
 
         {/* Action Footer */}
-        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"
@@ -1786,7 +1786,7 @@ export function WorkOrderModal({
               {isSubmitting ? (
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
               ) : (
-                <Save className="h-3.5 w-3.5 mr-1.5 text-slate-600" />
+                <Save className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
               )}
               {tBilingual('Save Draft', 'ড্রাফট সংরক্ষণ')}
             </Button>
@@ -1795,7 +1795,7 @@ export function WorkOrderModal({
               type="button"
               onClick={() => handleSave(true)}
               disabled={isSubmitting}
-              className="flex-1 sm:flex-initial min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm cursor-pointer"
+              className="flex-1 sm:flex-initial min-h-[40px] text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm cursor-pointer"
             >
               {isSubmitting ? (
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />

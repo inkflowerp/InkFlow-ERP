@@ -107,7 +107,7 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
             <div className="flex items-center gap-2 flex-wrap">
               <Link
                 href={invoiceHref}
-                className="tabular-nums text-sm font-bold text-slate-950 dark:text-blue-200 hover:underline inline-flex items-center gap-1"
+                className="tabular-nums text-sm font-bold text-foreground dark:text-blue-200 hover:underline inline-flex items-center gap-1"
               >
                 <span>Invoice #{invoiceNumber}</span>
                 <ExternalLink className="h-3 w-3 opacity-60" />
@@ -127,8 +127,8 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-              <span className="font-semibold text-slate-900 dark:text-white">{customerName}</span>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+              <span className="font-semibold text-foreground dark:text-white">{customerName}</span>
               {customerPhone && (
                 <span className="text-2xs tabular-nums text-emerald-700 dark:text-emerald-400">
                   • {customerPhone}
@@ -158,7 +158,7 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
             size="sm"
             variant="ghost"
             onClick={() => setIsExpanded((prev) => !prev)}
-            className="text-xs h-8 px-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-xl cursor-pointer"
+            className="text-xs h-8 px-2 text-muted-foreground hover:text-foreground dark:hover:text-white rounded-xl cursor-pointer"
           >
             {isExpanded ? (
               <ChevronUp className="h-4 w-4" />
@@ -171,7 +171,7 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
 
       {/* Expanded Content: List of Single Job Cards */}
       {isExpanded && (
-        <div className="p-3.5 space-y-3 bg-slate-50/40 dark:bg-slate-950/20">
+        <div className="p-3.5 space-y-3 bg-muted dark:bg-background">
           {jobs.map((job) => (
             <ProductionJobCard
               key={job.id}

@@ -103,12 +103,12 @@ export const OrderCard = React.memo(function OrderCard({
 
   return (
     <div
-      className={`bg-white dark:bg-slate-900 border rounded-xl p-4 transition-all duration-200 hover:shadow-xs flex flex-col justify-between ${
+      className={`bg-card border rounded-xl p-4 transition-all duration-200 hover:shadow-xs flex flex-col justify-between ${
         isBlocked
           ? 'border-amber-300 dark:border-amber-900/60 ring-1 ring-amber-300/30'
           : isUrgent
           ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-300/30'
-          : 'border-slate-200 dark:border-slate-800'
+          : 'border-border dark:border-border'
       }`}
     >
       <div className="space-y-3.5">
@@ -123,7 +123,7 @@ export const OrderCard = React.memo(function OrderCard({
                 <span>ORDER #{order.orderNumber}</span>
                 <ExternalLink className="h-3 w-3" />
               </Link>
-              <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground dark:text-muted-foreground">
                 {jobsCount} {jobsCount === 1 ? 'Job' : 'Jobs'}
               </span>
               {isUrgent && (
@@ -133,7 +133,7 @@ export const OrderCard = React.memo(function OrderCard({
               )}
             </div>
 
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate mt-1">
+            <h3 className="text-sm font-bold text-foreground dark:text-white truncate mt-1">
               {order.customerName || 'Walk-in Customer'}
             </h3>
           </div>
@@ -155,7 +155,7 @@ export const OrderCard = React.memo(function OrderCard({
               <button
                 type="button"
                 onClick={() => onOpenJobTicket(order)}
-                className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
                 title={tBilingual('Print Job Ticket', 'জব টিকেট প্রিন্ট')}
                 aria-label="Job Ticket"
               >
@@ -166,24 +166,24 @@ export const OrderCard = React.memo(function OrderCard({
         </div>
 
         {/* Financial Row: Total, Paid, Due (Section 9) */}
-        <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs">
+        <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-muted border border-border text-xs">
           <div>
-            <span className="text-3xs font-bold uppercase tracking-wider text-slate-400 block">Total</span>
-            <span className="font-bold tabular-nums text-slate-900 dark:text-white block mt-0.5">
+            <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground block">Total</span>
+            <span className="font-bold tabular-nums text-foreground dark:text-white block mt-0.5">
               ৳{totalAmount.toLocaleString()}
             </span>
           </div>
           <div>
-            <span className="text-3xs font-bold uppercase tracking-wider text-slate-400 block">Paid</span>
+            <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground block">Paid</span>
             <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400 block mt-0.5">
               ৳{advanceAmount.toLocaleString()}
             </span>
           </div>
           <div>
-            <span className="text-3xs font-bold uppercase tracking-wider text-slate-400 block">Due</span>
+            <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground block">Due</span>
             <span
               className={`font-bold tabular-nums block mt-0.5 ${
-                dueAmount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'
+                dueAmount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
               }`}
             >
               ৳{dueAmount.toLocaleString()}
@@ -192,9 +192,9 @@ export const OrderCard = React.memo(function OrderCard({
         </div>
 
         {/* Operational State: CURRENT & NEXT (Section 9) */}
-        <div className="space-y-1.5 text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
+        <div className="space-y-1.5 text-xs pt-1 border-t border-border dark:border-border">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">CURRENT:</span>
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">CURRENT:</span>
             <Badge
               variant="outline"
               className={`text-2xs font-semibold px-2 py-0.5 ${
@@ -212,7 +212,7 @@ export const OrderCard = React.memo(function OrderCard({
           </div>
 
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">NEXT:</span>
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">NEXT:</span>
             <span className="font-semibold text-blue-600 dark:text-blue-400 text-right truncate">
               {nextAction}
             </span>
@@ -241,8 +241,8 @@ export const OrderCard = React.memo(function OrderCard({
         )}
 
         {/* Jobs Mini Checklist (Section 9: ✓ Banner, ● ACP Sign, ○ Business Card) */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-          <span className="text-3xs uppercase font-bold text-slate-400 block mb-1.5">Jobs:</span>
+        <div className="pt-2 border-t border-border dark:border-border">
+          <span className="text-3xs uppercase font-bold text-muted-foreground block mb-1.5">Jobs:</span>
           <div className="space-y-1">
             {miniJobs.slice(0, 4).map((j, idx) => (
               <div key={idx} className="flex items-center justify-between text-2xs">
@@ -253,18 +253,18 @@ export const OrderCard = React.memo(function OrderCard({
                         ? 'text-emerald-600'
                         : j.statusIcon === '●'
                         ? 'text-blue-600'
-                        : 'text-slate-400'
+                        : 'text-muted-foreground'
                     }`}
                   >
                     {j.statusIcon}
                   </span>
-                  <span className="text-slate-800 dark:text-slate-200 truncate">{j.title}</span>
+                  <span className="text-foreground truncate">{j.title}</span>
                 </div>
-                <span className="text-3xs text-slate-400 shrink-0 ml-2">{j.stageLabel}</span>
+                <span className="text-3xs text-muted-foreground shrink-0 ml-2">{j.stageLabel}</span>
               </div>
             ))}
             {miniJobs.length > 4 && (
-              <p className="text-3xs text-slate-400 italic pt-0.5">
+              <p className="text-3xs text-muted-foreground italic pt-0.5">
                 +{miniJobs.length - 4} more jobs...
               </p>
             )}
@@ -273,11 +273,11 @@ export const OrderCard = React.memo(function OrderCard({
       </div>
 
       {/* Primary Action Button: [Open Job Flow] (Section 9 & Section 11) */}
-      <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800">
+      <div className="pt-3 mt-3 border-t border-border dark:border-border">
         <Button
           asChild
           size="sm"
-          className="w-full h-8 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+          className="w-full h-8 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs"
         >
           <Link href={getTenantNavHref(`/orders/${order.id}`, pathname, tenantSlug)}>
             <span>{tBilingual('Open Job Flow', 'কাজের ফ্লো খুলুন')}</span>

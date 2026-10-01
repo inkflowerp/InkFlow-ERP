@@ -28,7 +28,7 @@ export function PricingSection() {
   const plans = paidPlans || []
 
   return (
-    <section id="pricing" className="py-16 sm:py-24 bg-white dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800">
+    <section id="pricing" className="py-16 sm:py-24 bg-card border-t border-border dark:border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-14">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
@@ -37,14 +37,14 @@ export function PricingSection() {
             <span>{tBilingual('Authoritative Pricing in BDT', 'স্বচ্ছ ও সাশ্রয়ী মূল্যতালিকা')}</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight bangla-text">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground dark:text-white tracking-tight leading-tight bangla-text">
             {tBilingual(
               'Simple Plans for Growing Print Shops.',
               'আপনার প্রেসের পরিধি অনুযায়ী সহজ ও সাশ্রয়ী প্যাকেজ।'
             )}
           </h2>
 
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed bangla-text">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed bangla-text">
             {tBilingual(
               'Choose the plan that matches your monthly order volume and team size. Every plan includes full Bengali localization, BDT currency, and SFT calculation.',
               'আপনার প্রেসের কাজের পরিধি ও স্টাফের সংখ্যা অনুযায়ী সেরা প্ল্যানটি বেছে নিন। প্রতিটি প্ল্যানে রয়েছে পূর্ণাঙ্গ বাংলা ও টাকার হিসাব।'
@@ -55,7 +55,7 @@ export function PricingSection() {
           <div className="pt-2 flex items-center justify-center gap-3 text-xs sm:text-sm">
             <span
               className={`font-semibold cursor-pointer transition-colors ${
-                interval === 'monthly' ? 'text-slate-900 dark:text-white' : 'text-slate-500'
+                interval === 'monthly' ? 'text-foreground dark:text-white' : 'text-muted-foreground'
               }`}
               onClick={() => setInterval('monthly')}
             >
@@ -65,12 +65,12 @@ export function PricingSection() {
             <button
               type="button"
               onClick={() => setInterval(interval === 'monthly' ? 'yearly' : 'monthly')}
-              className="relative inline-flex h-6 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-slate-200 dark:bg-slate-700 p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="relative inline-flex h-6 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-muted p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring"
               role="switch"
               aria-checked={interval === 'yearly'}
             >
               <span
-                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-blue-400 shadow-sm transition duration-200 ease-in-out ${
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-card dark:bg-blue-400 shadow-sm transition duration-200 ease-in-out ${
                   interval === 'yearly' ? 'translate-x-6' : 'translate-x-0'
                 }`}
               />
@@ -78,7 +78,7 @@ export function PricingSection() {
 
             <span
               className={`font-semibold flex items-center gap-1.5 cursor-pointer transition-colors ${
-                interval === 'yearly' ? 'text-slate-900 dark:text-white' : 'text-slate-500'
+                interval === 'yearly' ? 'text-foreground dark:text-white' : 'text-muted-foreground'
               }`}
               onClick={() => setInterval('yearly')}
             >
@@ -96,14 +96,14 @@ export function PricingSection() {
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="h-96 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 animate-pulse p-6 space-y-4"
+                className="h-96 rounded-2xl border border-border bg-muted animate-pulse p-6 space-y-4"
               >
-                <div className="h-6 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
-                <div className="h-10 w-36 bg-slate-200 dark:bg-slate-800 rounded" />
+                <div className="h-6 w-24 bg-muted rounded" />
+                <div className="h-10 w-36 bg-muted rounded" />
                 <div className="space-y-2 pt-4">
-                  <div className="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded" />
-                  <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-800 rounded" />
-                  <div className="h-4 w-5/6 bg-slate-200 dark:bg-slate-800 rounded" />
+                  <div className="h-4 w-full bg-muted rounded" />
+                  <div className="h-4 w-3/4 bg-muted rounded" />
+                  <div className="h-4 w-5/6 bg-muted rounded" />
                 </div>
               </div>
             ))}
@@ -112,11 +112,11 @@ export function PricingSection() {
 
         {/* Empty / Error Fallback State */}
         {!isLoading && plans.length === 0 && (
-          <div className="max-w-2xl mx-auto p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-center space-y-4">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white bangla-text">
+          <div className="max-w-2xl mx-auto p-8 rounded-2xl border border-border bg-muted text-center space-y-4">
+            <h3 className="text-lg font-bold text-foreground dark:text-white bangla-text">
               {tBilingual('Subscription Plans Synchronizing', 'মূল্যতালিকা প্রস্তুত হচ্ছে')}
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto bangla-text">
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto bangla-text">
               {tBilingual(
                 'Our plans are currently updating from the platform database. You can still schedule a live screen walkthrough or speak with our Dhaka team directly.',
                 'আমাদের প্যাকেজ তালিকা আপডেট হচ্ছে। আপনি এখনই একটি লাইভ স্ক্রিন ডেমো শিডিউল করতে পারেন অথবা ঢাকা টিমের সাথে যোগাযোগ করতে পারেন।'
@@ -125,14 +125,14 @@ export function PricingSection() {
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <Button
                 onClick={openDemo}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 h-10 cursor-pointer"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-5 h-10 cursor-pointer"
               >
                 {tBilingual('Schedule Walkthrough Demo', 'লাইভ ডেমো বুক করুন')}
               </Button>
               <Link href="/contact">
                 <Button
                   variant="outline"
-                  className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs px-5 h-10 cursor-pointer"
+                  className="border-input text-foreground text-xs px-5 h-10 cursor-pointer"
                 >
                   <PhoneCall className="mr-1.5 h-3.5 w-3.5" />
                   {tBilingual('Contact Sales Desk', 'সেলস ডেস্ক যোগাযোগ')}
@@ -170,8 +170,8 @@ export function PricingSection() {
                   key={p.id || p.code}
                   className={`relative rounded-2xl p-6 sm:p-7 flex flex-col justify-between transition-all ${
                     isPopular
-                      ? 'border-2 border-blue-600 dark:border-blue-500 bg-white dark:bg-slate-900 shadow-xl ring-1 ring-blue-600/10'
-                      : 'border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm'
+                      ? 'border-2 border-blue-600 dark:border-blue-500 bg-card shadow-xl ring-1 ring-blue-600/10'
+                      : 'border border-border bg-card hover:border-input shadow-sm'
                   }`}
                 >
                   {/* Popular Tag */}
@@ -185,25 +185,25 @@ export function PricingSection() {
                     {/* Header */}
                     <div>
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white bangla-text">
+                        <h3 className="text-lg font-bold text-foreground dark:text-white bangla-text">
                           {tBilingual(p.name, p.name_bn)}
                         </h3>
                         {p.code === 'enterprise' && (
                           <Crown className="h-5 w-5 text-amber-500 shrink-0" />
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 min-h-0 sm:min-h-[32px] leading-relaxed bangla-text">
+                      <p className="text-xs text-muted-foreground mt-1 min-h-0 sm:min-h-[32px] leading-relaxed bangla-text">
                         {p.description}
                       </p>
                     </div>
 
                     {/* Price in BDT */}
-                    <div className="pt-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div className="pt-2 pb-3 border-b border-border dark:border-border">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
+                        <span className="text-3xl sm:text-4xl font-black text-foreground dark:text-white tabular-nums tracking-tight">
                           ৳ {price.toLocaleString()}
                         </span>
-                        <span className="text-xs text-slate-500 font-medium">
+                        <span className="text-xs text-muted-foreground font-medium">
                           / month {interval === 'yearly' && '(billed yearly)'}
                         </span>
                       </div>
@@ -217,28 +217,28 @@ export function PricingSection() {
                     </div>
 
                     {/* Quota Highlights */}
-                    <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-                      <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800/60">
-                        <span className="text-slate-500">Team Staff Users:</span>
-                        <span className="font-bold text-slate-900 dark:text-white tabular-nums">
+                    <div className="space-y-2 text-xs text-muted-foreground dark:text-muted-foreground">
+                      <div className="flex justify-between py-1 border-b border-border dark:border-border/60">
+                        <span className="text-muted-foreground">Team Staff Users:</span>
+                        <span className="font-bold text-foreground dark:text-white tabular-nums">
                           {p.max_users >= 999 ? 'Unlimited' : `${p.max_users} Staff`}
                         </span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800/60">
-                        <span className="text-slate-500">Branches / Units:</span>
-                        <span className="font-bold text-slate-900 dark:text-white tabular-nums">
+                      <div className="flex justify-between py-1 border-b border-border dark:border-border/60">
+                        <span className="text-muted-foreground">Branches / Units:</span>
+                        <span className="font-bold text-foreground dark:text-white tabular-nums">
                           {p.max_branches >= 999 ? 'Unlimited' : `${p.max_branches} Locations`}
                         </span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800/60">
-                        <span className="text-slate-500">Monthly Orders:</span>
-                        <span className="font-bold text-slate-900 dark:text-white tabular-nums">
+                      <div className="flex justify-between py-1 border-b border-border dark:border-border/60">
+                        <span className="text-muted-foreground">Monthly Orders:</span>
+                        <span className="font-bold text-foreground dark:text-white tabular-nums">
                           {p.monthly_orders >= 9999 ? 'Unlimited' : `${p.monthly_orders.toLocaleString()} Orders`}
                         </span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800/60">
-                        <span className="text-slate-500">Artwork Storage:</span>
-                        <span className="font-bold text-slate-900 dark:text-white tabular-nums">
+                      <div className="flex justify-between py-1 border-b border-border dark:border-border/60">
+                        <span className="text-muted-foreground">Artwork Storage:</span>
+                        <span className="font-bold text-foreground dark:text-white tabular-nums">
                           {p.storage_gb >= 999 ? 'Unlimited' : `${p.storage_gb} GB Cloud`}
                         </span>
                       </div>
@@ -246,30 +246,30 @@ export function PricingSection() {
 
                     {/* Features List */}
                     <div className="space-y-2 text-xs pt-1">
-                      <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                      <div className="flex items-center gap-2 text-foreground dark:text-foreground">
                         <Check className="h-4 w-4 text-emerald-600 shrink-0" />
                         <span>Instant SFT Quotation Generator</span>
                       </div>
-                      <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                      <div className="flex items-center gap-2 text-foreground dark:text-foreground">
                         <Check className="h-4 w-4 text-emerald-600 shrink-0" />
                         <span>Customer Dues & WhatsApp Reminders</span>
                       </div>
-                      <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                      <div className="flex items-center gap-2 text-foreground dark:text-foreground">
                         <Check className="h-4 w-4 text-emerald-600 shrink-0" />
                         <span>Traditional NBR Delivery Challans</span>
                       </div>
 
                       {p.code !== 'starter' && (
                         <>
-                          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                          <div className="flex items-center gap-2 text-foreground dark:text-foreground">
                             <Check className="h-4 w-4 text-emerald-600 shrink-0" />
                             <span>Interactive Production Floor Queue</span>
                           </div>
-                          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                          <div className="flex items-center gap-2 text-foreground dark:text-foreground">
                             <Check className="h-4 w-4 text-emerald-600 shrink-0" />
                             <span>Flex & Roll Media Stock Tracker</span>
                           </div>
-                          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                          <div className="flex items-center gap-2 text-foreground dark:text-foreground">
                             <Check className="h-4 w-4 text-emerald-600 shrink-0" />
                             <span>Job BOM Costing & Net Profit</span>
                           </div>
@@ -297,15 +297,15 @@ export function PricingSection() {
                       <Button
                         className={`w-full h-11 font-bold text-sm cursor-pointer bangla-text ${
                           isPopular
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
-                            : 'bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white'
+                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm'
+                            : 'bg-foreground hover:bg-secondary dark:hover:bg-slate-700 text-white'
                         }`}
                       >
                         <span>{tBilingual(`Get Started with ${p.name}`, `${p.name_bn} শুরু করুন`)}</span>
                         <ArrowRight className="ml-1.5 h-4 w-4" />
                       </Button>
                     </Link>
-                    <p className="text-2xs text-center text-slate-400 mt-2">
+                    <p className="text-2xs text-center text-muted-foreground mt-2">
                       {tBilingual('Instant account activation • BDT billing', 'ইনস্ট্যান্ট একাউন্ট অ্যাক্টিভেশন • টাকা বিলিং')}
                     </p>
                   </div>
@@ -322,13 +322,13 @@ export function PricingSection() {
               <Sparkles className="h-3 w-3" />
               <span>{tBilingual('Dedicated Free Evaluation Trial', 'ডেডিকেটেড ফ্রি মূল্যায়ন ট্রায়াল')}</span>
             </div>
-            <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white bangla-text">
+            <h3 className="text-lg sm:text-xl font-black text-foreground dark:text-white bangla-text">
               {tBilingual(
                 `Start with ${trialDays}-Day Full Feature Trial`,
                 `${trialDaysBn} দিনের ফ্রি ট্রায়াল দিয়ে শুরু করুন`
               )}
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed bangla-text">
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-xl leading-relaxed bangla-text">
               {tBilingual(
                 'Explore all ERP modules with team users, SFT quotation calculator, production queue, roll tracker, and accounting. No credit card required.',
                 'স্কয়ারফিট কোটেশন, কারখানা প্রোডাকশন কিউ, রোল স্টক এবং সম্পূর্ণ একাউন্টিং ব্যবহারের পূর্ণ সুযোগ। কোনো ক্রেডিট কার্ডের প্রয়োজন নেই।'
@@ -338,12 +338,12 @@ export function PricingSection() {
 
           <div className="w-full md:w-auto shrink-0 flex flex-col items-center sm:items-end gap-1.5">
             <Link href="/register?plan=trial" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto h-11 px-6 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm cursor-pointer bangla-text">
+              <Button className="w-full sm:w-auto h-11 px-6 text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer bangla-text">
                 <span>{tBilingual(`Start ${trialDays}-Day Free Trial`, `${trialDaysBn} দিনের ফ্রি ট্রায়াল শুরু`)}</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <span className="text-2xs text-slate-500">
+            <span className="text-2xs text-muted-foreground">
               {tBilingual('No credit card • 60-second setup', 'কোনো কার্ড লাগবে না • ১ মিনিটে সেটআপ')}
             </span>
           </div>

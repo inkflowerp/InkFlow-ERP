@@ -207,16 +207,16 @@ export default function MachineriesListPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 pb-12 p-4 sm:p-6 animate-pulse">
-        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="h-10 bg-muted rounded-xl w-1/3" />
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-20 bg-muted rounded-xl" />
           ))}
         </div>
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+        <div className="h-12 bg-muted rounded-xl" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-48 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-48 bg-muted rounded-xl" />
           ))}
         </div>
       </div>
@@ -244,7 +244,7 @@ export default function MachineriesListPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                className="gap-1.5 border-border text-foreground font-bold"
               >
                 <LayoutGrid className="h-4 w-4 text-indigo-600" />
                 <span>Production Board</span>
@@ -266,7 +266,7 @@ export default function MachineriesListPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                className="gap-1.5 border-border text-foreground font-bold"
               >
                 <Scissors className="h-4 w-4 text-indigo-600" />
                 <span>Finishing Floor</span>
@@ -292,7 +292,7 @@ export default function MachineriesListPage() {
                   setEditingMachine(null)
                   setIsFormOpen(true)
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold gap-1.5 shadow-sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 shadow-sm"
               >
                 <Plus className="h-4 w-4" />
                 <span>+ Add Machine</span>
@@ -304,12 +304,12 @@ export default function MachineriesListPage() {
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
-        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-card border border-border shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total</span>
-            <Cpu className="h-3.5 w-3.5 text-slate-400" />
+            <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Total</span>
+            <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-0.5 leading-tight">
+          <p className="text-lg sm:text-xl font-black text-foreground dark:text-white mt-0.5 leading-tight">
             {metrics?.totalMachines ?? machineries.length}
           </p>
         </Card>
@@ -364,22 +364,22 @@ export default function MachineriesListPage() {
           </p>
         </Card>
 
-        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 shadow-xs col-span-2 sm:col-span-1">
+        <Card className="py-2 px-3 sm:py-2.5 sm:px-3.5 bg-muted border border-input shadow-xs col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Offline</span>
-            <PowerOff className="h-3.5 w-3.5 text-slate-500" />
+            <span className="text-2xs sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">Offline</span>
+            <PowerOff className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <p className="text-lg sm:text-xl font-black text-slate-700 dark:text-slate-300 mt-0.5 leading-tight">
+          <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
             {metrics?.offline ?? machineries.filter((m) => m.status === 'offline').length}
           </p>
         </Card>
       </div>
 
       {/* Filter and Search Bar */}
-      <Card className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+      <Card className="p-3.5 bg-card border border-border dark:border-border">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by machine name, code, brand, model, serial #..."
               value={search}
@@ -392,7 +392,7 @@ export default function MachineriesListPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="h-9 px-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="h-9 px-2.5 rounded-md border border-input bg-card text-xs font-semibold"
             >
               <option value="all">All Statuses</option>
               <option value="available">Available Only</option>
@@ -406,7 +406,7 @@ export default function MachineriesListPage() {
             <select
               value={deptFilter}
               onChange={(e) => setDeptFilter(e.target.value as any)}
-              className="h-9 px-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="h-9 px-2.5 rounded-md border border-input bg-card text-xs font-semibold"
             >
               <option value="all">All Departments</option>
               <option value="printing">Printing</option>
@@ -416,7 +416,7 @@ export default function MachineriesListPage() {
               <option value="installation">Installation</option>
             </select>
 
-            <div className="flex items-center rounded-md border border-slate-200 dark:border-slate-700 p-0.5 bg-slate-50 dark:bg-slate-800">
+            <div className="flex items-center rounded-md border border-border p-0.5 bg-muted dark:bg-muted">
               <Button
                 type="button"
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -460,22 +460,22 @@ export default function MachineriesListPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <Card key={n} className="p-4 space-y-3 animate-pulse">
-              <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded w-1/2" />
-              <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-3/4" />
-              <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded" />
+              <div className="h-5 bg-muted rounded w-1/2" />
+              <div className="h-4 bg-muted rounded w-3/4" />
+              <div className="h-10 bg-muted rounded" />
             </Card>
           ))}
         </div>
       ) : machineries.length === 0 ? (
         /* Empty State */
-        <Card className="p-12 text-center border-dashed border-2 border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <Card className="p-12 text-center border-dashed border-2 border-input bg-card dark:bg-card">
           <div className="mx-auto w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center mb-3">
             <Cpu className="h-6 w-6" />
           </div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">
+          <h3 className="text-base font-bold text-foreground dark:text-white">
             No machineries added yet
           </h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-5">
+          <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1 mb-5">
             Add your printing presses, cutting plotters, CNC routers, lasers, and finishing equipment to begin tracking capacity, job assignments, and maintenance.
           </p>
           {canCreate && (
@@ -484,7 +484,7 @@ export default function MachineriesListPage() {
                 setEditingMachine(null)
                 setIsFormOpen(true)
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
             >
               + Add First Machinery
             </Button>
@@ -496,7 +496,7 @@ export default function MachineriesListPage() {
           {machineries.map((m) => (
             <Card
               key={m.id}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-400 dark:hover:border-blue-700 transition-all flex flex-col justify-between overflow-hidden"
+              className="bg-card border border-border shadow-xs hover:border-blue-400 dark:hover:border-blue-700 transition-all flex flex-col justify-between overflow-hidden"
             >
               <div className="p-4 space-y-3">
                 {/* Header: Name, Code & Badge */}
@@ -504,12 +504,12 @@ export default function MachineriesListPage() {
                   <div className="space-y-0.5">
                     <Link
                       href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
-                      className="font-black text-sm text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-1"
+                      className="font-black text-sm text-foreground dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-1"
                     >
                       {m.name}
                     </Link>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                      <span className="tabular-nums font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span className="tabular-nums font-bold px-1.5 py-0.5 rounded bg-muted text-foreground dark:text-muted-foreground">
                         {m.code}
                       </span>
                       <span>•</span>
@@ -526,16 +526,16 @@ export default function MachineriesListPage() {
                 </div>
 
                 {/* Specs / Capacity Bar */}
-                <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs">
+                <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted border border-border text-xs">
                   <div>
-                    <span className="text-slate-400 block text-2xs uppercase font-bold">Capacity</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                    <span className="text-muted-foreground block text-2xs uppercase font-bold">Capacity</span>
+                    <span className="font-bold text-foreground dark:text-foreground">
                       {m.production_capacity ? `${m.production_capacity} ${m.capacity_unit}` : 'Standard'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-2xs uppercase font-bold">Dimensions</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                    <span className="text-muted-foreground block text-2xs uppercase font-bold">Dimensions</span>
+                    <span className="font-bold text-foreground dark:text-foreground">
                       {m.max_width ? `Max: ${m.max_width}" W` : 'Continuous'}
                     </span>
                   </div>
@@ -556,9 +556,9 @@ export default function MachineriesListPage() {
 
                 {/* Lifetime Production Meters */}
                 {(Number(m.total_sft_produced || 0) > 0 || Number(m.total_impressions || 0) > 0) && (
-                  <div className="flex items-center justify-between text-2xs px-2 py-1 rounded bg-slate-100/60 dark:bg-slate-800/40 tabular-nums text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-2xs px-2 py-1 rounded bg-muted tabular-nums text-muted-foreground dark:text-muted-foreground">
                     <span>Meter:</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                    <span className="font-bold text-foreground dark:text-foreground">
                       {m.total_sft_produced ? `${Number(m.total_sft_produced).toLocaleString()} SFT` : `${Number(m.total_impressions).toLocaleString()} Imp`}
                     </span>
                   </div>
@@ -573,7 +573,7 @@ export default function MachineriesListPage() {
                     >
                       ⚡ Active Job: {m.current_assignment.job_order?.job_number || m.current_assignment.production_job?.production_job_number || 'Running'}
                     </Link>
-                    <span className="text-slate-600 dark:text-slate-400 text-2xs block">
+                    <span className="text-muted-foreground text-2xs block">
                       Operator: {m.current_assignment.operator_name || 'Assigned Operator'}
                     </span>
                   </div>
@@ -582,7 +582,7 @@ export default function MachineriesListPage() {
                     🚨 Problem: {m.latest_breakdown?.problem_title || 'Machine Malfunction'}
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-500 flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground flex items-center justify-between">
                     <span>Location: <strong>{m.location || 'Main Floor'}</strong></span>
                     {m.next_maintenance && (
                       <span className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
@@ -594,7 +594,7 @@ export default function MachineriesListPage() {
               </div>
 
               {/* Action Buttons Toolbar */}
-              <div className="px-4 py-2.5 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1">
+              <div className="px-4 py-2.5 bg-muted border-t border-border flex items-center justify-between gap-1">
                 <div className="flex items-center gap-2">
                   <Link
                     href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
@@ -606,7 +606,7 @@ export default function MachineriesListPage() {
 
                   <Link
                     href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
-                    className="text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"
+                    className="text-xs font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"
                     title="Launch Workstation Terminal"
                   >
                     <PlayCircle className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
@@ -632,7 +632,7 @@ export default function MachineriesListPage() {
                       variant="ghost"
                       onClick={() => setMaintainingMachine(m)}
                       title="Schedule Maintenance"
-                      className="h-8 px-2 text-slate-600 dark:text-slate-300"
+                      className="h-8 px-2 text-muted-foreground dark:text-muted-foreground"
                     >
                       <Wrench className="h-3.5 w-3.5" />
                     </Button>
@@ -659,7 +659,7 @@ export default function MachineriesListPage() {
                         setIsFormOpen(true)
                       }}
                       title="Edit Machine"
-                      className="h-8 px-2 text-slate-600"
+                      className="h-8 px-2 text-muted-foreground"
                     >
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
@@ -671,9 +671,9 @@ export default function MachineriesListPage() {
         </div>
       ) : (
         /* Table / List View */
-        <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-x-auto shadow-xs">
+        <Card className="bg-card border border-border overflow-x-auto shadow-xs">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700">
+            <thead className="bg-muted text-muted-foreground font-bold border-b border-border dark:border-border">
               <tr>
                 <th className="p-3">Code / Name</th>
                 <th className="p-3">Type</th>
@@ -684,17 +684,17 @@ export default function MachineriesListPage() {
                 <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-border dark:divide-border">
               {(Array.isArray(machineries) ? machineries : []).map((m) => (
-                <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <tr key={m.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                   <td className="p-3">
                     <Link
                       href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
-                      className="font-bold text-slate-900 dark:text-white hover:text-blue-600"
+                      className="font-bold text-foreground dark:text-white hover:text-blue-600"
                     >
                       {m.name}
                     </Link>
-                    <span className="block tabular-nums text-2xs text-slate-500">{m.code}</span>
+                    <span className="block tabular-nums text-2xs text-muted-foreground">{m.code}</span>
                     {m.active_mounted_roll_tag && (
                       <span className="inline-flex items-center gap-1 text-2xs text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mt-1">
                         <Disc className="h-3 w-3" />
@@ -710,12 +710,12 @@ export default function MachineriesListPage() {
                   <td className="p-3">
                     {m.production_capacity ? `${m.production_capacity} ${m.capacity_unit}` : '—'}
                   </td>
-                  <td className="p-3 text-slate-500">{m.location || 'Floor'}</td>
+                  <td className="p-3 text-muted-foreground">{m.location || 'Floor'}</td>
                   <td className="p-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Link
                         href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-blue-600 font-bold"
+                        className="p-1.5 rounded hover:bg-muted text-blue-600 font-bold"
                         title="View Details"
                       >
                         <Eye className="h-4 w-4" />
@@ -723,7 +723,7 @@ export default function MachineriesListPage() {
 
                       <Link
                         href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-blue-600 font-bold"
+                        className="p-1.5 rounded hover:bg-muted text-foreground hover:text-blue-600 font-bold"
                         title="Launch Workstation Terminal"
                       >
                         <PlayCircle className="h-4 w-4 text-blue-600" />
@@ -733,7 +733,7 @@ export default function MachineriesListPage() {
                         <button
                           type="button"
                           onClick={() => setAssigningMachine(m)}
-                          className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 font-bold"
+                          className="p-1.5 rounded hover:bg-muted text-indigo-600 font-bold"
                           title="Assign"
                         >
                           <Clock className="h-4 w-4" />
@@ -744,7 +744,7 @@ export default function MachineriesListPage() {
                         <button
                           type="button"
                           onClick={() => setMaintainingMachine(m)}
-                          className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-amber-600"
+                          className="p-1.5 rounded hover:bg-muted text-amber-600"
                           title="Maintenance"
                         >
                           <Wrench className="h-4 w-4" />
@@ -758,7 +758,7 @@ export default function MachineriesListPage() {
                             setEditingMachine(m)
                             setIsFormOpen(true)
                           }}
-                          className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600"
+                          className="p-1.5 rounded hover:bg-muted text-muted-foreground"
                           title="Edit"
                         >
                           <Edit className="h-4 w-4" />

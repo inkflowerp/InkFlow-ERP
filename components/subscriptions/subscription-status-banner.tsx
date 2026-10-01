@@ -70,7 +70,7 @@ export function SubscriptionStatusBanner() {
             <Button
               size="sm"
               variant="outline"
-              className="h-7 text-xs bg-white text-red-700 hover:bg-red-50 font-bold bangla-text border-0"
+              className="h-7 text-xs bg-card text-red-700 hover:bg-red-50 font-bold bangla-text border-0"
             >
               {tBilingual('Manage Subscription', 'সাবস্ক্রিপশন দেখুন')}
             </Button>
@@ -97,7 +97,7 @@ export function SubscriptionStatusBanner() {
           <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
             <Button
               size="sm"
-              className="h-7 text-xs bg-white text-amber-900 hover:bg-amber-50 font-black bangla-text shadow-sm"
+              className="h-7 text-xs bg-card text-amber-900 hover:bg-amber-50 font-black bangla-text shadow-sm"
             >
               <CreditCard className="mr-1 h-3.5 w-3.5 text-amber-600" />
               {tBilingual('Pay Invoice Now', 'এখনই পরিশোধ করুন')}
@@ -130,7 +130,7 @@ export function SubscriptionStatusBanner() {
           <Button
             size="sm"
             onClick={() => openUpgradeModal('business')}
-            className="h-7 text-xs bg-white text-red-700 hover:bg-red-50 font-black bangla-text shadow-sm"
+            className="h-7 text-xs bg-card text-red-700 hover:bg-red-50 font-black bangla-text shadow-sm"
           >
             <Crown className="mr-1 h-3.5 w-3.5 text-amber-500" />
             {tBilingual('Upgrade Plan Now', 'এখনই আপগ্রেড করুন')}
@@ -180,7 +180,7 @@ export function SubscriptionStatusBanner() {
               size="sm"
               variant="secondary"
               onClick={() => openUpgradeModal('business')}
-              className="h-7 text-xs bg-white text-indigo-900 hover:bg-indigo-50 font-black bangla-text shadow-xs"
+              className="h-7 text-xs bg-card text-indigo-900 hover:bg-indigo-50 font-black bangla-text shadow-xs"
             >
               <Crown className="mr-1 h-3 w-3 text-amber-500" />
               {tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড')}
@@ -208,7 +208,7 @@ export function SubscriptionStatusBanner() {
           <Button
             size="sm"
             onClick={() => openUpgradeModal(currentPlan?.code || 'business')}
-            className="h-7 text-xs bg-white text-red-700 hover:bg-red-50 font-black bangla-text shadow-sm"
+            className="h-7 text-xs bg-card text-red-700 hover:bg-red-50 font-black bangla-text shadow-sm"
           >
             <Crown className="mr-1 h-3.5 w-3.5 text-amber-500" />
             {tBilingual('Renew / Upgrade Plan', 'প্ল্যান নবায়ন / আপগ্রেড')}

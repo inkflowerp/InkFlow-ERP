@@ -177,11 +177,11 @@ export default function SupplierProfilePage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
-        <div className="h-6 w-48 bg-slate-100 dark:bg-slate-800 rounded mb-3" />
-        <div className="h-24 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+        <div className="h-6 w-48 bg-muted rounded mb-3" />
+        <div className="h-24 bg-muted rounded-2xl" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-24 bg-muted rounded-xl" />
           ))}
         </div>
       </div>
@@ -193,17 +193,17 @@ export default function SupplierProfilePage() {
       <div className="space-y-6 max-w-7xl">
         <Link
           href={getTenantNavHref('/suppliers', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           {tBilingual('Back to Supplier Directory', 'মহাজন তালিকায় ফিরে যান')}
         </Link>
         <Card className="p-12 text-center border-dashed rounded-xl">
-          <Truck className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          <Truck className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+          <h2 className="text-base font-bold text-foreground dark:text-foreground">
             {tBilingual('Supplier Not Found', 'সরবরাহকারী পাওয়া যায়নি')}
           </h2>
-          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
             The supplier record you are looking for does not exist in your organization or was removed.
           </p>
           <Button asChild className="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold" size="sm">
@@ -226,13 +226,13 @@ export default function SupplierProfilePage() {
       <div>
         <Link
           href={getTenantNavHref('/suppliers', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           {tBilingual('Back to Supplier Directory', 'মহাজন তালিকায় ফিরে যান')}
         </Link>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-5 rounded-2xl border border-border shadow-xs">
           {/* Vendor Identity */}
           <div className="flex items-start gap-4">
             <div
@@ -244,7 +244,7 @@ export default function SupplierProfilePage() {
 
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground dark:text-white">
                   {supplier.supplier_name}
                 </h1>
                 <span
@@ -253,7 +253,7 @@ export default function SupplierProfilePage() {
                   <CatIcon className="h-3.5 w-3.5" />
                   <span>{catMeta.labelEn.split(' ')[0]}</span>
                 </span>
-                <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                <Badge variant="outline" className="text-2xs tabular-nums py-0.5 px-2 bg-muted text-muted-foreground dark:text-muted-foreground">
                   {supplier.supplier_code || 'SUP-001'}
                 </Badge>
               </div>
@@ -265,12 +265,12 @@ export default function SupplierProfilePage() {
               )}
 
               {/* Contact & Hub Links */}
-              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-1">
+              <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
                 <a
                   href={`tel:${supplier.mobile}`}
-                  className="flex items-center gap-1 tabular-nums text-slate-700 dark:text-slate-300 hover:text-teal-600 font-bold"
+                  className="flex items-center gap-1 tabular-nums text-foreground hover:text-teal-600 font-bold"
                 >
-                  <Phone className="h-3.5 w-3.5 text-slate-400" />
+                  <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>{supplier.mobile}</span>
                 </a>
 
@@ -289,15 +289,15 @@ export default function SupplierProfilePage() {
                 {supplier.email && (
                   <a
                     href={`mailto:${supplier.email}`}
-                    className="flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:underline"
+                    className="flex items-center gap-1 text-muted-foreground hover:underline"
                   >
-                    <Mail className="h-3.5 w-3.5 text-slate-400" />
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>{supplier.email}</span>
                   </a>
                 )}
 
-                <span className="flex items-center gap-1 text-slate-500">
-                  <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="truncate max-w-[200px]">{supplier.address || supplier.market_hub || 'Dhaka'}</span>
                 </span>
               </div>
@@ -313,7 +313,7 @@ export default function SupplierProfilePage() {
               className="text-xs h-9 font-semibold"
               title="Print Statement"
             >
-              <Printer className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+              <Printer className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
               {tBilingual('Print', 'প্রিন্ট')}
             </Button>
 
@@ -321,7 +321,7 @@ export default function SupplierProfilePage() {
               size="sm"
               variant="outline"
               onClick={() => setIsEditModalOpen(true)}
-              className="text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+              className="text-xs h-9 font-semibold text-foreground dark:text-muted-foreground"
             >
               <Edit2 className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('Edit Profile', 'সম্পাদনা')}
@@ -418,7 +418,7 @@ export default function SupplierProfilePage() {
           colorVariant={creditUsedPct > 90 ? 'danger' : creditUsedPct > 50 ? 'amber' : 'teal'}
           subtitle={`${creditUsedPct}% limit used`}
         >
-          <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-1.5">
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-1.5">
             <div
               className={`h-full transition-all rounded-full ${
                 creditUsedPct > 90 ? 'bg-rose-500' : creditUsedPct > 50 ? 'bg-amber-500' : 'bg-teal-500'
@@ -430,7 +430,7 @@ export default function SupplierProfilePage() {
       </KpiGrid>
 
       {/* 5 ENTERPRISE DOMAIN TABS */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 overflow-x-auto">
+      <div className="flex border-b border-border gap-2 overflow-x-auto">
         {[
           { id: 'prices', labelEn: '🏷️ Material Contract Rates', labelBn: '🏷️ কাঁচামাল চুক্তি দর', count: materialPrices.length },
           { id: 'purchases', labelEn: '📦 Purchase Orders & Inward Deliveries', labelBn: '📦 ক্রয়াদেশ ও ডেলিভারি', count: relatedPOs.length },
@@ -444,7 +444,7 @@ export default function SupplierProfilePage() {
             className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer bangla-text ${
               activeTab === tab.id
                 ? 'border-teal-600 text-teal-700 dark:border-teal-400 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 rounded-t-lg'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/40'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/40'
             }`}
           >
             <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
@@ -461,8 +461,8 @@ export default function SupplierProfilePage() {
       {/* TAB 1: MATERIAL CONTRACT RATES                       */}
       {/* ==================================================== */}
       {activeTab === 'prices' && (
-        <Card className="rounded-xl shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden">
-          <CardHeader className="py-3 px-4 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+        <Card className="rounded-xl shadow-xs border-border overflow-hidden">
+          <CardHeader className="py-3 px-4 bg-muted border-b border-border dark:border-border">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-sm font-bold">
@@ -491,7 +491,7 @@ export default function SupplierProfilePage() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50/90 dark:bg-slate-900/90 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted font-bold text-muted-foreground border-b border-border dark:border-border">
                   <tr>
                     <th className="py-3 px-4">{tBilingual('Material Specification & Brand', 'মেটেরিয়াল বিবরণ')}</th>
                     <th className="py-3 px-4">{tBilingual('Category', 'ক্যাটাগরি')}</th>
@@ -503,33 +503,33 @@ export default function SupplierProfilePage() {
                     <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {materialPrices.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-slate-400">
+                      <td colSpan={8} className="py-12 text-center text-muted-foreground">
                         <Tag className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <div className="font-bold text-slate-600 dark:text-slate-300">
+                        <div className="font-bold text-muted-foreground dark:text-muted-foreground">
                           {tBilingual('No Material Contract Rates Configured', 'কোন চুক্তি দর নির্ধারিত নেই')}
                         </div>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Click &quot;Add Material Rate&quot; to record buying rates for roll media, inks, or sheets.
                         </p>
                       </td>
                     </tr>
                   ) : (
                     materialPrices.map((price) => (
-                      <tr key={price.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors">
-                        <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{price.material_name}</td>
-                        <td className="py-3 px-4 capitalize text-slate-500">{price.category}</td>
+                      <tr key={price.id} className="hover:bg-muted dark:hover:bg-muted/60 transition-colors">
+                        <td className="py-3 px-4 font-bold text-foreground dark:text-white">{price.material_name}</td>
+                        <td className="py-3 px-4 capitalize text-muted-foreground">{price.category}</td>
                         <td className="py-3 px-4 uppercase tabular-nums font-semibold">{price.unit}</td>
                         <td className="py-3 px-4 font-black tabular-nums text-teal-700 dark:text-teal-400 text-sm">
-                          {formatBDT(price.contract_price_bdt)} <span className="text-2xs font-normal text-slate-400">/ {price.unit}</span>
+                          {formatBDT(price.contract_price_bdt)} <span className="text-2xs font-normal text-muted-foreground">/ {price.unit}</span>
                         </td>
-                        <td className="py-3 px-4 tabular-nums text-slate-600 dark:text-slate-300">
+                        <td className="py-3 px-4 tabular-nums text-muted-foreground dark:text-muted-foreground">
                           MOQ: {price.moq || 1} • {price.lead_time_days || 2}d
                         </td>
-                        <td className="py-3 px-4 text-slate-500 tabular-nums">{price.effective_date}</td>
-                        <td className="py-3 px-4 text-slate-400 italic max-w-[200px] truncate">
+                        <td className="py-3 px-4 text-muted-foreground tabular-nums">{price.effective_date}</td>
+                        <td className="py-3 px-4 text-muted-foreground italic max-w-[200px] truncate">
                           {price.notes || '—'}
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -571,8 +571,8 @@ export default function SupplierProfilePage() {
       {/* TAB 2: PURCHASES & GRN RECEIVING                     */}
       {/* ==================================================== */}
       {activeTab === 'purchases' && (
-        <Card className="rounded-xl shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden">
-          <CardHeader className="py-3 px-4 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+        <Card className="rounded-xl shadow-xs border-border overflow-hidden">
+          <CardHeader className="py-3 px-4 bg-muted border-b border-border dark:border-border">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold">
                 {tBilingual('Purchase Orders & Inward GRN Shipments', 'ক্রয়াদেশ ও চালান রিসিভিং')}
@@ -590,7 +590,7 @@ export default function SupplierProfilePage() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50/90 dark:bg-slate-900/90 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted font-bold text-muted-foreground border-b border-border dark:border-border">
                   <tr>
                     <th className="py-3 px-4">{tBilingual('PO Number', 'পিও নম্বর')}</th>
                     <th className="py-3 px-4">{tBilingual('Order Date', 'অর্ডারের তারিখ')}</th>
@@ -600,30 +600,30 @@ export default function SupplierProfilePage() {
                     <th className="py-3 px-4">{tBilingual('Payment Status', 'পেমেন্ট স্ট্যাটাস')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {relatedPOs.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-slate-400">
+                      <td colSpan={6} className="py-12 text-center text-muted-foreground">
                         <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <div className="font-bold text-slate-600 dark:text-slate-300">
+                        <div className="font-bold text-muted-foreground dark:text-muted-foreground">
                           {tBilingual('No Purchase Orders Found', 'কোন ক্রয়াদেশ পাওয়া যায়নি')}
                         </div>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Click &quot;Issue Purchase Order&quot; to procure raw materials or finished products from this vendor.
                         </p>
                       </td>
                     </tr>
                   ) : (
                     relatedPOs.map((po) => (
-                      <tr key={po.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors">
+                      <tr key={po.id} className="hover:bg-muted dark:hover:bg-muted/60 transition-colors">
                         <td className="py-3 px-4 tabular-nums font-bold text-teal-600 dark:text-teal-400">
                           {po.po_number}
                         </td>
-                        <td className="py-3 px-4 text-slate-500 tabular-nums">{po.po_date}</td>
-                        <td className="py-3 px-4 font-medium text-slate-900 dark:text-white">
+                        <td className="py-3 px-4 text-muted-foreground tabular-nums">{po.po_date}</td>
+                        <td className="py-3 px-4 font-medium text-foreground dark:text-white">
                           {po.items?.length || 0} line item(s) • {po.items?.[0]?.material_name || 'Standard supplies'}
                         </td>
-                        <td className="py-3 px-4 tabular-nums font-bold text-slate-900 dark:text-white">
+                        <td className="py-3 px-4 tabular-nums font-bold text-foreground dark:text-white">
                           {formatBDT(po.grand_total || 0)}
                         </td>
                         <td className="py-3 px-4">
@@ -650,8 +650,8 @@ export default function SupplierProfilePage() {
       {/* TAB 3: PAYMENTS VOUCHERS                             */}
       {/* ==================================================== */}
       {activeTab === 'payments' && (
-        <Card className="rounded-xl shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden">
-          <CardHeader className="py-3 px-4 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+        <Card className="rounded-xl shadow-xs border-border overflow-hidden">
+          <CardHeader className="py-3 px-4 bg-muted border-b border-border dark:border-border">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold">
                 {tBilingual('Disbursed Payment Vouchers', 'পরিশোধিত পেমেন্ট ভাউচার')}
@@ -669,7 +669,7 @@ export default function SupplierProfilePage() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50/90 dark:bg-slate-900/90 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted font-bold text-muted-foreground border-b border-border dark:border-border">
                   <tr>
                     <th className="py-3 px-4">{tBilingual('Voucher No', 'ভাউচার নং')}</th>
                     <th className="py-3 px-4">{tBilingual('Disbursement Channel', 'পেমেন্টের মাধ্যম')}</th>
@@ -679,13 +679,13 @@ export default function SupplierProfilePage() {
                     <th className="py-3 px-4">{tBilingual('Status', 'স্ট্যাটাস')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  <tr className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60">
+                <tbody className="divide-y divide-border dark:divide-border">
+                  <tr className="hover:bg-muted dark:hover:bg-muted/60">
                     <td className="py-3 px-4 tabular-nums font-bold text-teal-600">PV-2024-0012</td>
-                    <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">Bank Cheque</td>
+                    <td className="py-3 px-4 font-medium text-foreground dark:text-foreground">Bank Cheque</td>
                     <td className="py-3 px-4 tabular-nums font-bold text-emerald-600 text-sm">৳ 100,000</td>
-                    <td className="py-3 px-4 text-slate-500 tabular-nums">20/08/2024</td>
-                    <td className="py-3 px-4 tabular-nums text-slate-600 dark:text-slate-300">City Bank Cheque #982104</td>
+                    <td className="py-3 px-4 text-muted-foreground tabular-nums">20/08/2024</td>
+                    <td className="py-3 px-4 tabular-nums text-muted-foreground dark:text-muted-foreground">City Bank Cheque #982104</td>
                     <td className="py-3 px-4">
                       <Badge variant="outline" className="text-emerald-700 bg-emerald-50 text-2xs">
                         Cheque Cleared
@@ -703,8 +703,8 @@ export default function SupplierProfilePage() {
       {/* TAB 4: FINANCIAL STATEMENT & LEDGER                  */}
       {/* ==================================================== */}
       {activeTab === 'ledger' && (
-        <Card className="rounded-xl shadow-xs border-slate-200 dark:border-slate-800 overflow-hidden">
-          <CardHeader className="py-3 px-4 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+        <Card className="rounded-xl shadow-xs border-border overflow-hidden">
+          <CardHeader className="py-3 px-4 bg-muted border-b border-border dark:border-border">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-sm font-bold">
@@ -723,7 +723,7 @@ export default function SupplierProfilePage() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50/90 dark:bg-slate-900/90 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-muted font-bold text-muted-foreground border-b border-border dark:border-border">
                   <tr>
                     <th className="py-3 px-4">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="py-3 px-4">{tBilingual('Transaction Type', 'লেনদেনের ধরন')}</th>
@@ -733,28 +733,28 @@ export default function SupplierProfilePage() {
                     <th className="py-3 px-4 text-right">{tBilingual('Running Due (Balance)', 'অবশিষ্ট বাকি')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 tabular-nums">
+                <tbody className="divide-y divide-border tabular-nums">
                   <tr>
-                    <td className="py-3 px-4 text-slate-500">28/08/2024</td>
-                    <td className="py-3 px-4 font-sans font-semibold text-slate-800 dark:text-slate-200">
+                    <td className="py-3 px-4 text-muted-foreground">28/08/2024</td>
+                    <td className="py-3 px-4 font-sans font-semibold text-foreground dark:text-foreground">
                       Goods Received (GRN-0089)
                     </td>
                     <td className="py-3 px-4 text-teal-600 font-bold">PO-000034</td>
-                    <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">৳ 23,750</td>
-                    <td className="py-3 px-4 text-right text-slate-400">—</td>
+                    <td className="py-3 px-4 text-right font-bold text-foreground dark:text-white">৳ 23,750</td>
+                    <td className="py-3 px-4 text-right text-muted-foreground">—</td>
                     <td className="py-3 px-4 text-right font-bold text-amber-700 dark:text-amber-400">
                       {formatBDT(supplier.outstanding_balance || 0)}
                     </td>
                   </tr>
                   <tr>
-                    <td className="py-3 px-4 text-slate-500">20/08/2024</td>
+                    <td className="py-3 px-4 text-muted-foreground">20/08/2024</td>
                     <td className="py-3 px-4 font-sans font-semibold text-emerald-600">
                       Payment Voucher Cleared
                     </td>
-                    <td className="py-3 px-4 text-slate-600">PV-2024-0012</td>
-                    <td className="py-3 px-4 text-right text-slate-400">—</td>
+                    <td className="py-3 px-4 text-muted-foreground">PV-2024-0012</td>
+                    <td className="py-3 px-4 text-right text-muted-foreground">—</td>
                     <td className="py-3 px-4 text-right font-bold text-emerald-600">৳ 100,000</td>
-                    <td className="py-3 px-4 text-right font-bold text-slate-700">৳ 0</td>
+                    <td className="py-3 px-4 text-right font-bold text-foreground">৳ 0</td>
                   </tr>
                 </tbody>
               </table>
@@ -769,42 +769,42 @@ export default function SupplierProfilePage() {
       {activeTab === 'company_info' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Legal & Market Location */}
-          <Card className="p-5 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+          <Card className="p-5 rounded-xl shadow-xs border-border space-y-4">
+            <div className="flex items-center gap-2 border-b border-border pb-2">
               <Building className="h-4 w-4 text-teal-600" />
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h3 className="text-sm font-bold text-foreground dark:text-white">
                 {tBilingual('Legal & Trade Registration', 'আইনগত ও ট্রেড তথ্য')}
               </h3>
             </div>
 
             <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
-                <span className="text-slate-500">Trade License:</span>
-                <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
+              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+                <span className="text-muted-foreground">Trade License:</span>
+                <span className="tabular-nums font-bold text-foreground dark:text-foreground">
                   {supplier.trade_license || '—'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
-                <span className="text-slate-500">BIN / VAT Registration:</span>
-                <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
+              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+                <span className="text-muted-foreground">BIN / VAT Registration:</span>
+                <span className="tabular-nums font-bold text-foreground dark:text-foreground">
                   {supplier.bin || '—'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
-                <span className="text-slate-500">TIN Number:</span>
-                <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
+              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+                <span className="text-muted-foreground">TIN Number:</span>
+                <span className="tabular-nums font-bold text-foreground dark:text-foreground">
                   {supplier.tin || '—'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
-                <span className="text-slate-500">Market Hub Area:</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200 capitalize">
+              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+                <span className="text-muted-foreground">Market Hub Area:</span>
+                <span className="font-bold text-foreground capitalize">
                   {supplier.market_hub || 'Nayabazar'}
                 </span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Full Street Address:</span>
-                <span className="text-slate-800 dark:text-slate-200 text-right max-w-[240px]">
+                <span className="text-muted-foreground">Full Street Address:</span>
+                <span className="text-foreground text-right max-w-[240px]">
                   {supplier.address || '—'}
                 </span>
               </div>
@@ -812,42 +812,42 @@ export default function SupplierProfilePage() {
           </Card>
 
           {/* Bank & Cheque Disbursement Details */}
-          <Card className="p-5 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+          <Card className="p-5 rounded-xl shadow-xs border-border space-y-4">
+            <div className="flex items-center gap-2 border-b border-border pb-2">
               <Landmark className="h-4 w-4 text-teal-600" />
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h3 className="text-sm font-bold text-foreground dark:text-white">
                 {tBilingual('Bank Account for Disbursements', 'ব্যাংক অ্যাকাউন্ট ও চেক প্রদান তথ্য')}
               </h3>
             </div>
 
             <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
-                <span className="text-slate-500">Bank Name:</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
+              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+                <span className="text-muted-foreground">Bank Name:</span>
+                <span className="font-bold text-foreground dark:text-foreground">
                   {supplier.bank_name || 'Dutch-Bangla Bank PLC'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
-                <span className="text-slate-500">Account Title:</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
+              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+                <span className="text-muted-foreground">Account Title:</span>
+                <span className="font-semibold text-foreground dark:text-foreground">
                   {supplier.bank_account_name || supplier.supplier_name}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
-                <span className="text-slate-500">Account Number:</span>
+              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+                <span className="text-muted-foreground">Account Number:</span>
                 <span className="tabular-nums font-bold text-teal-700 dark:text-teal-400">
                   {supplier.bank_account_number || '—'}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-slate-800">
-                <span className="text-slate-500">Branch Name:</span>
-                <span className="text-slate-800 dark:text-slate-200">
+              <div className="flex justify-between py-1 border-b border-slate-50 dark:border-border">
+                <span className="text-muted-foreground">Branch Name:</span>
+                <span className="text-foreground dark:text-foreground">
                   {supplier.bank_branch || 'Dhaka Main'}
                 </span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Routing Number:</span>
-                <span className="tabular-nums text-slate-800 dark:text-slate-200">
+                <span className="text-muted-foreground">Routing Number:</span>
+                <span className="tabular-nums text-foreground dark:text-foreground">
                   {supplier.bank_routing_number || '—'}
                 </span>
               </div>
@@ -855,11 +855,11 @@ export default function SupplierProfilePage() {
           </Card>
 
           {/* Agreement Notes */}
-          <Card className="p-5 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 md:col-span-2 space-y-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <Card className="p-5 rounded-xl shadow-xs border-border md:col-span-2 space-y-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {tBilingual('Vendor Agreement Remarks & Special Notes', 'চুক্তি ও বাকির শর্তাবলীর বিশেষ নোট')}
             </h3>
-            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+            <p className="text-xs text-foreground leading-relaxed bg-muted p-3 rounded-lg border border-border dark:border-border">
               {supplier.notes || 'No special credit remarks recorded for this supplier.'}
             </p>
           </Card>

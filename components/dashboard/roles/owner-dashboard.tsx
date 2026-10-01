@@ -422,14 +422,14 @@ export function OwnerDashboard({
 
               <Badge
                 variant="outline"
-                className="bg-white/15 text-white border-white/25 backdrop-blur-sm font-bold text-2xs sm:text-xs py-0.5 px-2.5 rounded-full flex items-center gap-1.5 shadow-2xs"
+                className="bg-card/15 text-white border-white/25 backdrop-blur-sm font-bold text-2xs sm:text-xs py-0.5 px-2.5 rounded-full flex items-center gap-1.5 shadow-2xs"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>{tBilingual('Digital • Offset • Signage Command Center', 'ডিজিটাল • অফসেট • সাইনেজ নিয়ন্ত্রণ কেন্দ্র')}</span>
               </Badge>
 
               {currentBranch && (
-                <Badge variant="outline" className="bg-white/10 text-blue-100 border-white/20 text-2xs py-0.5 px-2 rounded-full">
+                <Badge variant="outline" className="bg-card/10 text-blue-100 border-white/20 text-2xs py-0.5 px-2 rounded-full">
                   <Building className="h-3 w-3 mr-1 text-blue-200" />
                   {currentBranch.name.split('(')[0].trim()}
                 </Badge>
@@ -466,7 +466,7 @@ export function OwnerDashboard({
                 {tBilingual('Current Time', 'বর্তমান সময়')}
               </span>
               {isUpdating && (
-                <span className="flex items-center gap-1 text-2xs font-bold text-cyan-200 bg-white/20 px-2 py-0.5 rounded-full border border-white/25 animate-pulse">
+                <span className="flex items-center gap-1 text-2xs font-bold text-cyan-200 bg-card/20 px-2 py-0.5 rounded-full border border-white/25 animate-pulse">
                   <RefreshCw className="h-2.5 w-2.5 animate-spin" />
                   <span>{tBilingual('Syncing', 'সিঙ্ক হচ্ছে')}</span>
                 </span>
@@ -503,7 +503,7 @@ export function OwnerDashboard({
 
         {/* RIGHT COLUMN: Needs Your Attention (5 cols on desktop) */}
         <div className="lg:col-span-5 flex flex-col">
-          <Card className="p-3.5 sm:p-4 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between h-full">
+          <Card className="p-3.5 sm:p-4 bg-card border border-border rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between h-full">
             <div>
               {/* Header Label Row */}
               <div className="flex items-center justify-between mb-3 px-1">
@@ -511,7 +511,7 @@ export function OwnerDashboard({
                   <span className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 shrink-0">
                     <AlertTriangle className="h-3.5 w-3.5" />
                   </span>
-                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 bangla-text">
+                  <h2 className="text-xs font-black uppercase tracking-wider text-foreground bangla-text">
                     {tBilingual('Needs Your Attention', 'জরুরি মনোযোগ প্রয়োজন')}
                   </h2>
                 </div>
@@ -556,17 +556,17 @@ export function OwnerDashboard({
                         <div className="space-y-1 min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <span className={`h-2 w-2 rounded-full shrink-0 ${isUrgent ? 'bg-rose-600' : 'bg-amber-500'}`} />
-                            <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text truncate">
+                            <h3 className="font-bold text-xs sm:text-sm text-foreground bangla-text truncate">
                               {tBilingual(item.titleEn, item.titleBn)}
                             </h3>
                           </div>
 
-                          <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text pl-4 line-clamp-2">
+                          <p className="text-xs text-muted-foreground bangla-text pl-4 line-clamp-2">
                             {tBilingual(item.subtitleEn, item.subtitleBn)}
                           </p>
 
                           {item.recordCode && (
-                            <div className="pl-4 flex items-center gap-2 text-2xs text-slate-500 tabular-nums">
+                            <div className="pl-4 flex items-center gap-2 text-2xs text-muted-foreground tabular-nums">
                               <span className="font-bold text-blue-600">{item.recordCode}</span>
                               {item.status && <span>• {item.status}</span>}
                               {item.ageOrDeadline && <span>• {item.ageOrDeadline}</span>}
@@ -604,7 +604,7 @@ export function OwnerDashboard({
       {/* 3. CASH & LIQUIDITY IN-DRAWER PANEL (ক্যাশ ড্রয়ার ও ডিজিটাল ব্যালেন্স)   */}
       {/* ========================================================================= */}
       {safeData.hasFinancialPermission !== false && safeData.liquiditySummary && (
-        <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5">
+        <Card className="border-border shadow-xs bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
@@ -620,7 +620,7 @@ export function OwnerDashboard({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-white/10 px-3.5 py-1.5 rounded-full border border-white/15">
+            <div className="flex items-center gap-2 bg-card/10 px-3.5 py-1.5 rounded-full border border-white/15">
               <span className="text-xs text-blue-200 font-semibold">{tBilingual('Total Liquid Cash:', 'মোট ক্যাশ ব্যালেন্স:')}</span>
               <span className="text-base font-black tabular-nums text-emerald-300">
                 {formatBDT(safeData.liquiditySummary.totalLiquidAssets)}
@@ -630,7 +630,7 @@ export function OwnerDashboard({
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
             {/* 1. Cash in Counter Drawer */}
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all space-y-1">
+            <div className="p-3 bg-card/5 rounded-xl border border-white/10 hover:bg-card/10 transition-all space-y-1">
               <div className="flex items-center justify-between text-xs text-emerald-300 font-medium">
                 <span className="flex items-center gap-1.5">
                   <Wallet className="h-3.5 w-3.5" />
@@ -647,7 +647,7 @@ export function OwnerDashboard({
             </div>
 
             {/* 2. bKash / Nagad / MFS */}
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all space-y-1">
+            <div className="p-3 bg-card/5 rounded-xl border border-white/10 hover:bg-card/10 transition-all space-y-1">
               <div className="flex items-center justify-between text-xs text-pink-300 font-medium">
                 <span className="flex items-center gap-1.5">
                   <Smartphone className="h-3.5 w-3.5" />
@@ -664,7 +664,7 @@ export function OwnerDashboard({
             </div>
 
             {/* 3. Bank Accounts */}
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all space-y-1">
+            <div className="p-3 bg-card/5 rounded-xl border border-white/10 hover:bg-card/10 transition-all space-y-1">
               <div className="flex items-center justify-between text-xs text-cyan-300 font-medium">
                 <span className="flex items-center gap-1.5">
                   <Landmark className="h-3.5 w-3.5" />
@@ -681,7 +681,7 @@ export function OwnerDashboard({
             </div>
 
             {/* 4. Today's Net Cash Flow (Collection vs Expenses) */}
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all space-y-1">
+            <div className="p-3 bg-card/5 rounded-xl border border-white/10 hover:bg-card/10 transition-all space-y-1">
               <div className="flex items-center justify-between text-xs text-amber-300 font-medium">
                 <span className="flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5" />
@@ -714,24 +714,24 @@ export function OwnerDashboard({
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
               {tBilingual('Business Today (Core Financials)', 'আজকের ব্যবসায়িক সারসংক্ষেপ')}
             </h2>
           </div>
-          <span className="text-2xs text-slate-400 tabular-nums">
+          <span className="text-2xs text-muted-foreground tabular-nums">
             {tBilingual('Timezone: Asia/Dhaka (UTC+6)', 'বাংলাদেশ সময়')}
           </span>
         </div>
 
         {safeData.hasFinancialPermission === false || safeData.salesMetrics.isRestricted ? (
-          <Card className="p-6 border-slate-200 dark:border-slate-800 text-center bg-slate-50/50 dark:bg-slate-900/40">
-            <div className="inline-flex p-3 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 mb-2">
+          <Card className="p-6 border-border text-center bg-muted dark:bg-card">
+            <div className="inline-flex p-3 rounded-full bg-muted text-muted-foreground mb-2">
               <ShieldCheck className="h-6 w-6" />
             </div>
-            <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 bangla-text">
+            <h3 className="font-bold text-sm text-foreground bangla-text">
               {tBilingual('Financial Overview Restricted', 'আর্থিক তথ্য দেখতে বিশেষ অনুমতি প্রয়োজন')}
             </h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 bangla-text">
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 bangla-text">
               {tBilingual(
                 'Your assigned role does not have financial ledger visibility permissions.',
                 'আপনার দায়িত্ব ও পদবীতে আর্থিক হিসাব দেখার অনুমতি সক্রিয় নেই।'
@@ -848,14 +848,14 @@ export function OwnerDashboard({
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text">
+                    <h3 className="font-bold text-xs sm:text-sm text-foreground bangla-text">
                       {tBilingual('Digital Printing', 'ডিজিটাল প্রিন্টিং')}
                     </h3>
                     {prodFilter === 'digital' && (
                       <Badge className="bg-blue-600 text-white text-2xs py-0 px-1">Active Filter</Badge>
                     )}
                   </div>
-                  <p className="text-2xs text-slate-500 dark:text-slate-400">Fast Laser, ID, Cards, Mugs, Crests</p>
+                  <p className="text-2xs text-muted-foreground dark:text-muted-foreground">Fast Laser, ID, Cards, Mugs, Crests</p>
                 </div>
               </div>
               <Badge className="bg-blue-600 text-white text-2xs py-0.5 px-2">
@@ -864,8 +864,8 @@ export function OwnerDashboard({
             </div>
 
             <div className="pt-2 border-t border-blue-100 dark:border-blue-900/80 flex items-center justify-between text-xs tabular-nums">
-              <span className="text-slate-600 dark:text-slate-400">
-                {tBilingual('Done Today:', 'আজকে সম্পন্ন:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.digital.completedTodayCount}</strong>
+              <span className="text-muted-foreground dark:text-muted-foreground">
+                {tBilingual('Done Today:', 'আজকে সম্পন্ন:')} <strong className="text-foreground dark:text-foreground">{safeData.segmentMetrics.digital.completedTodayCount}</strong>
               </span>
               <span className="font-bold text-blue-600 dark:text-blue-400">
                 {formatBDT(safeData.segmentMetrics.digital.todaySales)}
@@ -890,14 +890,14 @@ export function OwnerDashboard({
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text">
+                    <h3 className="font-bold text-xs sm:text-sm text-foreground bangla-text">
                       {tBilingual('Offset Printing', 'অফসেট প্রিন্টিং')}
                     </h3>
                     {prodFilter === 'offset' && (
                       <Badge className="bg-purple-600 text-white text-2xs py-0 px-1">Active Filter</Badge>
                     )}
                   </div>
-                  <p className="text-2xs text-slate-500 dark:text-slate-400">Books, Packaging, Cartons, Memos, Pads</p>
+                  <p className="text-2xs text-muted-foreground dark:text-muted-foreground">Books, Packaging, Cartons, Memos, Pads</p>
                 </div>
               </div>
               <Badge className="bg-purple-600 text-white text-2xs py-0.5 px-2">
@@ -906,8 +906,8 @@ export function OwnerDashboard({
             </div>
 
             <div className="pt-2 border-t border-purple-100 dark:border-purple-900/80 flex items-center justify-between text-xs tabular-nums">
-              <span className="text-slate-600 dark:text-slate-400">
-                {tBilingual('Plates / CTP:', 'প্লেট / সিটিপি:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.offset.platesPending}</strong>
+              <span className="text-muted-foreground dark:text-muted-foreground">
+                {tBilingual('Plates / CTP:', 'প্লেট / সিটিপি:')} <strong className="text-foreground dark:text-foreground">{safeData.segmentMetrics.offset.platesPending}</strong>
               </span>
               <span className="font-bold text-purple-600 dark:text-purple-400">
                 {formatBDT(safeData.segmentMetrics.offset.todaySales)}
@@ -932,14 +932,14 @@ export function OwnerDashboard({
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text">
+                    <h3 className="font-bold text-xs sm:text-sm text-foreground bangla-text">
                       {tBilingual('Signage & Large Format', 'সাইনেজ ও লার্জ ফরম্যাট')}
                     </h3>
                     {prodFilter === 'signage' && (
                       <Badge className="bg-amber-600 text-white text-2xs py-0 px-1">Active Filter</Badge>
                     )}
                   </div>
-                  <p className="text-2xs text-slate-500 dark:text-slate-400">Banner, Vinyl, Acrylic 3D, LED, Boards</p>
+                  <p className="text-2xs text-muted-foreground dark:text-muted-foreground">Banner, Vinyl, Acrylic 3D, LED, Boards</p>
                 </div>
               </div>
               <Badge className="bg-amber-600 text-white text-2xs py-0.5 px-2">
@@ -948,8 +948,8 @@ export function OwnerDashboard({
             </div>
 
             <div className="pt-2 border-t border-amber-100 dark:border-amber-900/80 flex items-center justify-between text-xs tabular-nums">
-              <span className="text-slate-600 dark:text-slate-400">
-                {tBilingual('Volume:', 'সাইজ:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.signage.totalSqFt} sft</strong>
+              <span className="text-muted-foreground dark:text-muted-foreground">
+                {tBilingual('Volume:', 'সাইজ:')} <strong className="text-foreground dark:text-foreground">{safeData.segmentMetrics.signage.totalSqFt} sft</strong>
               </span>
               <span className="font-bold text-amber-600 dark:text-amber-400">
                 {formatBDT(safeData.segmentMetrics.signage.todaySales)}
@@ -993,11 +993,11 @@ export function OwnerDashboard({
             {safeData.criticalStockAlerts.map((mat) => (
               <div
                 key={mat.id}
-                className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-2 text-xs"
+                className="p-2.5 bg-card rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-2 text-xs"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="font-bold text-slate-900 dark:text-slate-100 truncate">{mat.name}</div>
-                  <div className="text-2xs text-slate-500 tabular-nums">
+                  <div className="font-bold text-foreground truncate">{mat.name}</div>
+                  <div className="text-2xs text-muted-foreground tabular-nums">
                     SKU: {mat.sku} • Min: {mat.minStockLevel} {mat.unit}
                   </div>
                 </div>
@@ -1015,8 +1015,8 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       {/* 7. PRODUCTION TODAY (Floor Control & Work Pipeline)                        */}
       {/* ========================================================================= */}
-      <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+      <Card className="border-border shadow-xs">
+        <CardHeader className="pb-3 border-b border-border dark:border-border">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
@@ -1050,7 +1050,7 @@ export function OwnerDashboard({
                   className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     prodFilter === pill.key
                       ? 'bg-purple-600 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+                      : 'bg-muted text-muted-foreground hover:bg-muted dark:text-muted-foreground'
                   }`}
                 >
                   <span>{tBilingual(pill.labelEn, pill.labelBn)}</span>
@@ -1062,7 +1062,7 @@ export function OwnerDashboard({
 
         <CardContent className="p-4 space-y-3">
           {filteredProductionJobs.length === 0 ? (
-            <div className="py-8 text-center text-xs text-slate-500 bangla-text space-y-2">
+            <div className="py-8 text-center text-xs text-muted-foreground bangla-text space-y-2">
               <p>{tBilingual('No production jobs matching this filter right now.', 'এই ক্যাটাগরিতে বর্তমানে কোনো কাজ বাকি নেই।')}</p>
               <Button
                 size="sm"
@@ -1082,12 +1082,12 @@ export function OwnerDashboard({
                 return (
                   <div
                     key={job.jobId}
-                    className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2.5 transition-all bg-white dark:bg-slate-900 ${
+                    className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2.5 transition-all bg-card ${
                       isCritical
                         ? 'border-rose-400 bg-rose-50/20'
                         : isAtRisk
                         ? 'border-amber-300 bg-amber-50/20'
-                        : 'border-slate-200 dark:border-slate-800'
+                        : 'border-border dark:border-border'
                     }`}
                   >
                     <div className="space-y-1.5">
@@ -1107,11 +1107,11 @@ export function OwnerDashboard({
                         </div>
                       </div>
 
-                      <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 bangla-text line-clamp-1">
+                      <h3 className="font-bold text-sm text-foreground bangla-text line-clamp-1">
                         {job.productName}
                       </h3>
 
-                      <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text">
+                      <p className="text-xs text-muted-foreground bangla-text">
                         <strong>{job.customerName}</strong> • {job.quantity} {job.unit}
                       </p>
 
@@ -1123,7 +1123,7 @@ export function OwnerDashboard({
                       )}
                     </div>
 
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                    <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {job.deadline}
@@ -1150,8 +1150,8 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 8A. DELIVERY TODAY */}
-        <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <Card className="border-border shadow-xs">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-cyan-600" />
@@ -1171,7 +1171,7 @@ export function OwnerDashboard({
           </CardHeader>
           <CardContent className="p-4 space-y-3">
             {safeData.deliverySummary.topDeliveries.length === 0 ? (
-              <div className="py-6 text-center text-xs text-slate-500 bangla-text">
+              <div className="py-6 text-center text-xs text-muted-foreground bangla-text">
                 {tBilingual('No pending deliveries scheduled for today.', 'আজকের জন্য কোনো ডেলিভারি বাকি নেই।')}
               </div>
             ) : (
@@ -1179,7 +1179,7 @@ export function OwnerDashboard({
                 {safeData.deliverySummary.topDeliveries.map((del) => (
                   <div
                     key={del.id}
-                    className="p-3 bg-slate-50/70 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
+                    className="p-3 bg-muted rounded-xl border border-border flex items-center justify-between gap-3 text-xs"
                   >
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-1.5 tabular-nums font-bold text-blue-600">
@@ -1190,8 +1190,8 @@ export function OwnerDashboard({
                           </Badge>
                         )}
                       </div>
-                      <div className="font-bold text-slate-900 dark:text-slate-100 truncate">{del.customerName}</div>
-                      <div className="text-2xs text-slate-500 truncate">{del.deliveryAddress}</div>
+                      <div className="font-bold text-foreground truncate">{del.customerName}</div>
+                      <div className="text-2xs text-muted-foreground truncate">{del.deliveryAddress}</div>
                     </div>
 
                     <Button
@@ -1210,8 +1210,8 @@ export function OwnerDashboard({
         </Card>
 
         {/* 8B. MONEY TO COLLECT (High Priority Overdue Receivables) */}
-        <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <Card className="border-border shadow-xs">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Receipt className="h-4 w-4 text-emerald-600" />
@@ -1231,7 +1231,7 @@ export function OwnerDashboard({
           </CardHeader>
           <CardContent className="p-4 space-y-3">
             {safeData.hasFinancialPermission === false || safeData.receivablesMetrics.isRestricted ? (
-              <div className="py-6 text-center text-xs text-slate-500 bangla-text">
+              <div className="py-6 text-center text-xs text-muted-foreground bangla-text">
                 {tBilingual('Financial receivables data restricted by permissions.', 'আর্থিক বাকি তথ্য দেখতে বিশেষ অনুমতি প্রয়োজন।')}
               </div>
             ) : safeData.moneyToCollect.length === 0 ? (
@@ -1247,7 +1247,7 @@ export function OwnerDashboard({
                   >
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 dark:text-slate-100 truncate">{item.customerName}</span>
+                        <span className="font-bold text-foreground truncate">{item.customerName}</span>
                         <span className="tabular-nums text-2xs text-blue-600">#{item.invoiceNumber}</span>
                       </div>
                       <div className="flex items-center gap-2 tabular-nums text-2xs">
@@ -1265,7 +1265,7 @@ export function OwnerDashboard({
                         <>
                           <a
                             href={`tel:${item.customerPhone}`}
-                            className="h-8 w-8 rounded-lg border border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors"
+                            className="h-8 w-8 rounded-lg border border-input flex items-center justify-center text-muted-foreground hover:text-blue-600 hover:bg-muted transition-colors"
                             title={tBilingual('Call Customer', 'কল করুন')}
                           >
                             <Phone className="h-3.5 w-3.5" />
@@ -1304,8 +1304,8 @@ export function OwnerDashboard({
       {/* ========================================================================= */}
       {/* 9. WORKFLOW PIPELINE (New Work -> Delivered)                              */}
       {/* ========================================================================= */}
-      <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs bg-slate-50/50 dark:bg-slate-900/50">
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+      <Card className="border-border shadow-xs bg-muted dark:bg-card">
+        <CardHeader className="pb-3 border-b border-border dark:border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-indigo-600" />
@@ -1313,7 +1313,7 @@ export function OwnerDashboard({
                 {tBilingual('Workflow Pipeline', 'ব্যবসায়িক পাইপলাইন')}
               </CardTitle>
             </div>
-            <span className="text-xs text-slate-500 bangla-text hidden sm:inline">
+            <span className="text-xs text-muted-foreground bangla-text hidden sm:inline">
               {tBilingual('Click any stage to inspect filtered records', 'যেকোনো ধাপে ক্লিক করে বিস্তারিত দেখুন')}
             </span>
           </div>
@@ -1332,12 +1332,12 @@ export function OwnerDashboard({
               <div
                 key={stage.labelEn}
                 onClick={() => router.push(getTenantNavHref(stage.route, pathname, company?.slug))}
-                className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-center cursor-pointer hover:border-blue-400 hover:shadow-xs transition-all space-y-1"
+                className="p-3 bg-card rounded-xl border border-border text-center cursor-pointer hover:border-blue-400 hover:shadow-xs transition-all space-y-1"
               >
-                <div className="text-2xs text-slate-500 font-semibold bangla-text">
+                <div className="text-2xs text-muted-foreground font-semibold bangla-text">
                   {tBilingual(stage.labelEn, stage.labelBn)}
                 </div>
-                <div className="text-lg font-black text-slate-900 dark:text-slate-100 tabular-nums">
+                <div className="text-lg font-black text-foreground tabular-nums">
                   {num(stage.count)}
                 </div>
               </div>
@@ -1350,8 +1350,8 @@ export function OwnerDashboard({
       {/* 10. BUSINESS TREND (7-Day Sales vs Collection Chart)                      */}
       {/* ========================================================================= */}
       {safeData.hasFinancialPermission !== false && (
-        <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <Card className="border-border shadow-xs">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <CardTitle className="text-base font-bold bangla-text">
@@ -1395,7 +1395,7 @@ export function OwnerDashboard({
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full w-full animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg" />
+                <div className="h-full w-full animate-pulse bg-muted rounded-lg" />
               )}
             </div>
           </CardContent>
@@ -1413,9 +1413,9 @@ export function OwnerDashboard({
           description={`${reminderItem.customerName} • Invoice #${reminderItem.invoiceNumber} (${formatBDT(reminderItem.dueAmount)})`}
         >
           <div className="space-y-4 pt-2">
-            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs tabular-nums border space-y-1">
-              <div className="text-slate-500 font-sans">{tBilingual('Message Preview:', 'বার্তা প্রিভিউ:')}</div>
-              <div className="text-slate-800 dark:text-slate-200 whitespace-pre-line">
+            <div className="p-3 bg-muted rounded-lg text-xs tabular-nums border space-y-1">
+              <div className="text-muted-foreground font-sans">{tBilingual('Message Preview:', 'বার্তা প্রিভিউ:')}</div>
+              <div className="text-foreground whitespace-pre-line">
                 {`আসসালামু আলাইকুম / আদাব ${reminderItem.customerName},\n${company?.name || 'প্রিন্টিং প্রেস'} থেকে আপনার ইনভয়েস #${reminderItem.invoiceNumber}-এর বকেয়া বিল ${formatBDT(reminderItem.dueAmount)} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\nবিল পরিশোধের তারিখ ছিল: ${reminderItem.dueDate} (${reminderItem.daysOverdue} দিন অতিবাহিত)।\nবিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে ট্রানজেকশন আইডি আমাদের অবহিত করুন। ধন্যবাদ!`}
               </div>
             </div>

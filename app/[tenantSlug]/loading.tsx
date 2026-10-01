@@ -13,7 +13,7 @@ export default function TenantLoading() {
       </div>
 
       {/* Quick Actions Bar Skeleton */}
-      <Card className="p-4 border-slate-200/80 dark:border-slate-800 space-y-3">
+      <Card className="p-4 border-border space-y-3">
         <Skeleton className="h-4 w-32 rounded" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -27,7 +27,7 @@ export default function TenantLoading() {
         <Skeleton className="h-4 w-36 rounded" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="p-4 border-slate-200/80 dark:border-slate-800 space-y-2">
+            <Card key={i} className="p-4 border-border space-y-2">
               <Skeleton className="h-4 w-24 rounded" />
               <Skeleton className="h-8 w-28 rounded" />
               <Skeleton className="h-3 w-16 rounded" />
@@ -37,8 +37,8 @@ export default function TenantLoading() {
       </div>
 
       {/* Table Skeleton */}
-      <Card className="border-slate-200/80 dark:border-slate-800">
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+      <Card className="border-border dark:border-border">
+        <div className="p-4 border-b border-border flex justify-between items-center">
           <Skeleton className="h-5 w-48 rounded" />
           <Skeleton className="h-8 w-24 rounded-lg" />
         </div>

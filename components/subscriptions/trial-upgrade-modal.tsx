@@ -182,7 +182,7 @@ export function TrialUpgradeModal() {
       size="6xl"
       hideFooter
       title={
-        <div className="flex items-center gap-2.5 text-slate-900 dark:text-white">
+        <div className="flex items-center gap-2.5 text-foreground dark:text-white">
           <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-indigo-600 text-white shadow-sm shrink-0">
             <Crown className="h-5 w-5" />
           </div>
@@ -210,10 +210,10 @@ export function TrialUpgradeModal() {
             <CheckCircle2 className="h-10 w-10 animate-bounce" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white bangla-text">
+            <h3 className="text-xl font-black text-foreground dark:text-white bangla-text">
               {tBilingual('Payment Verified & Plan Activated!', 'পেমেন্ট ভেরিফাইড এবং প্ল্যান সক্রিয় হয়েছে!')}
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto bangla-text">
+            <p className="text-sm text-muted-foreground max-w-md mx-auto bangla-text">
               {tBilingual(
                 `Your tenant workspace has been upgraded to the ${targetPlanObj.name}. All plan limits and features are unlocked.`,
                 `আপনার অ্যাকাউন্ট ${targetPlanObj.name_bn}-এ আপগ্রেড করা হয়েছে। সকল সুবিধা এখনই আনলক করা হয়েছে।`
@@ -232,15 +232,15 @@ export function TrialUpgradeModal() {
 
           {/* Interval Switcher */}
           <div className="flex items-center justify-center">
-            <div className="inline-flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="inline-flex items-center bg-muted p-1 rounded-xl border border-border dark:border-border">
               <button
                 type="button"
                 onClick={() => setInterval('monthly')}
                 className={cn(
                   'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
                   interval === 'monthly'
-                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {tBilingual('Monthly Billing', 'মাসিক বিলিং')}
@@ -251,8 +251,8 @@ export function TrialUpgradeModal() {
                 className={cn(
                   'flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
                   interval === 'yearly'
-                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    ? 'bg-card text-blue-600 dark:text-blue-400 shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <span>{tBilingual('Yearly Billing', 'বাৎসরিক বিলিং')}</span>
@@ -306,7 +306,7 @@ export function TrialUpgradeModal() {
                     'relative rounded-2xl border-2 p-4 sm:p-5 cursor-pointer transition-all flex flex-col justify-between',
                     isSelected
                       ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-xl shadow-blue-500/10'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                      : 'border-border bg-card hover:border-input dark:hover:border-border'
                   )}
                 >
                   {isRecommended && (
@@ -317,7 +317,7 @@ export function TrialUpgradeModal() {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-bold text-base text-slate-900 dark:text-white bangla-text truncate">
+                      <h4 className="font-bold text-base text-foreground dark:text-white bangla-text truncate">
                         {tBilingual(plan.name, plan.name_bn)}
                       </h4>
                       {isSelected && (
@@ -329,20 +329,20 @@ export function TrialUpgradeModal() {
 
                     <div>
                       <div className="flex items-baseline gap-1.5 flex-nowrap whitespace-nowrap overflow-hidden">
-                        <span className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap tracking-tight">
+                        <span className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground dark:text-white whitespace-nowrap tracking-tight">
                           <CurrencyDisplay amount={price} showDecimals={false} />
                         </span>
-                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0">
+                        <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap shrink-0">
                           {interval === 'yearly' ? tBilingual('/yr', '/বছর') : tBilingual('/mo', '/মাস')}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 min-h-[32px] line-clamp-2 bangla-text leading-relaxed">
+                      <p className="text-xs text-muted-foreground mt-1 min-h-[32px] line-clamp-2 bangla-text leading-relaxed">
                         {planDesc}
                       </p>
                     </div>
 
                     {/* Limit items */}
-                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs text-slate-700 dark:text-slate-300 bangla-text">
+                    <div className="pt-3 border-t border-border space-y-2 text-xs text-foreground bangla-text">
                       <div className="flex items-center gap-2 min-w-0">
                         <Users className="h-4 w-4 text-blue-500 shrink-0" />
                         <span className="truncate">{usersLabel}</span>
@@ -362,14 +362,14 @@ export function TrialUpgradeModal() {
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <div className="mt-4 pt-3 border-t border-border dark:border-border">
                     <Button
                       type="button"
                       variant={isSelected ? 'default' : 'outline'}
                       size="sm"
                       className={cn(
                         'w-full text-xs font-bold bangla-text h-9 rounded-xl',
-                        isSelected && 'bg-blue-600 hover:bg-blue-700 text-white'
+                        isSelected && 'bg-primary hover:bg-primary/90 text-primary-foreground'
                       )}
                     >
                       {isSelected
@@ -383,13 +383,13 @@ export function TrialUpgradeModal() {
           </div>
 
           {/* Payment Gateway Selection */}
-          <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 border border-slate-200/80 dark:border-slate-800 space-y-3">
+          <div className="rounded-2xl bg-muted p-4 border border-border space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5 bangla-text">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 bangla-text">
                 <CreditCard className="h-4 w-4 text-blue-600" />
                 {tBilingual('Select Payment Method (Bangladesh Gateways)', 'পেমেন্ট মেথড নির্বাচন করুন (বাংলাদেশ)')}
               </span>
-              <span className="text-xs font-bold text-slate-900 dark:text-white">
+              <span className="text-xs font-bold text-foreground dark:text-white">
                 {tBilingual('Total Payable: ', 'মোট প্রদেয়: ')}
                 <CurrencyDisplay amount={payableAmount} />
               </span>
@@ -414,8 +414,8 @@ export function TrialUpgradeModal() {
                       className={cn(
                         'p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer',
                         isGWSelected
-                          ? 'border-blue-600 bg-white dark:bg-slate-900 shadow-sm ring-2 ring-blue-500/20'
-                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          ? 'border-blue-600 bg-card shadow-sm ring-2 ring-blue-500/20'
+                          : 'border-border bg-card hover:bg-muted dark:hover:bg-muted'
                       )}
                     >
                       <div className="flex items-center gap-1">
@@ -426,11 +426,11 @@ export function TrialUpgradeModal() {
                         {!['bkash', 'sslcommerz', 'nagad', 'bank_wire'].includes(p.id) && (
                           <CreditCard className="h-3.5 w-3.5 text-indigo-600" />
                         )}
-                        <span className="text-xs font-black text-slate-800 dark:text-slate-200 bangla-text">
+                        <span className="text-xs font-black text-foreground bangla-text">
                           {tBilingual(p.name, p.nameBn)}
                         </span>
                       </div>
-                      <span className="text-2xs text-slate-400 capitalize truncate max-w-full">
+                      <span className="text-2xs text-muted-foreground capitalize truncate max-w-full">
                         {p.id === 'bkash' && 'Instant MFS'}
                         {p.id === 'sslcommerz' && 'Cards / Net Banking'}
                         {p.id === 'nagad' && 'Nagad Direct'}
@@ -457,7 +457,7 @@ export function TrialUpgradeModal() {
 
             {currentTrxId && (
               <div className="pt-2 space-y-2">
-                <label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 bangla-text block">
+                <label className="text-2xs font-semibold text-muted-foreground bangla-text block">
                   {tBilingual('Provider Transaction ID / Reference (For Server Verification):', 'প্রোভাইডার ট্রানজেকশন আইডি / রেফারেন্স নম্বর:')}
                 </label>
                 <div className="flex gap-2">
@@ -466,7 +466,7 @@ export function TrialUpgradeModal() {
                     value={txReference}
                     onChange={(e) => setTxReference(e.target.value)}
                     placeholder={`e.g. ${selectedGateway.toUpperCase()}-987261`}
-                    className="flex-1 text-xs tabular-nums px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 text-xs tabular-nums px-3 py-2 rounded-lg border border-input bg-card text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"
                   />
                   <Button
                     type="button"
@@ -483,7 +483,7 @@ export function TrialUpgradeModal() {
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"

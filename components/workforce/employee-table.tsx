@@ -122,7 +122,7 @@ export function EmployeeTable({
     if (d === 'installation') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
     if (d === 'accounts') return 'bg-emerald-50 text-emerald-800 border-emerald-200'
     if (d === 'sales') return 'bg-blue-50 text-blue-700 border-blue-200'
-    return 'bg-slate-100 text-slate-700 border-slate-200'
+    return 'bg-muted text-foreground border-border'
   }
 
   const getStatusBadge = (status: string) => {
@@ -144,23 +144,23 @@ export function EmployeeTable({
   return (
     <div className="space-y-4">
       {/* Top Filter and Actions Toolbar */}
-      <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
+      <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
         <CardContent className="p-4 space-y-3">
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               <Input
                 type="text"
                 placeholder="Search by name, ID, phone, role..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-9 text-xs bg-slate-50/50 border-slate-200 focus:bg-white transition-colors"
+                className="pl-9 h-9 text-xs bg-muted border-border focus:bg-card transition-colors"
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground text-xs"
                 >
                   ✕
                 </button>
@@ -171,7 +171,7 @@ export function EmployeeTable({
             <Button
               onClick={onAddEmployee}
               size="sm"
-              className="h-9 px-4 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shrink-0 min-h-[36px]"
+              className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shrink-0 min-h-[36px]"
             >
               <UserPlus className="w-4 h-4 mr-1.5" />
               <span>Add Employee</span>
@@ -184,7 +184,7 @@ export function EmployeeTable({
             <select
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+              className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none"
             >
               {DEPARTMENTS.map((d) => (
                 <option key={d.id} value={d.id}>
@@ -197,7 +197,7 @@ export function EmployeeTable({
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+              className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none"
             >
               <option value="all">All Employment Types</option>
               <option value="permanent">Permanent Staff</option>
@@ -210,7 +210,7 @@ export function EmployeeTable({
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+              className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none"
             >
               <option value="all">All Statuses</option>
               <option value="active">Active Only</option>
@@ -223,7 +223,7 @@ export function EmployeeTable({
               <select
                 value={selectedBranch}
                 onChange={(e) => setSelectedBranch(e.target.value)}
-                className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+                className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none"
               >
                 <option value="all">All Branches</option>
                 {branches.map((b) => (
@@ -234,7 +234,7 @@ export function EmployeeTable({
               </select>
             )}
 
-            <span className="text-slate-400 text-xs ml-auto shrink-0 pl-2">
+            <span className="text-muted-foreground text-xs ml-auto shrink-0 pl-2">
               Showing {filteredEmployees.length} of {employees.length}
             </span>
           </div>
@@ -243,7 +243,7 @@ export function EmployeeTable({
 
       {/* Main Table / Mobile Cards */}
       {isLoading ? (
-        <Card className="bg-white border-slate-200 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-14 w-full rounded-lg" />
@@ -251,15 +251,15 @@ export function EmployeeTable({
           </div>
         </Card>
       ) : filteredEmployees.length === 0 ? (
-        <Card className="bg-white border-slate-200 py-16 px-4 text-center">
+        <Card className="bg-card border-border py-16 px-4 text-center">
           <div className="max-w-sm mx-auto flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-3">
               <UserPlus className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-semibold text-slate-900">
+            <h3 className="text-base font-semibold text-foreground">
               {employees.length === 0 ? 'No employees yet' : 'No matching employees found'}
             </h3>
-            <p className="text-xs text-slate-500 mt-1 mb-5">
+            <p className="text-xs text-muted-foreground mt-1 mb-5">
               {employees.length === 0
                 ? 'Get started by creating your first employee profile with attendance and salary details.'
                 : 'Try adjusting your search query or filters to find what you are looking for.'}
@@ -268,7 +268,7 @@ export function EmployeeTable({
               <Button
                 onClick={onAddEmployee}
                 size="sm"
-                className="h-9 px-4 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white min-h-[36px]"
+                className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[36px]"
               >
                 <UserPlus className="w-4 h-4 mr-1.5" />
                 <span>Add Employee</span>
@@ -284,7 +284,7 @@ export function EmployeeTable({
                   setSelectedStatus('all')
                   setSelectedBranch('all')
                 }}
-                className="h-8 text-xs border-slate-200"
+                className="h-8 text-xs border-border"
               >
                 Clear Filters
               </Button>
@@ -292,11 +292,11 @@ export function EmployeeTable({
           </div>
         </Card>
       ) : (
-        <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
+        <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
                   <th className="py-3 px-4">Employee</th>
                   <th className="py-3 px-3">ID</th>
@@ -309,30 +309,30 @@ export function EmployeeTable({
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {filteredEmployees.map((emp) => {
                   return (
                     <tr
                       key={emp.id}
-                      className="hover:bg-slate-50/60 transition-colors group cursor-pointer"
+                      className="hover:bg-muted transition-colors group cursor-pointer"
                       onClick={() => onViewEmployee(emp)}
                     >
                       {/* Employee Info */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0">
                             {emp.name.slice(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                            <div className="font-semibold text-foreground group-hover:text-blue-600 transition-colors">
                               {emp.name}
                             </div>
                             {emp.name_bn && (
-                              <div className="text-[11px] text-slate-400 font-normal">
+                              <div className="text-[11px] text-muted-foreground font-normal">
                                 {emp.name_bn}
                               </div>
                             )}
-                            <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                            <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
                               <span>{emp.mobile}</span>
                             </div>
                           </div>
@@ -340,7 +340,7 @@ export function EmployeeTable({
                       </td>
 
                       {/* ID */}
-                      <td className="py-3 px-3 font-mono text-[11px] text-slate-600">
+                      <td className="py-3 px-3 font-mono text-[11px] text-muted-foreground">
                         {emp.employee_id_number || '—'}
                       </td>
 
@@ -357,22 +357,22 @@ export function EmployeeTable({
                       </td>
 
                       {/* Role */}
-                      <td className="py-3 px-3 text-slate-700 font-medium max-w-[180px] truncate" title={emp.role}>
+                      <td className="py-3 px-3 text-foreground font-medium max-w-[180px] truncate" title={emp.role}>
                         {emp.role || emp.designation || 'Staff Member'}
                       </td>
 
                       {/* Employment Type */}
-                      <td className="py-3 px-3 text-slate-600 capitalize">
+                      <td className="py-3 px-3 text-muted-foreground capitalize">
                         {(emp.employee_type || 'permanent').replace('_', ' ')}
                       </td>
 
                       {/* Salary Basis */}
-                      <td className="py-3 px-3 text-slate-600 capitalize">
+                      <td className="py-3 px-3 text-muted-foreground capitalize">
                         {(emp.salary_basis || 'monthly').replace('_', ' ')}
                       </td>
 
                       {/* Current Salary */}
-                      <td className="py-3 px-3 text-right font-bold text-slate-900 tabular-nums">
+                      <td className="py-3 px-3 text-right font-bold text-foreground tabular-nums">
                         {getSalaryDisplay(emp)}
                       </td>
 
@@ -395,19 +395,19 @@ export function EmployeeTable({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg min-h-[32px] min-w-[32px]"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg min-h-[32px] min-w-[32px]"
                             >
                               <MoreVertical className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-44 text-xs font-medium">
                             <DropdownMenuItem onClick={() => onViewEmployee(emp)} className="cursor-pointer">
-                              <Eye className="w-3.5 h-3.5 mr-2 text-slate-500" />
+                              <Eye className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                               <span>View 360° Profile</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem onClick={() => onEditEmployee(emp)} className="cursor-pointer">
-                              <Edit className="w-3.5 h-3.5 mr-2 text-slate-500" />
+                              <Edit className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                               <span>Edit Details</span>
                             </DropdownMenuItem>
 
@@ -475,22 +475,22 @@ export function EmployeeTable({
           </div>
 
           {/* Mobile Cards View (< 768px) */}
-          <div className="md:hidden divide-y divide-slate-100">
+          <div className="md:hidden divide-y divide-border">
             {filteredEmployees.map((emp) => (
               <div
                 key={emp.id}
-                className="p-4 hover:bg-slate-50/60 transition-colors space-y-3"
+                className="p-4 hover:bg-muted transition-colors space-y-3"
                 onClick={() => onViewEmployee(emp)}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0">
                       {emp.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <div className="font-semibold text-slate-900 text-sm">{emp.name}</div>
-                      <div className="text-xs text-slate-500">{emp.role || 'Staff Member'}</div>
-                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                      <div className="font-semibold text-foreground text-sm">{emp.name}</div>
+                      <div className="text-xs text-muted-foreground">{emp.role || 'Staff Member'}</div>
+                      <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
                         {emp.employee_id_number}
                       </div>
                     </div>
@@ -502,7 +502,7 @@ export function EmployeeTable({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-9 w-9 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg min-h-[36px] min-w-[36px]"
+                          className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg min-h-[36px] min-w-[36px]"
                         >
                           <MoreVertical className="w-4 h-4" />
                         </Button>
@@ -542,7 +542,7 @@ export function EmployeeTable({
                   >
                     {emp.department || 'General'}
                   </Badge>
-                  <span className="font-bold text-slate-900 tabular-nums">
+                  <span className="font-bold text-foreground tabular-nums">
                     {getSalaryDisplay(emp)}
                   </span>
                   <Badge

@@ -156,7 +156,7 @@ export function AddAccountModal({
 
         {/* Account Type Selector */}
         <div>
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
+          <Label className="text-xs font-semibold text-foreground mb-1.5 block">
             {tBilingual('Account Type', 'হিসাবের ধরন')}
           </Label>
           <div className="grid grid-cols-3 gap-2">
@@ -169,7 +169,7 @@ export function AddAccountModal({
               className={`p-3 rounded-xl border flex flex-col items-center gap-1 text-xs font-semibold transition-all cursor-pointer ${
                 accountType === 'CASH'
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300 shadow-xs'
-                  : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 text-slate-600 dark:text-slate-400'
+                  : 'border-border hover:bg-muted text-muted-foreground dark:text-muted-foreground'
               }`}
             >
               <Wallet className="w-5 h-5 text-emerald-600" />
@@ -185,7 +185,7 @@ export function AddAccountModal({
               className={`p-3 rounded-xl border flex flex-col items-center gap-1 text-xs font-semibold transition-all cursor-pointer ${
                 accountType === 'BANK'
                   ? 'border-blue-500 bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-300 shadow-xs'
-                  : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 text-slate-600 dark:text-slate-400'
+                  : 'border-border hover:bg-muted text-muted-foreground dark:text-muted-foreground'
               }`}
             >
               <Building2 className="w-5 h-5 text-blue-600" />
@@ -201,7 +201,7 @@ export function AddAccountModal({
               className={`p-3 rounded-xl border flex flex-col items-center gap-1 text-xs font-semibold transition-all cursor-pointer ${
                 accountType === 'MFS'
                   ? 'border-pink-500 bg-pink-50 text-pink-900 dark:bg-pink-950/40 dark:text-pink-300 shadow-xs'
-                  : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 text-slate-600 dark:text-slate-400'
+                  : 'border-border hover:bg-muted text-muted-foreground dark:text-muted-foreground'
               }`}
             >
               <Smartphone className="w-5 h-5 text-pink-600" />
@@ -212,7 +212,7 @@ export function AddAccountModal({
 
         {/* Account Name */}
         <div>
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+          <Label className="text-xs font-semibold text-foreground mb-1 block">
             {tBilingual('Account Display Name *', 'অ্যাকাউন্টের নাম *')}
           </Label>
           <Input
@@ -232,7 +232,7 @@ export function AddAccountModal({
 
         {/* Name in Bengali */}
         <div>
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+          <Label className="text-xs font-semibold text-foreground mb-1 block">
             {tBilingual('Name in Bangla (Optional)', 'বাংলা নাম (ঐচ্ছিক)')}
           </Label>
           <Input
@@ -245,39 +245,39 @@ export function AddAccountModal({
 
         {/* Bank Specific Fields */}
         {accountType === 'BANK' && (
-          <div className="space-y-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200 dark:border-slate-800">
+          <div className="space-y-3 p-3 rounded-xl bg-muted dark:bg-slate-850/60 border border-border dark:border-border">
             <div>
-              <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-1 block">
+              <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
                 {tBilingual('Bank Name', 'ব্যাংকের নাম')}
               </Label>
               <Input
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 placeholder="e.g. Dutch-Bangla Bank, BRAC Bank, City Bank"
-                className="h-8 text-xs rounded-lg bg-white dark:bg-slate-900"
+                className="h-8 text-xs rounded-lg bg-card dark:bg-card"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-1 block">
+                <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
                   {tBilingual('Account Number', 'হিসাব নম্বর')}
                 </Label>
                 <Input
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
                   placeholder="e.g. 12010500..."
-                  className="h-8 text-xs rounded-lg bg-white dark:bg-slate-900"
+                  className="h-8 text-xs rounded-lg bg-card dark:bg-card"
                 />
               </div>
               <div>
-                <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-1 block">
+                <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
                   {tBilingual('Branch Name', 'শাখা')}
                 </Label>
                 <Input
                   value={branchName}
                   onChange={(e) => setBranchName(e.target.value)}
                   placeholder="e.g. Motijheel, Banani"
-                  className="h-8 text-xs rounded-lg bg-white dark:bg-slate-900"
+                  className="h-8 text-xs rounded-lg bg-card dark:bg-card"
                 />
               </div>
             </div>
@@ -286,16 +286,16 @@ export function AddAccountModal({
 
         {/* MFS Specific Fields */}
         {accountType === 'MFS' && (
-          <div className="space-y-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200 dark:border-slate-800">
+          <div className="space-y-3 p-3 rounded-xl bg-muted dark:bg-slate-850/60 border border-border dark:border-border">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-1 block">
+                <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
                   {tBilingual('Provider', 'প্রোভাইডার')}
                 </Label>
                 <select
                   value={mfsProvider}
                   onChange={(e) => setMfsProvider(e.target.value as any)}
-                  className="h-8 w-full text-xs rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2"
+                  className="h-8 w-full text-xs rounded-lg bg-card border border-border px-2"
                 >
                   <option value="bkash">bKash (বিকাশ)</option>
                   <option value="nagad">Nagad (নগদ)</option>
@@ -305,13 +305,13 @@ export function AddAccountModal({
                 </select>
               </div>
               <div>
-                <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-1 block">
+                <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
                   {tBilingual('Account Category', 'ধরন')}
                 </Label>
                 <select
                   value={mfsAccountType}
                   onChange={(e) => setMfsAccountType(e.target.value as any)}
-                  className="h-8 w-full text-xs rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2"
+                  className="h-8 w-full text-xs rounded-lg bg-card border border-border px-2"
                 >
                   <option value="merchant">Merchant (মার্চেন্ট)</option>
                   <option value="personal">Personal (ব্যক্তিগত)</option>
@@ -320,14 +320,14 @@ export function AddAccountModal({
               </div>
             </div>
             <div>
-              <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-1 block">
+              <Label className="text-2xs font-semibold text-muted-foreground mb-1 block">
                 {tBilingual('Wallet Phone Number', 'ওয়ালেট মোবাইল নম্বর')}
               </Label>
               <Input
                 value={mfsWalletNumber}
                 onChange={(e) => setMfsWalletNumber(e.target.value)}
                 placeholder="e.g. 01711223344"
-                className="h-8 text-xs rounded-lg bg-white dark:bg-slate-900"
+                className="h-8 text-xs rounded-lg bg-card dark:bg-card"
               />
             </div>
           </div>
@@ -335,11 +335,11 @@ export function AddAccountModal({
 
         {/* Opening Balance */}
         <div>
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+          <Label className="text-xs font-semibold text-foreground mb-1 block">
             {tBilingual('Opening Balance (৳ BDT)', 'প্রারম্ভিক ব্যালেন্স (৳)')}
           </Label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">৳</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-bold pointer-events-none">৳</span>
             <Input
               type="number"
               min="0"
@@ -350,7 +350,7 @@ export function AddAccountModal({
               className="h-9 pl-7 text-xs rounded-xl tabular-nums font-bold"
             />
           </div>
-          <p className="text-3xs text-slate-400 mt-1">
+          <p className="text-3xs text-muted-foreground mt-1">
             {tBilingual(
               'Initial money in this drawer or account when starting PrintERP.',
               'সফটওয়্যার চালুর সময় এই ড্রয়ার বা একাউন্টে থাকা বর্তমান নগদ টাকা।'
@@ -359,7 +359,7 @@ export function AddAccountModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"
@@ -374,7 +374,7 @@ export function AddAccountModal({
             type="submit"
             size="sm"
             disabled={isSubmitting}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 rounded-xl font-semibold shadow-xs"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-8 rounded-xl font-semibold shadow-xs"
           >
             {isSubmitting ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...') : tBilingual('Create Account', 'অ্যাকাউন্ট তৈরি করুন')}
           </Button>

@@ -133,7 +133,7 @@ export function AccountStatementModal({
     >
       <div className="space-y-4">
         {/* Account Info Header Banner */}
-        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 rounded-2xl bg-muted dark:bg-slate-850 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
               {account.account_subtype === 'CASH' && <Wallet className="w-6 h-6" />}
@@ -142,12 +142,12 @@ export function AccountStatementModal({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-sm text-slate-900 dark:text-white">{account.name}</span>
+                <span className="font-bold text-sm text-foreground dark:text-white">{account.name}</span>
                 <Badge variant="outline" className="text-3xs uppercase tabular-nums">
                   {account.account_subtype}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-500 tabular-nums">
+              <p className="text-xs text-muted-foreground tabular-nums">
                 {account.metadata?.bank_name || account.metadata?.mfs_provider || 'PrintERP Money Account'}
                 {account.metadata?.account_number_masked ? ` • ${account.metadata.account_number_masked}` : ''}
                 {account.metadata?.mfs_wallet_number ? ` • ${account.metadata.mfs_wallet_number}` : ''}
@@ -157,18 +157,18 @@ export function AccountStatementModal({
 
           <div className="flex items-center gap-4 text-right">
             <div>
-              <span className="text-3xs font-semibold text-slate-400 uppercase tracking-wider block">
+              <span className="text-3xs font-semibold text-muted-foreground uppercase tracking-wider block">
                 {tBilingual('Opening Balance', 'প্রারম্ভিক ব্যালেন্স')}
               </span>
-              <span className="text-sm tabular-nums font-semibold text-slate-700 dark:text-slate-300">
+              <span className="text-sm tabular-nums font-semibold text-foreground dark:text-muted-foreground">
                 ৳{account.opening_balance.toLocaleString()}
               </span>
             </div>
-            <div className="pl-4 border-l border-slate-200 dark:border-slate-700">
+            <div className="pl-4 border-l border-border dark:border-border">
               <span className="text-3xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">
                 {tBilingual('Current Balance', 'বর্তমান স্থিতি')}
               </span>
-              <span className="text-lg tabular-nums font-black text-slate-900 dark:text-white">
+              <span className="text-lg tabular-nums font-black text-foreground dark:text-white">
                 ৳{account.current_balance.toLocaleString()}
               </span>
             </div>
@@ -206,10 +206,10 @@ export function AccountStatementModal({
         </div>
 
         {/* Statement Table */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="rounded-xl border border-border overflow-hidden">
           <div className="max-h-[380px] overflow-y-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-semibold sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-muted text-foreground font-semibold sticky top-0 z-10 border-b border-border dark:border-border">
                 <tr>
                   <th className="p-2.5">{tBilingual('Date', 'তারিখ')}</th>
                   <th className="p-2.5">{tBilingual('Voucher #', 'ভাউচার')}</th>
@@ -219,27 +219,27 @@ export function AccountStatementModal({
                   <th className="p-2.5 text-right">{tBilingual('Balance', 'স্থিতি')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                <tr className="bg-slate-50/50 dark:bg-slate-850/40 text-slate-500 font-medium italic">
+              <tbody className="divide-y divide-border dark:divide-border/60">
+                <tr className="bg-muted dark:bg-slate-850/40 text-muted-foreground font-medium italic">
                   <td className="p-2.5">-</td>
                   <td className="p-2.5 tabular-nums text-3xs">OPENING</td>
                   <td className="p-2.5">{tBilingual('Opening Balance brought forward', 'প্রারম্ভিক উদ্বৃত্ত')}</td>
                   <td className="p-2.5 text-right tabular-nums">-</td>
                   <td className="p-2.5 text-right tabular-nums">-</td>
-                  <td className="p-2.5 text-right tabular-nums font-bold text-slate-800 dark:text-slate-200">
+                  <td className="p-2.5 text-right tabular-nums font-bold text-foreground dark:text-foreground">
                     ৳{account.opening_balance.toLocaleString()}
                   </td>
                 </tr>
 
                 {statementLines.map((line) => (
-                  <tr key={line.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="p-2.5 tabular-nums text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <tr key={line.id} className="hover:bg-muted dark:hover:bg-muted/40 transition-colors">
+                    <td className="p-2.5 tabular-nums text-muted-foreground whitespace-nowrap">
                       {line.date}
                     </td>
                     <td className="p-2.5 tabular-nums text-3xs font-medium text-blue-600 dark:text-blue-400">
                       {line.number}
                     </td>
-                    <td className="p-2.5 font-medium text-slate-800 dark:text-slate-200 max-w-[220px] truncate">
+                    <td className="p-2.5 font-medium text-foreground max-w-[220px] truncate">
                       {line.narration}
                     </td>
                     <td className="p-2.5 text-right tabular-nums text-emerald-600 dark:text-emerald-400 font-semibold">
@@ -248,7 +248,7 @@ export function AccountStatementModal({
                     <td className="p-2.5 text-right tabular-nums text-rose-600 dark:text-rose-400 font-semibold">
                       {!line.isInflow ? `-৳${line.amount.toLocaleString()}` : '-'}
                     </td>
-                    <td className="p-2.5 text-right tabular-nums font-bold text-slate-900 dark:text-slate-100">
+                    <td className="p-2.5 text-right tabular-nums font-bold text-foreground dark:text-foreground">
                       ৳{line.balanceAfter.toLocaleString()}
                     </td>
                   </tr>
@@ -256,7 +256,7 @@ export function AccountStatementModal({
 
                 {statementLines.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-400 text-xs">
+                    <td colSpan={6} className="p-8 text-center text-muted-foreground text-xs">
                       {tBilingual('No transaction entries recorded for this account.', 'এই অ্যাকাউন্টে কোনো লেনদেনের রেকর্ড পাওয়া যায়নি।')}
                     </td>
                   </tr>
@@ -267,7 +267,7 @@ export function AccountStatementModal({
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pt-2 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"
@@ -294,7 +294,7 @@ export function AccountStatementModal({
               type="button"
               size="sm"
               onClick={onClose}
-              className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs h-8 rounded-xl font-semibold"
+              className="bg-foreground text-white text-xs h-8 rounded-xl font-semibold"
             >
               {tBilingual('Close', 'বন্ধ করুন')}
             </Button>

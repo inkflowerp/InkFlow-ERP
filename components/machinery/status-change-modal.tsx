@@ -85,7 +85,7 @@ export function StatusChangeModal({
             id="stSelect"
             value={newStatus}
             onChange={(e) => setNewStatus(e.target.value as MachineryStatus)}
-            className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+            className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
           >
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -103,7 +103,7 @@ export function StatusChangeModal({
           />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"
@@ -117,7 +117,7 @@ export function StatusChangeModal({
           <Button
             type="submit"
             isLoading={loading}
-            className="w-full sm:w-auto min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold"
+            className="w-full sm:w-auto min-h-[40px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           >
             Update Status
           </Button>

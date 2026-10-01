@@ -194,13 +194,13 @@ export default function MachineryDetailPage() {
     return (
       <div className="space-y-6 pb-12">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse" />
+          <div className="h-8 w-8 rounded-md bg-muted animate-pulse" />
           <div className="space-y-1.5 flex-1">
-            <div className="h-6 w-1/3 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
-            <div className="h-4 w-1/4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+            <div className="h-6 w-1/3 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-1/4 bg-muted rounded animate-pulse" />
           </div>
         </div>
-        <div className="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+        <div className="h-64 rounded-xl bg-muted animate-pulse" />
       </div>
     )
   }
@@ -210,7 +210,7 @@ export default function MachineryDetailPage() {
       <div className="space-y-4 pb-12">
         <Link
           href={getTenantNavHref('/production/machineries', pathname, tenantSlug)}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Machineries</span>
@@ -236,7 +236,7 @@ export default function MachineryDetailPage() {
       <div className="flex items-center justify-between">
         <Link
           href={getTenantNavHref('/production/machineries', pathname, tenantSlug)}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Fleet Registry</span>
@@ -250,29 +250,29 @@ export default function MachineryDetailPage() {
       </div>
 
       {/* Main Machine Header Banner */}
-      <Card className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+      <Card className="p-5 bg-card border border-border shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-foreground dark:text-white tracking-tight">
                 {machine.name}
               </h1>
-              <span className="tabular-nums text-xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold border border-slate-200 dark:border-slate-700">
+              <span className="tabular-nums text-xs px-2.5 py-1 rounded-md bg-muted text-foreground font-bold border border-border dark:border-border">
                 {machine.code}
               </span>
               <MachineryStatusBadge status={machine.status} />
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-              <span className="capitalize font-semibold text-slate-700 dark:text-slate-300">{machine.machine_type.replace(/_/g, ' ')}</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span className="capitalize font-semibold text-foreground dark:text-muted-foreground">{machine.machine_type.replace(/_/g, ' ')}</span>
               <span>•</span>
-              <span>Dept: <strong className="capitalize text-slate-700 dark:text-slate-300">{machine.department}</strong></span>
+              <span>Dept: <strong className="capitalize text-foreground dark:text-muted-foreground">{machine.department}</strong></span>
               <span>•</span>
-              <span>Location: <strong className="text-slate-700 dark:text-slate-300">{machine.location || 'Main Workshop Floor'}</strong></span>
+              <span>Location: <strong className="text-foreground dark:text-muted-foreground">{machine.location || 'Main Workshop Floor'}</strong></span>
               {machine.branch && (
                 <>
                   <span>•</span>
-                  <span>Branch: <strong className="text-slate-700 dark:text-slate-300">{machine.branch.name}</strong></span>
+                  <span>Branch: <strong className="text-foreground dark:text-muted-foreground">{machine.branch.name}</strong></span>
                 </>
               )}
             </div>
@@ -284,7 +284,7 @@ export default function MachineryDetailPage() {
               <Button
                 size="sm"
                 onClick={() => setIsAssignOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold gap-1.5 shadow-sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 shadow-sm"
               >
                 <Clock className="h-4 w-4" />
                 <span>Assign Job</span>
@@ -350,7 +350,7 @@ export default function MachineryDetailPage() {
       </Card>
 
       {/* Tabs Navigation Bar */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto gap-1">
+      <div className="flex border-b border-border overflow-x-auto gap-1">
         {[
           { id: 'overview', label: '1. Overview & Costing', icon: FileText },
           { id: 'production', label: '2. Production Specs', icon: Sliders },
@@ -365,7 +365,7 @@ export default function MachineryDetailPage() {
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-foreground'
             }`}
           >
             <tab.icon className="h-4 w-4" />
@@ -379,54 +379,54 @@ export default function MachineryDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             {/* Machine Specs Card */}
-            <Card className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
+            <Card className="p-4 bg-card border border-border dark:border-border">
+              <h3 className="font-bold text-sm text-foreground dark:text-white border-b border-border pb-2 mb-3">
                 Machine Profile & Information
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
                 <div>
-                  <span className="text-slate-400 block uppercase text-2xs font-bold">Brand</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{machine.brand || '—'}</span>
+                  <span className="text-muted-foreground block uppercase text-2xs font-bold">Brand</span>
+                  <span className="font-bold text-foreground dark:text-foreground">{machine.brand || '—'}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block uppercase text-2xs font-bold">Model</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{machine.model || '—'}</span>
+                  <span className="text-muted-foreground block uppercase text-2xs font-bold">Model</span>
+                  <span className="font-bold text-foreground dark:text-foreground">{machine.model || '—'}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block uppercase text-2xs font-bold">Serial Number</span>
-                  <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">{machine.serial_number || '—'}</span>
+                  <span className="text-muted-foreground block uppercase text-2xs font-bold">Serial Number</span>
+                  <span className="tabular-nums font-bold text-foreground dark:text-foreground">{machine.serial_number || '—'}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block uppercase text-2xs font-bold">Supplier</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{machine.supplier || 'Direct Import'}</span>
+                  <span className="text-muted-foreground block uppercase text-2xs font-bold">Supplier</span>
+                  <span className="font-bold text-foreground dark:text-foreground">{machine.supplier || 'Direct Import'}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block uppercase text-2xs font-bold">Purchase Date</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                  <span className="text-muted-foreground block uppercase text-2xs font-bold">Purchase Date</span>
+                  <span className="font-bold text-foreground dark:text-foreground">
                     {formatDate(machine.purchase_date)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block uppercase text-2xs font-bold">Warranty Expiry</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                  <span className="text-muted-foreground block uppercase text-2xs font-bold">Warranty Expiry</span>
+                  <span className="font-bold text-foreground dark:text-foreground">
                     {machine.warranty_expiry ? formatDate(machine.warranty_expiry) : 'Expired / None'}
                   </span>
                 </div>
               </div>
 
               {machine.description && (
-                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
-                  <span className="text-slate-400 block uppercase text-2xs font-bold">Description / Technical Notes</span>
-                  <p className="text-slate-700 dark:text-slate-300 mt-0.5">{machine.description}</p>
+                <div className="mt-4 pt-3 border-t border-border text-xs">
+                  <span className="text-muted-foreground block uppercase text-2xs font-bold">Description / Technical Notes</span>
+                  <p className="text-foreground mt-0.5">{machine.description}</p>
                 </div>
               )}
             </Card>
 
             {/* Costing Card (Permission Gated) */}
             {canCostView && (
-              <Card className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+              <Card className="p-4 bg-card border border-border dark:border-border">
+                <div className="flex items-center justify-between border-b border-border pb-2 mb-3">
+                  <h3 className="font-bold text-sm text-foreground dark:text-white flex items-center gap-1.5">
                     <DollarSign className="h-4 w-4 text-emerald-600" />
                     <span>Hourly Operating Costs & Financial Attributes</span>
                   </h3>
@@ -434,39 +434,39 @@ export default function MachineryDetailPage() {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
-                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-400 block uppercase text-2xs font-bold">Hourly Machine Run Rate</span>
+                  <div className="p-3 rounded-lg bg-muted border border-border dark:border-border">
+                    <span className="text-muted-foreground block uppercase text-2xs font-bold">Hourly Machine Run Rate</span>
                     <span className="font-black text-base text-blue-600 dark:text-blue-400">
                       ৳{machine.hourly_machine_cost?.toLocaleString()} / hr
                     </span>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-400 block uppercase text-2xs font-bold">Per-Unit / SFT Overhead</span>
-                    <span className="font-black text-base text-slate-800 dark:text-slate-200">
+                  <div className="p-3 rounded-lg bg-muted border border-border dark:border-border">
+                    <span className="text-muted-foreground block uppercase text-2xs font-bold">Per-Unit / SFT Overhead</span>
+                    <span className="font-black text-base text-foreground dark:text-foreground">
                       ৳{machine.per_unit_machine_cost} / sft
                     </span>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-400 block uppercase text-2xs font-bold">Electricity / Energy Rate</span>
+                  <div className="p-3 rounded-lg bg-muted border border-border dark:border-border">
+                    <span className="text-muted-foreground block uppercase text-2xs font-bold">Electricity / Energy Rate</span>
                     <span className="font-black text-base text-amber-600">
                       ৳{machine.electricity_cost_per_hour} / hr
                     </span>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-400 block uppercase text-2xs font-bold">Maintenance Reserve</span>
-                    <span className="font-black text-base text-slate-800 dark:text-slate-200">
+                  <div className="p-3 rounded-lg bg-muted border border-border dark:border-border">
+                    <span className="text-muted-foreground block uppercase text-2xs font-bold">Maintenance Reserve</span>
+                    <span className="font-black text-base text-foreground dark:text-foreground">
                       ৳{machine.maintenance_cost_per_hour} / hr
                     </span>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-400 block uppercase text-2xs font-bold">Other Floor Overhead</span>
-                    <span className="font-black text-base text-slate-800 dark:text-slate-200">
+                  <div className="p-3 rounded-lg bg-muted border border-border dark:border-border">
+                    <span className="text-muted-foreground block uppercase text-2xs font-bold">Other Floor Overhead</span>
+                    <span className="font-black text-base text-foreground dark:text-foreground">
                       ৳{machine.other_operating_cost_per_hour} / hr
                     </span>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-400 block uppercase text-2xs font-bold">Asset Purchase Cost</span>
-                    <span className="font-black text-base text-slate-800 dark:text-slate-200">
+                  <div className="p-3 rounded-lg bg-muted border border-border dark:border-border">
+                    <span className="text-muted-foreground block uppercase text-2xs font-bold">Asset Purchase Cost</span>
+                    <span className="font-black text-base text-foreground dark:text-foreground">
                       ৳{machine.purchase_cost?.toLocaleString()}
                     </span>
                   </div>
@@ -477,8 +477,8 @@ export default function MachineryDetailPage() {
 
           {/* Right Column: Status & Next Maintenance Widget */}
           <div className="space-y-4">
-            <Card className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400">
+            <Card className="p-4 bg-card border border-border space-y-3">
+              <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
                 Operating Status
               </h3>
               <div className="flex items-center justify-between">
@@ -494,14 +494,14 @@ export default function MachineryDetailPage() {
               </div>
 
               {machine.status_notes && (
-                <div className="p-2.5 rounded bg-slate-50 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300">
+                <div className="p-2.5 rounded bg-muted text-xs text-muted-foreground dark:text-muted-foreground">
                   {machine.status_notes}
                 </div>
               )}
             </Card>
 
-            <Card className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400">
+            <Card className="p-4 bg-card border border-border space-y-2">
+              <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
                 Next Scheduled Maintenance
               </h3>
               {machine.next_maintenance ? (
@@ -518,7 +518,7 @@ export default function MachineryDetailPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="text-xs text-slate-500 py-1">
+                <div className="text-xs text-muted-foreground py-1">
                   No upcoming maintenance scheduled.
                   <Button
                     size="sm"
@@ -533,16 +533,16 @@ export default function MachineryDetailPage() {
             </Card>
 
             {/* Retire Option */}
-            <Card className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
-              <h3 className="font-bold text-slate-700 dark:text-slate-300">Retire from Service</h3>
-              <p className="text-slate-500 text-2xs">
+            <Card className="p-4 bg-muted border border-border text-xs space-y-2">
+              <h3 className="font-bold text-foreground dark:text-muted-foreground">Retire from Service</h3>
+              <p className="text-muted-foreground text-2xs">
                 Retiring a machine prevents new job assignments while preserving all historical production and cost logs.
               </p>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleArchive}
-                className="w-full text-slate-600 hover:bg-red-50 hover:text-red-600 border-slate-300 dark:border-slate-700"
+                className="w-full text-muted-foreground hover:bg-red-50 hover:text-red-600 border-input dark:border-border"
               >
                 Archive / Retire Machine
               </Button>
@@ -554,76 +554,76 @@ export default function MachineryDetailPage() {
       {/* TAB 2: PRODUCTION SPECIFICATIONS */}
       {activeTab === 'production' && (
         <div className="space-y-6">
-          <Card className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
+          <Card className="p-4 bg-card border border-border dark:border-border">
+            <h3 className="font-bold text-sm text-foreground dark:text-white border-b border-border pb-2 mb-3">
               Dimensional Limits & Capacity Parameters
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
               <div>
-                <span className="text-slate-400 block uppercase text-2xs font-bold">Max Width</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
+                <span className="text-muted-foreground block uppercase text-2xs font-bold">Max Width</span>
+                <span className="font-bold text-foreground dark:text-foreground">
                   {machine.max_width ? `${machine.max_width} ${machine.dimension_unit}` : 'Continuous'}
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 block uppercase text-2xs font-bold">Max Height / Length</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
+                <span className="text-muted-foreground block uppercase text-2xs font-bold">Max Height / Length</span>
+                <span className="font-bold text-foreground dark:text-foreground">
                   {machine.max_height ? `${machine.max_height} ${machine.dimension_unit}` : 'Roll Fed'}
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 block uppercase text-2xs font-bold">Min Width</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
+                <span className="text-muted-foreground block uppercase text-2xs font-bold">Min Width</span>
+                <span className="font-bold text-foreground dark:text-foreground">
                   {machine.min_width ? `${machine.min_width} ${machine.dimension_unit}` : 'None'}
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 block uppercase text-2xs font-bold">Rated Capacity</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
+                <span className="text-muted-foreground block uppercase text-2xs font-bold">Rated Capacity</span>
+                <span className="font-bold text-foreground dark:text-foreground">
                   {machine.production_capacity} {machine.capacity_unit}
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 block uppercase text-2xs font-bold">Estimated Speed</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
+                <span className="text-muted-foreground block uppercase text-2xs font-bold">Estimated Speed</span>
+                <span className="font-bold text-foreground dark:text-foreground">
                   {machine.estimated_speed} {machine.speed_unit}
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 block uppercase text-2xs font-bold">Setup Time</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">{machine.setup_time_mins} mins</span>
+                <span className="text-muted-foreground block uppercase text-2xs font-bold">Setup Time</span>
+                <span className="font-bold text-foreground dark:text-foreground">{machine.setup_time_mins} mins</span>
               </div>
               <div>
-                <span className="text-slate-400 block uppercase text-2xs font-bold">Changeover Time</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">{machine.changeover_time_mins} mins</span>
+                <span className="text-muted-foreground block uppercase text-2xs font-bold">Changeover Time</span>
+                <span className="font-bold text-foreground dark:text-foreground">{machine.changeover_time_mins} mins</span>
               </div>
               <div>
-                <span className="text-slate-400 block uppercase text-2xs font-bold">Operators Required</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">{machine.operators_required_count} Person</span>
+                <span className="text-muted-foreground block uppercase text-2xs font-bold">Operators Required</span>
+                <span className="font-bold text-foreground dark:text-foreground">{machine.operators_required_count} Person</span>
               </div>
             </div>
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-2">
+            <Card className="p-4 bg-card border border-border dark:border-border">
+              <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-2">
                 Supported Materials
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {(machine.supported_materials || []).length > 0 ? (
                   machine.supported_materials.map((mat, i) => (
-                    <Badge key={i} variant="outline" className="bg-slate-50 dark:bg-slate-800 text-xs font-semibold">
+                    <Badge key={i} variant="outline" className="bg-muted text-xs font-semibold">
                       {mat}
                     </Badge>
                   ))
                 ) : (
-                  <span className="text-xs text-slate-500">All standard materials supported.</span>
+                  <span className="text-xs text-muted-foreground">All standard materials supported.</span>
                 )}
               </div>
             </Card>
 
-            <Card className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-2">
+            <Card className="p-4 bg-card border border-border dark:border-border">
+              <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-2">
                 Supported Production Types
               </h3>
               <div className="flex flex-wrap gap-1.5">
@@ -634,7 +634,7 @@ export default function MachineryDetailPage() {
                     </Badge>
                   ))
                 ) : (
-                  <span className="text-xs text-slate-500">General printing & fabrication operations.</span>
+                  <span className="text-xs text-muted-foreground">General printing & fabrication operations.</span>
                 )}
               </div>
             </Card>
@@ -646,11 +646,11 @@ export default function MachineryDetailPage() {
       {activeTab === 'assignments' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+            <h3 className="font-bold text-sm text-foreground dark:text-white">
               Production Job Allocations & Run Queue
             </h3>
             {canAssign && machine.status !== 'breakdown' && machine.status !== 'maintenance' && (
-              <Button size="sm" onClick={() => setIsAssignOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold gap-1">
+              <Button size="sm" onClick={() => setIsAssignOpen(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1">
                 <Plus className="h-4 w-4" />
                 <span>+ Assign New Job</span>
               </Button>
@@ -664,10 +664,10 @@ export default function MachineryDetailPage() {
                   <Badge className="bg-blue-600 text-white text-2xs font-bold mb-1">
                     {machine.current_assignment.status === 'in_progress' ? '⚡ RUNNING NOW' : '📅 SCHEDULED'}
                   </Badge>
-                  <h4 className="font-black text-base text-slate-900 dark:text-white">
+                  <h4 className="font-black text-base text-foreground dark:text-white">
                     Job #{machine.current_assignment.job_order?.job_number || machine.current_assignment.production_job?.production_job_number || 'Direct Ticket'}
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                  <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                     Product: <strong>{machine.current_assignment.job_order?.product_name || machine.current_assignment.production_job?.product_name || 'Commercial Print'}</strong> • Client: {machine.current_assignment.job_order?.customer_name || 'Walk-in'}
                   </p>
                 </div>
@@ -694,30 +694,30 @@ export default function MachineryDetailPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-2.5 rounded bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-2.5 rounded bg-card border border-blue-100 dark:border-blue-900 text-xs">
                 <div>
-                  <span className="text-slate-400 block text-2xs uppercase font-bold">Operator</span>
+                  <span className="text-muted-foreground block text-2xs uppercase font-bold">Operator</span>
                   <span className="font-bold">{machine.current_assignment.operator_name || 'Assigned'}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-2xs uppercase font-bold">Scheduled Start</span>
+                  <span className="text-muted-foreground block text-2xs uppercase font-bold">Scheduled Start</span>
                   <span className="font-bold">{formatDateTime(machine.current_assignment.scheduled_start)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-2xs uppercase font-bold">Expected End</span>
+                  <span className="text-muted-foreground block text-2xs uppercase font-bold">Expected End</span>
                   <span className="font-bold">{formatDateTime(machine.current_assignment.scheduled_end)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-2xs uppercase font-bold">Status</span>
+                  <span className="text-muted-foreground block text-2xs uppercase font-bold">Status</span>
                   <span className="font-bold capitalize">{machine.current_assignment.status}</span>
                 </div>
               </div>
             </Card>
           ) : (
-            <Card className="p-8 text-center border-dashed border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-              <Clock className="h-6 w-6 text-slate-400 mx-auto mb-2" />
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No active job currently assigned</p>
-              <p className="text-2xs text-slate-500 mt-0.5">Machine is available on the floor for new job order allocation.</p>
+            <Card className="p-8 text-center border-dashed border border-border bg-muted dark:bg-card">
+              <Clock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+              <p className="text-xs font-bold text-foreground dark:text-muted-foreground">No active job currently assigned</p>
+              <p className="text-2xs text-muted-foreground mt-0.5">Machine is available on the floor for new job order allocation.</p>
             </Card>
           )}
         </div>
@@ -727,7 +727,7 @@ export default function MachineryDetailPage() {
       {activeTab === 'maintenance' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+            <h3 className="font-bold text-sm text-foreground dark:text-white">
               Preventive & Corrective Maintenance History
             </h3>
             {canMaintain && (
@@ -744,7 +744,7 @@ export default function MachineryDetailPage() {
                 <div>
                   <Badge className="bg-amber-600 text-white text-2xs font-bold mb-1">UPCOMING SERVICE</Badge>
                   <h4 className="font-bold text-sm capitalize">{machine.next_maintenance.maintenance_type} Maintenance</h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                  <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                     Scheduled Date: <strong>{formatDate(machine.next_maintenance.scheduled_date)}</strong> • Technician: {machine.next_maintenance.technician_name || 'Technical Team'}
                   </p>
                 </div>
@@ -758,9 +758,9 @@ export default function MachineryDetailPage() {
               </div>
             </Card>
           ) : (
-            <Card className="p-8 text-center border-dashed border border-slate-200 dark:border-slate-800">
-              <Wrench className="h-6 w-6 text-slate-400 mx-auto mb-2" />
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">All maintenance records are up to date</p>
+            <Card className="p-8 text-center border-dashed border border-border dark:border-border">
+              <Wrench className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+              <p className="text-xs font-bold text-foreground dark:text-muted-foreground">All maintenance records are up to date</p>
             </Card>
           )}
         </div>
@@ -770,7 +770,7 @@ export default function MachineryDetailPage() {
       {activeTab === 'breakdowns' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+            <h3 className="font-bold text-sm text-foreground dark:text-white">
               Breakdown & Downtime Incidents
             </h3>
             {machine.status === 'breakdown' && machine.latest_breakdown ? (
@@ -797,7 +797,7 @@ export default function MachineryDetailPage() {
           {machine.latest_breakdown ? (
             <Card className={`p-4 border space-y-3 ${
               machine.latest_breakdown.status === 'resolved'
-                ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
+                ? 'bg-card border-border dark:border-border'
                 : 'bg-red-50/60 dark:bg-red-950/30 border-red-200 dark:border-red-900'
             }`}>
               <div className="flex items-start justify-between">
@@ -810,10 +810,10 @@ export default function MachineryDetailPage() {
                       Severity: {machine.latest_breakdown.severity}
                     </Badge>
                   </div>
-                  <h4 className="font-black text-sm text-slate-900 dark:text-white">
+                  <h4 className="font-black text-sm text-foreground dark:text-white">
                     {machine.latest_breakdown.problem_title}
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {machine.latest_breakdown.problem_description}
                   </p>
                 </div>
@@ -830,11 +830,11 @@ export default function MachineryDetailPage() {
               </div>
 
               {machine.latest_breakdown.repair_action && (
-                <div className="p-2.5 rounded bg-slate-50 dark:bg-slate-800 text-xs border border-slate-100 dark:border-slate-800 space-y-1">
-                  <span className="font-bold text-slate-800 dark:text-slate-200 block">Repair Action & Resolution:</span>
-                  <p className="text-slate-600 dark:text-slate-300">{machine.latest_breakdown.repair_action}</p>
+                <div className="p-2.5 rounded bg-muted text-xs border border-border space-y-1">
+                  <span className="font-bold text-foreground block">Repair Action & Resolution:</span>
+                  <p className="text-muted-foreground dark:text-muted-foreground">{machine.latest_breakdown.repair_action}</p>
                   {machine.latest_breakdown.downtime_minutes > 0 && (
-                    <span className="text-2xs text-slate-500 block mt-1">
+                    <span className="text-2xs text-muted-foreground block mt-1">
                       Total Downtime: <strong>{machine.latest_breakdown.downtime_minutes} Minutes</strong> • Repair Cost: <strong>৳{machine.latest_breakdown.repair_cost}</strong>
                     </span>
                   )}
@@ -842,10 +842,10 @@ export default function MachineryDetailPage() {
               )}
             </Card>
           ) : (
-            <Card className="p-8 text-center border-dashed border border-slate-200 dark:border-slate-800">
+            <Card className="p-8 text-center border-dashed border border-border dark:border-border">
               <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Zero Breakdown Incidents</p>
-              <p className="text-2xs text-slate-500 mt-0.5">Machine is running smoothly with no historical faults recorded.</p>
+              <p className="text-xs font-bold text-foreground dark:text-muted-foreground">Zero Breakdown Incidents</p>
+              <p className="text-2xs text-muted-foreground mt-0.5">Machine is running smoothly with no historical faults recorded.</p>
             </Card>
           )}
         </div>

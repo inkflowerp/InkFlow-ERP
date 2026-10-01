@@ -232,7 +232,7 @@ export default function PlatformSettingsPage() {
       <PlatformSettingsNav />
 
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="h-2 w-2 rounded-full bg-indigo-400" />
@@ -249,7 +249,7 @@ export default function PlatformSettingsPage() {
             <Settings className="h-7 w-7 text-indigo-400" />
             Platform Settings &amp; Disaster Recovery
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Cluster-wide system configuration, continuous backup telemetry, security thresholds, and Bangladesh fiscal defaults.
           </p>
         </div>
@@ -260,7 +260,7 @@ export default function PlatformSettingsPage() {
             variant="outline"
             onClick={loadData}
             disabled={loading || saving}
-            className="h-9 text-xs border-slate-800 bg-slate-900/60 text-slate-300 hover:bg-slate-800 cursor-pointer font-semibold"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary cursor-pointer font-semibold"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -271,7 +271,7 @@ export default function PlatformSettingsPage() {
             variant="outline"
             disabled={exporting || loading}
             onClick={handleExportConfig}
-            className="h-9 text-xs border-slate-800 bg-slate-900/60 text-slate-300 hover:bg-slate-800 cursor-pointer font-semibold"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary cursor-pointer font-semibold"
           >
             <Download className="h-3.5 w-3.5 mr-1.5 text-cyan-400" />
             {exporting ? 'Exporting...' : 'Export Config'}
@@ -332,7 +332,7 @@ export default function PlatformSettingsPage() {
           <Button
             size="sm"
             onClick={() => setSettings({ ...settings, maintenance_mode_enabled: false })}
-            className="h-8 text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shrink-0 cursor-pointer"
+            className="h-8 text-xs bg-amber-500 hover:bg-amber-400 text-foreground font-bold shrink-0 cursor-pointer"
           >
             Deactivate Mode
           </Button>
@@ -389,10 +389,10 @@ export default function PlatformSettingsPage() {
               <div className="text-xs font-bold text-white flex items-center gap-1.5">
                 Email Gateway &amp; SMTP
               </div>
-              <p className="text-2xs text-slate-400 mt-0.5">SMTP, Resend, SendGrid &amp; SES</p>
+              <p className="text-2xs text-muted-foreground mt-0.5">SMTP, Resend, SendGrid &amp; SES</p>
             </div>
           </div>
-          <ArrowRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
         </Link>
 
         <Link
@@ -407,10 +407,10 @@ export default function PlatformSettingsPage() {
               <div className="text-xs font-bold text-white flex items-center gap-1.5">
                 Integrations &amp; Webhooks
               </div>
-              <p className="text-2xs text-slate-400 mt-0.5">SMS, WhatsApp &amp; Payment sync</p>
+              <p className="text-2xs text-muted-foreground mt-0.5">SMS, WhatsApp &amp; Payment sync</p>
             </div>
           </div>
-          <ArrowRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-purple-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
         </Link>
 
         <Link
@@ -425,16 +425,16 @@ export default function PlatformSettingsPage() {
               <div className="text-xs font-bold text-white flex items-center gap-1.5">
                 RBAC Role Blueprints
               </div>
-              <p className="text-2xs text-slate-400 mt-0.5">6 System templates &amp; 14 modules</p>
+              <p className="text-2xs text-muted-foreground mt-0.5">6 System templates &amp; 14 modules</p>
             </div>
           </div>
-          <ArrowRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
         </Link>
       </div>
 
       {/* Backup & Disaster Recovery Card */}
-      <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-        <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+      <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
+        <CardHeader className="border-b border-border pb-3.5 bg-foreground">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
@@ -442,7 +442,7 @@ export default function PlatformSettingsPage() {
               </div>
               <div>
                 <CardTitle className="text-base font-bold text-white">Database Backup &amp; Disaster Recovery</CardTitle>
-                <CardDescription className="text-xs text-slate-400">
+                <CardDescription className="text-xs text-muted-foreground">
                   Continuous WAL archiving with multi-region replication and automated point-in-time recovery (PITR).
                 </CardDescription>
               </div>
@@ -458,7 +458,7 @@ export default function PlatformSettingsPage() {
                 variant="outline"
                 disabled={drilling}
                 onClick={handleTriggerDrill}
-                className="h-8 text-xs bg-slate-950 border-slate-700 text-cyan-300 hover:bg-slate-800 font-medium cursor-pointer"
+                className="h-8 text-xs bg-foreground border-border text-cyan-300 hover:bg-secondary font-medium cursor-pointer"
               >
                 <FileCheck2 className="h-3.5 w-3.5 mr-1 text-cyan-400" />
                 {drilling ? 'Testing Drill...' : 'Execute Recovery Drill'}
@@ -469,7 +469,7 @@ export default function PlatformSettingsPage() {
                 variant="outline"
                 disabled={backingUp}
                 onClick={handleTriggerBackup}
-                className="h-8 text-xs bg-slate-950 border-slate-700 text-emerald-300 hover:bg-slate-800 font-medium cursor-pointer"
+                className="h-8 text-xs bg-foreground border-border text-emerald-300 hover:bg-secondary font-medium cursor-pointer"
               >
                 <Zap className="h-3.5 w-3.5 mr-1 text-emerald-400" />
                 {backingUp ? 'Snapshotting...' : 'Trigger Snapshot'}
@@ -479,34 +479,34 @@ export default function PlatformSettingsPage() {
         </CardHeader>
         <CardContent className="p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+            <div className="p-3.5 rounded-xl bg-foreground border border-border">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Last Continuous Snapshot
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
                 <Clock className="h-4 w-4 text-emerald-400" />
                 {backup ? formatTime(backup.last_backup_time) : 'Recent'}
               </div>
-              <span className="text-2xs text-slate-500 mt-1 block">
+              <span className="text-2xs text-muted-foreground mt-1 block">
                 Age: {backup?.backup_age_hours || 0.5} hours ago
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+            <div className="p-3.5 rounded-xl bg-foreground border border-border">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Retention Window
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
                 <HardDrive className="h-4 w-4 text-indigo-400" />
                 {settings?.backup_retention_days || backup?.retention_days || 90} Days Continuous
               </div>
-              <span className="text-2xs text-slate-500 mt-1 block">
+              <span className="text-2xs text-muted-foreground mt-1 block">
                 WAL Archives + Daily Cold Vault
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+            <div className="p-3.5 rounded-xl bg-foreground border border-border">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Last Restore Drill
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
@@ -518,21 +518,21 @@ export default function PlatformSettingsPage() {
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+            <div className="p-3.5 rounded-xl bg-foreground border border-border">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Storage Target
               </span>
-              <div className="text-xs font-semibold text-slate-300 truncate">
+              <div className="text-xs font-semibold text-muted-foreground truncate">
                 GCS Coldline (asia-south1)
               </div>
-              <span className="text-2xs text-slate-500 mt-1 block">
+              <span className="text-2xs text-muted-foreground mt-1 block">
                 Encrypted with AES-256 (GCM)
               </span>
             </div>
           </div>
 
           {backup?.notes && (
-            <div className="mt-4 p-3 rounded-xl bg-slate-950/40 border border-slate-800 text-xs text-slate-400 flex items-center gap-2">
+            <div className="mt-4 p-3 rounded-xl bg-foreground border border-border text-xs text-muted-foreground flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
               <span>{backup.notes}</span>
             </div>
@@ -544,15 +544,15 @@ export default function PlatformSettingsPage() {
       {settings && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Application Identity & Branding */}
-          <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-            <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">
                   <Palette className="h-4 w-4" />
                 </div>
                 <div>
                   <CardTitle className="text-sm font-bold text-white">Application Identity &amp; Branding</CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Application name, logo, tagline, and favicon dynamically synchronized platform-wide.
                   </CardDescription>
                 </div>
@@ -560,37 +560,37 @@ export default function PlatformSettingsPage() {
             </CardHeader>
             <CardContent className="p-5 space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Application Name
                 </label>
                 <Input
                   value={settings.app_name || ''}
                   onChange={(e) => setSettings({ ...settings, app_name: e.target.value })}
                   placeholder="e.g. InkFlow ERP or PrintERP"
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
                 />
-                <span className="text-2xs text-slate-500 mt-1 block">
+                <span className="text-2xs text-muted-foreground mt-1 block">
                   Reflected across marketing headers, tenant sidebars, emails, and platform console.
                 </span>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Application Tagline
                 </label>
                 <Input
                   value={settings.app_tagline || ''}
                   onChange={(e) => setSettings({ ...settings, app_tagline: e.target.value })}
                   placeholder="e.g. The Complete Printing &amp; Signage Operating System"
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
                 />
-                <span className="text-2xs text-slate-500 mt-1 block">
+                <span className="text-2xs text-muted-foreground mt-1 block">
                   Displayed on auth showcase, public landing page, and documentation headers.
                 </span>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Application Logo URL
                 </label>
                 <div className="flex items-center gap-3">
@@ -598,10 +598,10 @@ export default function PlatformSettingsPage() {
                     value={settings.app_logo_url || ''}
                     onChange={(e) => setSettings({ ...settings, app_logo_url: e.target.value })}
                     placeholder="https://example.com/logo.png (or leave empty for SVG mark)"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl flex-1 tabular-nums"
+                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl flex-1 tabular-nums"
                   />
                   {settings.app_logo_url ? (
-                    <div className="relative h-9 w-9 rounded-xl bg-slate-950 border border-slate-800 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="relative h-9 w-9 rounded-xl bg-foreground border border-border p-1 flex items-center justify-center shrink-0 overflow-hidden">
                       <img
                         src={settings.app_logo_url}
                         alt="Logo preview"
@@ -617,13 +617,13 @@ export default function PlatformSettingsPage() {
                     </div>
                   )}
                 </div>
-                <span className="text-2xs text-slate-500 mt-1 block">
+                <span className="text-2xs text-muted-foreground mt-1 block">
                   PNG/SVG URL for navigation bars and official platform branding.
                 </span>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Favicon URL
                 </label>
                 <div className="flex items-center gap-3">
@@ -631,9 +631,9 @@ export default function PlatformSettingsPage() {
                     value={settings.favicon_url || ''}
                     onChange={(e) => setSettings({ ...settings, favicon_url: e.target.value })}
                     placeholder="/favicon.ico or https://example.com/favicon.png"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl flex-1 tabular-nums"
+                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl flex-1 tabular-nums"
                   />
-                  <div className="h-9 w-9 rounded-xl bg-slate-950 border border-slate-800 p-1.5 flex items-center justify-center shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-foreground border border-border p-1.5 flex items-center justify-center shrink-0">
                     <img
                       src={settings.favicon_url || '/favicon.ico'}
                       alt="Favicon"
@@ -644,7 +644,7 @@ export default function PlatformSettingsPage() {
                     />
                   </div>
                 </div>
-                <span className="text-2xs text-slate-500 mt-1 block">
+                <span className="text-2xs text-muted-foreground mt-1 block">
                   Browser tab shortcut icon, dynamically updated in head link tags.
                 </span>
               </div>
@@ -652,15 +652,15 @@ export default function PlatformSettingsPage() {
           </Card>
 
           {/* SEO & Root Domain Configuration */}
-          <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-            <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                   <Globe2 className="h-4 w-4" />
                 </div>
                 <div>
                   <CardTitle className="text-sm font-bold text-white">SEO &amp; Primary Domain</CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Custom root domain routing, document meta title, and search engine description.
                   </CardDescription>
                 </div>
@@ -668,37 +668,37 @@ export default function PlatformSettingsPage() {
             </CardHeader>
             <CardContent className="p-5 space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Primary Domain / Host
                 </label>
                 <Input
                   value={settings.app_domain || ''}
                   onChange={(e) => setSettings({ ...settings, app_domain: e.target.value })}
                   placeholder="e.g. inkflow.com.bd or localhost:3000"
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                 />
-                <span className="text-2xs text-slate-500 mt-1 block">
+                <span className="text-2xs text-muted-foreground mt-1 block">
                   Root domain for tenant subdomains (e.g. customer.domain.com), OAuth redirects, and link generation.
                 </span>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Application Title (Browser Title &amp; OG Meta)
                 </label>
                 <Input
                   value={settings.app_title || ''}
                   onChange={(e) => setSettings({ ...settings, app_title: e.target.value })}
                   placeholder="e.g. PrintERP SaaS - Operating System for Printing &amp; Signage in Bangladesh"
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
                 />
-                <span className="text-2xs text-slate-500 mt-1 block">
+                <span className="text-2xs text-muted-foreground mt-1 block">
                   Title tag rendered across browser tabs and search engine results.
                 </span>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Meta Description
                 </label>
                 <textarea
@@ -706,9 +706,9 @@ export default function PlatformSettingsPage() {
                   onChange={(e) => setSettings({ ...settings, app_description: e.target.value })}
                   placeholder="Production-ready SaaS for digital printing, offset press..."
                   rows={3}
-                  className="w-full p-2.5 text-xs bg-slate-950 border border-slate-800 text-slate-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-600 resize-none"
+                  className="w-full p-2.5 text-xs bg-foreground border border-border text-slate-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground resize-none"
                 />
-                <span className="text-2xs text-slate-500 mt-0.5 block">
+                <span className="text-2xs text-muted-foreground mt-0.5 block">
                   Used in HTML meta description tags and social link previews.
                 </span>
               </div>
@@ -716,15 +716,15 @@ export default function PlatformSettingsPage() {
           </Card>
 
           {/* Customer Support, Helpline & Official Contact Directory */}
-          <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl md:col-span-2">
-            <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl md:col-span-2">
+            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   <Headphones className="h-4 w-4" />
                 </div>
                 <div>
                   <CardTitle className="text-sm font-bold text-white">Helpline &amp; Official Contact Channels</CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Emergency customer support hotline, email desk, and official headquarters coordinates.
                   </CardDescription>
                 </div>
@@ -733,59 +733,59 @@ export default function PlatformSettingsPage() {
             <CardContent className="p-5 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">
                     Customer Support Helpline / Hotline
                   </label>
                   <Input
                     value={settings.support_helpline || ''}
                     onChange={(e) => setSettings({ ...settings, support_helpline: e.target.value })}
                     placeholder="e.g. +880 1819-876543 / +880 1711-234567"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                   />
-                  <span className="text-2xs text-slate-500 mt-1 block">
+                  <span className="text-2xs text-muted-foreground mt-1 block">
                     Shown in customer support &amp; inquiries.
                   </span>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Official Contact Email</label>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Official Contact Email</label>
                   <Input
                     type="email"
                     value={settings.contact_email || ''}
                     onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })}
                     placeholder="support@printerp.com.bd"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                   />
-                  <span className="text-2xs text-slate-500 mt-1 block">
+                  <span className="text-2xs text-muted-foreground mt-1 block">
                     Official email address for correspondence.
                   </span>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Contact Phone</label>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Contact Phone</label>
                   <Input
                     value={settings.contact_phone || ''}
                     onChange={(e) => setSettings({ ...settings, contact_phone: e.target.value })}
                     placeholder="+880 1819-876543"
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                   />
-                  <span className="text-2xs text-slate-500 mt-1 block">
+                  <span className="text-2xs text-muted-foreground mt-1 block">
                     Telephone for direct caller desk.
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Head Office / Physical Address
                 </label>
                 <Input
                   value={settings.contact_address || ''}
                   onChange={(e) => setSettings({ ...settings, contact_address: e.target.value })}
                   placeholder="e.g. Arambagh Press Cluster, Motijheel, Dhaka-1000, Bangladesh"
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
                 />
-                <span className="text-2xs text-slate-500 mt-1 block">
+                <span className="text-2xs text-muted-foreground mt-1 block">
                   Displayed in public website footer, contact page, and platform disclosures.
                 </span>
               </div>
@@ -793,15 +793,15 @@ export default function PlatformSettingsPage() {
           </Card>
 
           {/* Security & Access Policies */}
-          <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-            <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                   <Lock className="h-4 w-4" />
                 </div>
                 <div>
                   <CardTitle className="text-sm font-bold text-white">Security &amp; Access Safeguards</CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Platform administrator session TTL, rate limiting, and export caps.
                   </CardDescription>
                 </div>
@@ -809,7 +809,7 @@ export default function PlatformSettingsPage() {
             </CardHeader>
             <CardContent className="p-5 space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Admin Idle Session Timeout (Minutes)
                 </label>
                 <Input
@@ -820,13 +820,13 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, session_timeout_minutes: parseInt(e.target.value) || 60 })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                 />
-                <span className="text-2xs text-slate-500 mt-1 block">Valid range: 5 to 1,440 minutes (24 hours).</span>
+                <span className="text-2xs text-muted-foreground mt-1 block">Valid range: 5 to 1,440 minutes (24 hours).</span>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   API Rate Limiting (Requests per Minute per IP)
                 </label>
                 <Input
@@ -840,13 +840,13 @@ export default function PlatformSettingsPage() {
                       rate_limit_requests_per_minute: parseInt(e.target.value) || 120,
                     })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                 />
-                <span className="text-2xs text-slate-500 mt-1 block">Valid range: 10 to 10,000 req/min.</span>
+                <span className="text-2xs text-muted-foreground mt-1 block">Valid range: 10 to 10,000 req/min.</span>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                <label className="text-xs font-semibold text-muted-foreground block mb-1">
                   Max Tenant Data Export Rows
                 </label>
                 <Input
@@ -857,15 +857,15 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, max_export_records: parseInt(e.target.value) || 10000 })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                 />
-                <span className="text-2xs text-slate-500 mt-1 block">Cap per single tenant export JSON archive.</span>
+                <span className="text-2xs text-muted-foreground mt-1 block">Cap per single tenant export JSON archive.</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-foreground border border-border">
                 <div>
-                  <span className="text-xs font-semibold text-slate-300 block">Enforce 2FA for Platform Admins</span>
-                  <span className="text-2xs text-slate-500">Require TOTP authentication on all admin logins</span>
+                  <span className="text-xs font-semibold text-muted-foreground block">Enforce 2FA for Platform Admins</span>
+                  <span className="text-2xs text-muted-foreground">Require TOTP authentication on all admin logins</span>
                 </div>
                 <input
                   type="checkbox"
@@ -873,14 +873,14 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, mfa_required_for_admins: e.target.checked })
                   }
-                  className="h-4 w-4 rounded accent-indigo-600 bg-slate-900 border-slate-700 cursor-pointer"
+                  className="h-4 w-4 rounded accent-indigo-600 bg-foreground border-border cursor-pointer"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-foreground border border-border">
                 <div>
-                  <span className="text-xs font-semibold text-slate-300 block">Automated Daily Backups</span>
-                  <span className="text-2xs text-slate-500">Enable scheduled daily database exports &amp; WAL archives</span>
+                  <span className="text-xs font-semibold text-muted-foreground block">Automated Daily Backups</span>
+                  <span className="text-2xs text-muted-foreground">Enable scheduled daily database exports &amp; WAL archives</span>
                 </div>
                 <input
                   type="checkbox"
@@ -888,22 +888,22 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, auto_backup_enabled: e.target.checked })
                   }
-                  className="h-4 w-4 rounded accent-indigo-600 bg-slate-900 border-slate-700 cursor-pointer"
+                  className="h-4 w-4 rounded accent-indigo-600 bg-foreground border-border cursor-pointer"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Localization, Fiscal & Webhook Alerts */}
-          <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-            <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
                   <Globe className="h-4 w-4" />
                 </div>
                 <div>
                   <CardTitle className="text-sm font-bold text-white">Localization, Fiscal &amp; Alerts</CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
+                  <CardDescription className="text-xs text-muted-foreground">
                     Bangladesh fiscal parameters, default trial period, and webhook alert targets.
                   </CardDescription>
                 </div>
@@ -912,15 +912,15 @@ export default function PlatformSettingsPage() {
             <CardContent className="p-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Default Currency</label>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Default Currency</label>
                   <Input
                     value={settings.default_currency}
                     onChange={(e) => setSettings({ ...settings, default_currency: e.target.value })}
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl uppercase tabular-nums"
+                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl uppercase tabular-nums"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Mushak 6.3 VAT (%)</label>
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">Mushak 6.3 VAT (%)</label>
                   <Input
                     type="number"
                     min={0}
@@ -930,14 +930,14 @@ export default function PlatformSettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, default_vat_rate_pct: parseFloat(e.target.value) || 15 })
                     }
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">
                     Default Trial (Days)
                   </label>
                   <Input
@@ -948,11 +948,11 @@ export default function PlatformSettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, default_trial_days: parseInt(e.target.value) || 14 })
                     }
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  <label className="text-xs font-semibold text-muted-foreground block mb-1">
                     Backup Retention (Days)
                   </label>
                   <Input
@@ -963,14 +963,14 @@ export default function PlatformSettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, backup_retention_days: parseInt(e.target.value) || 90 })
                     }
-                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-slate-300">
+                  <label className="text-xs font-semibold text-muted-foreground">
                     Incident Alert Webhook (Slack / Discord)
                   </label>
                   {settings.incident_alert_webhook && (
@@ -992,20 +992,20 @@ export default function PlatformSettingsPage() {
                     setSettings({ ...settings, incident_alert_webhook: e.target.value })
                   }
                   placeholder="https://hooks.slack.com/services/..."
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
                 />
-                <span className="text-2xs text-slate-500 mt-1 block">
+                <span className="text-2xs text-muted-foreground mt-1 block">
                   Dispatches automated JSON notifications upon critical service outage or failover event.
                 </span>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-slate-300">
+                  <label className="text-xs font-semibold text-muted-foreground">
                     Maintenance Advisory Message
                   </label>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-2xs text-slate-400">Maintenance Mode:</span>
+                    <span className="text-2xs text-muted-foreground">Maintenance Mode:</span>
                     <input
                       type="checkbox"
                       checked={Boolean(settings.maintenance_mode_enabled)}
@@ -1021,7 +1021,7 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, maintenance_message: e.target.value })
                   }
-                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
                 />
               </div>
             </CardContent>
@@ -1030,17 +1030,17 @@ export default function PlatformSettingsPage() {
       )}
 
       {/* Audit Justification & Save Card */}
-      <Card className="bg-slate-900 border-slate-800 rounded-2xl p-5 shadow-xl">
+      <Card className="bg-foreground border-border rounded-2xl p-5 shadow-xl">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <label className="text-xs font-semibold text-slate-300 block mb-1">
+            <label className="text-xs font-semibold text-muted-foreground block mb-1">
               Audit Justification Reason (Required for Regulatory &amp; Compliance Logging)
             </label>
             <Input
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g. Updated standard VAT rate to 15% per FY2026-27 NBR circular..."
-              className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl placeholder:text-slate-600"
+              className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl placeholder:text-muted-foreground"
             />
           </div>
           <div className="flex items-center gap-2 self-end sm:self-center">
@@ -1049,7 +1049,7 @@ export default function PlatformSettingsPage() {
                 variant="outline"
                 onClick={handleResetChanges}
                 disabled={saving}
-                className="h-9 px-4 text-xs border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl font-semibold cursor-pointer"
+                className="h-9 px-4 text-xs border-border bg-foreground text-muted-foreground hover:text-white hover:bg-secondary rounded-xl font-semibold cursor-pointer"
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1.5 text-amber-400" />
                 Discard

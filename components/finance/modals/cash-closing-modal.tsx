@@ -118,13 +118,13 @@ export function CashClosingModal({
 
         {/* Cash Account */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <Label className="text-xs font-semibold text-foreground dark:text-muted-foreground">
             {tBilingual('Cash Account / Drawer', 'ক্যাশ ড্রয়ার হিসাব')} *
           </Label>
           <select
             value={accountId || cashAccounts[0]?.id || ''}
             onChange={(e) => setAccountId(e.target.value)}
-            className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+            className="w-full h-10 px-3 text-sm rounded-xl border border-input bg-card text-foreground dark:text-foreground"
           >
             {cashAccounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
@@ -135,23 +135,23 @@ export function CashClosingModal({
         </div>
 
         {/* Expected vs Counted Comparison Box */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-850 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+        <div className="p-4 bg-muted dark:bg-slate-850 rounded-2xl border border-border space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual('System Expected Cash (Book)', 'সিস্টেমের হিসেবে ক্যাশ')}
             </span>
-            <span className="text-base font-bold text-slate-800 dark:text-slate-200">
+            <span className="text-base font-bold text-foreground dark:text-foreground">
               ৳{expectedCash.toLocaleString()}
             </span>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+            <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
               <Calculator className="w-3.5 h-3.5 text-purple-600" />
               <span>{tBilingual('Physical Cash Counted in Drawer', 'ড্রয়ারে গুনে পাওয়া নগদ টাকা')} *</span>
             </Label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg pointer-events-none">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-muted-foreground text-lg pointer-events-none">
                 ৳
               </span>
               <Input
@@ -161,7 +161,7 @@ export function CashClosingModal({
                 placeholder="0.00"
                 value={countedCash}
                 onChange={(e) => setCountedCash(e.target.value)}
-                className="pl-8 text-xl font-bold h-12 rounded-xl bg-white dark:bg-slate-900 border-purple-300 dark:border-purple-700"
+                className="pl-8 text-xl font-bold h-12 rounded-xl bg-card border-purple-300 dark:border-purple-700"
               />
             </div>
           </div>
@@ -219,7 +219,7 @@ export function CashClosingModal({
 
         {/* Closing Date */}
         <div className="space-y-1">
-          <Label className="text-xs text-slate-600 dark:text-slate-400">
+          <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
             {tBilingual('Closing Date', 'ক্লোজিং তারিখ')}
           </Label>
           <Input
@@ -231,7 +231,7 @@ export function CashClosingModal({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border dark:border-border">
           <Button type="button" variant="outline" onClick={onClose} className="rounded-xl">
             {tBilingual('Cancel', 'বাতিল')}
           </Button>

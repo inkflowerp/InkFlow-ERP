@@ -55,11 +55,11 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
   return (
     <div className={`space-y-4 ${className}`}>
       {/* 1. Master Stepper Card */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+      <div className="bg-card border border-border rounded-xl p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-border dark:border-border">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 {tBilingual('Order-to-Delivery Journey', 'কাজের সামগ্রিক অগ্রগতি')}
               </span>
               <Badge
@@ -80,7 +80,7 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
                 </Badge>
               )}
             </div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1">
+            <h3 className="text-sm font-bold text-foreground mt-1">
               {tBilingual('Active Phase:', 'বর্তমান ধাপ:')}{' '}
               <span className="text-blue-600 dark:text-blue-400">
                 {tBilingual(workflow.overallStageLabelEn, workflow.overallStageLabelBn)}
@@ -90,15 +90,15 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
 
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <span className="text-2xs font-bold text-slate-400 block">
+              <span className="text-2xs font-bold text-muted-foreground block">
                 {tBilingual('Stage Completion', 'সম্পন্নতার হার')}
               </span>
-              <span className="text-sm font-black text-slate-900 dark:text-white tabular-nums">
+              <span className="text-sm font-black text-foreground dark:text-white tabular-nums">
                 {workflow.progressPercentage}%
               </span>
             </div>
             {/* Circular or mini progress bar */}
-            <div className="w-24 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className={`h-full transition-all duration-500 ${
                   workflow.isBlocked
@@ -117,7 +117,7 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
         <div className="overflow-x-auto pb-2 scrollbar-thin">
           <div className="flex items-center min-w-[760px] justify-between relative px-2">
             {/* Connecting Track Line */}
-            <div className="absolute top-4 left-6 right-6 h-0.5 bg-slate-200 dark:bg-slate-800 -z-0" />
+            <div className="absolute top-4 left-6 right-6 h-0.5 bg-muted -z-0" />
 
             {workflow.stepperStages.map((stage, idx) => {
               const isCompleted = stage.status === 'completed'
@@ -136,8 +136,8 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
                         : isInProgress
                         ? 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-950 shadow-xs'
                         : isSkipped
-                        ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-700'
-                        : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                        ? 'bg-muted text-muted-foreground border border-dashed border-input dark:border-border'
+                        : 'bg-muted text-muted-foreground border border-border dark:border-border'
                     }`}
                   >
                     {getStepIcon(stage, idx)}
@@ -149,10 +149,10 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
                         : isInProgress
                         ? 'text-blue-600 dark:text-blue-400 font-bold'
                         : isCompleted
-                        ? 'text-slate-800 dark:text-slate-200'
+                        ? 'text-foreground dark:text-foreground'
                         : isSkipped
-                        ? 'text-slate-400 line-through'
-                        : 'text-slate-400'
+                        ? 'text-muted-foreground line-through'
+                        : 'text-muted-foreground'
                     }`}
                   >
                     {tBilingual(stage.labelEn, stage.labelBn)}
@@ -211,7 +211,7 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
               <span className="text-2xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wide block">
                 {tBilingual('Next Operational Step', 'পরবর্তী করণীয়')}
               </span>
-              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+              <span className="text-xs font-semibold text-foreground dark:text-foreground">
                 {tBilingual(workflow.nextActionEn, workflow.nextActionBn)}
               </span>
             </div>

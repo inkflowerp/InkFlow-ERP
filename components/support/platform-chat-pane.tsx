@@ -199,12 +199,12 @@ export function PlatformChatPane({
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500 bg-slate-950/40 select-none">
-        <div className="w-16 h-16 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 mb-3 shadow-inner">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground bg-foreground select-none">
+        <div className="w-16 h-16 rounded-3xl bg-foreground border border-border flex items-center justify-center text-muted-foreground mb-3 shadow-inner">
           <MessageSquare className="w-8 h-8 text-indigo-400" />
         </div>
-        <h3 className="text-sm font-bold text-slate-200">Select a Support Conversation</h3>
-        <p className="text-xs text-slate-400 mt-1 max-w-[320px]">
+        <h3 className="text-sm font-bold text-foreground">Select a Support Conversation</h3>
+        <p className="text-xs text-muted-foreground mt-1 max-w-[320px]">
           Choose an active ticket from the triage queue on the left to review messages, post private internal notes, or reply directly to the customer.
         </p>
       </div>
@@ -215,15 +215,15 @@ export function PlatformChatPane({
   const priorityConfig = SUPPORT_PRIORITY_CONFIG[conversation.priority]
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-950/60 overflow-hidden border-r border-slate-800/80 min-w-0 font-sans">
+    <div className="flex-1 flex flex-col h-full bg-foreground overflow-hidden border-r border-border min-w-0 font-sans">
       {/* 1. Top Action Bar */}
-      <div className="px-3 sm:px-4 py-2.5 border-b border-slate-800 bg-slate-900/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-2.5 shrink-0 z-10">
+      <div className="px-3 sm:px-4 py-2.5 border-b border-border bg-foreground backdrop-blur-md flex flex-wrap items-center justify-between gap-2.5 shrink-0 z-10">
         <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
           {onBackToQueue && (
             <button
               type="button"
               onClick={onBackToQueue}
-              className="lg:hidden p-1.5 -ml-1 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+              className="lg:hidden p-1.5 -ml-1 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer shrink-0"
               title="Back to Queue"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -237,8 +237,8 @@ export function PlatformChatPane({
             <h2 className="text-xs sm:text-sm font-bold text-slate-100 truncate" title={conversation.subject}>
               {conversation.subject}
             </h2>
-            <div className="flex items-center gap-1.5 text-2xs text-slate-400 mt-0.5 truncate">
-              <span className="font-semibold text-slate-200 truncate">{conversation.company_name || 'Tenant'}</span>
+            <div className="flex items-center gap-1.5 text-2xs text-muted-foreground mt-0.5 truncate">
+              <span className="font-semibold text-foreground truncate">{conversation.company_name || 'Tenant'}</span>
               <span>·</span>
               <span className="truncate">{conversation.created_by_name}</span>
             </div>
@@ -251,7 +251,7 @@ export function PlatformChatPane({
           <select
             value={conversation.category}
             onChange={(e) => onUpdateCategory(e.target.value as SupportCategory)}
-            className="hidden sm:inline-block px-2.5 py-1 text-2xs rounded-lg font-medium bg-slate-800 text-slate-200 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer max-w-[130px] truncate"
+            className="hidden sm:inline-block px-2.5 py-1 text-2xs rounded-lg font-medium bg-secondary text-foreground border border-border focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer max-w-[130px] truncate"
             title="Ticket Category"
           >
             {SUPPORT_CATEGORIES.map((cat) => (
@@ -266,7 +266,7 @@ export function PlatformChatPane({
             value={conversation.status}
             onChange={(e) => onUpdateStatus(e.target.value as SupportStatus)}
             className={cn(
-              'px-2.5 py-1 text-2xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer',
+              'px-2.5 py-1 text-2xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer',
               statusConfig.badgeClass
             )}
             title="Ticket Status"
@@ -283,7 +283,7 @@ export function PlatformChatPane({
             value={conversation.priority}
             onChange={(e) => onUpdatePriority(e.target.value as SupportPriority)}
             className={cn(
-              'px-2 py-1 text-2xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer',
+              'px-2 py-1 text-2xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer',
               priorityConfig.badgeClass
             )}
             title="Ticket Priority"
@@ -315,7 +315,7 @@ export function PlatformChatPane({
                 'p-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer',
                 showDetails
                   ? 'bg-indigo-600 text-white border-indigo-500 shadow-xs'
-                  : 'bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-700'
+                  : 'bg-secondary text-muted-foreground hover:text-foreground border-border'
               )}
               title="Toggle Ticket & Tenant Details"
             >
@@ -328,7 +328,7 @@ export function PlatformChatPane({
       {/* 2. Message Timeline Stream */}
       <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-4 scrollbar-thin scrollbar-thumb-slate-800">
         {loading && messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 text-slate-500 space-y-2">
+          <div className="flex flex-col items-center justify-center p-12 text-muted-foreground space-y-2">
             <div className="w-6 h-6 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
             <span className="text-xs tabular-nums">Loading message stream...</span>
           </div>
@@ -337,7 +337,7 @@ export function PlatformChatPane({
             <div key={group.dateKey} className="space-y-4">
               {/* Date Group Header */}
               <div className="flex justify-center my-3">
-                <span className="px-3 py-0.5 rounded-full bg-slate-900/90 border border-slate-800 text-2xs font-bold uppercase tracking-wider text-slate-400 shadow-xs">
+                <span className="px-3 py-0.5 rounded-full bg-foreground border border-border text-2xs font-bold uppercase tracking-wider text-muted-foreground shadow-xs">
                   {group.dateLabel}
                 </span>
               </div>
@@ -347,10 +347,10 @@ export function PlatformChatPane({
                 if (msg.message_type === 'system_event') {
                   return (
                     <div key={msg.id} className="flex justify-center my-2">
-                      <div className="px-3.5 py-1 rounded-full bg-slate-900/80 text-2xs text-slate-400 border border-slate-800 flex items-center gap-1.5 shadow-xs">
-                        <Clock className="w-3 h-3 text-slate-500" />
+                      <div className="px-3.5 py-1 rounded-full bg-foreground text-2xs text-muted-foreground border border-border flex items-center gap-1.5 shadow-xs">
+                        <Clock className="w-3 h-3 text-muted-foreground" />
                         <span>{msg.body}</span>
-                        <span className="text-2xs text-slate-500">· {formatTime(msg.created_at)}</span>
+                        <span className="text-2xs text-muted-foreground">· {formatTime(msg.created_at)}</span>
                       </div>
                     </div>
                   )
@@ -386,12 +386,12 @@ export function PlatformChatPane({
                     className={cn('flex flex-col', isCustomer ? 'items-start' : 'items-end')}
                   >
                     {/* Sender Header */}
-                    <div className="flex items-center gap-1.5 mb-1 px-1 text-2xs text-slate-400">
+                    <div className="flex items-center gap-1.5 mb-1 px-1 text-2xs text-muted-foreground">
                       {isCustomer ? (
-                        <div className="flex items-center gap-1 font-semibold text-slate-300">
-                          <User className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center gap-1 font-semibold text-muted-foreground">
+                          <User className="w-3.5 h-3.5 text-muted-foreground" />
                           <span>{msg.sender_name}</span>
-                          <span className="text-2xs text-slate-400 font-normal">(Customer)</span>
+                          <span className="text-2xs text-muted-foreground font-normal">(Customer)</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1 text-indigo-400 font-semibold">
@@ -408,7 +408,7 @@ export function PlatformChatPane({
                       className={cn(
                         'max-w-[88%] sm:max-w-[75%] rounded-2xl p-3.5 text-xs sm:text-sm shadow-xs transition-all',
                         isCustomer
-                          ? 'bg-slate-900 text-slate-100 rounded-tl-xs border border-slate-800'
+                          ? 'bg-foreground text-slate-100 rounded-tl-xs border border-border'
                           : 'bg-indigo-600 text-white rounded-tr-xs shadow-indigo-600/20 shadow-md'
                       )}
                     >
@@ -416,11 +416,11 @@ export function PlatformChatPane({
 
                       {/* Attachments */}
                       {msg.attachments && msg.attachments.length > 0 && (
-                        <div className="mt-2.5 pt-2 border-t border-slate-800/80 space-y-1.5">
+                        <div className="mt-2.5 pt-2 border-t border-border space-y-1.5">
                           {msg.attachments.map((att) => (
                             <div
                               key={att.id}
-                              className="flex items-center justify-between gap-2 p-2 rounded-xl text-xs bg-slate-950/70 border border-slate-800 text-slate-200"
+                              className="flex items-center justify-between gap-2 p-2 rounded-xl text-xs bg-foreground border border-border text-foreground"
                             >
                               <div className="flex items-center gap-2 truncate">
                                 {att.type.startsWith('image/') ? (
@@ -429,7 +429,7 @@ export function PlatformChatPane({
                                   <FileText className="w-4 h-4 text-amber-400 shrink-0" />
                                 )}
                                 <span className="truncate font-medium">{att.name}</span>
-                                <span className="text-2xs text-slate-400">
+                                <span className="text-2xs text-muted-foreground">
                                   ({Math.round(att.size / 1024)} KB)
                                 </span>
                               </div>
@@ -438,7 +438,7 @@ export function PlatformChatPane({
                                   href={att.signedUrl}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200"
+                                  className="p-1 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
                                   title="Download Attachment"
                                 >
                                   <Download className="w-3.5 h-3.5" />
@@ -459,10 +459,10 @@ export function PlatformChatPane({
       </div>
 
       {/* 3. Composer Toolbar & Dual-Mode Switcher */}
-      <div className="border-t border-slate-800 bg-slate-900/95 p-3 sm:p-4 space-y-2.5 shrink-0">
+      <div className="border-t border-border bg-foreground p-3 sm:p-4 space-y-2.5 shrink-0">
         {/* Reply Type Toggle & Canned Chips */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center p-0.5 rounded-xl bg-slate-950 border border-slate-800 self-start">
+          <div className="flex items-center p-0.5 rounded-xl bg-foreground border border-border self-start">
             <button
               type="button"
               onClick={() => setIsInternalNote(false)}
@@ -470,7 +470,7 @@ export function PlatformChatPane({
                 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
                 !isInternalNote
                   ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <MessageSquare className="w-3.5 h-3.5" />
@@ -483,7 +483,7 @@ export function PlatformChatPane({
                 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer',
                 isInternalNote
                   ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <Lock className="w-3.5 h-3.5" />
@@ -498,7 +498,7 @@ export function PlatformChatPane({
                 key={idx}
                 type="button"
                 onClick={() => insertSnippet(chip.text)}
-                className="px-2 py-1 rounded-md text-2xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap border border-slate-800/80 transition-colors"
+                className="px-2 py-1 rounded-md text-2xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary whitespace-nowrap border border-border transition-colors"
               >
                 {chip.label}
               </button>
@@ -520,14 +520,14 @@ export function PlatformChatPane({
             {attachments.map((att) => (
               <div
                 key={att.id}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 text-xs text-slate-300 border border-slate-800"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-foreground text-xs text-muted-foreground border border-border"
               >
                 <Paperclip className="w-3 h-3 text-indigo-400" />
                 <span className="max-w-[150px] truncate">{att.name}</span>
                 <button
                   type="button"
                   onClick={() => setAttachments((prev) => prev.filter((a) => a.id !== att.id))}
-                  className="p-0.5 text-slate-500 hover:text-red-400 cursor-pointer"
+                  className="p-0.5 text-muted-foreground hover:text-red-400 cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -542,12 +542,12 @@ export function PlatformChatPane({
             'flex items-end gap-2 p-2 rounded-2xl border transition-all',
             isInternalNote
               ? 'bg-amber-950/20 border-amber-700/60 focus-within:ring-2 focus-within:ring-amber-500/20'
-              : 'bg-slate-950 border-slate-800 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500'
+              : 'bg-foreground border-border focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500'
           )}
         >
           <label
             title="Attach file (Max 10MB)"
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 cursor-pointer transition-colors shrink-0"
+            className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors shrink-0"
           >
             <Paperclip className="w-4 h-4" />
             <input
@@ -570,7 +570,7 @@ export function PlatformChatPane({
                 ? 'Add private staff note (Never visible to customer)... Press Enter to save note'
                 : 'Write public support reply to customer... (Press Enter to send, Shift+Enter for new line)'
             }
-            className="flex-1 text-xs sm:text-sm bg-transparent text-slate-100 focus:outline-none resize-none placeholder:text-slate-500 py-1 max-h-36 leading-relaxed"
+            className="flex-1 text-xs sm:text-sm bg-transparent text-slate-100 focus:outline-none resize-none placeholder:text-muted-foreground py-1 max-h-36 leading-relaxed"
           />
 
           <button

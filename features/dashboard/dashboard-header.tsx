@@ -33,7 +33,7 @@ export function DashboardHeader({
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-5 sm:p-6 text-white shadow-xl shadow-blue-900/10">
       <div className="space-y-1.5 min-w-0">
         <div
-          className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 text-xs text-cyan-300 backdrop-blur-sm"
+          className="inline-flex items-center gap-1.5 rounded-full bg-card/10 px-2.5 py-0.5 text-xs text-cyan-300 backdrop-blur-sm"
           suppressHydrationWarning
         >
           <Sparkles className="h-3 w-3 shrink-0" />
@@ -50,7 +50,7 @@ export function DashboardHeader({
           {tBilingual('Welcome back,', 'স্বাগতম,')} {userDisplayName}
         </h1>
 
-        <p className="text-xs sm:text-sm text-slate-200 bangla-text">
+        <p className="text-xs sm:text-sm text-foreground bangla-text">
           {tBilingual(
             'Real-time operational dashboard tailored to your active responsibilities.',
             'আপনার দায়িত্ব ও পারমিশন অনুযায়ী ব্যক্তিগতকৃত লাইভ ড্যাশবোর্ড।'
@@ -64,13 +64,13 @@ export function DashboardHeader({
             <Badge
               key={resp}
               variant="outline"
-              className="bg-white/10 text-white border-white/20 text-xs py-0.5 capitalize bangla-text"
+              className="bg-card/10 text-white border-white/20 text-xs py-0.5 capitalize bangla-text"
             >
               {resp.replace('_', ' ')}
             </Badge>
           ))}
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
           <span className="flex items-center gap-1" suppressHydrationWarning>
             <Calendar className="h-3.5 w-3.5 text-cyan-300" />
             {new Date().toLocaleDateString(locale === 'bn' ? 'bn-BD' : 'en-US', {

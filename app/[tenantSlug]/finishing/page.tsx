@@ -428,16 +428,16 @@ export default function FinishingAndFabricationPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto pb-16 animate-pulse p-4 sm:p-6">
-        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="h-10 bg-muted rounded-xl w-1/3" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-20 bg-muted rounded-xl" />
           ))}
         </div>
-        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
+        <div className="h-10 bg-muted rounded-xl w-full" />
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-32 bg-muted rounded-xl" />
           ))}
         </div>
       </div>
@@ -468,7 +468,7 @@ export default function FinishingAndFabricationPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl cursor-pointer shadow-2xs"
+                  className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-border bg-card hover:bg-muted text-foreground rounded-xl cursor-pointer shadow-2xs"
                 >
                   <LayoutGrid className="h-4 w-4 text-indigo-600" />
                   <span>{tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}</span>
@@ -632,7 +632,7 @@ export default function FinishingAndFabricationPage() {
                   'px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs',
                   isSelected
                     ? 'bg-indigo-600 dark:bg-indigo-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+                    : 'bg-card border border-border dark:border-border/80 text-foreground hover:bg-muted dark:hover:bg-muted/80'
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -641,8 +641,8 @@ export default function FinishingAndFabricationPage() {
                   className={cn(
                     'text-2xs px-2 py-0.5 rounded-full font-bold tabular-nums',
                     isSelected
-                      ? 'bg-white text-indigo-600 dark:bg-white dark:text-indigo-600'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      ? 'bg-card text-indigo-600 dark:text-indigo-600'
+                      : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                   )}
                 >
                   {count}
@@ -655,14 +655,14 @@ export default function FinishingAndFabricationPage() {
         {/* =========================================================================
             4. UNIFIED SEARCH & FILTER TOOLBAR (Matching DesignFilterToolbar)
            ========================================================================= */}
-        <div className="bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="bg-card px-3.5 py-2.5 rounded-2xl border border-border dark:border-border/80 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
           <div className="relative w-full md:flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={tBilingual('Search Job #, task, customer, product, material...', 'জব নম্বর, টাস্ক, কাস্টমার খুঁজুন...')}
-              className="pl-9 text-xs bg-transparent border-0 focus-visible:ring-0 shadow-none h-8 text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
+              className="pl-9 text-xs bg-transparent border-0 focus-visible:ring-0 shadow-none h-8 text-foreground placeholder:text-muted-foreground"
             />
           </div>
 
@@ -670,7 +670,7 @@ export default function FinishingAndFabricationPage() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 h-8 text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+              className="text-xs font-medium rounded-lg border border-border bg-card px-3 h-8 text-foreground outline-none cursor-pointer hover:border-input transition-colors"
             >
               <option value="all">⚡ All Statuses</option>
               <option value="ready">Ready for Floor</option>
@@ -697,12 +697,12 @@ export default function FinishingAndFabricationPage() {
                 className={cn(
                   'rounded-2xl border border-l-4 transition-all duration-200 p-4 space-y-3 shadow-2xs hover:shadow-xs overflow-hidden',
                   isRunning
-                    ? 'border-indigo-500/80 border-l-indigo-600 bg-white dark:bg-slate-900 ring-2 ring-indigo-500/10'
+                    ? 'border-indigo-500/80 border-l-indigo-600 bg-card ring-2 ring-indigo-500/10'
                     : isCompleted
                     ? 'border-emerald-500/80 border-l-emerald-600 bg-emerald-50/10 dark:bg-emerald-950/20'
                     : isOnHold
                     ? 'border-amber-500/80 border-l-amber-600 bg-amber-50/20 dark:bg-amber-950/20'
-                    : 'border-slate-200/80 dark:border-slate-800/80 border-l-slate-400 dark:border-l-slate-600 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                    : 'border-border dark:border-border/80 border-l-slate-400 dark:border-l-slate-600 bg-card hover:border-input dark:hover:border-border'
                 )}
               >
                   {/* Card Header Row */}
@@ -712,7 +712,7 @@ export default function FinishingAndFabricationPage() {
                         <Link
                           href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
                         >
-                          <Badge variant="outline" className="tabular-nums text-2xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
+                          <Badge variant="outline" className="tabular-nums text-2xs font-bold bg-muted hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
                             #{task.job_number || task.task_number}
                           </Badge>
                         </Link>
@@ -727,7 +727,7 @@ export default function FinishingAndFabricationPage() {
                         >
                           {category === 'digital_finishing' ? 'Digital Finishing' : category === 'signage_fabrication' ? 'Signage Fab' : 'Offset Binding'}
                         </Badge>
-                        <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100">
+                        <span className="text-sm font-extrabold text-foreground dark:text-foreground">
                           {task.task_name}
                         </span>
                         {task.priority === 'urgent' && (
@@ -737,8 +737,8 @@ export default function FinishingAndFabricationPage() {
                         )}
                       </div>
 
-                      <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-slate-800 dark:text-slate-200">{task.customer_name || 'Client'}</span>
+                      <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-foreground dark:text-foreground">{task.customer_name || 'Client'}</span>
                         <span>•</span>
                         <span>Product: <strong>{task.product_name || 'Custom Print Work'}</strong></span>
                         <span>•</span>
@@ -766,7 +766,7 @@ export default function FinishingAndFabricationPage() {
                             ? 'bg-emerald-600 text-white'
                             : isOnHold
                             ? 'bg-rose-600 text-white'
-                            : 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                            : 'bg-muted text-foreground dark:text-muted-foreground'
                         }`}
                       >
                         {task.status.replace('_', ' ')}
@@ -775,34 +775,34 @@ export default function FinishingAndFabricationPage() {
                   </div>
 
                   {/* Bangladeshi Press Domain Specifications Bar */}
-                  <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80 text-xs flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-3 flex-wrap text-2xs text-slate-600 dark:text-slate-400">
+                  <div className="p-2.5 rounded-lg bg-muted border border-border dark:border-border/80 text-xs flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-3 flex-wrap text-2xs text-muted-foreground dark:text-muted-foreground">
                       {task.required_material && (
-                        <span>Substrate: <strong className="text-slate-800 dark:text-slate-200">{task.required_material}</strong></span>
+                        <span>Substrate: <strong className="text-foreground dark:text-foreground">{task.required_material}</strong></span>
                       )}
                       {task.assigned_operator_name && (
-                        <span>Craftsman: <strong className="text-slate-800 dark:text-slate-200">{task.assigned_operator_name}</strong></span>
+                        <span>Craftsman: <strong className="text-foreground dark:text-foreground">{task.assigned_operator_name}</strong></span>
                       )}
                       {task.assigned_machine_name && (
-                        <span>Bench/Tool: <strong className="text-slate-800 dark:text-slate-200">{task.assigned_machine_name}</strong></span>
+                        <span>Bench/Tool: <strong className="text-foreground dark:text-foreground">{task.assigned_machine_name}</strong></span>
                       )}
                     </div>
 
                     {/* Hardware & Consumables Counter for Bangladeshi Craftsmen */}
                     <div className="flex items-center gap-2 text-2xs">
                       {category === 'digital_finishing' && (
-                        <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                          <span className="text-slate-500">আইলেট (Eyelets):</span>
+                        <div className="flex items-center gap-1 bg-card px-2 py-0.5 rounded border border-border dark:border-border">
+                          <span className="text-muted-foreground">আইলেট (Eyelets):</span>
                           <button
                             onClick={() => handleUpdateConsumable(task.id, 'eyelets', -1)}
-                            className="px-1 font-bold text-slate-600 hover:text-slate-900"
+                            className="px-1 font-bold text-muted-foreground hover:text-foreground"
                           >
                             -
                           </button>
                           <span className="font-bold text-indigo-600">{taskConsumables.eyelets || 4}</span>
                           <button
                             onClick={() => handleUpdateConsumable(task.id, 'eyelets', 1)}
-                            className="px-1 font-bold text-slate-600 hover:text-slate-900"
+                            className="px-1 font-bold text-muted-foreground hover:text-foreground"
                           >
                             +
                           </button>
@@ -811,18 +811,18 @@ export default function FinishingAndFabricationPage() {
 
                       {category === 'signage_fabrication' && (
                         <>
-                          <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                            <span className="text-slate-500">LED Modules:</span>
+                          <div className="flex items-center gap-1 bg-card px-2 py-0.5 rounded border border-border dark:border-border">
+                            <span className="text-muted-foreground">LED Modules:</span>
                             <button
                               onClick={() => handleUpdateConsumable(task.id, 'ledModules', -5)}
-                              className="px-1 font-bold text-slate-600"
+                              className="px-1 font-bold text-muted-foreground"
                             >
                               -
                             </button>
                             <span className="font-bold text-amber-600">{taskConsumables.ledModules || 20}</span>
                             <button
                               onClick={() => handleUpdateConsumable(task.id, 'ledModules', 5)}
-                              className="px-1 font-bold text-slate-600"
+                              className="px-1 font-bold text-muted-foreground"
                             >
                               +
                             </button>
@@ -836,8 +836,8 @@ export default function FinishingAndFabricationPage() {
                   </div>
 
                   {/* Action Controls */}
-                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
-                    <div className="text-2xs text-slate-500">
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-border dark:border-border">
+                    <div className="text-2xs text-muted-foreground">
                       {task.actual_start ? (
                         <span>Started: {new Date(task.actual_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       ) : (
@@ -899,11 +899,11 @@ export default function FinishingAndFabricationPage() {
 
           {finishingTasks.length === 0 && (
             <Card className="p-12 text-center border-dashed">
-              <Scissors className="h-10 w-10 text-slate-400 mx-auto mb-2" />
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              <Scissors className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+              <h3 className="text-sm font-bold text-foreground dark:text-foreground">
                 {tBilingual('No finishing or fabrication tasks in this station!', 'এই স্টেশনে কোনো কাজ অপেক্ষমাণ নেই!')}
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {tBilingual('All post-press, lamination, and signage jobs are up to date.', 'সকল পোস্ট-প্রেস, লেমিনেশন ও সাইনেজ কাজ সম্পন্ন হয়েছে।')}
               </p>
             </Card>
@@ -940,8 +940,8 @@ export default function FinishingAndFabricationPage() {
             </div>
 
             {/* 5-Point QC Inspection Checklist */}
-            <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-              <Label className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide text-2xs">
+            <div className="space-y-2 p-3 bg-muted rounded-lg border border-border text-xs">
+              <Label className="font-bold text-foreground uppercase tracking-wide text-2xs">
                 Bangladeshi Press Quality Checkpoints (৫-দফা মান যাচাই)
               </Label>
               <div className="space-y-1.5 pt-1">
@@ -1032,7 +1032,7 @@ export default function FinishingAndFabricationPage() {
                 <select
                   value={defectReason}
                   onChange={(e) => setDefectReason(e.target.value)}
-                  className="w-full text-xs rounded-md border border-rose-300 bg-white px-3 py-2 text-rose-900 dark:border-rose-800 dark:bg-slate-950 dark:text-rose-100"
+                  className="w-full text-xs rounded-md border border-rose-300 bg-card px-3 py-2 text-rose-900 dark:border-rose-800 dark:text-rose-100"
                 >
                   {Object.entries(DEFECT_REASON_LABELS).map(([code, label]) => (
                     <option key={code} value={code}>
@@ -1063,7 +1063,7 @@ export default function FinishingAndFabricationPage() {
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
               <Button
                 type="button"
                 variant="outline"

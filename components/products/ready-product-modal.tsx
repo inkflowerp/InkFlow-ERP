@@ -744,7 +744,7 @@ export function ReadyProductModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-slate-900 dark:text-white">
+              <span className="text-base font-bold text-foreground dark:text-white">
                 {initialData ? `Edit Ready Product: ${initialData.name}` : 'New Ready Product Master'}
               </span>
               <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
@@ -756,7 +756,7 @@ export function ReadyProductModal({
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               Finished retail hardware, banner stands, acrylic displays, signage accessories, and print blanks sold by unit.
             </p>
           </div>
@@ -770,7 +770,7 @@ export function ReadyProductModal({
                 type="button"
                 variant="outline"
                 onClick={() => setActiveTab(TABS_CONFIG[currentTabIndex - 1].id)}
-                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+                className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -807,7 +807,7 @@ export function ReadyProductModal({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                className="h-10 px-5 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -828,7 +828,7 @@ export function ReadyProductModal({
     >
       <div className="space-y-4 py-1">
         {/* 4-Tab Stepper Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700/60">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-muted rounded-xl text-xs font-bold border border-border dark:border-slate-700/60">
           {TABS_CONFIG.map((tab) => {
             const Icon = tab.icon
             const isSelected = activeTab === tab.id
@@ -840,11 +840,11 @@ export function ReadyProductModal({
                 className={cn(
                   'px-2 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap text-xs relative',
                   isSelected
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium'
+                    ? 'bg-card text-foreground dark:text-white shadow-xs font-bold ring-1 ring-slate-200 dark:ring-slate-600'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-white font-medium'
                 )}
               >
-                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400')} />
+                <Icon className={cn('w-3.5 h-3.5 shrink-0', isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground')} />
                 <span>{tab.label}</span>
               </button>
             )
@@ -857,12 +857,12 @@ export function ReadyProductModal({
         {activeTab === 'basic' && (
           <div className="space-y-4 animate-in fade-in-0">
             {/* Section 1: Core Identification */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                   1
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Product Identity & Categorization
                 </h3>
               </div>
@@ -924,7 +924,7 @@ export function ReadyProductModal({
                       Barcode / EAN-13 (ঐচ্ছিক)
                     </Label>
                     <div className="relative">
-                      <QrCode className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                      <QrCode className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
                       <Input
                         placeholder="Scan or enter barcode"
                         value={barcode}
@@ -943,7 +943,7 @@ export function ReadyProductModal({
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                      className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
                     >
                       {READY_PRODUCT_CATEGORIES.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -977,7 +977,7 @@ export function ReadyProductModal({
                     <select
                       value={unit}
                       onChange={(e) => setUnit(e.target.value as UnitOfMeasure)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                      className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
                     >
                       {READY_PRODUCT_UNITS.map((u) => (
                         <option key={u.value} value={u.value}>
@@ -997,17 +997,17 @@ export function ReadyProductModal({
                     placeholder="e.g. Professional display stand with high-elastic fiberglass rods, anodized aluminum base, and waterproof padded carry bag..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-1 focus:ring-blue-500 outline-hidden resize-none"
+                    className="w-full p-2.5 rounded-md border border-input bg-card text-xs focus:ring-1 focus:ring-ring outline-hidden resize-none"
                   />
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
+                <div className="pt-2 border-t border-border dark:border-border">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground dark:text-foreground">
                     <input
                       type="checkbox"
                       checked={isActive}
                       onChange={(e) => setIsActive(e.target.checked)}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                     />
                     <span>Active in Sales & Billing Catalog</span>
                   </label>
@@ -1023,12 +1023,12 @@ export function ReadyProductModal({
         {activeTab === 'specs' && (
           <div className="space-y-4 animate-in fade-in-0">
             {/* Section 1: Dimensions & Build Material */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
                   <Sliders className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Physical Dimensions & Construction Specs
                 </h3>
               </div>
@@ -1077,7 +1077,7 @@ export function ReadyProductModal({
                     Unit Net Weight (kg)
                   </Label>
                   <div className="relative">
-                    <Scale className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                    <Scale className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
                     <Input
                       type="number"
                       step="0.01"
@@ -1096,7 +1096,7 @@ export function ReadyProductModal({
                   <select
                     value={purchaseUnit}
                     onChange={(e) => setPurchaseUnit(e.target.value)}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                    className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
                   >
                     {READY_PRODUCT_UNITS.map((u) => (
                       <option key={u.value} value={u.value}>
@@ -1108,43 +1108,43 @@ export function ReadyProductModal({
               </div>
 
               {/* Inclusions & Features Toggles */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer text-xs font-medium">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border dark:border-border">
+                <label className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted dark:hover:bg-muted/60 cursor-pointer text-xs font-medium">
                   <input
                     type="checkbox"
                     checked={hasCarryBag}
                     onChange={(e) => setHasCarryBag(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                   />
                   <span>Includes Carry Bag</span>
                 </label>
 
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer text-xs font-medium">
+                <label className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted dark:hover:bg-muted/60 cursor-pointer text-xs font-medium">
                   <input
                     type="checkbox"
                     checked={isFoldable}
                     onChange={(e) => setIsFoldable(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                   />
                   <span>Foldable / Portable</span>
                 </label>
 
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer text-xs font-medium">
+                <label className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted dark:hover:bg-muted/60 cursor-pointer text-xs font-medium">
                   <input
                     type="checkbox"
                     checked={isOutdoorRated}
                     onChange={(e) => setIsOutdoorRated(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                   />
                   <span>Outdoor Wind-Rated</span>
                 </label>
 
-                <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer text-xs font-medium">
+                <label className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted dark:hover:bg-muted/60 cursor-pointer text-xs font-medium">
                   <input
                     type="checkbox"
                     checked={isMountable}
                     onChange={(e) => setIsMountable(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                   />
                   <span>Wall / Table Mount</span>
                 </label>
@@ -1152,12 +1152,12 @@ export function ReadyProductModal({
             </div>
 
             {/* Section 2: Master Carton & Wholesale Packaging */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 flex items-center justify-center font-bold text-xs">
                   <Boxes className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Master Carton Packing & Order Quantities
                 </h3>
               </div>
@@ -1241,23 +1241,23 @@ export function ReadyProductModal({
         {activeTab === 'pricing' && (
           <div className="space-y-4 animate-in fade-in-0">
             {/* 1. Base Rates & Landed Cost Breakdown */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
                   <DollarSign className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Commercial Selling Price & Landed Cost Structure
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-white">
                     Base Selling Price (৳ / {unit}) <span className="text-rose-500">*</span>
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                    <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1285,11 +1285,11 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-white">
                     Factory Purchase Price (৳)
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                    <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1307,11 +1307,11 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-white">
                     Freight / Landed Add (৳)
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                    <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1325,11 +1325,11 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-slate-900 dark:text-white">
+                  <Label className="text-xs font-semibold mb-1 block text-foreground dark:text-white">
                     Floor Protect Price (৳)
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-bold text-xs">৳</span>
+                    <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1344,9 +1344,9 @@ export function ReadyProductModal({
               </div>
 
               {/* Real-time Profit & Margin Economics Card */}
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
+              <div className="p-3.5 bg-muted border border-border rounded-xl space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground dark:text-foreground">
                     <TrendingUp className="w-4 h-4 text-emerald-600" />
                     <span>Live Yield & Margin Analysis (Landed Cost: ৳{totalLandedCost.toFixed(2)})</span>
                   </div>
@@ -1374,15 +1374,15 @@ export function ReadyProductModal({
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 shadow-2xs">
-                    <span className="text-2xs text-slate-500 uppercase tracking-wider block">Profit / Unit</span>
+                  <div className="p-2 rounded-lg bg-card border border-border dark:border-slate-700/60 shadow-2xs">
+                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">Profit / Unit</span>
                     <span className="text-sm font-black tabular-nums text-emerald-600 dark:text-emerald-400">
                       {formatBDT(marginMetrics.grossProfit)}
                     </span>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 shadow-2xs">
-                    <span className="text-2xs text-slate-500 uppercase tracking-wider block">Gross Margin</span>
+                  <div className="p-2 rounded-lg bg-card border border-border dark:border-slate-700/60 shadow-2xs">
+                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">Gross Margin</span>
                     <span
                       className={cn(
                         'text-sm font-black tabular-nums',
@@ -1395,17 +1395,17 @@ export function ReadyProductModal({
                     </span>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 shadow-2xs">
-                    <span className="text-2xs text-slate-500 uppercase tracking-wider block">Markup</span>
+                  <div className="p-2 rounded-lg bg-card border border-border dark:border-slate-700/60 shadow-2xs">
+                    <span className="text-2xs text-muted-foreground uppercase tracking-wider block">Markup</span>
                     <span className="text-sm font-black tabular-nums text-blue-600 dark:text-blue-400">
                       {marginMetrics.markupPercent}%
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/80 dark:border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border dark:border-border">
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                    <Label className="text-2xs font-semibold mb-1 block text-muted-foreground dark:text-muted-foreground">
                       Target Gross Margin (%)
                     </Label>
                     <Input
@@ -1416,7 +1416,7 @@ export function ReadyProductModal({
                     />
                   </div>
                   <div>
-                    <Label className="text-2xs font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                    <Label className="text-2xs font-semibold mb-1 block text-muted-foreground dark:text-muted-foreground">
                       Minimum Allowed Margin (%) (Floor)
                     </Label>
                     <Input
@@ -1431,17 +1431,17 @@ export function ReadyProductModal({
             </div>
 
             {/* 2. Customer Tier Pricing */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 flex items-center justify-center font-bold text-xs">
                     <Tag className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                       Customer Tier Segment Rates
                     </h3>
-                    <p className="text-2xs text-slate-500">
+                    <p className="text-2xs text-muted-foreground">
                       Auto-applied when preparing quotations & sales for specific customer types.
                     </p>
                   </div>
@@ -1460,13 +1460,13 @@ export function ReadyProductModal({
 
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                 {/* Retail Tier */}
-                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
+                <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xs font-bold uppercase text-slate-700 dark:text-slate-300">Retail</span>
-                    <span className="text-2xs text-slate-400">100%</span>
+                    <span className="text-2xs font-bold uppercase text-foreground dark:text-muted-foreground">Retail</span>
+                    <span className="text-2xs text-muted-foreground">100%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1484,13 +1484,13 @@ export function ReadyProductModal({
                 </div>
 
                 {/* Corporate Tier */}
-                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
+                <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-400">Corporate</span>
                     <span className="text-2xs text-purple-500 font-medium">-5%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1508,13 +1508,13 @@ export function ReadyProductModal({
                 </div>
 
                 {/* Dealer Tier */}
-                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
+                <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-2xs font-bold uppercase text-blue-700 dark:text-blue-400">Dealer</span>
                     <span className="text-2xs text-blue-500 font-medium">-10%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1532,13 +1532,13 @@ export function ReadyProductModal({
                 </div>
 
                 {/* Wholesale Tier */}
-                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
+                <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-2xs font-bold uppercase text-emerald-700 dark:text-emerald-400">Wholesale</span>
                     <span className="text-2xs text-emerald-500 font-medium">-15%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1556,13 +1556,13 @@ export function ReadyProductModal({
                 </div>
 
                 {/* Custom VIP Tier */}
-                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
+                <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-2xs font-bold uppercase text-amber-700 dark:text-amber-400">Custom</span>
                     <span className="text-2xs text-amber-500 font-medium">VIP</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
+                    <span className="absolute left-2 top-2 text-muted-foreground font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1589,12 +1589,12 @@ export function ReadyProductModal({
         {activeTab === 'inventory' && (
           <div className="space-y-4 animate-in fade-in-0">
             {/* Section 1: Stock Levels & Reorder Triggers */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300 flex items-center justify-center font-bold text-xs">
                   <Warehouse className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Warehouse Stock & Reorder Thresholds
                 </h3>
               </div>
@@ -1649,7 +1649,7 @@ export function ReadyProductModal({
                     Warehouse Bin / Shelf Location
                   </Label>
                   <div className="relative">
-                    <MapPin className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                    <MapPin className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
                     <Input
                       placeholder="e.g. Main Warehouse - Shelf B-04"
                       value={warehouseLocation}
@@ -1664,7 +1664,7 @@ export function ReadyProductModal({
                     Procurement Lead Time (Days)
                   </Label>
                   <div className="relative">
-                    <Clock className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                    <Clock className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
                     <Input
                       type="number"
                       placeholder="e.g. 3"
@@ -1685,7 +1685,7 @@ export function ReadyProductModal({
                     <select
                       value={preferredSupplierId}
                       onChange={(e) => setPreferredSupplierId(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                      className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
                     >
                       <option value="">Select Preferred Supplier...</option>
                       {suppliers.map((s) => (
@@ -1712,24 +1712,24 @@ export function ReadyProductModal({
             </div>
 
             {/* Section 2: Taxes & Governance */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 flex items-center justify-center font-bold text-xs">
+                <div className="h-6 w-6 rounded-lg bg-muted text-foreground flex items-center justify-center font-bold text-xs">
                   <Percent className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Tax & Sales Staff Governance
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground dark:text-foreground">
                     <input
                       type="checkbox"
                       checked={vatApplicable}
                       onChange={(e) => setVatApplicable(e.target.checked)}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                     />
                     <span>VAT / Tax Applicable</span>
                   </label>
@@ -1752,22 +1752,22 @@ export function ReadyProductModal({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground dark:text-foreground">
                     <input
                       type="checkbox"
                       checked={isTaxInclusive}
                       onChange={(e) => setIsTaxInclusive(e.target.checked)}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                     />
                     <span>Selling Price is Tax-Inclusive</span>
                   </label>
 
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground dark:text-foreground">
                     <input
                       type="checkbox"
                       checked={allowManualOverride}
                       onChange={(e) => setAllowManualOverride(e.target.checked)}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
                     />
                     <span>Allow Sales Staff Rate Override on Quotations</span>
                   </label>

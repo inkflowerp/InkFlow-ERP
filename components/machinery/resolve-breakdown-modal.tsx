@@ -119,7 +119,7 @@ export function ResolveBreakdownModal({
             value={diagnosis}
             onChange={(e) => setDiagnosis(e.target.value)}
             required
-            className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+            className="w-full p-2.5 rounded-md border border-input bg-card text-xs font-medium"
           />
         </div>
 
@@ -132,7 +132,7 @@ export function ResolveBreakdownModal({
             value={repairAction}
             onChange={(e) => setRepairAction(e.target.value)}
             required
-            className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+            className="w-full p-2.5 rounded-md border border-input bg-card text-xs font-medium"
           />
         </div>
 
@@ -188,7 +188,7 @@ export function ResolveBreakdownModal({
               id="rvStatus"
               value={targetStatus}
               onChange={(e) => setTargetStatus(e.target.value as MachineryStatus)}
-              className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold"
             >
               <option value="available">Available (Floor Ready)</option>
               <option value="maintenance">Maintenance (Further Calibration)</option>
@@ -207,7 +207,7 @@ export function ResolveBreakdownModal({
           />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

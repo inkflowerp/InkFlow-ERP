@@ -375,12 +375,12 @@ export function Sidebar() {
     <aside
       aria-label="Tenant Navigation Sidebar"
       className={cn(
-        'relative hidden lg:flex flex-col border-r border-slate-200/80 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-900 select-none z-30 h-full max-h-full shrink-0 overflow-hidden shadow-xs',
+        'relative hidden lg:flex flex-col border-r border-border bg-card transition-all duration-300 select-none z-30 h-full max-h-full shrink-0 overflow-hidden shadow-xs',
         collapsed ? 'w-18' : 'w-64'
       )}
     >
       {/* Brand Header with CMYK Color Indicator */}
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 px-4 dark:border-slate-800">
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4 dark:border-border">
         {!collapsed ? (
           <Link
             href={getTenantNavHref('/dashboard', pathname, company?.slug)}
@@ -391,21 +391,21 @@ export function Sidebar() {
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-0.5 shadow-xs shrink-0"
+                className="h-8 w-8 rounded-lg object-contain bg-foreground border border-slate-700/60 p-0.5 shadow-xs shrink-0"
               />
             ) : (
-              <div className="grid grid-cols-2 gap-0.5 p-1 rounded-md bg-slate-900 dark:bg-slate-800 shadow-xs group-hover:scale-105 transition-transform shrink-0">
+              <div className="grid grid-cols-2 gap-0.5 p-1 rounded-md bg-foreground shadow-xs group-hover:scale-105 transition-transform shrink-0">
                 <span className="h-2 w-2 rounded-full bg-cyan-400" />
                 <span className="h-2 w-2 rounded-full bg-pink-500" />
                 <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                <span className="h-2 w-2 rounded-full bg-slate-200" />
+                <span className="h-2 w-2 rounded-full bg-muted" />
               </div>
             )}
             <div className="flex flex-col text-left">
-              <span className="font-black tracking-tight text-base text-slate-900 dark:text-white leading-tight">
+              <span className="font-black tracking-tight text-base text-foreground dark:text-white leading-tight">
                 {appName}
               </span>
-              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 truncate max-w-[130px]">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-[130px]">
                 {tagline || tBilingual('Print ERP System', 'প্রিন্ট ইআরপি সফটওয়্যার')}
               </span>
             </div>
@@ -413,7 +413,7 @@ export function Sidebar() {
         ) : (
           <Link
             href={getTenantNavHref('/dashboard', pathname, company?.slug)}
-            className="mx-auto flex items-center justify-center p-1 rounded-md bg-slate-900 dark:bg-slate-800 hover:scale-105 transition-transform cursor-pointer h-8 w-8"
+            className="mx-auto flex items-center justify-center p-1 rounded-md bg-foreground hover:scale-105 transition-transform cursor-pointer h-8 w-8"
             title={`${appName} Dashboard`}
           >
             {appLogoUrl ? (
@@ -423,7 +423,7 @@ export function Sidebar() {
                 <span className="h-2 w-2 rounded-full bg-cyan-400" />
                 <span className="h-2 w-2 rounded-full bg-pink-500" />
                 <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                <span className="h-2 w-2 rounded-full bg-slate-200" />
+                <span className="h-2 w-2 rounded-full bg-muted" />
               </div>
             )}
           </Link>
@@ -432,7 +432,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={handleToggleCollapsed}
-          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"
+          className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"
           title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
@@ -444,19 +444,19 @@ export function Sidebar() {
       {!collapsed && (
         <div className="px-3 pt-2.5 pb-1">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
               placeholder={tBilingual('Quick filter...', 'মেনু খুঁজুন...')}
-              className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-slate-200/80 bg-slate-50 text-slate-800 placeholder-slate-400 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bangla-text"
+              className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-border bg-muted text-foreground placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-ring transition-all bangla-text"
             />
             {filterQuery && (
               <button
                 type="button"
                 onClick={() => setFilterQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-muted-foreground dark:hover:text-foreground"
                 title="Clear filter"
               >
                 <X className="h-3 w-3" />
@@ -483,20 +483,20 @@ export function Sidebar() {
                   type="button"
                   onClick={() => toggleGroup(section.id)}
                   aria-expanded={isExpanded}
-                  className="w-full flex items-center justify-between px-3 py-1.5 text-2xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer bangla-text group"
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-2xs font-black uppercase tracking-wider text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground transition-colors rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer bangla-text group"
                 >
                   <span className="truncate">{sectionTitle}</span>
                   {isExpanded ? (
-                    <ChevronDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground transition-transform" />
                   ) : (
-                    <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground transition-transform" />
                   )}
                 </button>
               )}
 
               {collapsed && Boolean(section.title) && (
                 /* Subtle Divider in Collapsed Sidebar */
-                <div className="h-px bg-slate-100 dark:bg-slate-800/80 my-1.5 mx-2" />
+                <div className="h-px bg-muted my-1.5 mx-2" />
               )}
 
               {/* Items List */}
@@ -525,7 +525,7 @@ export function Sidebar() {
                               'flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer bangla-text min-h-[40px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                               isActive || isChildActive
                                 ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold'
-                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-white',
                               collapsed && 'justify-center px-2'
                             )}
                           >
@@ -534,7 +534,7 @@ export function Sidebar() {
                                 'h-4 w-4 shrink-0 transition-transform group-hover/nav:scale-105',
                                 isActive || isChildActive
                                   ? 'text-blue-600 dark:text-blue-400'
-                                  : 'text-slate-400 group-hover/nav:text-slate-600 dark:group-hover/nav:text-slate-200'
+                                  : 'text-muted-foreground group-hover/nav:text-muted-foreground dark:group-hover/nav:text-foreground'
                               )}
                             />
 
@@ -550,7 +550,7 @@ export function Sidebar() {
                                         item.badgeVariant === 'live'
                                           ? 'bg-rose-500 text-white animate-pulse'
                                           : item.badgeVariant === 'fast'
-                                          ? 'bg-emerald-400 text-slate-950 font-black'
+                                          ? 'bg-emerald-400 text-foreground font-black'
                                           : item.badgeVariant === 'pro'
                                           ? 'bg-amber-500 text-white'
                                           : 'bg-emerald-500 text-white'
@@ -567,7 +567,7 @@ export function Sidebar() {
                                         e.stopPropagation()
                                         toggleSubNav(item.key)
                                       }}
-                                      className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition-colors"
+                                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 dark:hover:bg-slate-700/60 transition-colors"
                                       title={isSubExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
                                     >
                                       <ChevronDown
@@ -596,7 +596,7 @@ export function Sidebar() {
 
                         {/* Nested Sub-Modules (Expanded Sidebar) */}
                         {!collapsed && hasChildren && (isSubExpanded || Boolean(filterQuery)) && (
-                          <div className="ml-4 pl-3.5 border-l-2 border-slate-200/80 dark:border-slate-800 space-y-0.5 mt-1 animate-in fade-in-0 duration-150">
+                          <div className="ml-4 pl-3.5 border-l-2 border-border space-y-0.5 mt-1 animate-in fade-in-0 duration-150">
                             {item.children!.map((child) => {
                               const ChildIcon = iconMap[child.icon] || Sparkles
                               const isSubActive = isItemActive(child.href, child.exact)
@@ -611,7 +611,7 @@ export function Sidebar() {
                                     'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer bangla-text min-h-[32px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                                     isSubActive
                                       ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold'
-                                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                                      : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-white'
                                   )}
                                 >
                                   <ChildIcon
@@ -619,7 +619,7 @@ export function Sidebar() {
                                       'h-3.5 w-3.5 shrink-0 transition-transform',
                                       isSubActive
                                         ? 'text-blue-600 dark:text-blue-400'
-                                        : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'
+                                        : 'text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-foreground'
                                     )}
                                   />
                                   <span className="truncate flex-1">{childTitle}</span>
@@ -640,12 +640,12 @@ export function Sidebar() {
 
                         {/* Collapsed Hover Flyout / Popover */}
                         {collapsed && (
-                          <div className="absolute left-full top-0 ml-2.5 hidden group-hover/nav:flex flex-col z-50 animate-in fade-in-0 zoom-in-95 duration-150 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2 shadow-2xl">
+                          <div className="absolute left-full top-0 ml-2.5 hidden group-hover/nav:flex flex-col z-50 animate-in fade-in-0 zoom-in-95 duration-150 w-64 rounded-2xl bg-card border border-border p-2 shadow-2xl">
                             {/* Popover Header */}
-                            <div className="px-2.5 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <div className="px-2.5 py-2 border-b border-border flex items-center justify-between">
                               <div className="flex items-center gap-2 min-w-0">
                                 <Icon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                                <span className="font-bold text-xs text-slate-900 dark:text-white truncate bangla-text">
+                                <span className="font-bold text-xs text-foreground dark:text-white truncate bangla-text">
                                   {itemTitle}
                                 </span>
                               </div>
@@ -670,10 +670,10 @@ export function Sidebar() {
                                         'flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors bangla-text',
                                         isSubActive
                                           ? 'bg-blue-600 text-white font-bold shadow-xs'
-                                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                                          : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:text-white'
                                       )}
                                     >
-                                      <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-white' : 'text-slate-400')} />
+                                      <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-white' : 'text-muted-foreground')} />
                                       <span className="truncate flex-1">{tBilingual(child.title, child.titleBn)}</span>
                                     </Link>
                                   )
@@ -683,7 +683,7 @@ export function Sidebar() {
                               <div className="p-1">
                                 <Link
                                   href={getTenantNavHref(item.href, pathname, company?.slug)}
-                                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-blue-600 bangla-text"
+                                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-foreground hover:text-blue-600 bangla-text"
                                 >
                                   <span>Open {itemTitle}</span>
                                 </Link>
@@ -696,7 +696,7 @@ export function Sidebar() {
                         {item.hasDividerBelow && (
                           <div
                             className={cn(
-                              'h-px bg-slate-200/80 dark:bg-slate-800/80 my-2',
+                              'h-px bg-muted/80 my-2',
                               collapsed ? 'mx-2' : 'mx-1.5'
                             )}
                           />
@@ -713,14 +713,14 @@ export function Sidebar() {
         {/* Empty filter search indicator */}
         {processedSections.length === 0 && filterQuery && (
           <div className="text-center py-6 px-3">
-            <p className="text-xs text-slate-400 bangla-text">{tBilingual('No matching menu items found', 'কোনো মেনু পাওয়া যায়নি')}</p>
+            <p className="text-xs text-muted-foreground bangla-text">{tBilingual('No matching menu items found', 'কোনো মেনু পাওয়া যায়নি')}</p>
           </div>
         )}
       </nav>
 
       {/* Footer / Support Desk & Subscription Upgrade Area */}
       {!collapsed && (
-        <div className="shrink-0 border-t border-slate-100 p-3 dark:border-slate-800 space-y-2">
+        <div className="shrink-0 border-t border-border p-3 space-y-2">
           {/* Plan / Upgrade Box */}
           {isTrial ? (
             <div className="rounded-lg bg-muted/40 p-2.5 border border-border space-y-2">
@@ -747,11 +747,11 @@ export function Sidebar() {
             </div>
           ) : (
             currentPlan && (
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 p-2.5 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+              <div className="rounded-xl bg-muted p-2.5 border border-border flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <Sparkles className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
                   <div className="truncate">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block truncate bangla-text">
+                    <span className="text-xs font-bold text-foreground block truncate bangla-text">
                       {tBilingual(currentPlan.name, currentPlan.name_bn)}
                     </span>
                   </div>
@@ -772,20 +772,20 @@ export function Sidebar() {
           {/* Support Desk Link */}
           <Link
             href={getTenantNavHref('/support', pathname, company?.slug)}
-            className="flex items-center justify-between rounded-xl bg-slate-50 px-2.5 py-2 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 hover:border-blue-300 dark:hover:border-slate-700 hover:bg-slate-100/80 dark:hover:bg-slate-800/90 transition-all group cursor-pointer"
+            className="flex items-center justify-between rounded-xl bg-muted px-2.5 py-2 border border-border hover:border-blue-300 hover:bg-muted dark:hover:bg-muted/90 transition-all group cursor-pointer"
           >
             <div className="flex items-center gap-2 min-w-0">
               <Headphones className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
               <div className="truncate">
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate bangla-text">
+                <p className="text-xs font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate bangla-text">
                   {tBilingual('Help & Support', 'সহায়তা ও সাপোর্ট')}
                 </p>
-                <p className="text-2xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                <p className="text-2xs text-muted-foreground font-medium truncate">
                   {company?.phone || '24/7 Live Desk'}
                 </p>
               </div>
             </div>
-            <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0" />
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0" />
           </Link>
 
           {/* Reset All Data Button */}
@@ -809,7 +809,7 @@ export function Sidebar() {
 
       {/* Collapsed Reset Action */}
       {collapsed && (
-        <div className="shrink-0 border-t border-slate-100 p-2 dark:border-slate-800 flex justify-center">
+        <div className="shrink-0 border-t border-border p-2 flex justify-center">
           <button
             type="button"
             onClick={() => setResetModalOpen(true)}

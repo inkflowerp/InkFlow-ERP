@@ -73,7 +73,7 @@ export function QuotationTable({
   const getStatusBadge = (status: QuotationStatus) => {
     switch (status) {
       case 'draft':
-        return <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300">{isBn ? 'খসড়া' : 'Draft'}</Badge>
+        return <Badge variant="outline" className="bg-muted text-foreground border-input dark:text-muted-foreground">{isBn ? 'খসড়া' : 'Draft'}</Badge>
       case 'sent':
         return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">{isBn ? 'পাঠানো হয়েছে' : 'Sent'}</Badge>
       case 'viewed':
@@ -87,14 +87,14 @@ export function QuotationTable({
       case 'rejected':
         return <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">{isBn ? 'বাতিল' : 'Rejected'}</Badge>
       case 'expired':
-        return <Badge variant="outline" className="bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">{isBn ? 'মেয়াদোত্তীর্ণ' : 'Expired'}</Badge>
+        return <Badge variant="outline" className="bg-muted text-muted-foreground dark:text-muted-foreground">{isBn ? 'মেয়াদোত্তীর্ণ' : 'Expired'}</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
   }
 
   const getNextActionBadge = (nextAction: string, status: QuotationStatus) => {
-    let colorClasses = 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+    let colorClasses = 'bg-muted text-foreground dark:text-muted-foreground'
     if (nextAction.includes('Follow up today') || nextAction.includes('Urgent')) {
       colorClasses = 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 font-bold'
     } else if (nextAction.includes('Approved')) {
@@ -117,7 +117,7 @@ export function QuotationTable({
   const getExpiryBadge = (validUntil: string) => {
     const exp = QuotationService.calculateExpiryUrgency(validUntil)
     if (exp.urgency === 'expired') {
-      return <span className="text-2xs text-slate-400 font-medium">{exp.label}</span>
+      return <span className="text-2xs text-muted-foreground font-medium">{exp.label}</span>
     }
     if (exp.urgency === 'critical') {
       return <span className="text-2xs text-rose-600 dark:text-rose-400 font-bold">{exp.label}</span>
@@ -125,7 +125,7 @@ export function QuotationTable({
     if (exp.urgency === 'warning') {
       return <span className="text-2xs text-amber-700 dark:text-amber-400 font-semibold">{exp.label}</span>
     }
-    return <span className="text-2xs text-slate-500 dark:text-slate-400">{exp.label}</span>
+    return <span className="text-2xs text-muted-foreground dark:text-muted-foreground">{exp.label}</span>
   }
 
   return (
@@ -133,7 +133,7 @@ export function QuotationTable({
       {/* Desktop Table View */}
       <div className="hidden lg:block overflow-x-auto min-h-[340px] pb-12">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+          <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border dark:border-border">
             <tr>
               <th className="py-3 px-4">{isBn ? 'কোটেশন নং' : 'Quote #'}</th>
               <th className="py-3 px-4">{isBn ? 'কাস্টমার' : 'Customer'}</th>
@@ -146,7 +146,7 @@ export function QuotationTable({
               <th className="py-3 px-4 text-center w-[70px] min-w-[70px]">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-border dark:divide-border">
             {safeQuotations.map((q, index) => {
               const nextAction = QuotationService.calculateNextAction(q)
               const primaryItem = q.items?.[0]
@@ -166,7 +166,7 @@ export function QuotationTable({
               const dueAmt = q.due_on_delivery ?? Math.max(0, (Number(q.grand_total) || 0) - advAmt)
 
               return (
-                <tr key={q.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                <tr key={q.id} className="hover:bg-muted dark:hover:bg-muted/50 transition-colors">
                   {/* Quote Number */}
                   <td className="py-3.5 px-4 tabular-nums font-bold text-blue-600">
                     <Link
@@ -180,15 +180,15 @@ export function QuotationTable({
 
                   {/* Customer */}
                   <td className="py-3.5 px-4 max-w-[200px]">
-                    <div className="font-semibold text-slate-900 dark:text-white truncate">
+                    <div className="font-semibold text-foreground dark:text-white truncate">
                       {q.customer_name}
                       {q.customer_company && (
-                        <span className="text-slate-500 font-normal text-xs ml-1">
+                        <span className="text-muted-foreground font-normal text-xs ml-1">
                           ({q.customer_company})
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 text-2xs tabular-nums text-slate-500">
+                    <div className="flex items-center gap-1.5 text-2xs tabular-nums text-muted-foreground">
                       {q.customer_phone && (
                         <a href={`tel:${q.customer_phone}`} className="hover:text-blue-600 hover:underline">
                           {q.customer_phone}
@@ -198,11 +198,11 @@ export function QuotationTable({
                   </td>
 
                   {/* Primary Item */}
-                  <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300 max-w-[220px]">
+                  <td className="py-3.5 px-4 text-xs text-foreground max-w-[220px]">
                     <div className="flex items-center gap-1.5 truncate font-medium">
                       <span className="truncate">{primaryItem?.description || 'Custom Print Job'}</span>
                     </div>
-                    <div className="text-2xs text-slate-400">
+                    <div className="text-2xs text-muted-foreground">
                       {primaryItem && primaryItem.width > 0 && primaryItem.height > 0 ? (
                         <span>
                           {primaryItem.width}×{primaryItem.height} {primaryItem.dimension_unit} ({primaryItem.area_sft} sft)
@@ -211,7 +211,7 @@ export function QuotationTable({
                         <span>{primaryItem?.quantity || 1} {primaryItem?.unit || 'pcs'}</span>
                       )}
                       {q.items && q.items.length > 1 && (
-                        <span className="text-slate-400 ml-1.5 font-semibold">
+                        <span className="text-muted-foreground ml-1.5 font-semibold">
                           (+{q.items.length - 1} more)
                         </span>
                       )}
@@ -220,7 +220,7 @@ export function QuotationTable({
 
                   {/* Grand Total */}
                   <td className="py-3.5 px-4">
-                    <div className="tabular-nums font-bold text-slate-900 dark:text-white">
+                    <div className="tabular-nums font-bold text-foreground dark:text-white">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
                     <div className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
@@ -244,7 +244,7 @@ export function QuotationTable({
                   </td>
 
                   {/* Salesperson */}
-                  <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400 truncate max-w-[120px]">
+                  <td className="py-3.5 px-4 text-xs text-muted-foreground truncate max-w-[120px]">
                     {q.salesperson_name || 'Staff'}
                   </td>
 
@@ -261,8 +261,8 @@ export function QuotationTable({
                         className={cn(
                           'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
                           activeMenuQuoteId === q.id
-                            ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
-                            : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            ? 'bg-muted text-foreground dark:text-white'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
                         )}
                         title={isBn ? 'অ্যাকশন' : 'Actions'}
                         aria-label="Quotation Actions"
@@ -274,7 +274,7 @@ export function QuotationTable({
                       {activeMenuQuoteId === q.id && (
                         <div
                           className={cn(
-                            'absolute right-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+                            'absolute right-0 w-56 bg-card border border-border rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
                             index >= safeQuotations.length - 2 && safeQuotations.length >= 3
                               ? 'bottom-full mb-1'
                               : 'top-full mt-1'
@@ -284,7 +284,7 @@ export function QuotationTable({
                           <Link
                             href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
                             onClick={() => setActiveMenuQuoteId(null)}
-                            className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors"
+                            className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors"
                           >
                             <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                             <span className="font-medium">
@@ -299,7 +299,7 @@ export function QuotationTable({
                               setActiveMenuQuoteId(null)
                               onOpenFollowUp(q)
                             }}
-                            className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                            className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                           >
                             <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                             <span>{isBn ? 'ফলো-আপ রেকর্ড করুন' : 'Log Follow-Up'}</span>
@@ -324,19 +324,19 @@ export function QuotationTable({
                             <a
                               href={`tel:${q.customer_phone}`}
                               onClick={() => setActiveMenuQuoteId(null)}
-                              className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 transition-colors"
+                              className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors"
                             >
-                              <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                              <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                               <div className="flex flex-col text-left">
                                 <span>{isBn ? 'কল করুন' : 'Call Customer'}</span>
-                                <span className="text-2xs text-slate-400 tabular-nums">{q.customer_phone}</span>
+                                <span className="text-2xs text-muted-foreground tabular-nums">{q.customer_phone}</span>
                               </div>
                             </a>
                           ) : null}
 
                           {/* Divider if onTrash exists */}
                           {onTrash ? (
-                            <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+                            <div className="my-1 border-t border-border dark:border-border" />
                           ) : null}
 
                           {/* 5. Move to Trash */}
@@ -365,7 +365,7 @@ export function QuotationTable({
       </div>
 
       {/* Mobile & Tablet Card View */}
-      <div className="lg:hidden divide-y divide-slate-100 dark:divide-slate-800">
+      <div className="lg:hidden divide-y divide-border dark:divide-border">
         {safeQuotations.map((q) => {
           const nextAction = QuotationService.calculateNextAction(q)
           const primaryItem = q.items?.[0]
@@ -384,7 +384,7 @@ export function QuotationTable({
           const advAmt = q.advance_amount ?? Math.round(((Number(q.grand_total) || 0) * advPct) / 100)
 
           return (
-            <div key={q.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+            <div key={q.id} className="p-4 space-y-3 hover:bg-muted dark:hover:bg-muted/50 transition-colors">
               {/* Header: Quote #, Status & Expiry */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">
@@ -404,7 +404,7 @@ export function QuotationTable({
               {/* Customer & Value */}
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="font-semibold text-sm text-slate-900 dark:text-white">
+                  <div className="font-semibold text-sm text-foreground dark:text-white">
                     {q.customer_name} {q.customer_company && `(${q.customer_company})`}
                   </div>
                   {q.customer_phone && (
@@ -414,8 +414,8 @@ export function QuotationTable({
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <span className="text-2xs uppercase font-semibold text-slate-400 block">Grand Total</span>
-                  <span className="text-base font-black text-slate-900 dark:text-white tabular-nums">
+                  <span className="text-2xs uppercase font-semibold text-muted-foreground block">Grand Total</span>
+                  <span className="text-base font-black text-foreground dark:text-white tabular-nums">
                     {formatBDT(q.grand_total)}
                   </span>
                   <span className="text-2xs text-amber-600 block">
@@ -425,11 +425,11 @@ export function QuotationTable({
               </div>
 
               {/* Job Spec Card */}
-              <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800 space-y-1.5">
-                <div className="text-slate-800 dark:text-slate-200 font-medium line-clamp-2">
+              <div className="p-2.5 rounded-lg bg-muted text-xs border border-border space-y-1.5">
+                <div className="text-foreground font-medium line-clamp-2">
                   {primaryItem?.description || 'Custom Print Job'}
                 </div>
-                <div className="flex items-center justify-between text-2xs text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                <div className="flex items-center justify-between text-2xs text-muted-foreground pt-1 border-t border-border dark:border-border">
                   <span>
                     {primaryItem && primaryItem.width > 0 && primaryItem.height > 0
                       ? `${primaryItem.width}×{primaryItem.height} ${primaryItem.dimension_unit} (${primaryItem.area_sft} sft)`
@@ -441,12 +441,12 @@ export function QuotationTable({
 
               {/* Next Action Prompt */}
               <div className="flex items-center justify-between text-xs pt-0.5">
-                <span className="text-2xs text-slate-500 font-medium">Next Action:</span>
+                <span className="text-2xs text-muted-foreground font-medium">Next Action:</span>
                 {getNextActionBadge(nextAction, q.status)}
               </div>
 
               {/* Action Buttons */}
-              <div className="grid grid-cols-4 gap-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-4 gap-1.5 pt-1 border-t border-border dark:border-border">
                 {cleanPhone ? (
                   <a
                     href={waUrl}
@@ -468,15 +468,15 @@ export function QuotationTable({
                   size="sm"
                   variant="outline"
                   onClick={() => onOpenFollowUp(q)}
-                  className="h-9 text-xs font-semibold text-slate-700 dark:text-slate-300"
+                  className="h-9 text-xs font-semibold text-foreground dark:text-muted-foreground"
                 >
-                  <Clock className="h-3.5 w-3.5 mr-1 text-slate-500" />
+                  <Clock className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                   Follow
                 </Button>
 
                 <Link
                   href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
-                  className="inline-flex items-center justify-center h-9 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white"
+                  className="inline-flex items-center justify-center h-9 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   Cockpit
                 </Link>

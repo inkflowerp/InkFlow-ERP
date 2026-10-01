@@ -29,10 +29,10 @@ function InvoicesRedirectContent() {
         <Receipt className="h-6 w-6 animate-pulse" />
       </div>
       <div className="space-y-1">
-        <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+        <h2 className="text-sm font-bold text-foreground dark:text-foreground">
           Redirecting to Billing & Collections...
         </h2>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           Invoices are now consolidated in the unified financial workspace.
         </p>
       </div>
@@ -49,7 +49,7 @@ export default function InvoicesRedirectPage() {
           <div className="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
             <Receipt className="h-6 w-6 animate-pulse" />
           </div>
-          <p className="text-xs text-slate-500">Redirecting to Billing...</p>
+          <p className="text-xs text-muted-foreground">Redirecting to Billing...</p>
           <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
         </div>
       }

@@ -184,7 +184,7 @@ export function DropdownMenuContent({
         zIndex: 99999,
       }}
       className={cn(
-        'min-w-[10rem] max-h-[min(360px,calc(100vh-24px))] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 text-slate-900 shadow-xl animate-in fade-in-0 zoom-in-95',
+        'min-w-[10rem] max-h-[min(360px,calc(100vh-24px))] overflow-y-auto rounded-xl border border-border bg-card p-1 text-foreground shadow-xl animate-in fade-in-0 zoom-in-95',
         className
       )}
     >
@@ -223,7 +223,7 @@ export function DropdownMenuItem({
         handleClick(e)
       },
       className: cn(
-        'flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none transition-colors hover:bg-slate-100 hover:text-slate-900 text-left',
+        'flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-xs text-foreground outline-none transition-colors hover:bg-muted hover:text-foreground text-left',
         childElement.props.className,
         className
       ),
@@ -235,7 +235,7 @@ export function DropdownMenuItem({
       type="button"
       onClick={handleClick}
       className={cn(
-        'flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none transition-colors hover:bg-slate-100 hover:text-slate-900 text-left',
+        'flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-xs text-foreground outline-none transition-colors hover:bg-muted hover:text-foreground text-left',
         className
       )}
     >
@@ -245,5 +245,5 @@ export function DropdownMenuItem({
 }
 
 export function DropdownMenuSeparator({ className }: { className?: string }) {
-  return <div className={cn('-mx-1 my-1 h-px bg-slate-100', className)} />
+  return <div className={cn('-mx-1 my-1 h-px bg-muted', className)} />
 }

@@ -32,10 +32,10 @@ export function DashboardChartsSkeleton() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-pulse">
       {[1, 2, 3, 4].map((i) => (
-        <Card key={i} className="p-5 border-slate-200 dark:border-slate-800">
-          <div className="h-5 w-48 bg-slate-200 dark:bg-slate-800 rounded mb-2" />
-          <div className="h-3 w-64 bg-slate-100 dark:bg-slate-800/60 rounded mb-6" />
-          <div className="h-56 bg-slate-100 dark:bg-slate-800/40 rounded-xl" />
+        <Card key={i} className="p-5 border-border dark:border-border">
+          <div className="h-5 w-48 bg-muted rounded mb-2" />
+          <div className="h-3 w-64 bg-muted rounded mb-6" />
+          <div className="h-56 bg-muted rounded-xl" />
         </Card>
       ))}
     </div>
@@ -45,14 +45,14 @@ export function DashboardChartsSkeleton() {
 function EmptyChartState({ title, titleBn }: { title?: string; titleBn?: string }) {
   const { tBilingual } = useI18n()
   return (
-    <div className="h-56 w-full flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-center p-6">
-      <div className="rounded-full bg-slate-100 dark:bg-slate-800 p-3 text-slate-400 mb-2">
+    <div className="h-56 w-full flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted text-center p-6">
+      <div className="rounded-full bg-muted p-3 text-muted-foreground mb-2">
         <BarChart2 className="h-5 w-5" />
       </div>
-      <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 bangla-text">
+      <p className="text-xs font-semibold text-foreground bangla-text">
         {tBilingual('Not enough data yet', 'এখনও পর্যাপ্ত তথ্য নেই')}
       </p>
-      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mt-1 bangla-text">
+      <p className="text-xs text-muted-foreground max-w-xs mt-1 bangla-text">
         {tBilingual(
           title || 'New chart trends will appear automatically as you create records.',
           titleBn || 'নতুন রেকর্ড তৈরি করলে চার্ট স্বয়ংক্রিয়ভাবে আপডেট হবে।'
@@ -363,9 +363,9 @@ export function DashboardCharts() {
                   <div key={s.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                      <span className="text-slate-600 dark:text-slate-300 font-medium">{s.name}</span>
+                      <span className="text-muted-foreground font-medium">{s.name}</span>
                     </div>
-                    <strong className="text-slate-900 dark:text-white bangla-text">
+                    <strong className="text-foreground dark:text-white bangla-text">
                       {num(s.value)} {tBilingual('Jobs', 'টি কাজ')}
                     </strong>
                   </div>

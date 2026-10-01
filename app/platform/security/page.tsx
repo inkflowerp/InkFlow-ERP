@@ -277,12 +277,12 @@ export default function PlatformSecurityPage() {
           <div className="h-4 w-96 bg-slate-800/50 rounded" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-28 bg-slate-900 border border-slate-800 rounded-2xl" />
+              <div key={i} className="h-28 bg-foreground border border-border rounded-2xl" />
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            <div className="h-96 bg-slate-900 border border-slate-800 rounded-2xl" />
-            <div className="h-96 bg-slate-900 border border-slate-800 rounded-2xl" />
+            <div className="h-96 bg-foreground border border-border rounded-2xl" />
+            <div className="h-96 bg-foreground border border-border rounded-2xl" />
           </div>
         </div>
       </div>
@@ -294,13 +294,13 @@ export default function PlatformSecurityPage() {
     return (
       <div className="space-y-6 max-w-7xl mx-auto pb-12">
         <PlatformSettingsNav />
-        <Card className="bg-slate-900 border-red-900/50 p-8 text-center space-y-4">
+        <Card className="bg-foreground border-red-900/50 p-8 text-center space-y-4">
           <div className="w-12 h-12 rounded-full bg-red-950 border border-red-800 flex items-center justify-center mx-auto text-red-400">
             <ShieldAlert className="h-6 w-6" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Security Center Unavailable</h2>
-            <p className="text-sm text-slate-400 mt-1">{fetchError}</p>
+            <p className="text-sm text-muted-foreground mt-1">{fetchError}</p>
           </div>
           <div className="flex items-center justify-center gap-3 pt-2">
             <Button
@@ -313,7 +313,7 @@ export default function PlatformSecurityPage() {
             <Button
               variant="outline"
               asChild
-              className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs"
+              className="border-border text-muted-foreground hover:bg-secondary text-xs"
             >
               <Link href="/platform/login">Platform Login</Link>
             </Button>
@@ -329,7 +329,7 @@ export default function PlatformSecurityPage() {
       <PlatformSettingsNav />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
@@ -339,7 +339,7 @@ export default function PlatformSecurityPage() {
             <Shield className="h-7 w-7 text-cyan-400" />
             Platform Security &amp; Threat Defense
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Audit privileged credentials, configure time-based MFA, govern active device sessions, and inspect platform authentication telemetry.
           </p>
         </div>
@@ -350,7 +350,7 @@ export default function PlatformSecurityPage() {
             variant="outline"
             onClick={loadSecurity}
             disabled={loading}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9 min-h-[36px]"
+            className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9 min-h-[36px]"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
             Refresh Telemetry
@@ -388,7 +388,7 @@ export default function PlatformSecurityPage() {
           <button
             type="button"
             onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-white text-xs px-1"
+            className="text-muted-foreground hover:text-white text-xs px-1"
           >
             ✕
           </button>
@@ -397,8 +397,8 @@ export default function PlatformSecurityPage() {
 
       {/* Security Status Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-slate-900/90 border-slate-800 p-4 relative overflow-hidden shadow-lg group hover:border-slate-700 transition-all">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4 relative overflow-hidden shadow-lg group hover:border-border transition-all">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Tenant Isolation RLS</span>
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
           </div>
@@ -408,12 +408,12 @@ export default function PlatformSecurityPage() {
               100%
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">0 cross-tenant leaks detected</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 font-medium">0 cross-tenant leaks detected</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
-        <Card className="bg-slate-900/90 border-slate-800 p-4 relative overflow-hidden shadow-lg group hover:border-slate-700 transition-all">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4 relative overflow-hidden shadow-lg group hover:border-border transition-all">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Failed Logins (24h)</span>
             <Lock className="h-4 w-4 text-indigo-400" />
           </div>
@@ -423,12 +423,12 @@ export default function PlatformSecurityPage() {
               Active Guard
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Rate limiting (5 attempts / 15m)</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 font-medium">Rate limiting (5 attempts / 15m)</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
-        <Card className="bg-slate-900/90 border-slate-800 p-4 relative overflow-hidden shadow-lg group hover:border-slate-700 transition-all">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4 relative overflow-hidden shadow-lg group hover:border-border transition-all">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>MFA Adoption</span>
             <Smartphone className="h-4 w-4 text-cyan-400" />
           </div>
@@ -438,14 +438,14 @@ export default function PlatformSecurityPage() {
               TOTP
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
+          <div className="text-2xs text-muted-foreground mt-0.5 font-medium">
             {isMfaActive ? 'Your account is protected' : 'Enable TOTP protection'}
           </div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
-        <Card className="bg-slate-900/90 border-slate-800 p-4 relative overflow-hidden shadow-lg group hover:border-slate-700 transition-all">
-          <div className="text-xs font-semibold text-slate-400 flex items-center justify-between">
+        <Card className="bg-foreground border-border p-4 relative overflow-hidden shadow-lg group hover:border-border transition-all">
+          <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Active Admin Sessions</span>
             <Laptop className="h-4 w-4 text-purple-400" />
           </div>
@@ -455,7 +455,7 @@ export default function PlatformSecurityPage() {
               Tokens
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Hashed cryptographic tokens</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 font-medium">Hashed cryptographic tokens</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
       </div>
@@ -463,9 +463,9 @@ export default function PlatformSecurityPage() {
       {/* Two Column Section: Password Change & MFA Management */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Card 1: Change Password */}
-        <Card className="bg-slate-900 border-slate-800 shadow-xl flex flex-col justify-between">
+        <Card className="bg-foreground border-border shadow-xl flex flex-col justify-between">
           <div>
-            <CardHeader className="border-b border-slate-800 pb-3">
+            <CardHeader className="border-b border-border pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base text-white font-bold flex items-center gap-2">
                   <Key className="h-4 w-4 text-indigo-400" />
@@ -475,7 +475,7 @@ export default function PlatformSecurityPage() {
                   Supabase Auth
                 </span>
               </div>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Update your root supervisory password and invalidate other sessions.
               </CardDescription>
             </CardHeader>
@@ -490,7 +490,7 @@ export default function PlatformSecurityPage() {
                 )}
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="current-pw" className="text-xs text-slate-300 font-semibold flex items-center justify-between">
+                  <Label htmlFor="current-pw" className="text-xs text-muted-foreground font-semibold flex items-center justify-between">
                     <span>Current Password</span>
                   </Label>
                   <div className="relative">
@@ -501,12 +501,12 @@ export default function PlatformSecurityPage() {
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500 pr-10"
+                      className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500 pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
                       aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
                     >
                       {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -515,9 +515,9 @@ export default function PlatformSecurityPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="new-pw" className="text-xs text-slate-300 font-semibold flex items-center justify-between">
+                  <Label htmlFor="new-pw" className="text-xs text-muted-foreground font-semibold flex items-center justify-between">
                     <span>New Password</span>
-                    <span className="text-2xs text-slate-400 font-normal">Min 8 characters</span>
+                    <span className="text-2xs text-muted-foreground font-normal">Min 8 characters</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -527,12 +527,12 @@ export default function PlatformSecurityPage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500 pr-10"
+                      className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500 pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
                       aria-label={showNewPassword ? 'Hide password' : 'Show password'}
                     >
                       {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -553,12 +553,12 @@ export default function PlatformSecurityPage() {
                                   : passwordStrength <= 3
                                   ? 'bg-amber-500'
                                   : 'bg-emerald-500'
-                                : 'bg-slate-800'
+                                : 'bg-secondary'
                             }`}
                           />
                         ))}
                       </div>
-                      <div className="text-2xs text-slate-400 flex justify-between">
+                      <div className="text-2xs text-muted-foreground flex justify-between">
                         <span>
                           Strength:{' '}
                           {passwordStrength <= 2
@@ -574,7 +574,7 @@ export default function PlatformSecurityPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="confirm-pw" className="text-xs text-slate-300 font-semibold flex items-center justify-between">
+                  <Label htmlFor="confirm-pw" className="text-xs text-muted-foreground font-semibold flex items-center justify-between">
                     <span>Confirm New Password</span>
                     {confirmPassword && newPassword === confirmPassword && (
                       <span className="text-2xs text-emerald-400 font-semibold flex items-center gap-1">
@@ -590,12 +590,12 @@ export default function PlatformSecurityPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500 pr-10"
+                      className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500 pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
                       aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -609,9 +609,9 @@ export default function PlatformSecurityPage() {
                     type="checkbox"
                     checked={revokeOthersOnPasswordChange}
                     onChange={(e) => setRevokeOthersOnPasswordChange(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    className="h-4 w-4 rounded border-border bg-foreground text-indigo-600 focus:ring-ring cursor-pointer"
                   />
-                  <Label htmlFor="revoke-others" className="text-xs text-slate-300 cursor-pointer font-normal">
+                  <Label htmlFor="revoke-others" className="text-xs text-muted-foreground cursor-pointer font-normal">
                     Sign out of all other devices and active sessions
                   </Label>
                 </div>
@@ -619,7 +619,7 @@ export default function PlatformSecurityPage() {
             </form>
           </div>
 
-          <CardFooter className="border-t border-slate-800 pt-3 pb-3">
+          <CardFooter className="border-t border-border pt-3 pb-3">
             <Button
               type="submit"
               form="password-form"
@@ -639,9 +639,9 @@ export default function PlatformSecurityPage() {
         </Card>
 
         {/* Card 2: Multi-Factor Authentication (MFA) */}
-        <Card className="bg-slate-900 border-slate-800 shadow-xl flex flex-col justify-between">
+        <Card className="bg-foreground border-border shadow-xl flex flex-col justify-between">
           <div>
-            <CardHeader className="border-b border-slate-800 pb-3">
+            <CardHeader className="border-b border-border pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base text-white font-bold flex items-center gap-2">
                   <Smartphone className="h-4 w-4 text-cyan-400" />
@@ -651,16 +651,16 @@ export default function PlatformSecurityPage() {
                   TOTP RFC 6238
                 </span>
               </div>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Enhance platform root defense with time-based one-time password verification.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="pt-4 space-y-4 text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-foreground border border-border flex items-center justify-between">
                 <div>
                   <div className="font-bold text-white text-sm">TOTP Authenticator App</div>
-                  <div className="text-slate-400 text-xs mt-0.5">
+                  <div className="text-muted-foreground text-xs mt-0.5">
                     Google Authenticator, Microsoft Authenticator, 1Password, Authy
                   </div>
                 </div>
@@ -677,7 +677,7 @@ export default function PlatformSecurityPage() {
                 )}
               </div>
 
-              <div className="space-y-2 text-slate-400">
+              <div className="space-y-2 text-muted-foreground">
                 <p>
                   Platform accounts require multi-factor authentication to perform root operations including tenant database export, rate limit alterations, and emergency control toggles.
                 </p>
@@ -691,14 +691,14 @@ export default function PlatformSecurityPage() {
             </CardContent>
           </div>
 
-          <CardFooter className="border-t border-slate-800 pt-3 pb-3 flex flex-col sm:flex-row gap-2">
+          <CardFooter className="border-t border-border pt-3 pb-3 flex flex-col sm:flex-row gap-2">
             {isMfaActive ? (
               <>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => openMfaModal('enable')}
-                  className="w-full sm:flex-1 text-xs font-bold border-slate-700 hover:bg-slate-800 text-slate-200 h-10 min-h-[44px]"
+                  className="w-full sm:flex-1 text-xs font-bold border-border hover:bg-secondary text-foreground h-10 min-h-[44px]"
                 >
                   <QrCode className="h-3.5 w-3.5 mr-1.5 text-cyan-400" />
                   Re-configure Authenticator
@@ -727,14 +727,14 @@ export default function PlatformSecurityPage() {
       </div>
 
       {/* Active Sessions Management */}
-      <Card id="sessions" className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
-        <CardHeader className="pb-3 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <Card id="sessions" className="bg-foreground border-border overflow-hidden shadow-xl">
+        <CardHeader className="pb-3 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <CardTitle className="text-base text-white font-bold flex items-center gap-2">
               <Laptop className="h-4 w-4 text-purple-400" />
               <span>Active Platform Sessions ({data?.active_sessions.length ?? 1})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">
+            <CardDescription className="text-xs text-muted-foreground">
               Cryptographically signed tokens currently authenticated to platform administration.
             </CardDescription>
           </div>
@@ -755,7 +755,7 @@ export default function PlatformSecurityPage() {
 
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
+            <thead className="bg-foreground text-muted-foreground font-semibold uppercase text-2xs border-b border-border">
               <tr>
                 <th className="py-3 px-4">Device &amp; Browser</th>
                 <th className="py-3 px-4">IP Address &amp; Location</th>
@@ -763,24 +763,24 @@ export default function PlatformSecurityPage() {
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 text-slate-200">
+            <tbody className="divide-y divide-border text-foreground">
               {data?.active_sessions && data.active_sessions.length > 0 ? (
                 data.active_sessions.map((sess) => (
                   <tr key={sess.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="font-bold text-white flex items-center gap-2">
-                        <Laptop className="h-4 w-4 text-slate-400 shrink-0" />
+                        <Laptop className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span>{sess.device_name}</span>
                       </div>
-                      <div className="text-2xs text-slate-400 tabular-nums mt-0.5">{sess.user_email}</div>
+                      <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">{sess.user_email}</div>
                     </td>
 
                     <td className="py-3.5 px-4">
                       <div className="tabular-nums text-cyan-400 text-xs">{sess.ip_address}</div>
-                      <div className="text-2xs text-slate-400">{sess.location}</div>
+                      <div className="text-2xs text-muted-foreground">{sess.location}</div>
                     </td>
 
-                    <td className="py-3.5 px-4 tabular-nums text-slate-300">
+                    <td className="py-3.5 px-4 tabular-nums text-muted-foreground">
                       {sess.is_current ? (
                         <span className="text-emerald-400 font-bold flex items-center gap-1.5">
                           <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -788,10 +788,10 @@ export default function PlatformSecurityPage() {
                         </span>
                       ) : (
                         <div>
-                          <div className="text-slate-300">
+                          <div className="text-muted-foreground">
                             {formatTime(sess.last_seen_at)}
                           </div>
-                          <div className="text-2xs text-slate-500">
+                          <div className="text-2xs text-muted-foreground">
                             Created {formatDate(sess.created_at)}
                           </div>
                         </div>
@@ -819,7 +819,7 @@ export default function PlatformSecurityPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="py-6 text-center text-slate-500">
+                  <td colSpan={4} className="py-6 text-center text-muted-foreground">
                     No active sessions recorded.
                   </td>
                 </tr>
@@ -830,26 +830,26 @@ export default function PlatformSecurityPage() {
       </Card>
 
       {/* Login History Telemetry */}
-      <Card className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
-        <CardHeader className="pb-3 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <Card className="bg-foreground border-border overflow-hidden shadow-xl">
+        <CardHeader className="pb-3 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <CardTitle className="text-base text-white font-bold flex items-center gap-2">
               <History className="h-4 w-4 text-indigo-400" />
               <span>Platform Authentication Telemetry</span>
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">
+            <CardDescription className="text-xs text-muted-foreground">
               Recent authentication events and sign-in attempts for Platform Administrator accounts.
             </CardDescription>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800">
+          <div className="flex items-center gap-1.5 bg-foreground p-1 rounded-lg border border-border">
             <button
               type="button"
               onClick={() => setLoginFilter('all')}
               className={`px-2.5 py-1 rounded text-2xs font-semibold transition-colors ${
                 loginFilter === 'all'
                   ? 'bg-indigo-600 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-muted-foreground hover:text-white'
               }`}
             >
               All Events
@@ -860,7 +860,7 @@ export default function PlatformSecurityPage() {
               className={`px-2.5 py-1 rounded text-2xs font-semibold transition-colors ${
                 loginFilter === 'successful'
                   ? 'bg-emerald-600 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-muted-foreground hover:text-white'
               }`}
             >
               Successful
@@ -871,7 +871,7 @@ export default function PlatformSecurityPage() {
               className={`px-2.5 py-1 rounded text-2xs font-semibold transition-colors ${
                 loginFilter === 'failed'
                   ? 'bg-red-600 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-muted-foreground hover:text-white'
               }`}
             >
               Failed
@@ -881,7 +881,7 @@ export default function PlatformSecurityPage() {
 
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
+            <thead className="bg-foreground text-muted-foreground font-semibold uppercase text-2xs border-b border-border">
               <tr>
                 <th className="py-3 px-4">Timestamp</th>
                 <th className="py-3 px-4">Device &amp; Browser</th>
@@ -889,29 +889,29 @@ export default function PlatformSecurityPage() {
                 <th className="py-3 px-4 text-right">Outcome</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 text-slate-200">
+            <tbody className="divide-y divide-border text-foreground">
               {filteredLoginHistory && filteredLoginHistory.length > 0 ? (
                 filteredLoginHistory.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-4 tabular-nums text-slate-300">
+                    <td className="py-3 px-4 tabular-nums text-muted-foreground">
                       <div>
                         {formatDate(item.timestamp)}
                       </div>
-                      <div className="text-2xs text-slate-500">
+                      <div className="text-2xs text-muted-foreground">
                         {formatTime(item.timestamp, 'en', { second: '2-digit' })}
                       </div>
                     </td>
 
                     <td className="py-3 px-4">
                       <div className="font-semibold text-white flex items-center gap-1.5">
-                        <Laptop className="h-3.5 w-3.5 text-slate-400" />
+                        <Laptop className="h-3.5 w-3.5 text-muted-foreground" />
                         <span>{item.device_browser}</span>
                       </div>
                     </td>
 
                     <td className="py-3 px-4">
                       <div className="tabular-nums text-cyan-400 text-xs">{item.ip_address}</div>
-                      <div className="text-2xs text-slate-400">{item.location}</div>
+                      <div className="text-2xs text-muted-foreground">{item.location}</div>
                     </td>
 
                     <td className="py-3 px-4 text-right">
@@ -929,7 +929,7 @@ export default function PlatformSecurityPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="py-6 text-center text-slate-500">
+                  <td colSpan={4} className="py-6 text-center text-muted-foreground">
                     No login events match the selected filter.
                   </td>
                 </tr>
@@ -940,14 +940,14 @@ export default function PlatformSecurityPage() {
       </Card>
 
       {/* Privileged Actions Audit Log Preview */}
-      <Card className="bg-slate-900 border-slate-800 shadow-xl">
-        <CardHeader className="pb-3 border-b border-slate-800 flex flex-row items-center justify-between">
+      <Card className="bg-foreground border-border shadow-xl">
+        <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base text-white font-bold flex items-center gap-2">
               <FileClock className="h-4 w-4 text-cyan-400" />
               <span>Recent Privileged Administrative Interventions</span>
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">
+            <CardDescription className="text-xs text-muted-foreground">
               High-impact security events and mutations recorded across the platform control plane.
             </CardDescription>
           </div>
@@ -959,7 +959,7 @@ export default function PlatformSecurityPage() {
           </Link>
         </CardHeader>
 
-        <CardContent className="p-0 divide-y divide-slate-800 text-xs">
+        <CardContent className="p-0 divide-y divide-border text-xs">
           {data?.recent_privileged_actions && data.recent_privileged_actions.length > 0 ? (
             data.recent_privileged_actions.map((act) => (
               <div
@@ -971,24 +971,24 @@ export default function PlatformSecurityPage() {
                     <span className="tabular-nums font-bold text-indigo-400 text-xs bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/40">
                       {act.action}
                     </span>
-                    <span className="text-slate-500">•</span>
+                    <span className="text-muted-foreground">•</span>
                     <span className="text-white font-semibold">
                       {act.details?.company_name || act.target_company_name || 'Global Platform'}
                     </span>
                   </div>
-                  {act.reason && <div className="text-2xs text-slate-400">Reason: {act.reason}</div>}
+                  {act.reason && <div className="text-2xs text-muted-foreground">Reason: {act.reason}</div>}
                 </div>
 
                 <div className="sm:text-right">
-                  <div className="tabular-nums text-slate-300 text-xs">
+                  <div className="tabular-nums text-muted-foreground text-xs">
                     {formatTime(act.created_at, 'en', { second: '2-digit' })}
                   </div>
-                  <div className="text-2xs text-slate-500 tabular-nums">{act.actor_email}</div>
+                  <div className="text-2xs text-muted-foreground tabular-nums">{act.actor_email}</div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-6 text-center text-slate-500">
+            <div className="p-6 text-center text-muted-foreground">
               No recent administrative interventions recorded.
             </div>
           )}
@@ -997,42 +997,42 @@ export default function PlatformSecurityPage() {
 
       {/* Security Defenses Checklist */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1.5">
+        <div className="p-4 rounded-xl bg-foreground border border-border space-y-1.5">
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
             <ShieldCheck className="h-4 w-4" />
             <span>PostgreSQL RLS</span>
           </div>
-          <p className="text-2xs text-slate-400">
+          <p className="text-2xs text-muted-foreground">
             Fail-closed multi-tenant database policies isolate tenant databases at the storage engine level.
           </p>
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1.5">
+        <div className="p-4 rounded-xl bg-foreground border border-border space-y-1.5">
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400">
             <Fingerprint className="h-4 w-4" />
             <span>Cryptographic Tokens</span>
           </div>
-          <p className="text-2xs text-slate-400">
+          <p className="text-2xs text-muted-foreground">
             Session tokens are SHA-256 hashed and matched with active database session records.
           </p>
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1.5">
+        <div className="p-4 rounded-xl bg-foreground border border-border space-y-1.5">
           <div className="flex items-center gap-2 text-xs font-bold text-cyan-400">
             <Lock className="h-4 w-4" />
             <span>HTTPOnly Cookies</span>
           </div>
-          <p className="text-2xs text-slate-400">
+          <p className="text-2xs text-muted-foreground">
             Protected with SameSite=Lax and HTTPOnly attributes to prevent XSS session exfiltration.
           </p>
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1.5">
+        <div className="p-4 rounded-xl bg-foreground border border-border space-y-1.5">
           <div className="flex items-center gap-2 text-xs font-bold text-purple-400">
             <Zap className="h-4 w-4" />
             <span>Rate Limiting</span>
           </div>
-          <p className="text-2xs text-slate-400">
+          <p className="text-2xs text-muted-foreground">
             Brute force mitigation blocks consecutive failed attempts across all authentication routes.
           </p>
         </div>
@@ -1041,8 +1041,8 @@ export default function PlatformSecurityPage() {
       {/* MFA Modal */}
       {mfaModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="bg-foreground border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2 font-bold text-white text-base">
                 <Smartphone className="h-5 w-5 text-cyan-400" />
                 <span>{mfaActionType === 'enable' ? 'Configure Authenticator App' : 'Disable Multi-Factor Authentication'}</span>
@@ -1054,7 +1054,7 @@ export default function PlatformSecurityPage() {
                   setMfaError(null)
                   setTotpCode('')
                 }}
-                className="text-slate-400 hover:text-white p-1 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                className="text-muted-foreground hover:text-white p-1 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                 aria-label="Close dialog"
               >
                 ✕
@@ -1070,12 +1070,12 @@ export default function PlatformSecurityPage() {
 
             {mfaActionType === 'enable' ? (
               <div className="space-y-4 text-xs">
-                <p className="text-slate-300">
+                <p className="text-muted-foreground">
                   Scan this QR code with <strong>Google Authenticator</strong>, <strong>Microsoft Authenticator</strong>, or <strong>1Password</strong>:
                 </p>
 
                 {/* SVG Visual QR Code */}
-                <div className="p-4 bg-white rounded-2xl flex flex-col items-center justify-center mx-auto w-48 h-48 shadow-inner relative">
+                <div className="p-4 bg-card rounded-2xl flex flex-col items-center justify-center mx-auto w-48 h-48 shadow-inner relative">
                   <svg className="w-36 h-36" viewBox="0 0 100 100" fill="none">
                     {/* Corner Position Detection Patterns */}
                     {/* Top Left */}
@@ -1123,14 +1123,14 @@ export default function PlatformSecurityPage() {
                     <rect x="68" y="78" width="24" height="6" fill="#0f172a" rx="1" />
                     <rect x="74" y="88" width="18" height="4" fill="#0f172a" rx="1" />
                   </svg>
-                  <span className="text-2xs tabular-nums font-bold text-slate-800 mt-1">
+                  <span className="text-2xs tabular-nums font-bold text-foreground mt-1">
                     PrintERP:PlatformAdmin
                   </span>
                 </div>
 
                 {/* Manual Setup Key with Copy Button */}
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                  <div className="text-2xs text-slate-400 font-semibold uppercase tracking-wider flex items-center justify-between">
+                <div className="p-3 bg-foreground rounded-xl border border-border space-y-1">
+                  <div className="text-2xs text-muted-foreground font-semibold uppercase tracking-wider flex items-center justify-between">
                     <span>Manual Setup Secret Key</span>
                     {copiedSecret && (
                       <span className="text-emerald-400 font-bold lowercase">copied to clipboard!</span>
@@ -1145,7 +1145,7 @@ export default function PlatformSecurityPage() {
                       size="sm"
                       variant="ghost"
                       onClick={handleCopySecret}
-                      className="h-7 text-xs text-slate-300 hover:text-white hover:bg-slate-800 px-2 min-h-[28px]"
+                      className="h-7 text-xs text-muted-foreground hover:text-white hover:bg-secondary px-2 min-h-[28px]"
                     >
                       <Copy className="h-3 w-3 mr-1" />
                       {copiedSecret ? 'Copied' : 'Copy'}
@@ -1154,7 +1154,7 @@ export default function PlatformSecurityPage() {
                 </div>
 
                 <div className="space-y-1.5 pt-1">
-                  <Label className="text-slate-300 text-xs font-semibold">
+                  <Label className="text-muted-foreground text-xs font-semibold">
                     Enter 6-digit verification code from your app:
                   </Label>
                   <Input
@@ -1163,12 +1163,12 @@ export default function PlatformSecurityPage() {
                     placeholder="000000"
                     value={totpCode}
                     onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
-                    className="tabular-nums text-center tracking-[0.5em] text-lg bg-slate-950 border-slate-800 text-white focus-visible:ring-cyan-500 font-bold"
+                    className="tabular-nums text-center tracking-[0.5em] text-lg bg-foreground border-border text-white focus-visible:ring-cyan-500 font-bold"
                   />
                 </div>
               </div>
             ) : (
-              <div className="space-y-3 text-xs text-slate-300">
+              <div className="space-y-3 text-xs text-muted-foreground">
                 <div className="p-3.5 rounded-xl bg-red-950/70 border border-red-800 text-red-200 space-y-1">
                   <div className="font-bold flex items-center gap-1.5 text-red-300">
                     <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -1182,7 +1182,7 @@ export default function PlatformSecurityPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
               <Button
                 variant="outline"
                 size="sm"
@@ -1191,7 +1191,7 @@ export default function PlatformSecurityPage() {
                   setMfaError(null)
                   setTotpCode('')
                 }}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs h-10 min-h-[44px]"
+                className="border-border text-muted-foreground hover:bg-secondary text-xs h-10 min-h-[44px]"
               >
                 Cancel
               </Button>

@@ -488,13 +488,13 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
   return (
     <div className="space-y-6">
       {/* Top Banner / Actions Ribbon */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-3.5 rounded-xl border border-border shadow-xs">
         <div>
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground dark:text-white flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-primary" />
             {tBilingual('Roles & Permission Matrix Studio', 'রোল ও পারমিশন স্টুডিও')}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-muted-foreground dark:text-muted-foreground">
             Define role boundaries, customize permissions per module, and create custom job templates.
           </p>
         </div>
@@ -531,15 +531,15 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Role Navigation Column */}
         <div className="lg:col-span-3 space-y-4">
-          <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 backdrop-blur-md shadow-xs">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <CardTitle className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          <Card className="border-border bg-card backdrop-blur-md shadow-xs">
+            <CardHeader className="pb-3 border-b border-border dark:border-border">
+              <CardTitle className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Select Role Template ({Array.isArray(roles) ? roles.length : 0})
               </CardTitle>
             </CardHeader>
             <CardContent className="p-2 space-y-1">
               {isLoading ? (
-                <div className="p-6 text-center text-xs text-slate-500">Loading roles...</div>
+                <div className="p-6 text-center text-xs text-muted-foreground">Loading roles...</div>
               ) : (
                 (Array.isArray(roles) ? roles : []).map((role) => {
                   const isSelected = selectedRoleId === role.id
@@ -552,23 +552,23 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                         'w-full text-left p-2.5 rounded-lg border transition-all text-xs flex items-center justify-between group',
                         isSelected
                           ? 'bg-primary/10 border-primary text-primary dark:bg-primary/15 dark:border-primary/50 dark:text-white font-semibold shadow-xs'
-                          : 'bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/80 dark:border-slate-800/60 text-slate-700 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-slate-200'
+                          : 'bg-slate-50/70 border-border dark:border-border/60 text-foreground hover:border-input hover:text-foreground dark:hover:text-foreground'
                       )}
                     >
                       <div className="space-y-0.5 min-w-0 pr-2">
                         <div className="flex items-center gap-1.5 truncate">
                           <span className="truncate">{role.name}</span>
                           {role.name_bn && (
-                            <span className="text-2xs text-slate-400 dark:text-slate-500 truncate font-normal">({role.name_bn})</span>
+                            <span className="text-2xs text-muted-foreground truncate font-normal">({role.name_bn})</span>
                           )}
                         </div>
-                        <div className="text-2xs text-slate-400 dark:text-slate-500 tabular-nums">
+                        <div className="text-2xs text-muted-foreground tabular-nums">
                           {role.permissions?.length || 0} permissions granted
                         </div>
                       </div>
 
                       {role.is_system ? (
-                        <Badge variant="outline" className="text-2xs px-1 py-0 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700 shrink-0">
+                        <Badge variant="outline" className="text-2xs px-1 py-0 bg-muted text-muted-foreground border-input shrink-0">
                           System
                         </Badge>
                       ) : (
@@ -587,21 +587,21 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
         {/* Right: Matrix Editor Column */}
         <div className="lg:col-span-9 space-y-4">
           {selectedRole ? (
-            <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 backdrop-blur-md shadow-xs">
+            <Card className="border-border bg-card backdrop-blur-md shadow-xs">
               {/* Role Header & Save Toolbar */}
-              <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-3 border-b border-border dark:border-border">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <CardTitle className="text-base font-bold text-foreground dark:text-white flex items-center gap-2">
                         {selectedRole.name}
                         {selectedRole.name_bn && (
-                          <span className="text-sm font-normal text-slate-500 dark:text-slate-400">({selectedRole.name_bn})</span>
+                          <span className="text-sm font-normal text-muted-foreground dark:text-muted-foreground">({selectedRole.name_bn})</span>
                         )}
                       </CardTitle>
 
                       {selectedRole.is_system ? (
-                        <Badge variant="outline" className="text-2xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                        <Badge variant="outline" className="text-2xs bg-muted text-foreground border-border dark:border-border">
                           System Role
                         </Badge>
                       ) : (
@@ -620,13 +620,13 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                             setEditRoleDesc(selectedRole.description || '')
                             setIsEditRoleOpen(true)
                           }}
-                          className="h-6 w-6 p-0 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground dark:hover:text-white"
                         >
                           <Edit2 className="w-3 h-3" />
                         </Button>
                       )}
                     </div>
-                    <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+                    <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
                       {selectedRole.description || 'Configured permission template for team members.'}
                     </CardDescription>
                   </div>
@@ -647,7 +647,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                         setFeedback(null)
                       }}
                       disabled={unsavedChangesCount === 0 || isPending}
-                      className="border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      className="border-border text-xs text-muted-foreground hover:text-foreground dark:hover:text-white"
                     >
                       <RotateCcw className="w-3 h-3 mr-1" />
                       Reset
@@ -680,7 +680,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                 </div>
 
                 {/* Category Selector Tabs */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pt-3 border-t border-slate-200 dark:border-slate-800/80 no-scrollbar">
+                <div className="flex items-center gap-1.5 overflow-x-auto pt-3 border-t border-border dark:border-border/80 no-scrollbar">
                   {(Object.keys(MODULE_CATEGORIES) as ModuleCategory[]).map((catKey) => {
                     const isSelected = selectedCategory === catKey
                     return (
@@ -691,8 +691,8 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                         className={cn(
                           'px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer',
                           isSelected
-                            ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white border border-slate-900 dark:border-slate-700 shadow-xs'
-                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900'
+                            ? 'bg-foreground text-white dark:text-white border border-slate-900 shadow-xs'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
                         )}
                       >
                         {tBilingual(MODULE_CATEGORIES[catKey].labelEn, MODULE_CATEGORIES[catKey].labelBn)}
@@ -704,25 +704,25 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
 
               <CardContent className="p-4 space-y-4">
                 {/* Search & Fast Batch Category Toolbar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted p-2.5 rounded-xl border border-border dark:border-border">
                   <div className="relative flex-1 max-w-xs">
-                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400 dark:text-slate-500" />
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-muted-foreground dark:text-muted-foreground" />
                     <Input
                       type="text"
                       placeholder="Filter module or action..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8 h-8 text-xs bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                      className="pl-8 h-8 text-xs bg-card border-border dark:border-border"
                     />
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-2xs text-slate-500 dark:text-slate-400 mr-1 font-medium">Batch:</span>
+                    <span className="text-2xs text-muted-foreground mr-1 font-medium">Batch:</span>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleCategoryAction(selectedCategory, 'view_all')}
-                      className="h-7 px-2 text-2xs border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="h-7 px-2 text-2xs border-border text-foreground hover:bg-muted dark:hover:bg-muted"
                     >
                       + Grant View
                     </Button>
@@ -730,7 +730,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       variant="outline"
                       size="sm"
                       onClick={() => handleCategoryAction(selectedCategory, 'grant_all')}
-                      className="h-7 px-2 text-2xs border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="h-7 px-2 text-2xs border-border text-foreground hover:bg-muted dark:hover:bg-muted"
                     >
                       + Grant All
                     </Button>
@@ -746,7 +746,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       variant="outline"
                       size="sm"
                       onClick={() => handleCategoryAction(selectedCategory, 'clear_all')}
-                      className="h-7 px-2 text-2xs border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="h-7 px-2 text-2xs border-border text-muted-foreground hover:bg-muted dark:hover:bg-muted"
                     >
                       Clear Category
                     </Button>
@@ -762,18 +762,18 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                     return (
                       <div
                         key={moduleKey}
-                        className="rounded-xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950/60 p-3.5 space-y-3 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-2xs"
+                        className="rounded-xl border border-border dark:border-border/80 bg-card p-3.5 space-y-3 hover:border-input transition-colors shadow-2xs"
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/50 pb-2.5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-border/50 pb-2.5">
                           <div>
-                            <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <div className="text-xs font-bold text-foreground dark:text-white flex items-center gap-2">
                               {spec.label}
-                              <span className="text-slate-500 dark:text-slate-400 font-normal">({spec.labelBn})</span>
-                              <Badge variant="outline" className="text-2xs tabular-nums px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+                              <span className="text-muted-foreground font-normal">({spec.labelBn})</span>
+                              <Badge variant="outline" className="text-2xs tabular-nums px-1 py-0 uppercase bg-muted border-border text-muted-foreground dark:text-muted-foreground">
                                 {moduleKey}
                               </Badge>
                             </div>
-                            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">{spec.description}</div>
+                            <div className="text-2xs text-muted-foreground mt-0.5">{spec.description}</div>
                           </div>
                         </div>
 
@@ -796,8 +796,8 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                                       ? 'bg-rose-50 dark:bg-rose-500/15 border-rose-300 dark:border-rose-500/50 text-rose-800 dark:text-rose-200 font-medium shadow-2xs'
                                       : 'bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary/50 text-primary dark:text-primary-foreground font-medium shadow-2xs'
                                     : isHighRisk
-                                      ? 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300 hover:border-rose-300 dark:hover:border-rose-900/50'
-                                      : 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
+                                      ? 'bg-slate-50/60 border-border text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground hover:border-rose-300 dark:hover:border-rose-900/50'
+                                      : 'bg-slate-50/60 border-border text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground hover:border-input dark:hover:border-border'
                                 )}
                               >
                                 <span className="truncate flex items-center gap-1">
@@ -815,7 +815,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                                     <Check className="w-3 h-3" />
                                   </div>
                                 ) : (
-                                  <div className="w-4 h-4 rounded border border-slate-300 dark:border-slate-700 shrink-0" />
+                                  <div className="w-4 h-4 rounded border border-input shrink-0" />
                                 )}
                               </button>
                             )
@@ -828,10 +828,10 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 backdrop-blur-md shadow-xs p-10 text-center text-slate-500 dark:text-slate-400">
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-300">No Role Selected / কোনো রোল নির্বাচন করা হয়নি</p>
-              <p className="text-xs text-slate-500 mt-1">Please select a role from the left menu or click reload to refresh permissions.</p>
-              <Button variant="outline" size="sm" onClick={loadRoles} className="mt-4 border-slate-200 dark:border-slate-700 text-xs">
+            <Card className="border-border bg-card backdrop-blur-md shadow-xs p-10 text-center text-muted-foreground dark:text-muted-foreground">
+              <p className="text-sm font-semibold text-foreground dark:text-muted-foreground">No Role Selected / কোনো রোল নির্বাচন করা হয়নি</p>
+              <p className="text-xs text-muted-foreground mt-1">Please select a role from the left menu or click reload to refresh permissions.</p>
+              <Button variant="outline" size="sm" onClick={loadRoles} className="mt-4 border-border text-xs">
                 Reload Roles / রোল রিফ্রেশ করুন
               </Button>
             </Card>
@@ -848,34 +848,34 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
       >
         <form onSubmit={handleCreateRole} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Role Name (English)</Label>
+            <Label className="text-xs text-foreground font-medium">Role Name (English)</Label>
             <Input
               type="text"
               required
               placeholder="e.g. Pre-Press Lead, Shift Supervisor"
               value={newRoleName}
               onChange={(e) => setNewRoleName(e.target.value)}
-              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
+              className="bg-card border-border text-foreground dark:text-foreground"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Role Name (বাংলা - ঐচ্ছিক)</Label>
+            <Label className="text-xs text-foreground font-medium">Role Name (বাংলা - ঐচ্ছিক)</Label>
             <Input
               type="text"
               placeholder="যেমনঃ প্রি-প্রেস প্রধান, শিফট সুপারভাইজার"
               value={newRoleNameBn}
               onChange={(e) => setNewRoleNameBn(e.target.value)}
-              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
+              className="bg-card border-border text-foreground dark:text-foreground"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Clone Permissions from Existing Template</Label>
+            <Label className="text-xs text-foreground font-medium">Clone Permissions from Existing Template</Label>
             <select
               value={newRoleBaseSlug}
               onChange={(e) => setNewRoleBaseSlug(e.target.value)}
-              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none"
+              className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none"
             >
               {(Array.isArray(roles) ? roles : []).map((r) => (
                 <option key={r.slug} value={r.slug}>
@@ -886,13 +886,13 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Description</Label>
+            <Label className="text-xs text-foreground font-medium">Description</Label>
             <Input
               type="text"
               placeholder="Brief description of responsibilities..."
               value={newRoleDesc}
               onChange={(e) => setNewRoleDesc(e.target.value)}
-              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
+              className="bg-card border-border text-foreground dark:text-foreground"
             />
           </div>
 
@@ -902,7 +902,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
               variant="outline"
               size="sm"
               onClick={() => setIsCreateRoleOpen(false)}
-              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs"
+              className="border-border text-foreground text-xs"
             >
               Cancel
             </Button>
@@ -922,33 +922,33 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
       >
         <form onSubmit={handleSaveRoleDetails} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Role Name (English)</Label>
+            <Label className="text-xs text-foreground font-medium">Role Name (English)</Label>
             <Input
               type="text"
               required
               value={editRoleName}
               onChange={(e) => setEditRoleName(e.target.value)}
-              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
+              className="bg-card border-border text-foreground dark:text-foreground"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Role Name (বাংলা)</Label>
+            <Label className="text-xs text-foreground font-medium">Role Name (বাংলা)</Label>
             <Input
               type="text"
               value={editRoleNameBn}
               onChange={(e) => setEditRoleNameBn(e.target.value)}
-              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
+              className="bg-card border-border text-foreground dark:text-foreground"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Description</Label>
+            <Label className="text-xs text-foreground font-medium">Description</Label>
             <Input
               type="text"
               value={editRoleDesc}
               onChange={(e) => setEditRoleDesc(e.target.value)}
-              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
+              className="bg-card border-border text-foreground dark:text-foreground"
             />
           </div>
 
@@ -958,7 +958,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
               variant="outline"
               size="sm"
               onClick={() => setIsEditRoleOpen(false)}
-              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs"
+              className="border-border text-foreground text-xs"
             >
               Cancel
             </Button>

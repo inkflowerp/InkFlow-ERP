@@ -44,7 +44,7 @@ export function PayrollPeriodTable({
   const getStatusBadge = (status: PayrollPeriodStatus) => {
     switch (status) {
       case 'locked':
-        return 'bg-slate-100 text-slate-800 border-slate-300'
+        return 'bg-muted text-foreground border-input'
       case 'paid':
         return 'bg-emerald-50 text-emerald-700 border-emerald-200'
       case 'approved':
@@ -59,13 +59,13 @@ export function PayrollPeriodTable({
   return (
     <div className="space-y-5">
       {/* Visual Stepper Lifecycle Header */}
-      <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl p-4">
+      <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl p-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
           <div>
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
               Payroll Processing Lifecycle
             </h4>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-muted-foreground">
               Standardized flow preventing accidental skips from draft to paid without review and lock
             </p>
           </div>
@@ -73,7 +73,7 @@ export function PayrollPeriodTable({
           <Button
             size="sm"
             onClick={onOpenGenerateModal}
-            className="h-8 px-3.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white min-h-[32px] shrink-0"
+            className="h-8 px-3.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px] shrink-0"
           >
             <Plus className="w-3.5 h-3.5 mr-1" />
             <span>Generate New Period</span>
@@ -84,21 +84,21 @@ export function PayrollPeriodTable({
         <div className="flex items-center gap-1 overflow-x-auto pt-2 pb-1">
           {LIFECYCLE_STEPS.map((s, idx) => (
             <React.Fragment key={s.step}>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 shrink-0">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted border border-border shrink-0">
                 <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] flex items-center justify-center">
                   {s.step}
                 </span>
                 <div className="text-left">
-                  <div className="text-[11px] font-semibold text-slate-800 whitespace-nowrap leading-tight">
+                  <div className="text-[11px] font-semibold text-foreground whitespace-nowrap leading-tight">
                     {s.label}
                   </div>
-                  <div className="text-[9px] text-slate-400 whitespace-nowrap">
+                  <div className="text-[9px] text-muted-foreground whitespace-nowrap">
                     {s.labelBn}
                   </div>
                 </div>
               </div>
               {idx < LIFECYCLE_STEPS.length - 1 && (
-                <div className="text-slate-300 text-xs shrink-0 px-0.5">→</div>
+                <div className="text-muted-foreground text-xs shrink-0 px-0.5">→</div>
               )}
             </React.Fragment>
           ))}
@@ -107,7 +107,7 @@ export function PayrollPeriodTable({
 
       {/* Main Payroll Periods Table */}
       {isLoading ? (
-        <Card className="bg-white border-slate-200 p-6">
+        <Card className="bg-card border-border p-6">
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-12 w-full rounded-lg" />
@@ -115,19 +115,19 @@ export function PayrollPeriodTable({
           </div>
         </Card>
       ) : periods.length === 0 ? (
-        <Card className="bg-white border-slate-200 py-16 px-4 text-center">
+        <Card className="bg-card border-border py-16 px-4 text-center">
           <div className="max-w-sm mx-auto flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-3">
               <Wallet className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-semibold text-slate-900">No payroll periods created yet</h3>
-            <p className="text-xs text-slate-500 mt-1 mb-5">
+            <h3 className="text-base font-semibold text-foreground">No payroll periods created yet</h3>
+            <p className="text-xs text-muted-foreground mt-1 mb-5">
               Draft your first monthly salary sheet based on verified floor attendance and advances.
             </p>
             <Button
               onClick={onOpenGenerateModal}
               size="sm"
-              className="h-9 px-4 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white min-h-[36px]"
+              className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[36px]"
             >
               <Plus className="w-4 h-4 mr-1.5" />
               <span>Create Payroll Period</span>
@@ -135,10 +135,10 @@ export function PayrollPeriodTable({
           </div>
         </Card>
       ) : (
-        <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
+        <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
                   <th className="py-3 px-4">Period</th>
                   <th className="py-3 px-3">Date Range</th>
@@ -153,7 +153,7 @@ export function PayrollPeriodTable({
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {periods.map((period) => {
                   const gross = Number(period.total_gross_salary || 0)
                   const ot = Number(period.total_ot_amount || 0)
@@ -165,36 +165,36 @@ export function PayrollPeriodTable({
                   return (
                     <tr
                       key={period.id}
-                      className="hover:bg-slate-50/60 transition-colors group cursor-pointer"
+                      className="hover:bg-muted transition-colors group cursor-pointer"
                     >
                       {/* Period Name */}
                       <td className="py-3.5 px-4">
                         <Link
                           href={`/${tenantSlug}/hr/payroll/${period.id}`}
-                          className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors block"
+                          className="font-bold text-foreground group-hover:text-blue-600 transition-colors block"
                         >
                           {period.period_name}
                         </Link>
                         {period.locked_at && (
-                          <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-0.5">
-                            <Lock className="w-3 h-3 text-slate-500" />
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                            <Lock className="w-3 h-3 text-muted-foreground" />
                             <span>Locked {new Date(period.locked_at).toLocaleDateString()}</span>
                           </div>
                         )}
                       </td>
 
                       {/* Date Range */}
-                      <td className="py-3.5 px-3 font-mono text-slate-600">
+                      <td className="py-3.5 px-3 font-mono text-muted-foreground">
                         {period.start_date} to {period.end_date}
                       </td>
 
                       {/* Employees */}
-                      <td className="py-3.5 px-3 text-center font-semibold text-slate-800 tabular-nums">
+                      <td className="py-3.5 px-3 text-center font-semibold text-foreground tabular-nums">
                         {period.items?.length || 0}
                       </td>
 
                       {/* Gross */}
-                      <td className="py-3.5 px-3 text-right font-medium text-slate-800 tabular-nums">
+                      <td className="py-3.5 px-3 text-right font-medium text-foreground tabular-nums">
                         ৳ {gross.toLocaleString('en-IN')}
                       </td>
 
@@ -209,7 +209,7 @@ export function PayrollPeriodTable({
                       </td>
 
                       {/* Net */}
-                      <td className="py-3.5 px-3 text-right font-bold text-slate-900 tabular-nums">
+                      <td className="py-3.5 px-3 text-right font-bold text-foreground tabular-nums">
                         ৳ {net.toLocaleString('en-IN')}
                       </td>
 

@@ -661,7 +661,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
 
       {/* 4. Content Rendering: Invoice Accordion Cards */}
       {isLoading ? (
-        <div className="p-16 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+        <div className="p-16 text-center text-muted-foreground text-xs flex items-center justify-center gap-2">
           <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
           <span>Loading design panel...</span>
         </div>
@@ -707,7 +707,7 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
           {/* Standalone Jobs */}
           {standaloneJobs.length > 0 && (
             <div className="space-y-3 pt-2">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Direct Work / Non-Invoiced Items
               </div>
               {standaloneJobs.map((job) => (
@@ -750,14 +750,14 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
           )}
 
           {filteredJobs.length === 0 && (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 shadow-2xs">
+            <div className="bg-card rounded-2xl border border-border p-12 text-center text-muted-foreground shadow-2xs">
               <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3">
                 <Edit3 className="w-6 h-6 stroke-[2]" />
               </div>
-              <div className="text-base font-bold text-slate-800 dark:text-slate-200">
+              <div className="text-base font-bold text-foreground dark:text-foreground">
                 {activeTab === 'all' ? 'No design jobs yet' : 'No jobs found in this tab'}
               </div>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
                 {activeTab === 'all'
                   ? 'Confirmed commercial orders requiring design will appear here automatically, or you can create a direct design job.'
                   : 'Try selecting another status tab or clear your search filters.'}

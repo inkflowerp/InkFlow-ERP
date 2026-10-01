@@ -12,12 +12,12 @@ export default function PrivacyPolicyPage() {
   const { tBilingual } = useI18n()
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-white font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-foreground text-slate-100 selection:bg-cyan-500 selection:text-white font-sans antialiased overflow-x-hidden">
       <MarketingNavbar onOpenDemo={() => setDemoOpen(true)} />
 
       <main className="pt-20">
         {/* Banner */}
-        <div className="py-16 bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800 text-center px-4">
+        <div className="py-16 bg-gradient-to-b from-slate-900 to-slate-950 border-b border-border text-center px-4">
           <div className="max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/30">
               Legal & Compliance
@@ -25,7 +25,7 @@ export default function PrivacyPolicyPage() {
             <h1 className="text-4xl sm:text-5xl font-black text-white bangla-text">
               {tBilingual('Privacy Policy & Data Security', 'গোপনীয়তা নীতি ও ডেটা সুরক্ষা')}
             </h1>
-            <p className="text-slate-400 text-base max-w-xl mx-auto leading-relaxed bangla-text">
+            <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed bangla-text">
               {tBilingual(
                 'How PrintERP protects your customer records, financial ledgers, and artwork files with bank-grade security standards.',
                 'আপনার প্রতিষ্ঠানের আর্থিক হিসাব, গ্রাহকের তথ্য ও ফাইলসমূহ কীভাবে সুরক্ষিত রাখা হয়।'
@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
         </div>
 
         {/* Content */}
-        <div className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 text-sm text-slate-300 leading-relaxed">
+        <div className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 text-sm text-muted-foreground leading-relaxed">
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-cyan-400" />

@@ -72,11 +72,11 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-slate-900 dark:text-white">
+              <span className="text-base font-bold text-foreground dark:text-white">
                 What would you like to add?
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               Select the appropriate entity type to open the dedicated commercial configuration form.
             </p>
           </div>
@@ -97,7 +97,7 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
                   onClose()
                 }}
                 className={cn(
-                  'w-full text-left p-4 rounded-xl border bg-white dark:bg-slate-900 transition-all duration-150 flex items-start justify-between group shadow-xs hover:shadow-md cursor-pointer',
+                  'w-full text-left p-4 rounded-xl border bg-card transition-all duration-150 flex items-start justify-between group shadow-xs hover:shadow-md cursor-pointer',
                   opt.borderClass
                 )}
               >
@@ -107,22 +107,22 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <span className="font-bold text-foreground dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {opt.title}
                       </span>
                       <span className={cn('px-2 py-0.5 text-2xs font-bold rounded-md border', opt.badgeClass)}>
                         {opt.badge}
                       </span>
                     </div>
-                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">
+                    <p className="text-xs font-semibold text-muted-foreground mt-0.5">
                       {opt.subtitle}
                     </p>
-                    <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    <p className="text-2xs text-muted-foreground mt-1 leading-relaxed">
                       {opt.description}
                     </p>
                   </div>
                 </div>
-                <div className="p-2 rounded-full text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all shrink-0">
+                <div className="p-2 rounded-full text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all shrink-0">
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </button>
@@ -131,12 +131,12 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
         </div>
 
         {/* Standardized Bottom Action */}
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+        <div className="pt-3 border-t border-border flex justify-end">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
-            className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted dark:hover:bg-muted"
           >
             Cancel
           </Button>

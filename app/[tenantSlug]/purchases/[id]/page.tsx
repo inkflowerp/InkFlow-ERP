@@ -86,15 +86,15 @@ export default function PurchaseOrderDetailPage() {
       <div className="space-y-6 max-w-7xl">
         <Link
           href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Purchase Orders
         </Link>
         <Card className="p-12 text-center border-dashed">
-          <Truck className="h-10 w-10 text-slate-400 mx-auto mb-3" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Purchase Order Not Found</h2>
-          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+          <Truck className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+          <h2 className="text-base font-bold text-foreground dark:text-foreground">Purchase Order Not Found</h2>
+          <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
             The purchase order record you are looking for does not exist in your organization.
           </p>
           <Button asChild className="mt-4" size="sm">
@@ -250,12 +250,12 @@ export default function PurchaseOrderDetailPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
+    <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-foreground print:dark:bg-card print:dark:text-foreground print:m-0 print:p-0">
       {/* Back Link & Header */}
       <div>
         <Link
           href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 print:hidden"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white mb-3 print:hidden"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Purchases
@@ -264,17 +264,17 @@ export default function PurchaseOrderDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums print:text-slate-900">
+              <h1 className="text-2xl font-black tracking-tight text-foreground dark:text-white tabular-nums print:text-foreground">
                 {po.po_number}
               </h1>
-              <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 print:border-slate-400 print:text-slate-800 print:bg-slate-100">
+              <span className="capitalize px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 print:border-input print:text-foreground print:bg-muted">
                 {po.status.replace('_', ' ')}
               </span>
             </div>
-            <div className="text-sm font-bold text-slate-800 dark:text-slate-200 print:text-slate-900">
+            <div className="text-sm font-bold text-foreground print:text-foreground">
               Supplier: {po.supplier_name}
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-0.5 print:text-slate-700">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-0.5 print:text-foreground">
               <span>Date Issued: <strong>{po.po_date}</strong></span>
               <span>•</span>
               <span>Expected Delivery: <strong className="text-indigo-600 print:text-indigo-800">{po.expected_delivery_date}</strong></span>
@@ -338,15 +338,15 @@ export default function PurchaseOrderDetailPage() {
       {/* Financial Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4 border-l-4 border-l-indigo-600">
-          <span className="text-xs font-semibold text-slate-500">Total Purchase Commitment</span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+          <span className="text-xs font-semibold text-muted-foreground">Total Purchase Commitment</span>
+          <div className="text-2xl font-black text-foreground dark:text-white mt-1">
             <CurrencyDisplay amount={po.grand_total} />
           </div>
-          <span className="text-2xs text-slate-400 tabular-nums">Agreed Contract Rate</span>
+          <span className="text-2xs text-muted-foreground tabular-nums">Agreed Contract Rate</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-emerald-500">
-          <span className="text-xs font-semibold text-slate-500">Paid to Supplier (পরিশোধিত)</span>
+          <span className="text-xs font-semibold text-muted-foreground">Paid to Supplier (পরিশোধিত)</span>
           <div className="text-2xl font-black text-emerald-600 mt-1">
             <CurrencyDisplay amount={po.paid_amount} />
           </div>
@@ -356,11 +356,11 @@ export default function PurchaseOrderDetailPage() {
         </Card>
 
         <Card className={`p-4 border-l-4 ${po.due_amount > 0 ? 'border-l-red-500 bg-red-50/20 dark:bg-red-950/10' : 'border-l-slate-300'}`}>
-          <span className="text-xs font-semibold text-slate-500">Outstanding Due (বাকি বিল)</span>
+          <span className="text-xs font-semibold text-muted-foreground">Outstanding Due (বাকি বিল)</span>
           <div className="text-2xl font-black text-red-600 mt-1">
             <CurrencyDisplay amount={po.due_amount} />
           </div>
-          <span className="text-2xs text-slate-400">Payable against received challans</span>
+          <span className="text-2xs text-muted-foreground">Payable against received challans</span>
         </Card>
       </div>
 
@@ -368,20 +368,20 @@ export default function PurchaseOrderDetailPage() {
           ORDERED VS RECEIVED VS REMAINING (The Core Phase 11 Requirement)
          ========================================================================= */}
       <Card>
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <CardHeader className="pb-3 border-b border-border dark:border-border">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-bold flex items-center gap-2">
               <Layers className="h-4 w-4 text-indigo-600" />
               Line Items & Partial Receiving Ledger
             </CardTitle>
-            <span className="text-xs text-slate-400">Stock updates strictly for received units</span>
+            <span className="text-xs text-muted-foreground">Stock updates strictly for received units</span>
           </div>
         </CardHeader>
         <CardContent className="p-0">
           {/* Desktop Table View */}
           <div className="hidden md:block print:block overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800 print:bg-slate-100 print:text-slate-800">
+              <thead className="bg-muted text-xs font-semibold text-muted-foreground border-b border-border print:bg-muted print:text-foreground">
                 <tr>
                   <th className="py-3 px-4">Material Name</th>
                   <th className="py-3 px-4 text-center">Ordered</th>
@@ -391,15 +391,15 @@ export default function PurchaseOrderDetailPage() {
                   <th className="py-3 px-4 text-right">Total (৳)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 print:divide-slate-200">
+              <tbody className="divide-y divide-border print:divide-border">
                 {po.items.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/50">
+                  <tr key={item.id} className="hover:bg-muted">
                     <td className="py-3.5 px-4">
-                      <strong className="text-slate-900 dark:text-white text-xs print:text-slate-900">{item.material_name}</strong>
+                      <strong className="text-foreground dark:text-white text-xs print:text-foreground">{item.material_name}</strong>
                     </td>
 
                     {/* Ordered */}
-                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-slate-900 dark:text-white print:text-slate-900">
+                    <td className="py-3.5 px-4 text-center tabular-nums font-bold text-foreground dark:text-white print:text-foreground">
                       {item.quantity_ordered} {item.unit}
                     </td>
 
@@ -414,12 +414,12 @@ export default function PurchaseOrderDetailPage() {
                     </td>
 
                     {/* Unit Cost */}
-                    <td className="py-3.5 px-4 text-right tabular-nums text-xs print:text-slate-900">
+                    <td className="py-3.5 px-4 text-right tabular-nums text-xs print:text-foreground">
                       {formatBDT(item.unit_cost)}
                     </td>
 
                     {/* Total */}
-                    <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-900 dark:text-white print:text-slate-900">
+                    <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground dark:text-white print:text-foreground">
                       {formatBDT(item.total_cost)}
                     </td>
                   </tr>
@@ -429,19 +429,19 @@ export default function PurchaseOrderDetailPage() {
           </div>
 
           {/* Mobile Item Cards */}
-          <div className="md:hidden print:hidden divide-y divide-slate-100 dark:divide-slate-800 p-3 space-y-3">
+          <div className="md:hidden print:hidden divide-y divide-border p-3 space-y-3">
             {po.items.map((item) => (
-              <div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-2 text-xs">
+              <div key={item.id} className="p-3 bg-muted rounded-lg space-y-2 text-xs">
                 <div className="flex items-center justify-between">
-                  <strong className="text-slate-900 dark:text-white font-bold text-sm">{item.material_name}</strong>
+                  <strong className="text-foreground dark:text-white font-bold text-sm">{item.material_name}</strong>
                   <span className="tabular-nums font-bold text-indigo-600 dark:text-indigo-400">
                     {formatBDT(item.total_cost)}
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                  <div className="p-1.5 rounded bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
-                    <div className="text-2xs text-slate-400">Ordered</div>
-                    <div className="tabular-nums font-bold text-slate-900 dark:text-white">{item.quantity_ordered} {item.unit}</div>
+                <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-border dark:border-border">
+                  <div className="p-1.5 rounded bg-card border border-border dark:border-border">
+                    <div className="text-2xs text-muted-foreground">Ordered</div>
+                    <div className="tabular-nums font-bold text-foreground dark:text-white">{item.quantity_ordered} {item.unit}</div>
                   </div>
                   <div className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
                     <div className="text-2xs text-emerald-600">Received</div>
@@ -452,7 +452,7 @@ export default function PurchaseOrderDetailPage() {
                     <div className="tabular-nums font-bold text-red-700 dark:text-red-300">{item.quantity_remaining} {item.unit}</div>
                   </div>
                 </div>
-                <div className="text-2xs text-slate-400 text-right tabular-nums">
+                <div className="text-2xs text-muted-foreground text-right tabular-nums">
                   Unit Cost: {formatBDT(item.unit_cost)} / {item.unit}
                 </div>
               </div>
@@ -466,7 +466,7 @@ export default function PurchaseOrderDetailPage() {
          ========================================================================= */}
       {benchmark && (
         <Card className="border-blue-200 dark:border-blue-900 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 bg-blue-50/30 dark:bg-blue-950/20">
+          <CardHeader className="pb-3 border-b border-border bg-blue-50/30 dark:bg-blue-950/20">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-blue-600" />
@@ -482,32 +482,32 @@ export default function PurchaseOrderDetailPage() {
           </CardHeader>
           <CardContent className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                <span className="text-slate-400">Last PO Price</span>
-                <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+              <div className="p-3 rounded-lg border border-border text-xs">
+                <span className="text-muted-foreground">Last PO Price</span>
+                <div className="text-lg font-black text-foreground dark:text-white mt-0.5">
                   {formatBDT(benchmark.last_price)}
                 </div>
-                <span className="text-2xs text-slate-500">Most recent order</span>
+                <span className="text-2xs text-muted-foreground">Most recent order</span>
               </div>
 
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                <span className="text-slate-400">Average Price</span>
+              <div className="p-3 rounded-lg border border-border text-xs">
+                <span className="text-muted-foreground">Average Price</span>
                 <div className="text-lg font-black text-blue-600 mt-0.5">
                   {formatBDT(benchmark.average_price)}
                 </div>
                 <span className="text-2xs text-blue-600">Weighted market avg</span>
               </div>
 
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                <span className="text-slate-400">Lowest Price Paid</span>
+              <div className="p-3 rounded-lg border border-border text-xs">
+                <span className="text-muted-foreground">Lowest Price Paid</span>
                 <div className="text-lg font-black text-emerald-600 mt-0.5">
                   {formatBDT(benchmark.lowest_price)}
                 </div>
                 <span className="text-2xs text-emerald-600">Best historical rate</span>
               </div>
 
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                <span className="text-slate-400">Highest Price Paid</span>
+              <div className="p-3 rounded-lg border border-border text-xs">
+                <span className="text-muted-foreground">Highest Price Paid</span>
                 <div className="text-lg font-black text-red-600 mt-0.5">
                   {formatBDT(benchmark.highest_price)}
                 </div>
@@ -522,7 +522,7 @@ export default function PurchaseOrderDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* GRN Receipts */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <FileCheck2 className="h-4 w-4 text-emerald-600" />
               Goods Received Notes (GRN Batches)
@@ -531,26 +531,26 @@ export default function PurchaseOrderDetailPage() {
           <CardContent className="p-4 space-y-3 text-xs">
             {po.grns && po.grns.length > 0 ? (
               po.grns.map((grn) => (
-                <div key={grn.id} className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-1">
+                <div key={grn.id} className="p-3 rounded-lg border border-border bg-muted space-y-1">
                   <div className="flex justify-between font-bold">
                     <span className="tabular-nums text-emerald-600">{grn.grn_number}</span>
-                    <span className="text-slate-400">{grn.received_date}</span>
+                    <span className="text-muted-foreground">{grn.received_date}</span>
                   </div>
-                  <div className="text-slate-700 dark:text-slate-300 font-medium">
+                  <div className="text-foreground font-medium">
                     Challan: <strong>{grn.challan_number || 'N/A'}</strong> • Receiver: {grn.received_by_name}
                   </div>
-                  {grn.notes && <p className="text-2xs text-slate-500">{grn.notes}</p>}
+                  {grn.notes && <p className="text-2xs text-muted-foreground">{grn.notes}</p>}
                 </div>
               ))
             ) : (
-              <div className="py-6 text-center text-slate-400">No goods received yet for this PO.</div>
+              <div className="py-6 text-center text-muted-foreground">No goods received yet for this PO.</div>
             )}
           </CardContent>
         </Card>
 
         {/* Payment Vouchers */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <Receipt className="h-4 w-4 text-purple-600" />
               Supplier Payment Vouchers
@@ -559,21 +559,21 @@ export default function PurchaseOrderDetailPage() {
           <CardContent className="p-4 space-y-3 text-xs">
             {po.payments && po.payments.length > 0 ? (
               po.payments.map((p) => (
-                <div key={p.id} className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-1">
+                <div key={p.id} className="p-3 rounded-lg border border-border bg-muted space-y-1">
                   <div className="flex justify-between font-bold">
                     <span className="text-emerald-600 tabular-nums">{formatBDT(p.amount)}</span>
-                    <span className="uppercase text-2xs px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800">
+                    <span className="uppercase text-2xs px-1.5 py-0.5 rounded bg-muted dark:bg-muted">
                       {p.payment_method}
                     </span>
                   </div>
-                  <div className="text-slate-600 dark:text-slate-400 text-2xs">
+                  <div className="text-muted-foreground text-2xs">
                     {p.payment_date} • {p.bank_name || p.mfs_transaction_id || 'Cash Counter'}
                     {p.cheque_number && ` (Cheque: ${p.cheque_number})`}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="py-6 text-center text-slate-400">No payments recorded yet.</div>
+              <div className="py-6 text-center text-muted-foreground">No payments recorded yet.</div>
             )}
           </CardContent>
         </Card>
@@ -641,15 +641,15 @@ export default function PurchaseOrderDetailPage() {
               rows={2}
               value={receivingNotes}
               onChange={(e) => setReceivingNotes(e.target.value)}
-              className="w-full p-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+              className="w-full p-2 rounded-md border border-input bg-card text-xs"
             />
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsReceiveOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full sm:w-auto h-10 sm:h-9">
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold w-full sm:w-auto h-10 sm:h-9">
               Confirm Receipt & Update Inventory
             </Button>
           </div>
@@ -683,7 +683,7 @@ export default function PurchaseOrderDetailPage() {
                 id="spMeth"
                 value={payMethod}
                 onChange={(e) => setPayMethod(e.target.value as SupplierPaymentMethod)}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold capitalize"
+                className="w-full h-10 px-3 rounded-md border border-input bg-card text-xs font-semibold capitalize"
               >
                 <option value="bank">Bank Transfer (EFT)</option>
                 <option value="cheque">Bank Cheque</option>
@@ -731,7 +731,7 @@ export default function PurchaseOrderDetailPage() {
             </div>
           )}
 
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border dark:border-border">
             <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
               Cancel
             </Button>

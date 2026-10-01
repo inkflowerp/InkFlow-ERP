@@ -329,7 +329,7 @@ export function MobileNav() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-100/70 p-2 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 cursor-pointer shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted p-2 text-foreground hover:bg-muted cursor-pointer shrink-0 transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
         aria-label="Open Navigation Drawer"
         title="Open Menu"
       >
@@ -337,7 +337,7 @@ export function MobileNav() {
       </button>
 
       <Sheet open={open} onOpenChange={setOpen} side="left">
-        <SheetHeader onClose={() => setOpen(false)} className="border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+        <SheetHeader onClose={() => setOpen(false)} className="border-b border-border px-4 py-3 dark:border-border">
           <div className="flex items-center justify-between">
             {/* Logo and Brand */}
             <Link
@@ -349,21 +349,21 @@ export function MobileNav() {
                 <img
                   src={appLogoUrl}
                   alt={appName}
-                  className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-0.5 shadow-xs shrink-0"
+                  className="h-8 w-8 rounded-lg object-contain bg-foreground border border-slate-700/60 p-0.5 shadow-xs shrink-0"
                 />
               ) : (
-                <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-slate-900 shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform shrink-0">
+                <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-foreground shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform shrink-0">
                   <span className="h-2 w-2 rounded-full bg-cyan-400" />
                   <span className="h-2 w-2 rounded-full bg-pink-500" />
                   <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                  <span className="h-2 w-2 rounded-full bg-slate-200" />
+                  <span className="h-2 w-2 rounded-full bg-muted" />
                 </div>
               )}
               <div className="flex flex-col text-left">
-                <span className="font-black text-base text-slate-900 dark:text-white leading-tight">
+                <span className="font-black text-base text-foreground dark:text-white leading-tight">
                   {appName}
                 </span>
-                <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider leading-none">
+                <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider leading-none">
                   {tagline || 'Print ERP'}
                 </span>
               </div>
@@ -389,10 +389,10 @@ export function MobileNav() {
                     className="h-8 w-8 text-xs font-bold shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 ring-1 ring-blue-500/20"
                   />
                   <div className="truncate">
-                    <span className="block font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate leading-tight bangla-text">
+                    <span className="block font-bold text-xs sm:text-sm text-foreground dark:text-white truncate leading-tight bangla-text">
                       {userName}
                     </span>
-                    <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
+                    <span className="block text-xs text-muted-foreground truncate">
                       {company?.name || `${appName} Workspace`}
                     </span>
                   </div>
@@ -408,8 +408,8 @@ export function MobileNav() {
               </div>
 
               {/* Status / Plan Badge */}
-              <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-xs">
-                <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+              <div className="flex items-center justify-between pt-1 border-t border-border dark:border-slate-700/60 text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground dark:text-muted-foreground">
                   <Building className="h-3.5 w-3.5 text-blue-600" />
                   <span className="font-medium text-xs truncate max-w-[140px]">
                     {currentBranch ? currentBranch.name.split('(')[0].trim() : currentPlan?.name || 'Main Branch'}
@@ -482,7 +482,7 @@ export function MobileNav() {
 
             {/* Navigation Sections */}
             {(!Array.isArray(filteredNavSections) || filteredNavSections.length === 0) ? (
-              <div className="py-8 text-center text-xs text-slate-400 bangla-text">
+              <div className="py-8 text-center text-xs text-muted-foreground bangla-text">
                 {tBilingual(`No modules matching "${searchQuery}"`, `"${searchQuery}" এর জন্য কোনো মেনু পাওয়া যায়নি`)}
               </div>
             ) : (
@@ -496,13 +496,13 @@ export function MobileNav() {
                       <button
                         type="button"
                         onClick={() => toggleGroup(section.id)}
-                        className="w-full flex items-center justify-between px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer bangla-text"
+                        className="w-full flex items-center justify-between px-2 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground cursor-pointer bangla-text"
                       >
                         <span>{sectionTitle}</span>
                         {isExpanded ? (
-                          <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                         ) : (
-                          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                         )}
                       </button>
                     )}
@@ -534,7 +534,7 @@ export function MobileNav() {
                                       ? 'bg-blue-50 text-blue-600 font-semibold dark:bg-blue-950/50 dark:text-blue-400'
                                       : isChildActive
                                       ? 'bg-blue-50/70 text-blue-600 font-semibold dark:bg-blue-950/40 dark:text-blue-400'
-                                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                                      : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted'
                                   )}
                                 >
                                   <Icon
@@ -546,7 +546,7 @@ export function MobileNav() {
                                         ? 'text-blue-600 dark:text-blue-400'
                                         : isChildActive
                                         ? 'text-blue-600 dark:text-blue-400'
-                                        : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                                        : 'text-muted-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400'
                                     )}
                                   />
                                   <span className="flex-1 truncate">{itemTitle}</span>
@@ -568,7 +568,7 @@ export function MobileNav() {
                                       e.stopPropagation()
                                       toggleSubNav(item.key)
                                     }}
-                                    className="p-2.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg"
+                                    className="p-2.5 text-muted-foreground hover:text-foreground rounded-lg"
                                     title={isSubExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
                                   >
                                     <ChevronDown
@@ -598,10 +598,10 @@ export function MobileNav() {
                                           'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors min-h-[36px] bangla-text',
                                           isSubActive
                                             ? 'bg-blue-50 text-blue-600 font-semibold dark:bg-blue-950/50 dark:text-blue-400'
-                                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                                            : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted'
                                         )}
                                       >
-                                        <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400')} />
+                                        <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground')} />
                                         <span className="flex-1 truncate">{childTitle}</span>
                                         {child.badge && (
                                           <Badge className="text-3xs px-1.5 py-0 h-4">
@@ -616,7 +616,7 @@ export function MobileNav() {
 
                               {/* Optional Visual Separator Below Item */}
                               {item.hasDividerBelow && (
-                                <div className="h-px bg-slate-200/80 dark:bg-slate-800/80 my-2 mx-1" />
+                                <div className="h-px bg-muted/80 my-2 mx-1" />
                               )}
                             </React.Fragment>
                           )
@@ -661,7 +661,7 @@ export function MobileNav() {
 
         {/* Footer with Support Desk, Reset All Data and Sign Out Button */}
         <SheetFooter className="pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2">
-          <div className="flex items-center justify-between w-full text-xs text-slate-500 dark:text-slate-400 px-1">
+          <div className="flex items-center justify-between w-full text-xs text-muted-foreground px-1">
             <Link
               href={getTenantNavHref('/support', pathname, company?.slug)}
               onClick={() => setOpen(false)}
@@ -670,7 +670,7 @@ export function MobileNav() {
               <Headphones className="h-3.5 w-3.5" />
               <span>{company?.phone || '24/7 Live Desk'}</span>
             </Link>
-            <span className="text-xs text-slate-400">{appName}</span>
+            <span className="text-xs text-muted-foreground">{appName}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">

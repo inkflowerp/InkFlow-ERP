@@ -137,7 +137,7 @@ export function InventoryTabsNavigation({
   ]
 
   return (
-    <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-2 scrollbar-thin">
+    <div className="flex items-center gap-1.5 border-b border-border overflow-x-auto pb-2 scrollbar-thin">
       {tabs.map((tab) => {
         const Icon = tab.icon
         const isActive = currentView === tab.id
@@ -150,14 +150,14 @@ export function InventoryTabsNavigation({
             className={cn(
               'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border shrink-0',
               isActive
-                ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white shadow-xs'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-foreground text-white border-slate-900 dark:border-white shadow-xs'
+                : 'bg-card text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted'
             )}
           >
             <Icon
               className={cn(
                 'h-3.5 w-3.5',
-                isActive ? 'text-emerald-400 dark:text-emerald-600' : 'text-slate-400'
+                isActive ? 'text-emerald-400 dark:text-emerald-600' : 'text-muted-foreground'
               )}
             />
             <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
@@ -168,8 +168,8 @@ export function InventoryTabsNavigation({
                   tab.alert
                     ? 'bg-amber-500 text-white animate-pulse'
                     : isActive
-                    ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    ? 'bg-card/20 text-white dark:text-foreground'
+                    : 'bg-muted text-muted-foreground dark:text-muted-foreground'
                 )}
               >
                 {tab.count}

@@ -158,7 +158,7 @@ export default function FloorConsumptionPage() {
               size="sm"
               onClick={() => loadFloorData()}
               disabled={loading}
-              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-xs cursor-pointer transition-colors"
+              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 border-input hover:bg-muted text-foreground shadow-xs cursor-pointer transition-colors"
               title={isBn ? 'রিফ্রেশ' : 'Refresh'}
               aria-label={isBn ? 'রিফ্রেশ' : 'Refresh'}
             >

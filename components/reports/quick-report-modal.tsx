@@ -218,18 +218,18 @@ export function QuickReportModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl">
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-hidden bg-card border border-border rounded-2xl shadow-2xl">
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4">
+        <div className="p-5 border-b border-border flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className={`p-2.5 rounded-xl ${reportConfig.bgColor} ${reportConfig.iconColor}`}>
               <reportConfig.icon className="w-5 h-5" />
             </div>
             <div>
-              <DialogTitle className="text-base font-bold text-slate-900 dark:text-white">
+              <DialogTitle className="text-base font-bold text-foreground dark:text-white">
                 {reportConfig.title}
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                 {reportConfig.description}
               </DialogDescription>
             </div>
@@ -242,7 +242,7 @@ export function QuickReportModal({
               onClick={() => handleExport(false)}
               className="text-xs h-8"
             >
-              <Download className="mr-1.5 h-3.5 w-3.5 text-slate-600" />
+              <Download className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
               CSV
             </Button>
             <Button
@@ -257,7 +257,7 @@ export function QuickReportModal({
             <Button
               size="sm"
               onClick={() => window.print()}
-              className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-8"
+              className="bg-foreground hover:bg-secondary text-xs text-white h-8"
             >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
               Print
@@ -266,17 +266,17 @@ export function QuickReportModal({
         </div>
 
         {/* Search Bar */}
-        <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex items-center justify-between gap-3">
+        <div className="px-5 py-3 border-b border-border bg-muted flex items-center justify-between gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search records by customer, number, or item..."
-              className="h-8.5 pl-9 text-xs rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+              className="h-8.5 pl-9 text-xs rounded-xl bg-card border-border dark:border-border"
             />
           </div>
-          <span className="text-xs text-slate-400 tabular-nums">
+          <span className="text-xs text-muted-foreground tabular-nums">
             {type === 'sales'
               ? `${invoices.length} invoices`
               : type === 'inventory'
@@ -290,9 +290,9 @@ export function QuickReportModal({
         {/* Body Table Content */}
         <div className="flex-1 overflow-y-auto p-5">
           {type === 'sales' && (
-            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+            <div className="overflow-x-auto rounded-xl border border-border dark:border-border">
               <table className="w-full text-left text-xs tabular-nums">
-                <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800 font-sans">
+                <thead className="bg-muted text-muted-foreground font-semibold border-b border-border font-sans">
                   <tr>
                     <th className="py-2.5 px-3">Invoice #</th>
                     <th className="py-2.5 px-3">Customer</th>
@@ -303,7 +303,7 @@ export function QuickReportModal({
                     <th className="py-2.5 px-3 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {invoices
                     .filter(
                       (i) =>
@@ -312,17 +312,17 @@ export function QuickReportModal({
                         i.customer_name?.toLowerCase().includes(searchQuery.toLowerCase())
                     )
                     .map((inv) => (
-                      <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                        <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-white">
+                      <tr key={inv.id} className="hover:bg-muted dark:hover:bg-muted/40">
+                        <td className="py-2.5 px-3 font-bold text-foreground dark:text-white">
                           {inv.invoice_number}
                         </td>
-                        <td className="py-2.5 px-3 font-sans font-medium text-slate-700 dark:text-slate-300">
+                        <td className="py-2.5 px-3 font-sans font-medium text-foreground dark:text-muted-foreground">
                           {inv.customer_name || 'Customer'}
                         </td>
-                        <td className="py-2.5 px-3 text-slate-400">
+                        <td className="py-2.5 px-3 text-muted-foreground">
                           {inv.invoice_date || inv.created_at?.slice(0, 10)}
                         </td>
-                        <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-white">
+                        <td className="py-2.5 px-3 text-right font-bold text-foreground dark:text-white">
                           {formatBDT(inv.grand_total || (inv as any).total_amount || 0)}
                         </td>
                         <td className="py-2.5 px-3 text-right text-emerald-600 font-bold">
@@ -352,9 +352,9 @@ export function QuickReportModal({
           )}
 
           {type === 'inventory' && (
-            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+            <div className="overflow-x-auto rounded-xl border border-border dark:border-border">
               <table className="w-full text-left text-xs tabular-nums">
-                <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800 font-sans">
+                <thead className="bg-muted text-muted-foreground font-semibold border-b border-border font-sans">
                   <tr>
                     <th className="py-2.5 px-3">Substrate / Material</th>
                     <th className="py-2.5 px-3">Category</th>
@@ -364,7 +364,7 @@ export function QuickReportModal({
                     <th className="py-2.5 px-3 text-center">Health</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {materials
                     .filter(
                       (m) =>
@@ -377,16 +377,16 @@ export function QuickReportModal({
                       const val = mat.current_stock * cost
                       const isLow = mat.current_stock <= (mat.min_stock_level || 0)
                       return (
-                        <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                          <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-white font-sans">
+                        <tr key={mat.id} className="hover:bg-muted dark:hover:bg-muted/40">
+                          <td className="py-2.5 px-3 font-bold text-foreground dark:text-white font-sans">
                             {mat.name}
                           </td>
-                          <td className="py-2.5 px-3 text-slate-400 font-sans">{mat.category}</td>
+                          <td className="py-2.5 px-3 text-muted-foreground font-sans">{mat.category}</td>
                           <td className="py-2.5 px-3 text-center font-bold">
                             {mat.current_stock} {mat.unit}
                           </td>
                           <td className="py-2.5 px-3 text-right">{formatBDT(cost)}</td>
-                          <td className="py-2.5 px-3 text-right font-black text-slate-900 dark:text-white">
+                          <td className="py-2.5 px-3 text-right font-black text-foreground dark:text-white">
                             {formatBDT(val)}
                           </td>
                           <td className="py-2.5 px-3 text-center font-sans">
@@ -409,9 +409,9 @@ export function QuickReportModal({
           )}
 
           {(type === 'customer' || type === 'all_customers') && (
-            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+            <div className="overflow-x-auto rounded-xl border border-border dark:border-border">
               <table className="w-full text-left text-xs tabular-nums">
-                <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800 font-sans">
+                <thead className="bg-muted text-muted-foreground font-semibold border-b border-border font-sans">
                   <tr>
                     <th className="py-2.5 px-3">Customer Account</th>
                     <th className="py-2.5 px-3">Type</th>
@@ -421,7 +421,7 @@ export function QuickReportModal({
                     <th className="py-2.5 px-3 text-right">Outstanding Due</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {customers
                     .filter(
                       (c) =>
@@ -431,16 +431,16 @@ export function QuickReportModal({
                         (c as any).phone?.includes(searchQuery)
                     )
                     .map((cust) => (
-                      <tr key={cust.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                        <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-white font-sans">
+                      <tr key={cust.id} className="hover:bg-muted dark:hover:bg-muted/40">
+                        <td className="py-2.5 px-3 font-bold text-foreground dark:text-white font-sans">
                           {cust.name}
                         </td>
-                        <td className="py-2.5 px-3 text-slate-400 capitalize font-sans">
+                        <td className="py-2.5 px-3 text-muted-foreground capitalize font-sans">
                           {cust.customer_type || 'Regular'}
                         </td>
-                        <td className="py-2.5 px-3 text-slate-500">{cust.mobile || (cust as any).phone || '—'}</td>
+                        <td className="py-2.5 px-3 text-muted-foreground">{cust.mobile || (cust as any).phone || '—'}</td>
                         <td className="py-2.5 px-3 text-center font-bold">{cust.total_orders_count || 0}</td>
-                        <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-white">
+                        <td className="py-2.5 px-3 text-right font-bold text-foreground dark:text-white">
                           {formatBDT(cust.total_orders_amount || 0)}
                         </td>
                         <td className="py-2.5 px-3 text-right font-black text-amber-600">
@@ -454,9 +454,9 @@ export function QuickReportModal({
           )}
 
           {type !== 'sales' && type !== 'inventory' && type !== 'customer' && type !== 'all_customers' && (
-            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+            <div className="overflow-x-auto rounded-xl border border-border dark:border-border">
               <table className="w-full text-left text-xs tabular-nums">
-                <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 font-semibold border-b border-slate-100 dark:border-slate-800 font-sans">
+                <thead className="bg-muted text-muted-foreground font-semibold border-b border-border font-sans">
                   <tr>
                     <th className="py-2.5 px-3">Order #</th>
                     <th className="py-2.5 px-3">Customer</th>
@@ -465,7 +465,7 @@ export function QuickReportModal({
                     <th className="py-2.5 px-3 text-right">Final Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border dark:divide-border">
                   {orders
                     .filter(
                       (o) =>
@@ -474,14 +474,14 @@ export function QuickReportModal({
                         o.customer_name?.toLowerCase().includes(searchQuery.toLowerCase())
                     )
                     .map((ord) => (
-                      <tr key={ord.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                        <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-white">
+                      <tr key={ord.id} className="hover:bg-muted dark:hover:bg-muted/40">
+                        <td className="py-2.5 px-3 font-bold text-foreground dark:text-white">
                           {ord.order_number}
                         </td>
-                        <td className="py-2.5 px-3 font-sans font-medium text-slate-700 dark:text-slate-300">
+                        <td className="py-2.5 px-3 font-sans font-medium text-foreground dark:text-muted-foreground">
                           {ord.customer_name || 'Customer'}
                         </td>
-                        <td className="py-2.5 px-3 text-slate-400">
+                        <td className="py-2.5 px-3 text-muted-foreground">
                           {ord.order_date || ord.created_at?.slice(0, 10)}
                         </td>
                         <td className="py-2.5 px-3 text-center font-sans">
@@ -489,7 +489,7 @@ export function QuickReportModal({
                             {ord.status?.replace('_', ' ')}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-white">
+                        <td className="py-2.5 px-3 text-right font-bold text-foreground dark:text-white">
                           {formatBDT(ord.final_price || ord.subtotal || 0)}
                         </td>
                       </tr>

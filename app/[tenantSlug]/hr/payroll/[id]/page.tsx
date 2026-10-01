@@ -104,13 +104,13 @@ export default function PayrollPeriodDetailPage() {
 
   return (
     <PanelAccessGuard module="payroll" action="view" panelTitle="Payroll Detail" panelTitleBn="বেতন শিট বিস্তারিত">
-      <div className="min-h-screen bg-slate-50/60 pb-12">
+      <div className="min-h-screen bg-muted pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
           {/* Back Navigation Bar */}
           <div className="flex items-center justify-between gap-4 pb-2">
             <Link
               href={`/${slug}/hr/payroll`}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Payroll Periods</span>
@@ -121,7 +121,7 @@ export default function PayrollPeriodDetailPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => window.print()}
-                className="h-8 px-3 text-xs font-medium text-slate-700 bg-white border-slate-200 hover:bg-slate-50 min-h-[32px]"
+                className="h-8 px-3 text-xs font-medium text-foreground bg-card border-border hover:bg-muted min-h-[32px]"
               >
                 <Printer className="w-3.5 h-3.5 mr-1.5" />
                 <span>Print Payroll Sheet</span>
@@ -132,7 +132,7 @@ export default function PayrollPeriodDetailPage() {
                 size="sm"
                 onClick={loadPeriod}
                 disabled={isLoading || isPending}
-                className="h-8 px-2.5 text-xs text-slate-700 bg-white border-slate-200 hover:bg-slate-50"
+                className="h-8 px-2.5 text-xs text-foreground bg-card border-border hover:bg-muted"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isLoading || isPending ? 'animate-spin' : ''}`} />
               </Button>
@@ -141,9 +141,9 @@ export default function PayrollPeriodDetailPage() {
 
           {/* Error Message */}
           {errorMsg && (
-            <Card className="p-8 text-center bg-white border-slate-200">
+            <Card className="p-8 text-center bg-card border-border">
               <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <h3 className="text-sm font-semibold text-slate-900">{errorMsg}</h3>
+              <h3 className="text-sm font-semibold text-foreground">{errorMsg}</h3>
               <Button asChild size="sm" className="mt-4 text-xs">
                 <Link href={`/${slug}/hr/payroll`}>Return to Payroll Overview</Link>
               </Button>

@@ -45,14 +45,14 @@ export function ChildJobsBreakdown({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-base font-bold text-foreground dark:text-white flex items-center gap-2">
             <Layers className="h-5 w-5 text-blue-600" />
             <span>
               {tBilingual('Production Job Orders', 'প্রোডাকশন জব টিকেটসমূহ')} ({jobs.length}{' '}
               {tBilingual('Jobs', 'টিকেট')})
             </span>
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {tBilingual(
               'Each job order represents an independent production traveler routed through machine floor bays.',
               'প্রতিটি জব অর্ডার ফ্লোর মেশিন অনুযায়ী পৃথকভাবে পরিচালিত হয়।'
@@ -85,21 +85,21 @@ export function ChildJobsBreakdown({
                 className="h-full"
               />
               {/* Quick Traveler Print and Manual Status Override */}
-              <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 dark:bg-slate-800/60 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-xl text-2xs">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-muted border-x border-b border-border rounded-b-xl text-2xs">
                 <button
                   type="button"
                   onClick={() => onSelectJobForPrint(job)}
-                  className="inline-flex items-center gap-1 font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                  className="inline-flex items-center gap-1 font-semibold text-muted-foreground hover:text-foreground dark:hover:text-white"
                   title={tBilingual('Print Job Traveler (Job Bag)', 'জব ব্যাগ প্রিন্ট করুন')}
                 >
-                  <Printer className="h-3 w-3 text-slate-500" />
+                  <Printer className="h-3 w-3 text-muted-foreground" />
                   <span>{tBilingual('Job Bag', 'জব ব্যাগ')}</span>
                 </button>
 
                 <select
                   value={job.status}
                   onChange={(e) => onUpdateJobStatus(job.id, e.target.value as JobStatus)}
-                  className="h-6 px-1.5 rounded text-3xs font-semibold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                  className="h-6 px-1.5 rounded text-3xs font-semibold border border-input bg-card text-foreground dark:text-muted-foreground"
                   aria-label="Status override"
                 >
                   <option value="queued">Queued</option>

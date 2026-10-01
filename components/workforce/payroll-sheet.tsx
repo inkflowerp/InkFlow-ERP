@@ -76,7 +76,7 @@ export function PayrollSheet({
 
   if (isLoading) {
     return (
-      <Card className="bg-white border-slate-200 p-6">
+      <Card className="bg-card border-border p-6">
         <div className="space-y-4">
           <Skeleton className="h-8 w-64" />
           {Array.from({ length: 5 }).map((_, i) => (
@@ -90,22 +90,22 @@ export function PayrollSheet({
   return (
     <div className="space-y-5">
       {/* Top Summary Banner */}
-      <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl p-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl p-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-slate-900">{period.period_name}</h2>
+              <h2 className="text-xl font-bold text-foreground">{period.period_name}</h2>
               <Badge variant="outline" className="text-xs uppercase font-bold px-2 py-0.5">
                 {period.status}
               </Badge>
               {isLocked && (
-                <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-300 text-xs flex items-center gap-1">
-                  <Lock className="w-3 h-3 text-slate-500" />
+                <Badge variant="outline" className="bg-muted text-foreground border-input text-xs flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-muted-foreground" />
                   <span>Locked</span>
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-slate-500 mt-1 font-mono">
+            <p className="text-xs text-muted-foreground mt-1 font-mono">
               Dates: {period.start_date} to {period.end_date} • {items.length} Employees
             </p>
           </div>
@@ -117,7 +117,7 @@ export function PayrollSheet({
                 size="sm"
                 onClick={handleApprove}
                 disabled={isActionPending}
-                className="h-8 px-3.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white min-h-[32px]"
+                className="h-8 px-3.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground min-h-[32px]"
               >
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                 <span>Approve Payroll</span>
@@ -138,9 +138,9 @@ export function PayrollSheet({
             )}
 
             {isLocked && (
-              <div className="text-right text-[11px] text-slate-500">
-                <span className="font-medium text-slate-700">Period is locked & immutable.</span>
-                <span className="block text-slate-400">
+              <div className="text-right text-[11px] text-muted-foreground">
+                <span className="font-medium text-foreground">Period is locked & immutable.</span>
+                <span className="block text-muted-foreground">
                   Locked {period.locked_at ? new Date(period.locked_at).toLocaleDateString() : ''}
                 </span>
               </div>
@@ -151,49 +151,49 @@ export function PayrollSheet({
         {/* Financial KPI Numbers */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-4 text-xs">
           <div>
-            <span className="text-slate-400 block font-medium">Gross Payroll</span>
-            <span className="text-sm font-bold text-slate-900 tabular-nums">
+            <span className="text-muted-foreground block font-medium">Gross Payroll</span>
+            <span className="text-sm font-bold text-foreground tabular-nums">
               ৳ {Number(period.total_gross_salary || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-slate-400 block font-medium">Overtime</span>
+            <span className="text-muted-foreground block font-medium">Overtime</span>
             <span className="text-sm font-bold text-indigo-600 tabular-nums">
               ৳ {Number(period.total_ot_amount || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-slate-400 block font-medium">Advances Deducted</span>
+            <span className="text-muted-foreground block font-medium">Advances Deducted</span>
             <span className="text-sm font-bold text-amber-600 tabular-nums">
               ৳ {Number(period.total_advances_deducted || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-slate-400 block font-medium">Other Deductions</span>
+            <span className="text-muted-foreground block font-medium">Other Deductions</span>
             <span className="text-sm font-bold text-red-600 tabular-nums">
               ৳ {Number(period.total_other_deductions || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-slate-400 block font-medium">Net Payable</span>
-            <span className="text-sm font-bold text-slate-900 tabular-nums">
+            <span className="text-muted-foreground block font-medium">Net Payable</span>
+            <span className="text-sm font-bold text-foreground tabular-nums">
               ৳ {Number(period.total_net_salary || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-slate-400 block font-medium">Paid</span>
+            <span className="text-muted-foreground block font-medium">Paid</span>
             <span className="text-sm font-bold text-emerald-600 tabular-nums">
               ৳ {Number(period.total_paid_amount || 0).toLocaleString('en-IN')}
             </span>
           </div>
 
           <div>
-            <span className="text-slate-400 block font-medium">Due Remaining</span>
+            <span className="text-muted-foreground block font-medium">Due Remaining</span>
             <span className="text-sm font-bold text-rose-600 tabular-nums">
               ৳ {Number(period.total_due_amount || 0).toLocaleString('en-IN')}
             </span>
@@ -202,10 +202,10 @@ export function PayrollSheet({
       </Card>
 
       {/* Main Itemized Employee Table */}
-      <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
+      <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
+            <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
               <tr>
                 <th className="py-3 px-4">Employee</th>
                 <th className="py-3 px-3">Basis</th>
@@ -222,7 +222,7 @@ export function PayrollSheet({
                 <th className="py-3 px-4 text-right">Payment</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border">
               {items.map((item) => {
                 const base = Number(item.base_salary || 0)
                 const otAmt = Number(item.overtime_amount || 0)
@@ -233,27 +233,27 @@ export function PayrollSheet({
                 const due = Number(item.due_amount || (net - paid))
 
                 return (
-                  <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
+                  <tr key={item.id} className="hover:bg-muted transition-colors">
                     {/* Employee */}
                     <td className="py-3 px-4">
-                      <div className="font-semibold text-slate-900">{item.employee_name}</div>
-                      <div className="text-[11px] text-slate-400 capitalize">
+                      <div className="font-semibold text-foreground">{item.employee_name}</div>
+                      <div className="text-[11px] text-muted-foreground capitalize">
                         {item.role || item.department}
                       </div>
                     </td>
 
                     {/* Basis */}
-                    <td className="py-3 px-3 capitalize text-slate-600">
+                    <td className="py-3 px-3 capitalize text-muted-foreground">
                       {(item.salary_basis || 'monthly').replace('_', ' ')}
                     </td>
 
                     {/* Base */}
-                    <td className="py-3 px-3 text-right font-medium text-slate-800 tabular-nums">
+                    <td className="py-3 px-3 text-right font-medium text-foreground tabular-nums">
                       ৳ {base.toLocaleString('en-IN')}
                     </td>
 
                     {/* Days */}
-                    <td className="py-3 px-3 text-center font-medium text-slate-800 tabular-nums">
+                    <td className="py-3 px-3 text-center font-medium text-foreground tabular-nums">
                       {item.days_present || 0}
                     </td>
 
@@ -278,7 +278,7 @@ export function PayrollSheet({
                     </td>
 
                     {/* Net Salary */}
-                    <td className="py-3 px-3 text-right font-bold text-slate-900 tabular-nums">
+                    <td className="py-3 px-3 text-right font-bold text-foreground tabular-nums">
                       ৳ {net.toLocaleString('en-IN')}
                     </td>
 

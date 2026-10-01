@@ -64,19 +64,19 @@ export function RolesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="pb-1 border-b border-slate-200 dark:border-slate-800">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
+      <div className="pb-1 border-b border-border dark:border-border">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <ShieldCheck className="w-6 h-6 text-blue-600" />
           <span>Roles & Permission Matrix</span>
-          <span className="text-xs font-normal text-slate-400 font-hind">অনুমতি ও নিরাপত্তা</span>
+          <span className="text-xs font-normal text-muted-foreground font-hind">অনুমতি ও নিরাপত্তা</span>
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
           Define role responsibilities, configure granular module permissions, simulate access clearances, and review governance audit logs.
         </p>
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto scrollbar-thin">
+      <div className="flex items-center gap-2 border-b border-border pb-2 overflow-x-auto scrollbar-thin">
         <button
           type="button"
           onClick={() => setActiveTab('matrix')}
@@ -84,7 +84,7 @@ export function RolesPage() {
             'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'matrix'
               ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/60'
           )}
         >
           <Sliders className="w-4 h-4 shrink-0" />
@@ -98,7 +98,7 @@ export function RolesPage() {
             'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'simulator'
               ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/60'
           )}
         >
           <ShieldAlert className="w-4 h-4 shrink-0 text-amber-500" />
@@ -112,7 +112,7 @@ export function RolesPage() {
             'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'audit'
               ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/60'
           )}
         >
           <History className="w-4 h-4 shrink-0" />

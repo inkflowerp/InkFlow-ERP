@@ -142,8 +142,8 @@ export function NegotiationModal({
             <Sliders className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Commercial Margin & Negotiation Simulator</h2>
-            <p className="text-2xs text-slate-500">
+            <h2 className="text-sm font-bold text-foreground dark:text-white">Commercial Margin & Negotiation Simulator</h2>
+            <p className="text-2xs text-muted-foreground">
               Internal margin simulation • Protects minimum floor price • Strictly shielded from customer PDF
             </p>
           </div>
@@ -153,23 +153,23 @@ export function NegotiationModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {/* Margin Simulation Metrics Box */}
-        <div className="p-4 rounded-xl bg-slate-900 text-white space-y-2.5 text-xs shadow-md border border-slate-800">
-          <div className="flex justify-between items-center text-slate-400">
+        <div className="p-4 rounded-xl bg-foreground text-white space-y-2.5 text-xs shadow-md border border-border">
+          <div className="flex justify-between items-center text-muted-foreground">
             <span>List Quoted Subtotal:</span>
-            <span className="tabular-nums font-bold text-slate-200">{formatBDT(subtotal)}</span>
+            <span className="tabular-nums font-bold text-foreground">{formatBDT(subtotal)}</span>
           </div>
 
-          <div className="flex justify-between items-center text-slate-400">
+          <div className="flex justify-between items-center text-muted-foreground">
             <span className="flex items-center gap-1">
               Internal Direct Cost Floor:
-              <span className="text-2xs bg-white/10 px-1.5 py-0.2 rounded text-slate-300">Materials + Print Labor</span>
+              <span className="text-2xs bg-card/10 px-1.5 py-0.2 rounded text-muted-foreground">Materials + Print Labor</span>
             </span>
             <span className="tabular-nums font-bold text-amber-400">{formatBDT(totalCost)}</span>
           </div>
 
-          <div className="border-t border-slate-800 pt-2 grid grid-cols-2 gap-3">
+          <div className="border-t border-border pt-2 grid grid-cols-2 gap-3">
             <div>
-              <span className="text-2xs text-slate-400 block">Projected Gross Profit</span>
+              <span className="text-2xs text-muted-foreground block">Projected Gross Profit</span>
               <span
                 className={`text-base font-black tabular-nums ${
                   calculated.grossProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
@@ -180,7 +180,7 @@ export function NegotiationModal({
             </div>
 
             <div className="text-right">
-              <span className="text-2xs text-slate-400 block">Projected Margin</span>
+              <span className="text-2xs text-muted-foreground block">Projected Margin</span>
               <span
                 className={`text-base font-black tabular-nums ${
                   calculated.marginPercent >= 35
@@ -220,37 +220,37 @@ export function NegotiationModal({
         ) : null}
 
         {/* 1-Click Quick Concession Presets */}
-        <div className="space-y-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
+        <div className="space-y-2 p-3 rounded-xl bg-muted border border-border text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+            <span className="text-2xs font-bold text-foreground flex items-center gap-1">
               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
               Quick Concession Helpers (ছাড় ও রাউন্ড অফ)
             </span>
-            <span className="text-2xs text-slate-400">1-Click Auto Adjust</span>
+            <span className="text-2xs text-muted-foreground">1-Click Auto Adjust</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-2xs text-slate-500 font-semibold mr-1">Concession %:</span>
+            <span className="text-2xs text-muted-foreground font-semibold mr-1">Concession %:</span>
             {[3, 5, 8, 10, 15].map((pct) => (
               <button
                 key={pct}
                 type="button"
                 onClick={() => handleConcessionPercent(pct)}
-                className="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs font-semibold text-slate-700 dark:text-slate-200 hover:border-amber-400 hover:text-amber-600 transition-colors cursor-pointer"
+                className="px-2 py-1 rounded bg-card border border-border text-2xs font-semibold text-foreground hover:border-amber-400 hover:text-amber-600 transition-colors cursor-pointer"
               >
                 {pct}% (৳{Math.round((subtotal * pct) / 100).toLocaleString()})
               </button>
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-            <span className="text-2xs text-slate-500 font-semibold mr-1">Round Grand Total:</span>
+          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border dark:border-border">
+            <span className="text-2xs text-muted-foreground font-semibold mr-1">Round Grand Total:</span>
             {[500, 100, 50].map((nearest) => (
               <button
                 key={nearest}
                 type="button"
                 onClick={() => handleRoundGrandTotal(nearest)}
-                className="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs font-semibold text-slate-700 dark:text-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer"
+                className="px-2 py-1 rounded bg-card border border-border text-2xs font-semibold text-foreground hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer"
               >
                 Round to ৳{nearest}
               </button>
@@ -281,7 +281,7 @@ export function NegotiationModal({
               className="text-xs h-9 tabular-nums"
               placeholder="Enter discount in Taka..."
             />
-            <span className="text-2xs text-slate-400 mt-1 block">
+            <span className="text-2xs text-muted-foreground mt-1 block">
               Maximum allowed: {formatBDT(subtotal)} • Minimum Break-even Subtotal: {formatBDT(totalCost)}
             </span>
           </div>
@@ -300,16 +300,16 @@ export function NegotiationModal({
           </div>
 
           {/* Result Preview */}
-          <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs flex items-center justify-between">
-            <span className="text-slate-600 dark:text-slate-400">Revised Grand Total (with VAT):</span>
-            <span className="text-base font-black tabular-nums text-slate-900 dark:text-white">
+          <div className="p-3 rounded-lg bg-muted border border-border text-xs flex items-center justify-between">
+            <span className="text-muted-foreground dark:text-muted-foreground">Revised Grand Total (with VAT):</span>
+            <span className="text-base font-black tabular-nums text-foreground dark:text-white">
               {formatBDT(calculated.grandTotal)}
             </span>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

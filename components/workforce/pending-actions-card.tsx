@@ -42,7 +42,7 @@ export function PendingActionsCard({
 }: PendingActionsCardProps) {
   if (isLoading) {
     return (
-      <Card className="p-5 bg-white border-slate-200 shadow-none">
+      <Card className="p-5 bg-card border-border shadow-none">
         <Skeleton className="h-6 w-52 mb-4" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -91,19 +91,19 @@ export function PendingActionsCard({
   }
 
   return (
-    <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-      <CardHeader className="pb-3 border-b border-slate-100 px-5 pt-5 flex flex-row items-center justify-between">
+    <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
+      <CardHeader className="pb-3 border-b border-border px-5 pt-5 flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+          <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
             <span>Pending Approvals & Actions</span>
-            <span className="text-xs font-normal text-slate-500">অপেক্ষমান কার্যক্রম</span>
+            <span className="text-xs font-normal text-muted-foreground">অপেক্ষমান কার্যক্রম</span>
             {items.length > 0 && (
               <Badge variant="outline" className="ml-1 bg-amber-50 text-amber-700 border-amber-200 text-xs">
                 {items.length} pending
               </Badge>
             )}
           </CardTitle>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Operational approvals requiring immediate manager or accounts decision
           </p>
         </div>
@@ -111,12 +111,12 @@ export function PendingActionsCard({
 
       <CardContent className="p-5">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+          <div className="flex flex-col items-center justify-center py-8 text-center bg-muted rounded-xl border border-dashed border-border">
             <div className="p-2.5 rounded-full bg-emerald-50 border border-emerald-200 mb-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
             </div>
-            <h4 className="text-sm font-semibold text-slate-900">All caught up!</h4>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <h4 className="text-sm font-semibold text-foreground">All caught up!</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
               No pending overtime, attendance corrections, or advances awaiting review.
             </p>
           </div>
@@ -132,7 +132,7 @@ export function PendingActionsCard({
               return (
                 <div
                   key={action.id}
-                  className="p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition-all flex flex-col justify-between"
+                  className="p-3.5 rounded-xl border border-border hover:border-input bg-card transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2">
@@ -140,8 +140,8 @@ export function PendingActionsCard({
                         <Icon className={`w-4 h-4 ${visual.iconColor}`} />
                       </div>
                       <div>
-                        <div className="text-xs font-semibold text-slate-900">{action.title}</div>
-                        <div className="text-[11px] text-slate-400">{action.titleBn}</div>
+                        <div className="text-xs font-semibold text-foreground">{action.title}</div>
+                        <div className="text-[11px] text-muted-foreground">{action.titleBn}</div>
                       </div>
                     </div>
                     <Badge variant="outline" className={`text-[10px] uppercase font-bold px-1.5 py-0 ${visual.badgeClass}`}>
@@ -149,12 +149,12 @@ export function PendingActionsCard({
                     </Badge>
                   </div>
 
-                  <div className="text-xs text-slate-600 font-medium my-1.5 line-clamp-1">
+                  <div className="text-xs text-muted-foreground font-medium my-1.5 line-clamp-1">
                     {action.subtitle}
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between mt-auto">
-                    <span className="text-[11px] text-slate-400">
+                  <div className="pt-2 border-t border-border flex items-center justify-between mt-auto">
+                    <span className="text-[11px] text-muted-foreground">
                       {action.dateOrTime || 'Immediate'}
                     </span>
                     <Button

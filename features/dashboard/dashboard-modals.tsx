@@ -444,15 +444,15 @@ export function DashboardModals({
                 type="button"
                 variant="outline"
                 onClick={() => onExecuteQuickAction(qa)}
-                className="h-12 px-3 flex items-center justify-between text-xs font-bold border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer min-h-[44px]"
+                className="h-12 px-3 flex items-center justify-between text-xs font-bold border-border hover:bg-muted transition-all cursor-pointer min-h-[44px]"
               >
                 <div className="flex items-center gap-2.5 truncate">
-                  <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 shrink-0">
+                  <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:text-blue-400 shrink-0">
                     <Icon className="h-4 w-4" />
                   </div>
                   <span className="truncate bangla-text">{tBilingual(qa.labelEn, qa.labelBn)}</span>
                 </div>
-                <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               </Button>
             )
           })}

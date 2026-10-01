@@ -186,7 +186,7 @@ export function SupplierMaterialRateModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-black text-slate-900 dark:text-white">
+              <span className="text-base font-black text-foreground dark:text-white">
                 {isEditing
                   ? tBilingual('Update Material Contract Rate', 'মেটেরিয়াল চুক্তি দর আপডেট করুন')
                   : tBilingual('Add Negotiated Material Rate', 'নতুন মেটেরিয়াল চুক্তি দর যুক্ত করুন')}
@@ -195,7 +195,7 @@ export function SupplierMaterialRateModal({
                 {supplier.supplier_name}
               </Badge>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               {tBilingual(
                 'Agreed buying rate will be automatically pulled into PO creation and job costing estimators.',
                 'চুক্তিভিত্তিক ক্রয়মূল্য পিও তৈরি এবং জব কস্টিং ক্যালকুলেশনে সরাসরি যুক্ত হবে।'
@@ -207,7 +207,7 @@ export function SupplierMaterialRateModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {/* MATERIAL SPECIFICATION */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           {/* Pick from existing inventory */}
           {materials.length > 0 && (
             <div>
@@ -217,7 +217,7 @@ export function SupplierMaterialRateModal({
               <select
                 value={formData.material_id}
                 onChange={(e) => handleSelectMaterial(e.target.value)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
               >
                 <option value="">-- Custom Specification / Non-Catalog --</option>
                 {materials.map((m) => (
@@ -262,7 +262,7 @@ export function SupplierMaterialRateModal({
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium capitalize"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium capitalize"
               >
                 <option value="media">Media (Flex/Vinyl)</option>
                 <option value="acrylic">Acrylic Sheets</option>
@@ -279,7 +279,7 @@ export function SupplierMaterialRateModal({
         </div>
 
         {/* PRICING & UOM */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
@@ -288,7 +288,7 @@ export function SupplierMaterialRateModal({
               <select
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium tabular-nums"
+                className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium tabular-nums"
               >
                 <option value="sft">{tBilingual('sft (Square Feet)', 'স্কয়ার ফিট')}</option>
                 <option value="sheet">{tBilingual('sheet (Sheet)', 'শীট')}</option>
@@ -307,7 +307,7 @@ export function SupplierMaterialRateModal({
                 {tBilingual('Contract Buying Rate', 'চুক্তিভিত্তিক ক্রয় দর')} <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">৳</span>
+                <span className="absolute left-3 top-2 text-xs font-bold text-muted-foreground">৳</span>
                 <Input
                   type="number"
                   step="0.01"
@@ -389,7 +389,7 @@ export function SupplierMaterialRateModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

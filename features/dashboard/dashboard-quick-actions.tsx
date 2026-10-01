@@ -70,15 +70,15 @@ export function DashboardQuickActions({
   const { tBilingual } = useI18n()
 
   return (
-    <Card className="p-4 border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+    <Card className="p-4 border-border bg-card shadow-xs">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-blue-600" />
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
+          <span className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
             {tBilingual('Quick Operations', 'দ্রুত কাজ')}
           </span>
         </div>
-        <span className="text-xs text-slate-500 dark:text-slate-400 bangla-text hidden sm:inline">
+        <span className="text-xs text-muted-foreground bangla-text hidden sm:inline">
           {tBilingual('1-click direct shortcuts', '১ ক্লিকে দ্রুত কাজ')}
         </span>
       </div>
@@ -92,9 +92,9 @@ export function DashboardQuickActions({
               type="button"
               variant="outline"
               onClick={() => onExecuteAction(qa)}
-              className="h-11 sm:h-12 px-2.5 flex items-center justify-start gap-2 text-xs font-bold border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-slate-800 transition-all cursor-pointer min-h-[44px] text-left"
+              className="h-11 sm:h-12 px-2.5 flex items-center justify-start gap-2 text-xs font-bold border-border hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer min-h-[44px] text-left"
             >
-              <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 shrink-0">
+              <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:text-blue-400 shrink-0">
                 <Icon className="h-4 w-4" />
               </div>
               <span className="truncate bangla-text leading-tight">
@@ -109,9 +109,9 @@ export function DashboardQuickActions({
             type="button"
             variant="outline"
             onClick={onOpenMoreActions}
-            className="h-11 sm:h-12 px-2.5 flex items-center justify-center gap-2 text-xs font-bold border-dashed border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer min-h-[44px]"
+            className="h-11 sm:h-12 px-2.5 flex items-center justify-center gap-2 text-xs font-bold border-dashed border-input hover:bg-muted transition-all cursor-pointer min-h-[44px]"
           >
-            <MoreHorizontal className="h-4 w-4 text-slate-500" />
+            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
             <span className="bangla-text">{tBilingual('More Actions', 'অন্যান্য কাজ')}</span>
           </Button>
         )}

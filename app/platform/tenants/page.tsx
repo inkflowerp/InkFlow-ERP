@@ -547,7 +547,7 @@ export default function PlatformTenantsPage() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
@@ -557,7 +557,7 @@ export default function PlatformTenantsPage() {
             <Building2 className="h-7 w-7 text-indigo-400" />
             Tenants Management
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Authoritative directory of all organizations on the InkFlow platform with lifecycle governance.
           </p>
         </div>
@@ -592,7 +592,7 @@ export default function PlatformTenantsPage() {
             size="sm"
             variant="outline"
             onClick={loadData}
-            className="border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 text-xs h-9"
+            className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh
@@ -602,18 +602,18 @@ export default function PlatformTenantsPage() {
 
       {/* KPI Metrics Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Total Tenants</span>
+            <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Total Tenants</span>
             <div className="h-7 w-7 rounded-lg bg-indigo-600/15 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
               <Building2 className="h-3.5 w-3.5" />
             </div>
           </div>
           <div className="text-xl font-black text-white mt-1 flex items-baseline gap-2">
             {companies.length}
-            <span className="text-2xs font-normal text-slate-500 tabular-nums">orgs</span>
+            <span className="text-2xs font-normal text-muted-foreground tabular-nums">orgs</span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1.5 truncate">
+          <div className="text-2xs text-muted-foreground mt-0.5 flex items-center gap-1.5 truncate">
             <span className="text-indigo-400 font-bold">
               {companies.reduce((acc, c) => acc + (c.users_count || 0), 0)}
             </span>{' '}
@@ -621,9 +621,9 @@ export default function PlatformTenantsPage() {
           </div>
         </Card>
 
-        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Active Tenants</span>
+            <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Active Tenants</span>
             <div className="h-7 w-7 rounded-lg bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
               <CheckCircle2 className="h-3.5 w-3.5" />
             </div>
@@ -636,27 +636,27 @@ export default function PlatformTenantsPage() {
                 : '0%'}
             </span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 truncate">Operational workspaces</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 truncate">Operational workspaces</div>
         </Card>
 
-        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Free Trials</span>
+            <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Free Trials</span>
             <div className="h-7 w-7 rounded-lg bg-blue-600/15 border border-blue-500/20 text-blue-400 flex items-center justify-center">
               <Sparkles className="h-3.5 w-3.5" />
             </div>
           </div>
           <div className="text-xl font-black text-blue-400 mt-1 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'trial').length}
-            <span className="text-2xs font-normal text-slate-500 tabular-nums">evaluating</span>
+            <span className="text-2xs font-normal text-muted-foreground tabular-nums">evaluating</span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 truncate">Trial accounts</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 truncate">Trial accounts</div>
         </Card>
 
         {/* Incomplete / Started-but-not-finished Registrations KPI Card */}
         <Card
           onClick={() => setStatusFilter('incomplete')}
-          className={`bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group cursor-pointer transition-all shadow-lg hover:border-amber-500/40 ${
+          className={`bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group cursor-pointer transition-all shadow-lg hover:border-amber-500/40 ${
             statusFilter === 'incomplete' ? 'ring-2 ring-amber-500/50 bg-amber-950/20' : ''
           }`}
         >
@@ -668,30 +668,30 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-xl font-black text-amber-400 mt-1 flex items-baseline gap-2">
             {incompleteRegistrations.length}
-            <span className="text-2xs font-normal text-slate-400 tabular-nums">pending</span>
+            <span className="text-2xs font-normal text-muted-foreground tabular-nums">pending</span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1.5 truncate">
+          <div className="text-2xs text-muted-foreground mt-0.5 flex items-center gap-1.5 truncate">
             <span className="text-amber-300 font-semibold">{incompleteMetrics.pending_verification_count} awaiting OTP</span>
           </div>
         </Card>
 
-        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
+        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Suspended</span>
+            <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Suspended</span>
             <div className="h-7 w-7 rounded-lg bg-red-600/15 border border-red-500/20 text-red-400 flex items-center justify-center">
               <AlertTriangle className="h-3.5 w-3.5" />
             </div>
           </div>
           <div className="text-xl font-black text-red-400 mt-1 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'suspended').length}
-            <span className="text-2xs font-normal text-slate-500 tabular-nums">restricted</span>
+            <span className="text-2xs font-normal text-muted-foreground tabular-nums">restricted</span>
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 truncate">Restricted by policy</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 truncate">Restricted by policy</div>
         </Card>
 
-        <Card className="bg-slate-900/80 border-slate-800 py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg col-span-2 sm:col-span-1">
+        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-semibold text-slate-400">Portfolio MRR</span>
+            <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Portfolio MRR</span>
             <div className="h-7 w-7 rounded-lg bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
               <CreditCard className="h-3.5 w-3.5" />
             </div>
@@ -699,12 +699,12 @@ export default function PlatformTenantsPage() {
           <div className="text-xl font-black text-emerald-400 mt-1">
             <CurrencyDisplay amount={companies.reduce((acc, c) => acc + (c.monthly_fee || 0), 0)} />
           </div>
-          <div className="text-2xs text-slate-400 mt-0.5 truncate">Monthly SaaS revenue</div>
+          <div className="text-2xs text-muted-foreground mt-0.5 truncate">Monthly SaaS revenue</div>
         </Card>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-foreground p-3.5 rounded-2xl border border-border">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
           {[
             { key: 'all', label: 'All Tenants', count: companies.length },
@@ -726,7 +726,7 @@ export default function PlatformTenantsPage() {
                       : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                     : tab.isSpecial
                     ? 'bg-amber-950/40 text-amber-300 hover:text-amber-100 hover:bg-amber-900/50 border border-amber-800/60'
-                    : 'bg-slate-950/70 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800/80'
+                    : 'bg-foreground text-muted-foreground hover:text-foreground hover:bg-secondary border border-border'
                 }`}
               >
                 {tab.isSpecial && <Hourglass className="h-3.5 w-3.5 text-amber-300 shrink-0" />}
@@ -734,10 +734,10 @@ export default function PlatformTenantsPage() {
                 <span
                   className={`px-1.5 py-0.2 rounded-full text-2xs tabular-nums ${
                     isSelected
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-card/20 text-white'
                       : tab.isSpecial
                       ? 'bg-amber-900/70 text-amber-200'
-                      : 'bg-slate-800 text-slate-400'
+                      : 'bg-secondary text-muted-foreground'
                   }`}
                 >
                   {tab.count}
@@ -749,7 +749,7 @@ export default function PlatformTenantsPage() {
 
         <div className="flex items-center gap-2.5 flex-1 md:max-w-md justify-end">
           <form onSubmit={handleSearchSubmit} className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={
                 statusFilter === 'incomplete'
@@ -758,13 +758,13 @@ export default function PlatformTenantsPage() {
               }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-slate-950/80 border-slate-800 text-xs text-white placeholder:text-slate-500 h-9 rounded-xl focus-visible:ring-indigo-500"
+              className="pl-9 bg-foreground border-border text-xs text-white placeholder:text-muted-foreground h-9 rounded-xl focus-visible:ring-indigo-500"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-2.5 text-slate-500 hover:text-slate-300"
+                className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-muted-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -775,7 +775,7 @@ export default function PlatformTenantsPage() {
           <select
             value={planFilter}
             onChange={(e) => setPlanFilter(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 font-medium focus:outline-none focus:border-indigo-500 shrink-0"
+            className="h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-muted-foreground font-medium focus:outline-none focus:border-indigo-500 shrink-0"
           >
             <option value="all">All Plans</option>
             <option value="trial">Trial Tier</option>
@@ -810,16 +810,16 @@ export default function PlatformTenantsPage() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-20 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
+            <div key={i} className="h-20 bg-foreground border border-border rounded-2xl animate-pulse" />
           ))}
         </div>
       ) : statusFilter === 'incomplete' ? (
         /* INCOMPLETE REGISTRATIONS TABLE VIEW */
         <div className="space-y-4">
           {/* Incomplete Sub-stage Filter Chips */}
-          <div className="flex items-center justify-between gap-3 flex-wrap bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+          <div className="flex items-center justify-between gap-3 flex-wrap bg-foreground p-2.5 rounded-xl border border-border">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider px-2">Stage:</span>
+              <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-2">Stage:</span>
               {[
                 { key: 'all', label: 'All Incomplete', count: incompleteMetrics.total_incomplete },
                 { key: 'pending_verification', label: 'Pending Email OTP', count: incompleteMetrics.pending_verification_count },
@@ -835,18 +835,18 @@ export default function PlatformTenantsPage() {
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                       isSubActive
                         ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                        : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800/60'
+                        : 'bg-foreground text-muted-foreground hover:text-foreground border border-border'
                     }`}
                   >
                     <span>{sub.label}</span>
-                    <span className={`px-1.5 py-0.2 rounded-full text-2xs tabular-nums ${isSubActive ? 'bg-amber-500/30 text-amber-200' : 'bg-slate-800 text-slate-500'}`}>
+                    <span className={`px-1.5 py-0.2 rounded-full text-2xs tabular-nums ${isSubActive ? 'bg-amber-500/30 text-amber-200' : 'bg-secondary text-muted-foreground'}`}>
                       {sub.count}
                     </span>
                   </button>
                 )
               })}
             </div>
-            <div className="text-2xs text-slate-400 px-2 flex items-center gap-1.5">
+            <div className="text-2xs text-muted-foreground px-2 flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-amber-400" />
               <span>Registration drop-off triage &amp; workspace provisioning</span>
             </div>
@@ -854,11 +854,11 @@ export default function PlatformTenantsPage() {
 
           {/* Incomplete Registrations Table / Empty State */}
           {filteredIncomplete.length === 0 ? (
-            <Card className="bg-slate-900/60 border-slate-800 text-center py-16">
+            <Card className="bg-foreground border-border text-center py-16">
               <CardContent className="space-y-3">
-                <UserCheck className="h-12 w-12 text-slate-600 mx-auto" />
+                <UserCheck className="h-12 w-12 text-muted-foreground mx-auto" />
                 <div className="text-base font-bold text-white">No Incomplete Registrations Found</div>
-                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
                   {search || incompleteStageFilter !== 'all' || planFilter !== 'all'
                     ? 'No incomplete tenant registrations match your current search or stage criteria.'
                     : 'All users who initiated registration have completed onboarding and activated their workspace.'}
@@ -866,10 +866,10 @@ export default function PlatformTenantsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40">
+            <div className="overflow-hidden rounded-2xl border border-border bg-foreground">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-900/90 text-2xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                  <thead className="bg-foreground text-2xs uppercase tracking-wider text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3.5 px-4 font-bold">Prospective Owner</th>
                       <th className="py-3.5 px-3 font-bold">Contact Details</th>
@@ -880,7 +880,7 @@ export default function PlatformTenantsPage() {
                       <th className="py-3.5 px-4 font-bold text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                  <tbody className="divide-y divide-border/60 text-muted-foreground">
                     {filteredIncomplete.map((reg) => {
                       const isExpired = reg.stage === 'verification_expired'
                       const isVerified = reg.stage === 'verified_pending_onboarding'
@@ -896,7 +896,7 @@ export default function PlatformTenantsPage() {
                               </div>
                               <div className="min-w-0">
                                 <div className="font-bold text-white truncate">{reg.full_name || 'Anonymous Registrant'}</div>
-                                <div className="text-2xs text-slate-500 tabular-nums flex items-center gap-1">
+                                <div className="text-2xs text-muted-foreground tabular-nums flex items-center gap-1">
                                   <span>ID:</span>
                                   <span className="truncate max-w-[120px]">{reg.id.slice(0, 12)}...</span>
                                 </div>
@@ -907,10 +907,10 @@ export default function PlatformTenantsPage() {
                           {/* Contact Details */}
                           <td className="py-3.5 px-3">
                             <div className="flex items-center gap-1.5">
-                              <Mail className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                              <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                               <a
                                 href={`mailto:${reg.email}?subject=${encodeURIComponent('Complete your InkFlow ERP Workspace Setup')}`}
-                                className="tabular-nums text-slate-200 hover:text-indigo-400 transition-colors truncate max-w-[180px]"
+                                className="tabular-nums text-foreground hover:text-indigo-400 transition-colors truncate max-w-[180px]"
                                 title="Click to send email"
                               >
                                 {reg.email}
@@ -918,29 +918,29 @@ export default function PlatformTenantsPage() {
                               <button
                                 type="button"
                                 onClick={() => handleCopyText(reg.email, `email-${reg.id}`)}
-                                className="text-slate-500 hover:text-slate-300 ml-0.5"
+                                className="text-muted-foreground hover:text-muted-foreground ml-0.5"
                                 title="Copy Email"
                               >
                                 {copiedField === `email-${reg.id}` ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
                               </button>
                             </div>
                             {reg.phone ? (
-                              <div className="flex items-center gap-1.5 mt-0.5 text-slate-400 tabular-nums text-2xs">
-                                <Phone className="h-3 w-3 text-slate-500 shrink-0" />
+                              <div className="flex items-center gap-1.5 mt-0.5 text-muted-foreground tabular-nums text-2xs">
+                                <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
                                 <a href={`tel:${reg.phone}`} className="hover:text-indigo-400 transition-colors">
                                   {reg.phone}
                                 </a>
                                 <button
                                   type="button"
                                   onClick={() => handleCopyText(reg.phone!, `phone-${reg.id}`)}
-                                  className="text-slate-500 hover:text-slate-300 ml-0.5"
+                                  className="text-muted-foreground hover:text-muted-foreground ml-0.5"
                                   title="Copy Phone"
                                 >
                                   {copiedField === `phone-${reg.id}` ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
                                 </button>
                               </div>
                             ) : (
-                              <div className="text-2xs text-slate-500 italic mt-0.5">No phone provided</div>
+                              <div className="text-2xs text-muted-foreground italic mt-0.5">No phone provided</div>
                             )}
                           </td>
 
@@ -973,7 +973,7 @@ export default function PlatformTenantsPage() {
 
                           {/* Verification Telemetry */}
                           <td className="py-3.5 px-3">
-                            <div className="text-2xs text-slate-300">
+                            <div className="text-2xs text-muted-foreground">
                               {reg.is_email_confirmed ? (
                                 <span className="text-emerald-400 font-semibold flex items-center gap-1">
                                   <CheckCircle2 className="h-3 w-3" /> Email Confirmed
@@ -985,14 +985,14 @@ export default function PlatformTenantsPage() {
                               )}
                             </div>
                             {reg.expires_at && !reg.is_email_confirmed && (
-                              <div className="text-2xs text-slate-500 tabular-nums">
+                              <div className="text-2xs text-muted-foreground tabular-nums">
                                 Expires: {formatDate(reg.expires_at)}
                               </div>
                             )}
                           </td>
 
                           {/* Started At */}
-                          <td className="py-3.5 px-3 text-2xs text-slate-400 whitespace-nowrap">
+                          <td className="py-3.5 px-3 text-2xs text-muted-foreground whitespace-nowrap">
                             {formatDate(reg.created_at)}
                           </td>
 
@@ -1041,11 +1041,11 @@ export default function PlatformTenantsPage() {
           )}
         </div>
       ) : filteredCompanies.length === 0 ? (
-        <Card className="bg-slate-900/60 border-slate-800 text-center py-16">
+        <Card className="bg-foreground border-border text-center py-16">
           <CardContent className="space-y-3">
-            <Building2 className="h-12 w-12 text-slate-600 mx-auto" />
+            <Building2 className="h-12 w-12 text-muted-foreground mx-auto" />
             <div className="text-base font-bold text-white">No tenants found</div>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
               {search || statusFilter !== 'all' || planFilter !== 'all'
                 ? 'No organizations match your current search or filter criteria.'
                 : 'No tenant organizations have been provisioned yet.'}
@@ -1061,10 +1061,10 @@ export default function PlatformTenantsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40">
+        <div className="overflow-hidden rounded-2xl border border-border bg-foreground">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/90 text-2xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
+              <thead className="bg-foreground text-2xs uppercase tracking-wider text-muted-foreground border-b border-border">
                 <tr>
                   <th className="py-3.5 px-4 font-bold">Business</th>
                   <th className="py-3.5 px-3 font-bold">Plan &amp; Pricing</th>
@@ -1075,7 +1075,7 @@ export default function PlatformTenantsPage() {
                   <th className="py-3.5 px-4 font-bold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-300">
+              <tbody className="divide-y divide-border/60 text-muted-foreground">
                 {filteredCompanies.map((c) => {
                   const isSuspended = c.status === 'suspended'
                   const isTrial = c.status === 'trial'
@@ -1095,7 +1095,7 @@ export default function PlatformTenantsPage() {
                             >
                               {c.name}
                             </Link>
-                            <span className="text-2xs text-slate-500 tabular-nums">/{c.slug}</span>
+                            <span className="text-2xs text-muted-foreground tabular-nums">/{c.slug}</span>
                           </div>
                         </div>
                       </td>
@@ -1103,9 +1103,9 @@ export default function PlatformTenantsPage() {
                       {/* Plan & Pricing */}
                       <td className="py-3.5 px-3">
                         <div className="font-semibold text-white capitalize">{c.plan}</div>
-                        <div className="text-2xs text-slate-400">
+                        <div className="text-2xs text-muted-foreground">
                           <CurrencyDisplay amount={c.monthly_fee || 0} />
-                          <span className="text-2xs text-slate-500">/mo</span>
+                          <span className="text-2xs text-muted-foreground">/mo</span>
                         </div>
                       </td>
 
@@ -1119,7 +1119,7 @@ export default function PlatformTenantsPage() {
                               ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                               : isSuspended
                               ? 'bg-red-500/10 text-red-400 border-red-500/30'
-                              : 'bg-slate-500/10 text-slate-400 border-slate-500/30'
+                              : 'bg-slate-500/10 text-muted-foreground border-slate-500/30'
                           }`}
                         >
                           <span
@@ -1139,22 +1139,22 @@ export default function PlatformTenantsPage() {
 
                       {/* Owner / Contact */}
                       <td className="py-3.5 px-3">
-                        <div className="font-medium text-slate-200 truncate">{c.owner_name || 'Not set'}</div>
-                        <div className="text-2xs text-slate-400 tabular-nums truncate">{c.owner_email || c.owner_phone || 'No contact'}</div>
+                        <div className="font-medium text-foreground truncate">{c.owner_name || 'Not set'}</div>
+                        <div className="text-2xs text-muted-foreground tabular-nums truncate">{c.owner_email || c.owner_phone || 'No contact'}</div>
                       </td>
 
                       {/* Usage */}
                       <td className="py-3.5 px-3">
-                        <div className="text-2xs text-slate-300">
+                        <div className="text-2xs text-muted-foreground">
                           {c.users_count || 0}/{c.users_limit || 5} Users
                         </div>
-                        <div className="text-2xs text-slate-500 tabular-nums">
+                        <div className="text-2xs text-muted-foreground tabular-nums">
                           {c.branches_count || 1} Branch
                         </div>
                       </td>
 
                       {/* Created */}
-                      <td className="py-3.5 px-3 text-2xs text-slate-400 whitespace-nowrap">
+                      <td className="py-3.5 px-3 text-2xs text-muted-foreground whitespace-nowrap">
                         {formatDate(c.created_at || Date.now())}
                       </td>
 
@@ -1163,7 +1163,7 @@ export default function PlatformTenantsPage() {
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/platform/tenants/${c.id}`}
-                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-colors"
+                            className="px-2.5 py-1 rounded-lg bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white font-medium text-xs transition-colors"
                           >
                             360° View
                           </Link>
@@ -1254,8 +1254,8 @@ export default function PlatformTenantsPage() {
       {/* 1. CREATE BUSINESS MODAL */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto">
-          <Card className="w-full max-w-2xl bg-slate-900 border-slate-800 text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
-            <CardHeader className="border-b border-slate-800 pb-4 shrink-0">
+          <Card className="w-full max-w-2xl bg-foreground border-border text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
+            <CardHeader className="border-b border-border pb-4 shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="h-10 w-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
@@ -1265,7 +1265,7 @@ export default function PlatformTenantsPage() {
                     <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                       Provision New Tenant Organization
                     </CardTitle>
-                    <CardDescription className="text-xs text-slate-400">
+                    <CardDescription className="text-xs text-muted-foreground">
                       Creates a dedicated PostgreSQL partitioned tenant workspace with roles, branches, and subscriptions.
                     </CardDescription>
                   </div>
@@ -1273,7 +1273,7 @@ export default function PlatformTenantsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors"
+                  className="text-muted-foreground hover:text-white p-1.5 rounded-xl hover:bg-secondary transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1293,7 +1293,7 @@ export default function PlatformTenantsPage() {
                 <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-200">
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4 text-indigo-400 shrink-0" />
-                    <span className="text-slate-400 text-xs">Direct Workspace URL:</span>
+                    <span className="text-muted-foreground text-xs">Direct Workspace URL:</span>
                     <span className="tabular-nums text-white font-bold text-xs">
                       /{provisionSlug || generateSlug(provisionName) || 'tenant-slug'}
                     </span>
@@ -1305,14 +1305,14 @@ export default function PlatformTenantsPage() {
 
                 {/* Section: Organization Identity */}
                 <div className="space-y-3">
-                  <div className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                     <Building2 className="h-3.5 w-3.5 text-indigo-400" />
                     1. Organization Identity &amp; Routing
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="font-semibold text-slate-300">
+                      <label className="font-semibold text-muted-foreground">
                         Business Name <span className="text-red-400">*</span>
                       </label>
                       <Input
@@ -1320,13 +1320,13 @@ export default function PlatformTenantsPage() {
                         placeholder="e.g. Dhaka Offset Printers"
                         value={provisionName}
                         onChange={(e) => handleNameChange(e.target.value)}
-                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                        className="bg-foreground border-border text-white text-xs h-9"
                       />
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <label className="font-semibold text-slate-300">
+                        <label className="font-semibold text-muted-foreground">
                           URL Slug (Kebab-case) <span className="text-red-400">*</span>
                         </label>
                         {slugManuallyEdited && (
@@ -1350,28 +1350,28 @@ export default function PlatformTenantsPage() {
                           setSlugManuallyEdited(true)
                           setProvisionSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
                         }}
-                        className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums"
+                        className="bg-foreground border-border text-white text-xs h-9 tabular-nums"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="font-semibold text-slate-300">Bengali Name (ঐচ্ছিক বাংলা নাম)</label>
+                      <label className="font-semibold text-muted-foreground">Bengali Name (ঐচ্ছিক বাংলা নাম)</label>
                       <Input
                         placeholder="যেমন: ঢাকা অফসেট প্রিন্টার্স"
                         value={provisionNameBn}
                         onChange={(e) => setProvisionNameBn(e.target.value)}
-                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                        className="bg-foreground border-border text-white text-xs h-9"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="font-semibold text-slate-300">Industry / Business Type</label>
+                      <label className="font-semibold text-muted-foreground">Industry / Business Type</label>
                       <select
                         value={provisionBusinessType}
                         onChange={(e) => setProvisionBusinessType(e.target.value)}
-                        className="w-full h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white"
+                        className="w-full h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-white"
                       >
                         <option value="commercial_printing">Commercial Printing &amp; Offset</option>
                         <option value="signage_flex">Outdoor Signage &amp; Flex Banner</option>
@@ -1386,49 +1386,49 @@ export default function PlatformTenantsPage() {
                 </div>
 
                 {/* Section: Owner & Primary Administrator */}
-                <div className="space-y-3 border-t border-slate-800/80 pt-4">
-                  <div className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="space-y-3 border-t border-border pt-4">
+                  <div className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                     <UserCheck className="h-3.5 w-3.5 text-indigo-400" />
                     2. Primary Owner Credentials &amp; Contact
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="font-semibold text-slate-300">Owner Full Name</label>
+                      <label className="font-semibold text-muted-foreground">Owner Full Name</label>
                       <Input
                         placeholder="e.g. Al-Haj Rafiqul Islam"
                         value={provisionOwnerName}
                         onChange={(e) => setProvisionOwnerName(e.target.value)}
-                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                        className="bg-foreground border-border text-white text-xs h-9"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="font-semibold text-slate-300">Owner Email (Login Account)</label>
+                      <label className="font-semibold text-muted-foreground">Owner Email (Login Account)</label>
                       <Input
                         type="email"
                         placeholder="owner@dhakapress.com.bd"
                         value={provisionOwnerEmail}
                         onChange={(e) => setProvisionOwnerEmail(e.target.value)}
-                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                        className="bg-foreground border-border text-white text-xs h-9"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="font-semibold text-slate-300">Owner Phone (BD Format)</label>
+                      <label className="font-semibold text-muted-foreground">Owner Phone (BD Format)</label>
                       <Input
                         placeholder="01711-000000"
                         value={provisionOwnerPhone}
                         onChange={(e) => setProvisionOwnerPhone(e.target.value)}
-                        className="bg-slate-950 border-slate-800 text-white text-xs h-9 tabular-nums"
+                        className="bg-foreground border-border text-white text-xs h-9 tabular-nums"
                       />
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <label className="font-semibold text-slate-300">Initial Owner Password</label>
+                        <label className="font-semibold text-muted-foreground">Initial Owner Password</label>
                         <button
                           type="button"
                           onClick={handleGeneratePassword}
@@ -1444,12 +1444,12 @@ export default function PlatformTenantsPage() {
                           value={provisionPassword}
                           onChange={(e) => setProvisionPassword(e.target.value)}
                           placeholder="Password"
-                          className="bg-slate-950 border-slate-800 text-white text-xs h-9 pr-8 tabular-nums"
+                          className="bg-foreground border-border text-white text-xs h-9 pr-8 tabular-nums"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
+                          className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-white"
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
@@ -1459,29 +1459,29 @@ export default function PlatformTenantsPage() {
                 </div>
 
                 {/* Section: Location & Currency */}
-                <div className="space-y-3 border-t border-slate-800/80 pt-4">
-                  <div className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="space-y-3 border-t border-border pt-4">
+                  <div className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                     <MapPin className="h-3.5 w-3.5 text-indigo-400" />
                     3. Location &amp; Currency Profile
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="sm:col-span-2 space-y-1">
-                      <label className="font-semibold text-slate-300">Business / Factory Address</label>
+                      <label className="font-semibold text-muted-foreground">Business / Factory Address</label>
                       <Input
                         placeholder="e.g. 14 Arambagh, Motijheel, Dhaka-1000"
                         value={provisionAddress}
                         onChange={(e) => setProvisionAddress(e.target.value)}
-                        className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                        className="bg-foreground border-border text-white text-xs h-9"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="font-semibold text-slate-300">Base Currency</label>
+                      <label className="font-semibold text-muted-foreground">Base Currency</label>
                       <select
                         value={provisionCurrency}
                         onChange={(e) => setProvisionCurrency(e.target.value)}
-                        className="w-full h-9 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white"
+                        className="w-full h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-white"
                       >
                         <option value="BDT">BDT (৳ Bangladesh Taka)</option>
                         <option value="USD">USD ($ US Dollar)</option>
@@ -1492,8 +1492,8 @@ export default function PlatformTenantsPage() {
                 </div>
 
                 {/* Section: Subscription Plan Selection */}
-                <div className="space-y-3 border-t border-slate-800/80 pt-4">
-                  <div className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="space-y-3 border-t border-border pt-4">
+                  <div className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                     <CreditCard className="h-3.5 w-3.5 text-indigo-400" />
                     4. Initial Subscription Plan
                   </div>
@@ -1508,7 +1508,7 @@ export default function PlatformTenantsPage() {
                           className={`p-3 rounded-xl border cursor-pointer transition-all ${
                             provisionPlan === 'trial'
                               ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                              : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                              : 'bg-foreground border-border hover:border-border'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
@@ -1517,7 +1517,7 @@ export default function PlatformTenantsPage() {
                               ৳0 • {trialDays} Days
                             </span>
                           </div>
-                          <p className="text-2xs text-slate-400">Full platform evaluation access for {trialDays} days without charge.</p>
+                          <p className="text-2xs text-muted-foreground">Full platform evaluation access for {trialDays} days without charge.</p>
                         </div>
                       )
                     })()}
@@ -1527,7 +1527,7 @@ export default function PlatformTenantsPage() {
                       className={`p-3 rounded-xl border cursor-pointer transition-all ${
                         provisionPlan === 'starter'
                           ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                          : 'bg-foreground border-border hover:border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -1536,7 +1536,7 @@ export default function PlatformTenantsPage() {
                           ৳1,999/mo
                         </span>
                       </div>
-                      <p className="text-2xs text-slate-400">Up to 3 Users • 1 Branch • Basic Quotations &amp; Billing.</p>
+                      <p className="text-2xs text-muted-foreground">Up to 3 Users • 1 Branch • Basic Quotations &amp; Billing.</p>
                     </div>
 
                     <div
@@ -1544,7 +1544,7 @@ export default function PlatformTenantsPage() {
                       className={`p-3 rounded-xl border cursor-pointer transition-all ${
                         provisionPlan === 'business'
                           ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                          : 'bg-foreground border-border hover:border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -1553,7 +1553,7 @@ export default function PlatformTenantsPage() {
                           ৳4,999/mo
                         </span>
                       </div>
-                      <p className="text-2xs text-slate-400">Up to 10 Users • 3 Branches • Inventory &amp; Production Kanban.</p>
+                      <p className="text-2xs text-muted-foreground">Up to 10 Users • 3 Branches • Inventory &amp; Production Kanban.</p>
                     </div>
 
                     <div
@@ -1561,7 +1561,7 @@ export default function PlatformTenantsPage() {
                       className={`p-3 rounded-xl border cursor-pointer transition-all ${
                         provisionPlan === 'enterprise'
                           ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                          : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                          : 'bg-foreground border-border hover:border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -1570,19 +1570,19 @@ export default function PlatformTenantsPage() {
                           ৳9,999/mo
                         </span>
                       </div>
-                      <p className="text-2xs text-slate-400">50+ Users • Unlimited Branches • Dedicated SLA &amp; Support.</p>
+                      <p className="text-2xs text-muted-foreground">50+ Users • Unlimited Branches • Dedicated SLA &amp; Support.</p>
                     </div>
                   </div>
                 </div>
               </CardContent>
 
-              <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2.5 bg-slate-950/80 shrink-0">
+              <div className="p-4 border-t border-border flex items-center justify-end gap-2.5 bg-foreground shrink-0">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCreateModal(false)}
-                  className="text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800"
+                  className="text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
                 >
                   Cancel
                 </Button>
@@ -1613,7 +1613,7 @@ export default function PlatformTenantsPage() {
       {/* 1.1 POST-PROVISIONING CREDENTIALS SUMMARY MODAL */}
       {provisionedResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-lg bg-slate-900 border-emerald-500/30 text-slate-100 shadow-2xl overflow-hidden">
+          <Card className="w-full max-w-lg bg-foreground border-emerald-500/30 text-slate-100 shadow-2xl overflow-hidden">
             <div className="bg-emerald-950/40 border-b border-emerald-500/20 p-5 flex items-start gap-3">
               <div className="h-10 w-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
                 <CheckCircle2 className="h-6 w-6" />
@@ -1630,13 +1630,13 @@ export default function PlatformTenantsPage() {
 
             <CardContent className="p-5 space-y-4 text-xs">
               {/* Org Details Card */}
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+              <div className="p-3 rounded-xl bg-foreground border border-border space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Organization:</span>
+                  <span className="text-muted-foreground">Organization:</span>
                   <span className="font-bold text-white text-sm">{provisionedResult.credentials.businessName}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Subscription Tier:</span>
+                  <span className="text-muted-foreground">Subscription Tier:</span>
                   <span className="font-semibold text-indigo-400 uppercase tracking-wider text-2xs">
                     {provisionedResult.credentials.plan}
                   </span>
@@ -1644,16 +1644,16 @@ export default function PlatformTenantsPage() {
               </div>
 
               {/* Login Credentials Box */}
-              <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 space-y-3">
-                <div className="font-bold text-slate-300 text-xs flex items-center gap-1.5 border-b border-slate-800/80 pb-2">
+              <div className="p-3.5 rounded-xl bg-foreground border border-border space-y-3">
+                <div className="font-bold text-muted-foreground text-xs flex items-center gap-1.5 border-b border-border pb-2">
                   <Key className="h-3.5 w-3.5 text-indigo-400" />
                   Owner Access &amp; Login Credentials
                 </div>
 
                 <div className="space-y-2">
                   <div>
-                    <div className="text-2xs text-slate-400 mb-0.5">Direct Workspace URL</div>
-                    <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                    <div className="text-2xs text-muted-foreground mb-0.5">Direct Workspace URL</div>
+                    <div className="flex items-center justify-between bg-foreground border border-border rounded-lg px-2.5 py-1.5">
                       <span className="tabular-nums text-white text-xs truncate">
                         {provisionedResult.credentials.loginUrl}
                       </span>
@@ -1665,7 +1665,7 @@ export default function PlatformTenantsPage() {
                             'url'
                           )
                         }
-                        className="text-slate-400 hover:text-indigo-400 p-1 text-xs shrink-0"
+                        className="text-muted-foreground hover:text-indigo-400 p-1 text-xs shrink-0"
                         title="Copy Login URL"
                       >
                         {copiedField === 'url' ? (
@@ -1678,15 +1678,15 @@ export default function PlatformTenantsPage() {
                   </div>
 
                   <div>
-                    <div className="text-2xs text-slate-400 mb-0.5">Owner Email</div>
-                    <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                    <div className="text-2xs text-muted-foreground mb-0.5">Owner Email</div>
+                    <div className="flex items-center justify-between bg-foreground border border-border rounded-lg px-2.5 py-1.5">
                       <span className="tabular-nums text-white text-xs truncate">
                         {provisionedResult.credentials.email}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleCopyText(provisionedResult.credentials.email, 'email')}
-                        className="text-slate-400 hover:text-indigo-400 p-1 text-xs shrink-0"
+                        className="text-muted-foreground hover:text-indigo-400 p-1 text-xs shrink-0"
                         title="Copy Email"
                       >
                         {copiedField === 'email' ? (
@@ -1699,15 +1699,15 @@ export default function PlatformTenantsPage() {
                   </div>
 
                   <div>
-                    <div className="text-2xs text-slate-400 mb-0.5">Temporary Access Password</div>
-                    <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                    <div className="text-2xs text-muted-foreground mb-0.5">Temporary Access Password</div>
+                    <div className="flex items-center justify-between bg-foreground border border-border rounded-lg px-2.5 py-1.5">
                       <span className="tabular-nums text-emerald-400 font-bold text-xs">
                         {provisionedResult.credentials.password}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleCopyText(provisionedResult.credentials.password, 'password')}
-                        className="text-slate-400 hover:text-indigo-400 p-1 text-xs shrink-0"
+                        className="text-muted-foreground hover:text-indigo-400 p-1 text-xs shrink-0"
                         title="Copy Password"
                       >
                         {copiedField === 'password' ? (
@@ -1728,7 +1728,7 @@ export default function PlatformTenantsPage() {
                   const payload = `🚀 Welcome to InkFlow ERP!\n\nYour organization workspace is ready:\n🏢 Organization: ${provisionedResult.credentials.businessName}\n🌐 Login URL: ${window.location.origin}${provisionedResult.credentials.loginUrl}\n👤 Owner Email: ${provisionedResult.credentials.email}\n🔑 Password: ${provisionedResult.credentials.password}\n📦 Plan: ${provisionedResult.credentials.plan.toUpperCase()}\n\nPlease log in and update your password from your profile settings.`
                   handleCopyText(payload, 'all')
                 }}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs h-9 border border-slate-700 rounded-xl"
+                className="w-full bg-secondary hover:bg-slate-700 text-foreground hover:text-white font-medium text-xs h-9 border border-border rounded-xl"
               >
                 {copiedField === 'all' ? (
                   <>
@@ -1744,11 +1744,11 @@ export default function PlatformTenantsPage() {
               </Button>
             </CardContent>
 
-            <div className="p-4 border-t border-slate-800 flex items-center justify-between gap-2 bg-slate-950/80">
+            <div className="p-4 border-t border-border flex items-center justify-between gap-2 bg-foreground">
               <div className="flex items-center gap-2">
                 <Link
                   href={`/platform/tenants/${provisionedResult.company.id}`}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-colors"
+                  className="px-3 py-1.5 rounded-xl bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white font-medium text-xs transition-colors"
                 >
                   View 360° Profile
                 </Link>
@@ -1778,8 +1778,8 @@ export default function PlatformTenantsPage() {
       {/* 2. CHANGE PLAN MODAL */}
       {planModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-xl bg-slate-900 border-slate-800 text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
-            <CardHeader className="border-b border-slate-800 pb-4 shrink-0">
+          <Card className="w-full max-w-xl bg-foreground border-border text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
+            <CardHeader className="border-b border-border pb-4 shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="h-10 w-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
@@ -1789,7 +1789,7 @@ export default function PlatformTenantsPage() {
                     <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                       Modify Subscription Plan
                     </CardTitle>
-                    <CardDescription className="text-xs text-slate-400">
+                    <CardDescription className="text-xs text-muted-foreground">
                       Organization: <strong className="text-white">{planModalCompany.name}</strong> (/{planModalCompany.slug}) • Current Plan:{' '}
                       <span className="font-bold text-indigo-400 capitalize">{planModalCompany.plan}</span>
                     </CardDescription>
@@ -1798,7 +1798,7 @@ export default function PlatformTenantsPage() {
                 <button
                   type="button"
                   onClick={() => setPlanModalCompany(null)}
-                  className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors"
+                  className="text-muted-foreground hover:text-white p-1.5 rounded-xl hover:bg-secondary transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1807,7 +1807,7 @@ export default function PlatformTenantsPage() {
 
             <CardContent className="space-y-4 p-5 text-xs overflow-y-auto flex-1">
               <div className="space-y-2">
-                <label className="font-semibold text-slate-300 block">Select Target Tier</label>
+                <label className="font-semibold text-muted-foreground block">Select Target Tier</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {[
                     {
@@ -1850,14 +1850,14 @@ export default function PlatformTenantsPage() {
                         className={`p-3 rounded-xl border cursor-pointer transition-all ${
                           isSelected
                             ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                            : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                            : 'bg-foreground border-border hover:border-border'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-bold text-white text-xs flex items-center gap-1.5">
                             {p.title}
                             {isCurrent && (
-                              <span className="text-2xs bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-normal">
+                              <span className="text-2xs bg-secondary text-muted-foreground px-1.5 py-0.2 rounded font-normal">
                                 Current
                               </span>
                             )}
@@ -1866,7 +1866,7 @@ export default function PlatformTenantsPage() {
                             {p.price}
                           </span>
                         </div>
-                        <p className="text-2xs text-slate-400">{p.desc}</p>
+                        <p className="text-2xs text-muted-foreground">{p.desc}</p>
                       </div>
                     )
                   })}
@@ -1874,7 +1874,7 @@ export default function PlatformTenantsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300">
+                <label className="font-semibold text-muted-foreground">
                   Reason for Plan Modification <span className="text-red-400">*</span>
                 </label>
                 <Input
@@ -1882,18 +1882,18 @@ export default function PlatformTenantsPage() {
                   placeholder="e.g. Upgraded to Business tier following verified payment confirmation..."
                   value={planReason}
                   onChange={(e) => setPlanReason(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                  className="bg-foreground border-border text-white text-xs h-9"
                 />
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2.5 bg-slate-950/80 shrink-0">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2.5 bg-foreground shrink-0">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setPlanModalCompany(null)}
-                className="text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800"
+                className="text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
               >
                 Cancel
               </Button>
@@ -1921,13 +1921,13 @@ export default function PlatformTenantsPage() {
       {/* 3. SUSPEND / REACTIVATE MODAL */}
       {statusModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <Card className="w-full max-w-md bg-slate-900 border-slate-800 text-slate-100 shadow-2xl">
-            <CardHeader className="border-b border-slate-800 pb-3">
+          <Card className="w-full max-w-md bg-foreground border-border text-slate-100 shadow-2xl">
+            <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <Ban className="h-5 w-5 text-red-400" />
                 {targetStatus === 'suspended' ? 'Suspend Tenant Access' : 'Reactivate Tenant'}
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Organization: <strong className="text-white">{statusModalCompany.name}</strong> (/{statusModalCompany.slug})
               </CardDescription>
             </CardHeader>
@@ -1940,23 +1940,23 @@ export default function PlatformTenantsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300">Reason for Status Change *</label>
+                <label className="font-semibold text-muted-foreground">Reason for Status Change *</label>
                 <Input
                   required
                   placeholder="e.g. Non-payment, Terms violation, Owner request..."
                   value={statusReason}
                   onChange={(e) => setStatusReason(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                  className="bg-foreground border-border text-white text-xs h-9"
                 />
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setStatusModalCompany(null)}
-                className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+                className="text-xs border-border bg-foreground text-muted-foreground"
               >
                 Cancel
               </Button>
@@ -1980,21 +1980,21 @@ export default function PlatformTenantsPage() {
       {/* 3. SUPPORT ACCESS MODAL */}
       {supportModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <Card className="w-full max-w-md bg-slate-900 border-slate-800 text-slate-100 shadow-2xl">
-            <CardHeader className="border-b border-slate-800 pb-3">
+          <Card className="w-full max-w-md bg-foreground border-border text-slate-100 shadow-2xl">
+            <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <ShieldAlert className="h-5 w-5 text-amber-400" />
                 Initiate Time-Limited Support Session
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Target Organization: <strong className="text-white">{supportModalCompany.name}</strong>
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-3 pt-4 text-xs">
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 space-y-1">
+              <div className="p-3 rounded-xl bg-foreground border border-border text-muted-foreground space-y-1">
                 <div className="font-semibold text-white">Zero Trust Protocol:</div>
-                <ul className="list-disc pl-4 space-y-0.5 text-slate-400">
+                <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
                   <li>Session expires automatically in 2 hours (TTL)</li>
                   <li>Actions are recorded to immutable audit log</li>
                   <li>A persistent banner is shown across tenant workspace</li>
@@ -2002,23 +2002,23 @@ export default function PlatformTenantsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300">Mandatory Support Reason *</label>
+                <label className="font-semibold text-muted-foreground">Mandatory Support Reason *</label>
                 <Input
                   required
                   placeholder="e.g. Investigating GST invoice printing layout issue #402"
                   value={supportReason}
                   onChange={(e) => setSupportReason(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                  className="bg-foreground border-border text-white text-xs h-9"
                 />
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSupportModalCompany(null)}
-                className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+                className="text-xs border-border bg-foreground text-muted-foreground"
               >
                 Cancel
               </Button>
@@ -2038,8 +2038,8 @@ export default function PlatformTenantsPage() {
       {/* 4. DELETE SINGLE TENANT MODAL */}
       {deleteModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto">
-          <Card className="w-full max-w-md bg-slate-900 border-red-800/60 text-slate-100 shadow-2xl shadow-red-950/40 my-8">
-            <CardHeader className="border-b border-slate-800 pb-3">
+          <Card className="w-full max-w-md bg-foreground border-red-800/60 text-slate-100 shadow-2xl shadow-red-950/40 my-8">
+            <CardHeader className="border-b border-border pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold text-red-400 flex items-center gap-2">
                   <Trash2 className="h-5 w-5 text-red-500" />
@@ -2054,12 +2054,12 @@ export default function PlatformTenantsPage() {
                     setDeleteConfirmName('')
                     setDeleteError(null)
                   }}
-                  className="h-7 w-7 p-0 text-slate-400 hover:text-white"
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-white"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Are you sure you want to permanently delete{' '}
                 <strong className="text-white">{deleteModalCompany.name}</strong> (/{deleteModalCompany.slug})?
               </CardDescription>
@@ -2108,7 +2108,7 @@ export default function PlatformTenantsPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-300 flex items-center gap-1">
+                  <label className="font-semibold text-muted-foreground flex items-center gap-1">
                     <span>Reason for Deletion (Audit Trail)</span>
                     <span className="text-red-400">*</span>
                   </label>
@@ -2120,17 +2120,17 @@ export default function PlatformTenantsPage() {
                       setDeleteReason(e.target.value)
                       if (deleteError) setDeleteError(null)
                     }}
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500"
+                    className="bg-foreground border-border text-white text-xs h-9 focus-visible:ring-red-500"
                   />
                   <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    <span className="text-2xs text-slate-500">Quick fill:</span>
+                    <span className="text-2xs text-muted-foreground">Quick fill:</span>
                     <button
                       type="button"
                       onClick={() => {
                         setDeleteReason('Testing cleanup')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                      className="px-1.5 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors"
                     >
                       Testing cleanup
                     </button>
@@ -2140,7 +2140,7 @@ export default function PlatformTenantsPage() {
                         setDeleteReason('Account closed at owner request')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                      className="px-1.5 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors"
                     >
                       Owner request
                     </button>
@@ -2150,7 +2150,7 @@ export default function PlatformTenantsPage() {
                         setDeleteReason('Duplicate / abandoned registration')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                      className="px-1.5 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors"
                     >
                       Duplicate
                     </button>
@@ -2158,7 +2158,7 @@ export default function PlatformTenantsPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-slate-300 flex items-center gap-1">
+                  <label className="font-semibold text-muted-foreground flex items-center gap-1">
                     <span>Type <strong className="text-red-400">{deleteModalCompany.name}</strong>, <strong className="text-red-400">{deleteModalCompany.slug}</strong>, or <strong className="text-red-400">DELETE</strong></span>
                     <span className="text-red-400">*</span>
                   </label>
@@ -2170,10 +2170,10 @@ export default function PlatformTenantsPage() {
                       setDeleteConfirmName(e.target.value)
                       if (deleteError) setDeleteError(null)
                     }}
-                    className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500 font-medium"
+                    className="bg-foreground border-border text-white text-xs h-9 focus-visible:ring-red-500 font-medium"
                   />
                   <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    <span className="text-2xs text-slate-500">Quick fill:</span>
+                    <span className="text-2xs text-muted-foreground">Quick fill:</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -2190,7 +2190,7 @@ export default function PlatformTenantsPage() {
                         setDeleteConfirmName(deleteModalCompany.name)
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-2 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors truncate max-w-[140px]"
+                      className="px-2 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors truncate max-w-[140px]"
                       title={deleteModalCompany.name}
                     >
                       {deleteModalCompany.name}
@@ -2202,7 +2202,7 @@ export default function PlatformTenantsPage() {
                           setDeleteConfirmName(deleteModalCompany.slug)
                           if (deleteError) setDeleteError(null)
                         }}
-                        className="px-2 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 tabular-nums transition-colors truncate max-w-[120px]"
+                        className="px-2 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border tabular-nums transition-colors truncate max-w-[120px]"
                         title={deleteModalCompany.slug}
                       >
                         {deleteModalCompany.slug}
@@ -2212,7 +2212,7 @@ export default function PlatformTenantsPage() {
                 </div>
               </CardContent>
 
-              <div className="p-4 border-t border-slate-800 flex items-center justify-between gap-2 bg-slate-950/60">
+              <div className="p-4 border-t border-border flex items-center justify-between gap-2 bg-foreground">
                 <div className="text-2xs">
                   {Boolean(
                     deleteReason.trim() &&
@@ -2229,7 +2229,7 @@ export default function PlatformTenantsPage() {
                   ) : !deleteReason.trim() ? (
                     <span className="text-amber-400 text-2xs">Reason required</span>
                   ) : (
-                    <span className="text-slate-400 text-2xs">Awaiting confirmation</span>
+                    <span className="text-muted-foreground text-2xs">Awaiting confirmation</span>
                   )}
                 </div>
 
@@ -2244,7 +2244,7 @@ export default function PlatformTenantsPage() {
                       setDeleteConfirmName('')
                       setDeleteError(null)
                     }}
-                    className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+                    className="text-xs border-border bg-foreground text-muted-foreground"
                   >
                     Cancel
                   </Button>
@@ -2260,7 +2260,7 @@ export default function PlatformTenantsPage() {
                       )
                     }
                     size="sm"
-                    className="bg-red-600 hover:bg-red-500 disabled:bg-red-950/60 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold text-xs"
+                    className="bg-red-600 hover:bg-red-500 disabled:bg-red-950/60 disabled:text-muted-foreground disabled:cursor-not-allowed text-white font-bold text-xs"
                   >
                     {isDeletingCompany ? 'Deleting Permanently...' : 'Confirm Permanent Deletion'}
                   </Button>
@@ -2274,13 +2274,13 @@ export default function PlatformTenantsPage() {
       {/* 5. PURGE ALL TENANTS MODAL */}
       {showPurgeAllModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-lg bg-slate-900 border-red-800 text-slate-100 shadow-2xl shadow-red-950/60">
-            <CardHeader className="border-b border-slate-800 pb-3">
+          <Card className="w-full max-w-lg bg-foreground border-red-800 text-slate-100 shadow-2xl shadow-red-950/60">
+            <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-base font-bold text-red-400 flex items-center gap-2">
                 <ShieldAlert className="h-5 w-5 text-red-500" />
                 Purge All Tenants (Danger Zone)
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 You are about to wipe all {companies.length} tenant organization(s) from the platform.
               </CardDescription>
             </CardHeader>
@@ -2299,18 +2299,18 @@ export default function PlatformTenantsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300">Reason for Platform Purge *</label>
+                <label className="font-semibold text-muted-foreground">Reason for Platform Purge *</label>
                 <Input
                   required
                   placeholder="e.g. System reset, Pre-production data cleanup..."
                   value={purgeReason}
                   onChange={(e) => setPurgeReason(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-white text-xs h-9"
+                  className="bg-foreground border-border text-white text-xs h-9"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300">
+                <label className="font-semibold text-muted-foreground">
                   Type <span className="tabular-nums text-red-400 font-bold">PURGE</span> to confirm:
                 </label>
                 <Input
@@ -2318,12 +2318,12 @@ export default function PlatformTenantsPage() {
                   placeholder="PURGE"
                   value={purgeConfirmText}
                   onChange={(e) => setPurgeConfirmText(e.target.value)}
-                  className="bg-slate-950 border-red-800 text-red-400 tabular-nums font-bold text-xs h-9 placeholder:text-slate-600"
+                  className="bg-foreground border-red-800 text-red-400 tabular-nums font-bold text-xs h-9 placeholder:text-muted-foreground"
                 />
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
               <Button
                 variant="outline"
                 size="sm"
@@ -2332,7 +2332,7 @@ export default function PlatformTenantsPage() {
                   setPurgeReason('')
                   setPurgeConfirmText('')
                 }}
-                className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+                className="text-xs border-border bg-foreground text-muted-foreground"
               >
                 Cancel
               </Button>
@@ -2340,7 +2340,7 @@ export default function PlatformTenantsPage() {
                 disabled={isPurgingAll || purgeConfirmText !== 'PURGE'}
                 onClick={handlePurgeAllCompanies}
                 size="sm"
-                className="bg-red-600 hover:bg-red-500 disabled:bg-red-950 disabled:text-slate-500 text-white font-bold text-xs"
+                className="bg-red-600 hover:bg-red-500 disabled:bg-red-950 disabled:text-muted-foreground text-white font-bold text-xs"
               >
                 {isPurgingAll ? 'Purging All Tenants...' : 'Purge All Tenants Now'}
               </Button>
@@ -2352,13 +2352,13 @@ export default function PlatformTenantsPage() {
       {/* 6. DELETE INCOMPLETE REGISTRATION MODAL */}
       {deleteIncompleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-md bg-slate-900 border-amber-800/60 text-slate-100 shadow-2xl shadow-amber-950/40">
-            <CardHeader className="border-b border-slate-800 pb-3">
+          <Card className="w-full max-w-md bg-foreground border-amber-800/60 text-slate-100 shadow-2xl shadow-amber-950/40">
+            <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-base font-bold text-amber-400 flex items-center gap-2">
                 <Trash2 className="h-5 w-5 text-amber-500" />
                 Purge Abandoned Registration
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Are you sure you want to remove the incomplete registration for{' '}
                 <strong className="text-white">{deleteIncompleteTarget.email}</strong>?
               </CardDescription>
@@ -2377,28 +2377,28 @@ export default function PlatformTenantsPage() {
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 space-y-1.5">
+              <div className="p-3 rounded-xl bg-foreground border border-border text-muted-foreground space-y-1.5">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Registrant:</span>
+                  <span className="text-muted-foreground">Registrant:</span>
                   <span className="font-semibold text-white">{deleteIncompleteTarget.full_name || 'Anonymous'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Stage:</span>
+                  <span className="text-muted-foreground">Stage:</span>
                   <span className="font-semibold text-amber-300 capitalize">{deleteIncompleteTarget.stage.replace(/_/g, ' ')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Target Plan:</span>
+                  <span className="text-muted-foreground">Target Plan:</span>
                   <span className="font-semibold text-indigo-300 capitalize">{deleteIncompleteTarget.plan || 'trial'}</span>
                 </div>
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-slate-800 flex items-center justify-end gap-2 bg-slate-950/60">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setDeleteIncompleteTarget(null)}
-                className="text-xs border-slate-800 bg-slate-900 text-slate-300"
+                className="text-xs border-border bg-foreground text-muted-foreground"
               >
                 Cancel
               </Button>

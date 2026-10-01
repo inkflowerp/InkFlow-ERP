@@ -93,9 +93,9 @@ export default function LocalizationSettingsPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-5xl animate-pulse">
-        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
-        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-20 bg-muted rounded-2xl w-full" />
+        <div className="h-12 bg-muted rounded-xl w-3/4" />
+        <div className="h-48 bg-muted rounded-2xl w-full" />
       </div>
     )
   }
@@ -121,7 +121,7 @@ export default function LocalizationSettingsPage() {
       <form onSubmit={handleSave} className="space-y-6">
         {/* Language Selection */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base flex items-center gap-2 bangla-text">
                 <Languages className="h-4 w-4 text-blue-600" />
@@ -156,13 +156,13 @@ export default function LocalizationSettingsPage() {
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     locale === item.id || languageMode === item.id
                       ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-600/20 dark:bg-blue-950/40 dark:border-blue-500'
-                      : 'border-slate-200 hover:border-slate-300 dark:border-slate-800'
+                      : 'border-border hover:border-input dark:border-border'
                   }`}
                 >
-                  <div className="font-bold text-sm text-slate-900 dark:text-white bangla-text">
+                  <div className="font-bold text-sm text-foreground dark:text-white bangla-text">
                     {item.title}
                   </div>
-                  <p className="text-xs text-slate-500 mt-1 bangla-text">{item.desc}</p>
+                  <p className="text-xs text-muted-foreground mt-1 bangla-text">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -172,7 +172,7 @@ export default function LocalizationSettingsPage() {
         {/* Currency & Number Format */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <Card>
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <CardHeader className="pb-3 border-b border-border dark:border-border">
               <CardTitle className="text-base flex items-center gap-2 bangla-text">
                 <DollarSign className="h-4 w-4 text-emerald-600" />
                 {tBilingual('Base Currency', 'মূল মুদ্রা')}
@@ -183,7 +183,7 @@ export default function LocalizationSettingsPage() {
                 <Label htmlFor="currency" className="bangla-text">{tBilingual('Selected Currency', 'নির্বাচিত মুদ্রা')}</Label>
                 <select
                   id="currency"
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold bangla-text"
+                  className="w-full h-10 px-3 rounded-md border border-input bg-card text-sm font-semibold bangla-text"
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
                 >
@@ -192,14 +192,14 @@ export default function LocalizationSettingsPage() {
                 </select>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs text-slate-600 dark:text-slate-300 bangla-text">
+              <div className="p-3 rounded-lg bg-muted text-xs text-muted-foreground bangla-text">
                 {tBilingual('Numbering will format using Bangladeshi comma standards: BDT 1,50,000 (Lakh/Crore grouping).', 'টাকার হিসাব বাংলাদেশি নিয়মে কমা দিয়ে দেখানো হবে: ৳ ১,৫০,০০০ (লক্ষ/কোটি)।')}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+            <CardHeader className="pb-3 border-b border-border dark:border-border">
               <CardTitle className="text-base flex items-center gap-2 bangla-text">
                 <Calendar className="h-4 w-4 text-purple-600" />
                 {tBilingual('Date Format', 'তারিখ ফরম্যাট')}
@@ -210,7 +210,7 @@ export default function LocalizationSettingsPage() {
                 <Label htmlFor="dateFormat" className="bangla-text">{tBilingual('Selected Date Format', 'নির্বাচিত তারিখের ধরন')}</Label>
                 <select
                   id="dateFormat"
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm tabular-nums bangla-text"
+                  className="w-full h-10 px-3 rounded-md border border-input bg-card text-sm tabular-nums bangla-text"
                   value={dateFormat}
                   onChange={(e) => setDateFormat(e.target.value)}
                 >
@@ -220,7 +220,7 @@ export default function LocalizationSettingsPage() {
                 </select>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs text-slate-600 dark:text-slate-300 bangla-text">
+              <div className="p-3 rounded-lg bg-muted text-xs text-muted-foreground bangla-text">
                 {tBilingual('Delivery challans, invoices, and quotation expiry dates will display in this format.', 'চালান, বিল এবং কোটেশনের মেয়াদ এই ফরম্যাটে প্রদর্শিত হবে।')}
               </div>
             </CardContent>

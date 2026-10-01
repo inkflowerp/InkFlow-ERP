@@ -93,7 +93,7 @@ export default function PlatformSessionsPage() {
   return (
     <div className="space-y-6 max-w-7xl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-indigo-400" />
@@ -103,7 +103,7 @@ export default function PlatformSessionsPage() {
             <Laptop className="h-7 w-7 text-indigo-400" />
             Platform Active Sessions
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Real-time tracking of authenticated platform administrator sessions, client IP origins, and active browser tokens.
           </p>
         </div>
@@ -125,7 +125,7 @@ export default function PlatformSessionsPage() {
             size="sm"
             variant="outline"
             onClick={() => loadData()}
-            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -142,23 +142,23 @@ export default function PlatformSessionsPage() {
       )}
 
       {/* Active Sessions List */}
-      <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm p-5 rounded-2xl">
-        <div className="flex items-center justify-between mb-4 border-b border-slate-800/80 pb-3">
+      <Card className="border-border bg-foreground backdrop-blur-sm p-5 rounded-2xl">
+        <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-indigo-400" />
             <h3 className="font-bold text-white text-sm">Active Authorized Sessions ({sessions.length})</h3>
           </div>
-          <span className="text-2xs text-slate-400">Tokens cryptographically validated via Supabase Auth</span>
+          <span className="text-2xs text-muted-foreground">Tokens cryptographically validated via Supabase Auth</span>
         </div>
 
         <div className="space-y-3">
           {loading ? (
-            <div className="py-8 text-center text-slate-500 text-xs">
+            <div className="py-8 text-center text-muted-foreground text-xs">
               <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-indigo-400" />
               Loading active sessions...
             </div>
           ) : sessions.length === 0 ? (
-            <div className="py-8 text-center text-slate-500 text-xs">
+            <div className="py-8 text-center text-muted-foreground text-xs">
               No active sessions detected.
             </div>
           ) : (
@@ -168,7 +168,7 @@ export default function PlatformSessionsPage() {
                 className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
                   sess.is_current
                     ? 'bg-indigo-950/20 border-indigo-500/40 ring-1 ring-indigo-500/20'
-                    : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                    : 'bg-foreground border-border hover:border-border'
                 }`}
               >
                 <div className="flex items-start gap-3.5">
@@ -184,21 +184,21 @@ export default function PlatformSessionsPage() {
                           Current Session
                         </span>
                       )}
-                      <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
+                      <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-foreground text-muted-foreground border border-border">
                         IP: {sess.ip_address || '127.0.0.1'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-4 text-2xs text-slate-400 flex-wrap">
+                    <div className="flex items-center gap-4 text-2xs text-muted-foreground flex-wrap">
                       <span className="flex items-center gap-1">
-                        <Globe className="h-3 w-3 text-slate-500" />
+                        <Globe className="h-3 w-3 text-muted-foreground" />
                         {sess.location || 'Dhaka, Bangladesh'}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3 text-slate-500" />
+                        <Clock className="h-3 w-3 text-muted-foreground" />
                         Last active: {formatDateTime(sess.last_seen_at)}
                       </span>
-                      <span className="text-slate-500">
+                      <span className="text-muted-foreground">
                         Created: {formatDate(sess.created_at)}
                       </span>
                     </div>
@@ -224,8 +224,8 @@ export default function PlatformSessionsPage() {
       </Card>
 
       {/* Login History */}
-      <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm p-5 rounded-2xl">
-        <div className="flex items-center justify-between mb-4 border-b border-slate-800/80 pb-3">
+      <Card className="border-border bg-foreground backdrop-blur-sm p-5 rounded-2xl">
+        <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-emerald-400" />
             <h3 className="font-bold text-white text-sm">Recent Authentication Events</h3>
@@ -239,7 +239,7 @@ export default function PlatformSessionsPage() {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/80 text-slate-400 font-semibold border-b border-slate-800">
+            <thead className="bg-foreground text-muted-foreground font-semibold border-b border-border">
               <tr>
                 <th className="py-2.5 px-3">Status</th>
                 <th className="py-2.5 px-3">IP Origin</th>
@@ -248,10 +248,10 @@ export default function PlatformSessionsPage() {
                 <th className="py-2.5 px-3 text-right">Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
+            <tbody className="divide-y divide-border/60 text-muted-foreground">
               {loginHistory.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-6 text-center text-slate-500">
+                  <td colSpan={5} className="py-6 text-center text-muted-foreground">
                     No recent login events recorded.
                   </td>
                 </tr>
@@ -269,10 +269,10 @@ export default function PlatformSessionsPage() {
                         </span>
                       )}
                     </td>
-                    <td className="py-2.5 px-3 tabular-nums text-slate-400">{item.ip_address}</td>
-                    <td className="py-2.5 px-3 text-slate-300">{item.device_browser}</td>
-                    <td className="py-2.5 px-3 text-slate-400">{item.location}</td>
-                    <td className="py-2.5 px-3 text-right text-slate-400">
+                    <td className="py-2.5 px-3 tabular-nums text-muted-foreground">{item.ip_address}</td>
+                    <td className="py-2.5 px-3 text-muted-foreground">{item.device_browser}</td>
+                    <td className="py-2.5 px-3 text-muted-foreground">{item.location}</td>
+                    <td className="py-2.5 px-3 text-right text-muted-foreground">
                       {formatDateTime(item.timestamp)}
                     </td>
                   </tr>

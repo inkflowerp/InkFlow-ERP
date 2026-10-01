@@ -127,7 +127,7 @@ export function UpgradePrompt({
             <span className="font-bold">
               {tBilingual(meta.name, meta.name_bn)}
             </span>
-            <span className="text-slate-500 dark:text-slate-400 ml-1.5">
+            <span className="text-muted-foreground ml-1.5">
               — {tBilingual(statusTitleEn, statusTitleBn)}
             </span>
           </div>
@@ -158,18 +158,18 @@ export function UpgradePrompt({
           <Badge variant="outline" className="text-2xs tabular-nums border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 bangla-text">
             {tBilingual(`${currentPlan.name} (Current)`, `${currentPlan.name_bn} (বর্তমান)`)}
           </Badge>
-          <ArrowRight className="h-3 w-3 text-slate-400" />
+          <ArrowRight className="h-3 w-3 text-muted-foreground" />
           <Badge className="text-2xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white bangla-text">
             <Crown className="h-3 w-3 mr-1" />
             {tBilingual(statusTitleEn, statusTitleBn)}
           </Badge>
         </div>
 
-        <CardTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white bangla-text">
+        <CardTitle className="text-2xl font-black tracking-tight text-foreground dark:text-white bangla-text">
           {tBilingual(meta.name, meta.name_bn)}
         </CardTitle>
 
-        <CardDescription className="text-sm max-w-md mx-auto text-slate-600 dark:text-slate-300 mt-1 bangla-text">
+        <CardDescription className="text-sm max-w-md mx-auto text-muted-foreground mt-1 bangla-text">
           {isExpiredState
             ? tBilingual(
                 `Your ${currentPlan.name} subscription period has expired. Renew to resume using ${meta.name}.`,
@@ -180,13 +180,13 @@ export function UpgradePrompt({
       </CardHeader>
 
       <CardContent className="max-w-lg mx-auto pt-4 pb-6 space-y-4">
-        <div className="rounded-xl bg-slate-100/80 dark:bg-slate-800/60 p-4 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5 bangla-text">
+        <div className="rounded-xl bg-slate-100/80 p-4 border border-border space-y-2.5">
+          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 bangla-text">
             <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
             {tBilingual(`Included with ${targetPlan.name}:`, `${targetPlan.name_bn}-এর মূল সুবিধাসমূহ:`)}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-200 bangla-text">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-foreground bangla-text">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
               <span>
@@ -227,13 +227,13 @@ export function UpgradePrompt({
         </div>
 
         <div className="text-center bangla-text">
-          <span className="text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-xs text-muted-foreground dark:text-muted-foreground">
             {tBilingual('Starting from ', 'শুরু মাত্র ')}
           </span>
-          <span className="text-lg font-black text-slate-900 dark:text-white">
+          <span className="text-lg font-black text-foreground dark:text-white">
             <CurrencyDisplay amount={targetPlan.price_monthly} />
           </span>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-xs text-muted-foreground dark:text-muted-foreground">
             {tBilingual(' / month', ' / প্রতি মাসে')}
           </span>
         </div>

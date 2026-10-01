@@ -53,8 +53,8 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200 ${
         isScrolled
-          ? 'bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-2xs'
-          : 'bg-white/80 dark:bg-slate-950/80 backdrop-blur-xs border-b border-slate-200/40 dark:border-slate-800/40'
+          ? 'bg-card/95 backdrop-blur-md border-b border-border shadow-2xs'
+          : 'bg-card/80 backdrop-blur-xs border-b border-border dark:border-border/40'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,14 +65,14 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-contain bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-0.5 shadow-2xs shrink-0"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-contain bg-card border border-border p-0.5 shadow-2xs shrink-0"
               />
             ) : (
               <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs shrink-0">
                 <Printer className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
               </div>
             )}
-            <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+            <span className="text-base sm:text-lg font-bold text-foreground dark:text-white tracking-tight">
               {appName}
             </span>
           </Link>
@@ -83,7 +83,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors bangla-text"
+                className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors bangla-text"
               >
                 {tBilingual(item.labelEn, item.labelBn)}
               </Link>
@@ -99,11 +99,11 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
             <button
               type="button"
               onClick={toggleLanguage}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer h-9"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border hover:bg-muted text-xs font-semibold text-foreground transition-colors cursor-pointer h-9"
               title={locale === 'en' ? 'Switch to Bangla' : 'Switch to English'}
               aria-label="Toggle language"
             >
-              <Globe2 className="h-3.5 w-3.5 text-slate-500" />
+              <Globe2 className="h-3.5 w-3.5 text-muted-foreground" />
               <span>{locale === 'en' ? 'বাং' : 'EN'}</span>
             </button>
 
@@ -111,7 +111,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
             <Link href="/login">
               <Button
                 variant="ghost"
-                className="h-9 px-3 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                className="h-9 px-3 text-xs sm:text-sm font-semibold text-foreground hover:text-foreground dark:hover:text-white cursor-pointer"
               >
                 {tBilingual('Sign In', 'সাইন ইন')}
               </Button>
@@ -119,7 +119,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
 
             {/* Start Free Trial Primary CTA */}
             <Link href="/register">
-              <Button className="h-9 px-4 text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer bangla-text">
+              <Button className="h-9 px-4 text-xs sm:text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer bangla-text">
                 <span>{tBilingual('Start Free Trial', 'ফ্রি ট্রায়াল শুরু')}</span>
               </Button>
             </Link>
@@ -132,7 +132,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
             <button
               type="button"
               onClick={toggleLanguage}
-              className="inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 h-8 px-2"
+              className="inline-flex items-center justify-center p-2 rounded-lg border border-border text-xs font-bold text-foreground h-8 px-2"
               aria-label="Toggle language"
             >
               <span>{locale === 'en' ? 'বাং' : 'EN'}</span>
@@ -141,7 +141,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer h-8 w-8 flex items-center justify-center"
+              className="p-1.5 rounded-lg text-foreground hover:bg-muted transition-colors cursor-pointer h-8 w-8 flex items-center justify-center"
               aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
               aria-expanded={mobileMenuOpen}
             >
@@ -153,39 +153,39 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
 
       {/* Mobile Menu Dropdown Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 space-y-4 animate-in slide-in-from-top-2 duration-150">
+        <div className="md:hidden border-b border-border bg-card p-4 space-y-4 animate-in slide-in-from-top-2 duration-150">
           <nav className="flex flex-col space-y-1">
             {MARKETING_NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-blue-600 dark:hover:text-blue-400 transition-colors bangla-text"
+                className="px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-blue-600 dark:hover:text-blue-400 transition-colors bangla-text"
               >
                 {tBilingual(item.labelEn, item.labelBn)}
               </Link>
             ))}
           </nav>
 
-          <div className="pt-2 pb-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between px-2">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+          <div className="pt-2 pb-1 border-t border-border flex items-center justify-between px-2">
+            <span className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
               {tBilingual('Appearance & Theme', 'থিম ও ডিসপ্লে')}
             </span>
             <ThemeToggle variant="switch" size="sm" />
           </div>
 
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
+          <div className="pt-2 border-t border-border flex flex-col gap-2.5">
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full">
               <Button
                 variant="outline"
-                className="w-full h-11 text-sm font-semibold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer"
+                className="w-full h-11 text-sm font-semibold border-input text-foreground cursor-pointer"
               >
                 {tBilingual('Sign In', 'সাইন ইন')}
               </Button>
             </Link>
 
             <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full">
-              <Button className="w-full h-11 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer bangla-text">
+              <Button className="w-full h-11 text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer bangla-text">
                 <span>{tBilingual('Start Free Trial', 'ফ্রি ট্রায়াল শুরু')}</span>
                 <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>

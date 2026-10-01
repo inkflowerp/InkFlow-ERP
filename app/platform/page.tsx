@@ -69,7 +69,7 @@ export default function PlatformDashboardPage() {
           <AlertOctagon className="h-7 w-7" />
         </div>
         <h2 className="text-lg font-bold text-white mb-1">Unable to Load Platform Metrics</h2>
-        <p className="max-w-md text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">
+        <p className="max-w-md text-xs sm:text-sm text-muted-foreground mb-6 leading-relaxed">
           {error}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
@@ -83,7 +83,7 @@ export default function PlatformDashboardPage() {
           <Button
             asChild
             variant="outline"
-            className="h-9 px-4 border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800 text-xs min-h-[38px]"
+            className="h-9 px-4 border-border bg-foreground text-foreground hover:bg-secondary text-xs min-h-[38px]"
           >
             <Link href="/platform/tenants">
               <Building2 className="h-3.5 w-3.5 mr-1.5" />
@@ -101,12 +101,12 @@ export default function PlatformDashboardPage() {
         <div className="h-10 w-72 bg-slate-800/80 rounded-xl" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 bg-slate-900 border border-slate-800 rounded-2xl" />
+            <div key={i} className="h-28 bg-foreground border border-border rounded-2xl" />
           ))}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-24 bg-slate-900 border border-slate-800 rounded-2xl" />
+            <div key={i} className="h-24 bg-foreground border border-border rounded-2xl" />
           ))}
         </div>
       </div>
@@ -126,21 +126,21 @@ export default function PlatformDashboardPage() {
             <Activity className="h-6 w-6 sm:h-7 sm:w-7 text-indigo-400 shrink-0" />
             <span>Platform Overview</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 mt-0.5 sm:mt-1 font-medium">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 font-medium">
             Monitor tenants, subscriptions, platform health, and critical activity.
           </p>
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full md:w-auto">
           {/* Date Range Selector */}
-          <div className="flex items-center rounded-xl bg-slate-900 border border-slate-700 p-0.5 text-xs shrink-0">
+          <div className="flex items-center rounded-xl bg-foreground border border-border p-0.5 text-xs shrink-0">
             {(['today', '7d', '30d', '90d'] as const).map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setDateRange(r)}
                 className={`px-2.5 py-1 rounded-lg font-semibold uppercase tracking-wider transition-colors cursor-pointer text-2xs sm:text-xs ${
-                  dateRange === r ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-300 hover:text-white'
+                  dateRange === r ? 'bg-indigo-600 text-white shadow-xs' : 'text-muted-foreground hover:text-white'
                 }`}
               >
                 {r}
@@ -152,7 +152,7 @@ export default function PlatformDashboardPage() {
             size="sm"
             variant="outline"
             onClick={loadData}
-            className="border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800 hover:text-white text-xs h-8 shrink-0 min-h-[36px]"
+            className="border-border bg-foreground text-foreground hover:bg-secondary hover:text-white text-xs h-8 shrink-0 min-h-[36px]"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh
@@ -180,7 +180,7 @@ export default function PlatformDashboardPage() {
               <h3 className="text-base sm:text-lg font-bold text-white">
                 Platform is Initialized with Zero Active Tenants
               </h3>
-              <p className="text-xs text-slate-200 max-w-xl leading-relaxed">
+              <p className="text-xs text-foreground max-w-xl leading-relaxed">
                 The full system reset was completed successfully. Platform Owner credentials are authenticated. You can now onboard your first commercial tenant printing hub or configure subscription tiers.
               </p>
             </div>
@@ -201,7 +201,7 @@ export default function PlatformDashboardPage() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-200">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
               Needs Attention
             </h2>
             {data.needs_attention.length > 0 ? (
@@ -214,7 +214,7 @@ export default function PlatformDashboardPage() {
               </span>
             )}
           </div>
-          <span className="text-xs text-slate-400 font-medium">Prioritized by severity</span>
+          <span className="text-xs text-muted-foreground font-medium">Prioritized by severity</span>
         </div>
 
         {data.needs_attention.length === 0 ? (
@@ -255,16 +255,16 @@ export default function PlatformDashboardPage() {
                       >
                         {item.severity}
                       </span>
-                      <span className="text-2xs text-slate-400 tabular-nums">{item.timestamp}</span>
+                      <span className="text-2xs text-muted-foreground tabular-nums">{item.timestamp}</span>
                     </div>
 
                     <div className="font-bold text-sm text-white">{item.title}</div>
                     {(item.tenant_name || item.system_name) && (
-                      <div className="text-xs font-semibold text-slate-300">
+                      <div className="text-xs font-semibold text-muted-foreground">
                         {item.tenant_name ? `Tenant: ${item.tenant_name}` : `System: ${item.system_name}`}
                       </div>
                     )}
-                    <p className="text-2xs text-slate-400 leading-relaxed">{item.reason}</p>
+                    <p className="text-2xs text-muted-foreground leading-relaxed">{item.reason}</p>
                   </div>
 
                   <Link
@@ -289,12 +289,12 @@ export default function PlatformDashboardPage() {
 
       {/* 5.3 CORE PLATFORM METRICS */}
       <div className="space-y-3">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-200">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
           Core Platform Metrics
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
-            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Active Companies</span>
               <Building2 className="h-3.5 w-3.5 text-indigo-400" />
             </div>
@@ -304,21 +304,21 @@ export default function PlatformDashboardPage() {
             </div>
           </Card>
 
-          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
-            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Monthly Recurring</span>
               <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">
               <CurrencyDisplay amount={data.revenue_mrr} />
             </div>
-            <div className="text-2xs text-slate-300 mt-1 font-medium">
+            <div className="text-2xs text-muted-foreground mt-1 font-medium">
               ARR: <CurrencyDisplay amount={data.revenue_arr} />
             </div>
           </Card>
 
-          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
-            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Free Trials</span>
               <Clock className="h-3.5 w-3.5 text-cyan-400" />
             </div>
@@ -326,8 +326,8 @@ export default function PlatformDashboardPage() {
             <div className="text-2xs text-cyan-400 mt-1 font-semibold">Active trials</div>
           </Card>
 
-          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
-            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Past Due / Risk</span>
               <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
             </div>
@@ -335,8 +335,8 @@ export default function PlatformDashboardPage() {
             <div className="text-2xs text-amber-400 mt-1 font-medium">Renewal failed</div>
           </Card>
 
-          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
-            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Orders Processed</span>
               <Layers className="h-3.5 w-3.5 text-purple-400" />
             </div>
@@ -344,8 +344,8 @@ export default function PlatformDashboardPage() {
             <div className="text-2xs text-purple-400 mt-1 font-semibold">Live this month</div>
           </Card>
 
-          <Card className="bg-slate-900 border-slate-700 p-4 shadow-sm">
-            <div className="text-2xs font-semibold text-slate-300 flex items-center justify-between">
+          <Card className="bg-foreground border-border p-4 shadow-sm">
+            <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Cloud Storage</span>
               <HardDrive className="h-3.5 w-3.5 text-pink-400" />
             </div>
@@ -370,14 +370,14 @@ export default function PlatformDashboardPage() {
       {/* 5.4 COMPANY HEALTH & 5.5 SUBSCRIPTION SUMMARY */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Company Health Breakdown */}
-        <Card className="bg-slate-900 border-slate-700 shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-700 flex flex-row items-center justify-between">
+        <Card className="bg-foreground border-border shadow-sm">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white font-bold flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-emerald-400" />
                 <span>Company Health Breakdown</span>
               </CardTitle>
-              <CardDescription className="text-xs text-slate-300 font-medium">
+              <CardDescription className="text-xs text-muted-foreground font-medium">
                 Rule-based health monitoring across all tenants.
               </CardDescription>
             </div>
@@ -399,7 +399,7 @@ export default function PlatformDashboardPage() {
                 <div className="text-2xl font-black text-white mt-1">
                   {data.company_health_breakdown?.healthy ?? 0}
                 </div>
-                <div className="text-2xs text-slate-300 font-medium">Good standing</div>
+                <div className="text-2xs text-muted-foreground font-medium">Good standing</div>
               </Link>
 
               <Link
@@ -410,7 +410,7 @@ export default function PlatformDashboardPage() {
                 <div className="text-2xl font-black text-amber-300 mt-1">
                   {data.company_health_breakdown?.at_risk ?? 0}
                 </div>
-                <div className="text-2xs text-slate-300 font-medium">Near limits/slow</div>
+                <div className="text-2xs text-muted-foreground font-medium">Near limits/slow</div>
               </Link>
 
               <Link
@@ -421,22 +421,22 @@ export default function PlatformDashboardPage() {
                 <div className="text-2xl font-black text-red-300 mt-1">
                   {data.company_health_breakdown?.critical ?? 0}
                 </div>
-                <div className="text-2xs text-slate-300 font-medium">Delinquent</div>
+                <div className="text-2xs text-muted-foreground font-medium">Delinquent</div>
               </Link>
 
               <Link
                 href="/platform/tenants?status=suspended"
-                className="p-3 rounded-xl bg-slate-950 border border-slate-700 hover:bg-slate-800/60 transition-colors"
+                className="p-3 rounded-xl bg-foreground border border-border hover:bg-slate-800/60 transition-colors"
               >
-                <div className="text-xs font-bold text-slate-300 uppercase">Suspended</div>
+                <div className="text-xs font-bold text-muted-foreground uppercase">Suspended</div>
                 <div className="text-2xl font-black text-white mt-1">
                   {data.company_health_breakdown?.suspended ?? 0}
                 </div>
-                <div className="text-2xs text-slate-300 font-medium">Access locked</div>
+                <div className="text-2xs text-muted-foreground font-medium">Access locked</div>
               </Link>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-700 text-2xs text-slate-300 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-foreground border border-border text-2xs text-muted-foreground flex items-center justify-between">
               <span>Platform Health Engine evaluates subscription, storage %, recent errors, and meaningful activity.</span>
               <Link href="/platform/customer-success" className="text-indigo-300 hover:underline font-semibold shrink-0 ml-2">
                 Customer Success →
@@ -446,14 +446,14 @@ export default function PlatformDashboardPage() {
         </Card>
 
         {/* Subscription Summary */}
-        <Card className="bg-slate-900 border-slate-700 shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-700 flex flex-row items-center justify-between">
+        <Card className="bg-foreground border-border shadow-sm">
+          <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white font-bold flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-indigo-400" />
                 <span>Subscription Tiers &amp; Revenue</span>
               </CardTitle>
-              <CardDescription className="text-xs text-slate-300 font-medium">
+              <CardDescription className="text-xs text-muted-foreground font-medium">
                 SaaS revenue distribution across Bangladesh printing hubs.
               </CardDescription>
             </div>
@@ -471,7 +471,7 @@ export default function PlatformDashboardPage() {
                 data.subscription_metrics.map((tier) => (
                   <div
                     key={tier.plan_code}
-                    className="p-2.5 rounded-xl bg-slate-950 border border-slate-700 flex items-center justify-between text-xs"
+                    className="p-2.5 rounded-xl bg-foreground border border-border flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-2.5">
                       <span className="font-bold text-white">{tier.plan_name}</span>
@@ -481,7 +481,7 @@ export default function PlatformDashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                      <span className="text-slate-300 font-medium">{tier.active_subscribers} tenants</span>
+                      <span className="text-muted-foreground font-medium">{tier.active_subscribers} tenants</span>
                       <div className="tabular-nums font-bold text-emerald-400 text-right">
                         <CurrencyDisplay amount={tier.mrr_bdt} /> / mo
                       </div>
@@ -489,16 +489,16 @@ export default function PlatformDashboardPage() {
                   </div>
                 ))
               ) : (
-                <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-700 text-center text-xs text-slate-400 space-y-1">
-                  <CreditCard className="h-6 w-6 mx-auto text-slate-400" />
-                  <p className="font-semibold text-slate-200">No active subscriptions yet</p>
-                  <p className="text-2xs text-slate-300">Tier revenue analytics will calculate automatically as tenants subscribe.</p>
+                <div className="p-4 rounded-xl bg-foreground border border-border text-center text-xs text-muted-foreground space-y-1">
+                  <CreditCard className="h-6 w-6 mx-auto text-muted-foreground" />
+                  <p className="font-semibold text-foreground">No active subscriptions yet</p>
+                  <p className="text-2xs text-muted-foreground">Tier revenue analytics will calculate automatically as tenants subscribe.</p>
                 </div>
               )}
             </div>
 
-            <div className="pt-2 border-t border-slate-700 flex items-center justify-between text-xs font-semibold">
-              <span className="text-slate-300">Total Monthly Recurring (MRR)</span>
+            <div className="pt-2 border-t border-border flex items-center justify-between text-xs font-semibold">
+              <span className="text-muted-foreground">Total Monthly Recurring (MRR)</span>
               <span className="text-sm tabular-nums font-black text-white">
                 <CurrencyDisplay amount={data.revenue_mrr} />
               </span>
@@ -510,7 +510,7 @@ export default function PlatformDashboardPage() {
       {/* 5.6 PLATFORM HEALTH TELEMETRY */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
             <HeartPulse className="h-4 w-4 text-pink-400" />
             <span>Platform Service Health Status</span>
           </h2>
@@ -544,7 +544,7 @@ export default function PlatformDashboardPage() {
               ? 'text-red-400'
               : isStandby
               ? 'text-cyan-400'
-              : 'text-slate-300'
+              : 'text-muted-foreground'
 
             const dotBg = isOp
               ? 'bg-emerald-400'
@@ -565,10 +565,10 @@ export default function PlatformDashboardPage() {
             return (
               <div
                 key={svc.name}
-                className="p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-center space-y-1 hover:border-slate-600 transition-colors shadow-xs"
+                className="p-2.5 rounded-xl bg-foreground border border-border text-center space-y-1 hover:border-slate-600 transition-colors shadow-xs"
                 title={svc.notes || `${svc.name}: ${label}`}
               >
-                <div className="text-2xs font-bold text-slate-200 truncate" title={svc.name}>{svc.name}</div>
+                <div className="text-2xs font-bold text-foreground truncate" title={svc.name}>{svc.name}</div>
                 <div className={`text-2xs font-semibold flex items-center justify-center gap-1 ${color}`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${dotBg}`} />
                   <span className="truncate">{label}</span>
@@ -580,14 +580,14 @@ export default function PlatformDashboardPage() {
       </div>
 
       {/* 5.7 RECENT PLATFORM ACTIVITY */}
-      <Card className="bg-slate-900 border-slate-700 shadow-sm">
-        <CardHeader className="pb-3 border-b border-slate-700 flex flex-row items-center justify-between">
+      <Card className="bg-foreground border-border shadow-sm">
+        <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base text-white font-bold flex items-center gap-2">
               <FileClock className="h-4 w-4 text-cyan-400" />
               <span>Recent Privileged Platform Activity</span>
             </CardTitle>
-            <CardDescription className="text-xs text-slate-300 font-medium">
+            <CardDescription className="text-xs text-muted-foreground font-medium">
               Immutable audit ledger of recent administrative operations.
             </CardDescription>
           </div>
@@ -606,24 +606,24 @@ export default function PlatformDashboardPage() {
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
                     <span className="tabular-nums text-indigo-300 font-bold">{act.action}</span>
-                    <span className="text-slate-400">•</span>
+                    <span className="text-muted-foreground">•</span>
                     <span className="font-semibold text-white">{act.target_company_name || act.entity_type || 'Platform'}</span>
                   </div>
-                  <div className="text-2xs text-slate-300 font-medium">
+                  <div className="text-2xs text-muted-foreground font-medium">
                     {act.reason || act.details?.description || act.details?.note || (typeof act.details === 'object' && Object.keys(act.details).length > 0 ? JSON.stringify(act.details).slice(0, 80) : 'Administrative action executed')}
                   </div>
                 </div>
 
                 <div className="text-right shrink-0">
-                  <div className="tabular-nums text-2xs text-slate-300 font-medium">
+                  <div className="tabular-nums text-2xs text-muted-foreground font-medium">
                     {formatTime(act.created_at)}
                   </div>
-                  <div className="text-2xs text-slate-400">{act.actor_email}</div>
+                  <div className="text-2xs text-muted-foreground">{act.actor_email}</div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-6 text-center text-xs text-slate-300">
+            <div className="p-6 text-center text-xs text-muted-foreground">
               No recent administrative actions recorded yet.
             </div>
           )}

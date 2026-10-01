@@ -23,7 +23,7 @@ export function DateDisplay({
   const { locale } = useI18n()
 
   if (!date) {
-    return <span className="text-slate-400">{fallback}</span>
+    return <span className="text-muted-foreground">{fallback}</span>
   }
 
   const formatted = formatDate(date, locale, options, timeZone)
@@ -31,7 +31,7 @@ export function DateDisplay({
   return (
     <span
       suppressHydrationWarning
-      className={cn('text-sm text-slate-700 dark:text-slate-300 font-numeric', className)}
+      className={cn('text-sm text-foreground font-numeric', className)}
     >
       {formatted}
     </span>
@@ -48,7 +48,7 @@ export function TimeDisplay({
   const { locale } = useI18n()
 
   if (!date) {
-    return <span className="text-slate-400">{fallback}</span>
+    return <span className="text-muted-foreground">{fallback}</span>
   }
 
   const formatted = formatTime(date, locale, options, timeZone)
@@ -56,7 +56,7 @@ export function TimeDisplay({
   return (
     <span
       suppressHydrationWarning
-      className={cn('text-sm text-slate-700 dark:text-slate-300 font-numeric tabular-nums', className)}
+      className={cn('text-sm text-foreground font-numeric tabular-nums', className)}
     >
       {formatted}
     </span>
@@ -73,7 +73,7 @@ export function DateTimeDisplay({
   const { locale } = useI18n()
 
   if (!date) {
-    return <span className="text-slate-400">{fallback}</span>
+    return <span className="text-muted-foreground">{fallback}</span>
   }
 
   const formatted = formatDateTime(date, locale, options, timeZone)
@@ -81,7 +81,7 @@ export function DateTimeDisplay({
   return (
     <span
       suppressHydrationWarning
-      className={cn('text-sm text-slate-700 dark:text-slate-300 font-numeric', className)}
+      className={cn('text-sm text-foreground font-numeric', className)}
     >
       {formatted}
     </span>

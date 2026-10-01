@@ -146,14 +146,14 @@ export function ProductPriceEditModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-black text-slate-900 dark:text-white">
+              <span className="text-base font-black text-foreground dark:text-white">
                 {tBilingual('Edit Selling Rate & Customer Tiers', 'বিক্রয় দর ও গ্রাহক রেট নির্ধারণ')}
               </span>
               <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
                 {product.unit || 'sft'}
               </Badge>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               {product.name}
             </p>
           </div>
@@ -169,11 +169,11 @@ export function ProductPriceEditModal({
         )}
 
         {/* SECTION 1: BASE RATE & COST */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-teal-600" />
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Base Selling Rate & Material Cost', 'মূল বিক্রয় মূল্য ও মেটেরিয়াল খরচ')}
               </h3>
             </div>
@@ -197,14 +197,14 @@ export function ProductPriceEditModal({
                 {tBilingual('Standard Retail Price', 'খুচরা মূল্য')} <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400 pointer-events-none">৳</span>
+                <span className="absolute left-3 top-2 text-xs font-bold text-muted-foreground pointer-events-none">৳</span>
                 <Input
                   type="number"
                   step="0.01"
                   placeholder="25.00"
                   value={sellingPrice || ''}
                   onChange={(e) => setSellingPrice(Number(e.target.value))}
-                  className="text-xs h-9 pl-7 tabular-nums font-black text-slate-900 dark:text-white"
+                  className="text-xs h-9 pl-7 tabular-nums font-black text-foreground dark:text-white"
                   required
                 />
               </div>
@@ -215,14 +215,14 @@ export function ProductPriceEditModal({
                 {tBilingual('Base Material / BOM Cost', 'মেটেরিয়াল বা ক্রয় খরচ')}
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400 pointer-events-none">৳</span>
+                <span className="absolute left-3 top-2 text-xs font-bold text-muted-foreground pointer-events-none">৳</span>
                 <Input
                   type="number"
                   step="0.01"
                   placeholder="14.50"
                   value={costPrice || ''}
                   onChange={(e) => setCostPrice(Number(e.target.value))}
-                  className="text-xs h-9 pl-7 tabular-nums text-slate-600 dark:text-slate-300"
+                  className="text-xs h-9 pl-7 tabular-nums text-muted-foreground dark:text-muted-foreground"
                 />
               </div>
             </div>
@@ -232,20 +232,20 @@ export function ProductPriceEditModal({
                 {tBilingual('Floor Price / Minimum Safe Rate', 'সর্বনিম্ন নিরাপদ দর')}
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400 pointer-events-none">৳</span>
+                <span className="absolute left-3 top-2 text-xs font-bold text-muted-foreground pointer-events-none">৳</span>
                 <Input
                   type="number"
                   step="0.01"
                   placeholder="18.00"
                   value={minPrice || ''}
                   onChange={(e) => setMinPrice(Number(e.target.value))}
-                  className="text-xs h-9 pl-7 tabular-nums text-slate-600 dark:text-slate-300"
+                  className="text-xs h-9 pl-7 tabular-nums text-muted-foreground dark:text-muted-foreground"
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-border dark:border-border">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
                 {tBilingual('Minimum Billable Quantity', 'সর্বনিম্ন বিলযোগ্য পরিমাণ')}
@@ -277,15 +277,15 @@ export function ProductPriceEditModal({
         </div>
 
         {/* SECTION 2: CUSTOMER TIER RATES */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-blue-600" />
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Customer Category Tier Rates', 'গ্রাহক ক্যাটাগরি দর')}
               </h3>
             </div>
-            <span className="text-2xs text-slate-400">
+            <span className="text-2xs text-muted-foreground">
               {tBilingual('Auto-resolved in quotations based on client profile', 'কোটেশনে ক্লায়েন্ট প্রোফাইল অনুযায়ী নির্ধারিত হবে')}
             </span>
           </div>
@@ -296,10 +296,10 @@ export function ProductPriceEditModal({
               return (
                 <div
                   key={key}
-                  className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2"
+                  className="p-3 rounded-xl border border-border bg-muted/50 space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">
+                    <span className="text-xs font-bold text-foreground dark:text-white">
                       {tBilingual(meta.label, meta.labelBn)}
                     </span>
                     <div className="flex items-center gap-1">
@@ -343,7 +343,7 @@ export function ProductPriceEditModal({
                   </div>
 
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-xs font-bold text-slate-400 pointer-events-none">৳</span>
+                    <span className="absolute left-3 top-2 text-xs font-bold text-muted-foreground pointer-events-none">৳</span>
                     <Input
                       type="number"
                       step="0.01"
@@ -359,7 +359,7 @@ export function ProductPriceEditModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+        <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

@@ -139,7 +139,7 @@ export function WorkforceReport({
 
   if (isLoading) {
     return (
-      <Card className="bg-white border-slate-200 p-6 space-y-4">
+      <Card className="bg-card border-border p-6 space-y-4">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-64 w-full rounded-xl" />
@@ -151,8 +151,8 @@ export function WorkforceReport({
     <div className="space-y-5">
       {/* Top Report Navigation Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab as any} className="w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-2">
-          <TabsList className="bg-slate-100 p-1 h-9 rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-2">
+          <TabsList className="bg-muted p-1 h-9 rounded-lg">
             <TabsTrigger value="salary" className="text-xs px-3 py-1 font-medium">
               Salary Report
             </TabsTrigger>
@@ -175,9 +175,9 @@ export function WorkforceReport({
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              className="h-8 px-2.5 text-xs text-slate-700 bg-white border-slate-200 hover:bg-slate-50 min-h-[32px]"
+              className="h-8 px-2.5 text-xs text-foreground bg-card border-border hover:bg-muted min-h-[32px]"
             >
-              <Download className="w-3.5 h-3.5 mr-1 text-slate-500" />
+              <Download className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
               <span>Export CSV</span>
             </Button>
 
@@ -185,9 +185,9 @@ export function WorkforceReport({
               variant="outline"
               size="sm"
               onClick={() => window.print()}
-              className="h-8 px-2.5 text-xs text-slate-700 bg-white border-slate-200 hover:bg-slate-50 min-h-[32px]"
+              className="h-8 px-2.5 text-xs text-foreground bg-card border-border hover:bg-muted min-h-[32px]"
             >
-              <Printer className="w-3.5 h-3.5 mr-1 text-slate-500" />
+              <Printer className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
               <span>Print</span>
             </Button>
           </div>
@@ -196,13 +196,13 @@ export function WorkforceReport({
         {/* 1. SALARY REPORT TAB */}
         <TabsContent value="salary" className="pt-4 space-y-4">
           {/* Period & Department Selector */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3.5 rounded-xl border border-border">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-700 shrink-0">Payroll Period:</span>
+              <span className="text-xs font-semibold text-foreground shrink-0">Payroll Period:</span>
               <select
                 value={selectedPeriodId}
                 onChange={(e) => setSelectedPeriodId(e.target.value)}
-                className="h-8 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 font-medium"
+                className="h-8 rounded-lg border border-border bg-card px-3 text-xs text-foreground font-medium"
               >
                 {payrollPeriods.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -214,19 +214,19 @@ export function WorkforceReport({
 
             <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Filter by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-8 text-xs w-44 bg-slate-50 border-slate-200"
+                  className="pl-8 h-8 text-xs w-44 bg-muted border-border"
                 />
               </div>
 
               <select
                 value={deptFilter}
                 onChange={(e) => setDeptFilter(e.target.value)}
-                className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700"
+                className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground"
               >
                 <option value="ALL">All Departments</option>
                 <option value="printing">Printing</option>
@@ -241,15 +241,15 @@ export function WorkforceReport({
 
           {/* Table */}
           {filteredItems.length === 0 ? (
-            <Card className="bg-white border-slate-200 py-12 text-center">
-              <p className="text-sm font-medium text-slate-600">No data for selected period</p>
-              <p className="text-xs text-slate-400 mt-1">Generate a payroll period draft to view salary reports.</p>
+            <Card className="bg-card border-border py-12 text-center">
+              <p className="text-sm font-medium text-muted-foreground">No data for selected period</p>
+              <p className="text-xs text-muted-foreground mt-1">Generate a payroll period draft to view salary reports.</p>
             </Card>
           ) : (
-            <Card className="bg-white border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
+            <Card className="bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
+                  <thead className="bg-muted border-b border-border text-muted-foreground uppercase tracking-wider font-semibold text-[11px]">
                     <tr>
                       <th className="py-3 px-4">Employee</th>
                       <th className="py-3 px-3">Department</th>
@@ -263,15 +263,15 @@ export function WorkforceReport({
                       <th className="py-3 px-3 text-right">Due</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-border">
                     {filteredItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-slate-900">{item.employee_name}</td>
-                        <td className="py-3 px-3 capitalize text-slate-600">{item.department}</td>
-                        <td className="py-3 px-3 text-right tabular-nums text-slate-800">
+                      <tr key={item.id} className="hover:bg-muted transition-colors">
+                        <td className="py-3 px-4 font-semibold text-foreground">{item.employee_name}</td>
+                        <td className="py-3 px-3 capitalize text-muted-foreground">{item.department}</td>
+                        <td className="py-3 px-3 text-right tabular-nums text-foreground">
                           ৳ {Number(item.base_salary || 0).toLocaleString('en-IN')}
                         </td>
-                        <td className="py-3 px-3 text-center tabular-nums text-slate-700">
+                        <td className="py-3 px-3 text-center tabular-nums text-foreground">
                           {item.days_present || 0}
                         </td>
                         <td className="py-3 px-3 text-right tabular-nums text-indigo-600">
@@ -283,7 +283,7 @@ export function WorkforceReport({
                         <td className="py-3 px-3 text-right tabular-nums text-amber-600">
                           ৳ {Number(item.advance_salary_deducted || 0).toLocaleString('en-IN')}
                         </td>
-                        <td className="py-3 px-3 text-right font-bold tabular-nums text-slate-900">
+                        <td className="py-3 px-3 text-right font-bold tabular-nums text-foreground">
                           ৳ {Number(item.net_salary || 0).toLocaleString('en-IN')}
                         </td>
                         <td className="py-3 px-3 text-right font-bold tabular-nums text-emerald-600">
@@ -303,30 +303,30 @@ export function WorkforceReport({
 
         {/* 2. ATTENDANCE REPORT TAB */}
         <TabsContent value="attendance" className="pt-4 space-y-4">
-          <Card className="bg-white border-slate-200 p-5 rounded-xl">
-            <h3 className="text-sm font-bold text-slate-900 mb-1">Attendance Analytics</h3>
-            <p className="text-xs text-slate-500 mb-4">
+          <Card className="bg-card border-border p-5 rounded-xl">
+            <h3 className="text-sm font-bold text-foreground mb-1">Attendance Analytics</h3>
+            <p className="text-xs text-muted-foreground mb-4">
               Historical presence, late minutes, and field work counts across employees
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Total Staff Tracked</span>
-                <span className="text-lg font-bold text-slate-900">{employees.length}</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Total Staff Tracked</span>
+                <span className="text-lg font-bold text-foreground">{employees.length}</span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Active Status</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Active Status</span>
                 <span className="text-lg font-bold text-emerald-600">
                   {employees.filter((e) => e.status === 'active').length}
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">On Leave</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">On Leave</span>
                 <span className="text-lg font-bold text-amber-600">
                   {employees.filter((e) => e.status === 'on_leave').length}
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Daily Labor</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Daily Labor</span>
                 <span className="text-lg font-bold text-blue-600">
                   {employees.filter((e) => e.salary_basis === 'daily_rate' || e.is_daily_worker).length}
                 </span>
@@ -337,12 +337,12 @@ export function WorkforceReport({
 
         {/* 3. OVERTIME REPORT TAB */}
         <TabsContent value="overtime" className="pt-4 space-y-4">
-          <Card className="bg-white border-slate-200 p-5 rounded-xl">
-            <h3 className="text-sm font-bold text-slate-900 mb-1">Overtime Breakdown</h3>
-            <p className="text-xs text-slate-500 mb-4">Total overtime volume and expenditures</p>
+          <Card className="bg-card border-border p-5 rounded-xl">
+            <h3 className="text-sm font-bold text-foreground mb-1">Overtime Breakdown</h3>
+            <p className="text-xs text-muted-foreground mb-4">Total overtime volume and expenditures</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Approved Overtime Hours</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Approved Overtime Hours</span>
                 <span className="text-lg font-bold text-indigo-600">
                   {overtimeRecords
                     .filter((o) => o.status === 'approved')
@@ -350,9 +350,9 @@ export function WorkforceReport({
                   hrs
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Approved OT Amount</span>
-                <span className="text-lg font-bold text-slate-900 tabular-nums">
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Approved OT Amount</span>
+                <span className="text-lg font-bold text-foreground tabular-nums">
                   ৳{' '}
                   {overtimeRecords
                     .filter((o) => o.status === 'approved')
@@ -360,8 +360,8 @@ export function WorkforceReport({
                     .toLocaleString('en-IN')}
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Pending Requests</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Pending Requests</span>
                 <span className="text-lg font-bold text-amber-600">
                   {overtimeRecords.filter((o) => o.status === 'pending_approval').length}
                 </span>
@@ -372,21 +372,21 @@ export function WorkforceReport({
 
         {/* 4. ADVANCES REPORT TAB */}
         <TabsContent value="advances" className="pt-4 space-y-4">
-          <Card className="bg-white border-slate-200 p-5 rounded-xl">
-            <h3 className="text-sm font-bold text-slate-900 mb-1">Advance Disbursement & Recovery</h3>
-            <p className="text-xs text-slate-500 mb-4">Cumulative loan vouchers and payroll deductions</p>
+          <Card className="bg-card border-border p-5 rounded-xl">
+            <h3 className="text-sm font-bold text-foreground mb-1">Advance Disbursement & Recovery</h3>
+            <p className="text-xs text-muted-foreground mb-4">Cumulative loan vouchers and payroll deductions</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Total Disbursed</span>
-                <span className="text-lg font-bold text-slate-900 tabular-nums">
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Total Disbursed</span>
+                <span className="text-lg font-bold text-foreground tabular-nums">
                   ৳{' '}
                   {advances
                     .reduce((sum, a) => sum + Number(a.amount || 0), 0)
                     .toLocaleString('en-IN')}
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Total Recovered</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Total Recovered</span>
                 <span className="text-lg font-bold text-emerald-600 tabular-nums">
                   ৳{' '}
                   {advances
@@ -394,8 +394,8 @@ export function WorkforceReport({
                     .toLocaleString('en-IN')}
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Current Outstanding</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Current Outstanding</span>
                 <span className="text-lg font-bold text-amber-600 tabular-nums">
                   ৳{' '}
                   {advances
@@ -410,26 +410,26 @@ export function WorkforceReport({
 
         {/* 5. WORKFORCE COST TAB */}
         <TabsContent value="cost" className="pt-4 space-y-4">
-          <Card className="bg-white border-slate-200 p-5 rounded-xl">
-            <h3 className="text-sm font-bold text-slate-900 mb-1">Total Workforce Cost Analysis</h3>
-            <p className="text-xs text-slate-500 mb-4">
+          <Card className="bg-card border-border p-5 rounded-xl">
+            <h3 className="text-sm font-bold text-foreground mb-1">Total Workforce Cost Analysis</h3>
+            <p className="text-xs text-muted-foreground mb-4">
               Comprehensive internal labor commitment (Salaries + Overtime + Advance exposures)
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Gross Payroll Base</span>
-                <span className="text-lg font-bold text-slate-900 tabular-nums">
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Gross Payroll Base</span>
+                <span className="text-lg font-bold text-foreground tabular-nums">
                   ৳ {costBreakdown.grossSalaries.toLocaleString('en-IN')}
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Approved Overtime Cost</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Approved Overtime Cost</span>
                 <span className="text-lg font-bold text-indigo-600 tabular-nums">
                   ৳ {costBreakdown.totalOvertime.toLocaleString('en-IN')}
                 </span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-[11px] text-slate-400 block">Advance Exposure</span>
+              <div className="p-3 bg-muted rounded-lg border border-border">
+                <span className="text-[11px] text-muted-foreground block">Advance Exposure</span>
                 <span className="text-lg font-bold text-amber-600 tabular-nums">
                   ৳ {costBreakdown.advancesOutstanding.toLocaleString('en-IN')}
                 </span>

@@ -88,10 +88,10 @@ export function LimitExceededModal() {
             <Lock className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-bold text-base text-slate-900 dark:text-white bangla-text leading-snug">
+            <h3 className="font-bold text-base text-foreground dark:text-white bangla-text leading-snug">
               {tBilingual(meta.en, meta.bn)}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <p className="text-xs text-muted-foreground font-medium">
               {tBilingual(
                 `Plan Limit Reached on ${currentPlan.name}`,
                 `${currentPlan.name_bn}-এ প্ল্যান লিমিট পূর্ণ`
@@ -104,12 +104,12 @@ export function LimitExceededModal() {
       <div className="space-y-4 pt-1">
         {/* Quota Gauge */}
         <div className="rounded-2xl bg-gradient-to-b from-amber-50/80 to-amber-100/40 dark:from-amber-950/30 dark:to-amber-900/10 border border-amber-200/80 dark:border-amber-800/60 p-4 space-y-3 shadow-sm">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 bangla-text">
+          <div className="flex items-center justify-between text-xs font-semibold text-foreground bangla-text">
             <span className="flex items-center gap-1.5">
               <Icon className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
               {tBilingual('Current Quota Usage:', 'বর্তমান ব্যবহারের পরিমাণ:')}
             </span>
-            <Badge className="bg-amber-500 hover:bg-amber-500 text-slate-950 font-bold px-2.5 py-0.5 shadow-sm text-xs">
+            <Badge className="bg-amber-500 hover:bg-amber-500 text-foreground font-bold px-2.5 py-0.5 shadow-sm text-xs">
               {currentDisplay} / {limitDisplay} ({status.percentage}%)
             </Badge>
           </div>
@@ -118,7 +118,7 @@ export function LimitExceededModal() {
             <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full w-full transition-all duration-500 shadow-sm" />
           </div>
 
-          <p className="text-xs font-medium text-slate-700 dark:text-slate-200 bangla-text leading-relaxed">
+          <p className="text-xs font-medium text-foreground bangla-text leading-relaxed">
             {tBilingual(
               `Plan Limit Reached: Your current plan allows up to ${limitDisplay} ${meta.resourceNameEn} quota (currently at ${currentDisplay}). Please upgrade your subscription to continue.`,
               `প্ল্যান লিমিট পূর্ণ: আপনার বর্তমান প্ল্যানে সর্বোচ্চ ${limitDisplay} ${meta.resourceNameBn} কোটা অনুমোদিত (বর্তমানে ${currentDisplay})। চালিয়ে যেতে অনুগ্রহ করে সাবস্ক্রিপশন আপগ্রেড করুন।`
@@ -133,7 +133,7 @@ export function LimitExceededModal() {
               <div className="p-1 rounded-lg bg-amber-400/20 text-amber-400">
                 <Sparkles className="h-3.5 w-3.5" />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-200 bangla-text">
+              <span className="text-xs font-bold uppercase tracking-wider text-foreground bangla-text">
                 {tBilingual('Recommended Upgrade', 'প্রস্তাবিত আপগ্রেড')}
               </span>
             </div>
@@ -142,7 +142,7 @@ export function LimitExceededModal() {
             </Badge>
           </div>
 
-          <div className="text-xs text-slate-300 bangla-text leading-relaxed">
+          <div className="text-xs text-muted-foreground bangla-text leading-relaxed">
             <p>
               {tBilingual(
                 `Upgrading to the ${nextPlan.name} increases your limit from ${limitDisplay} to ${nextLimitLabelEn} and unlocks full team productivity.`,

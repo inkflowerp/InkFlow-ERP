@@ -127,7 +127,7 @@ export function TopNav() {
         {/* Notifications Dropdown */}
         <NotificationsDropdown />
 
-        <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0" />
+        <div className="h-5 w-px bg-muted mx-0.5 shrink-0" />
 
         {/* User Profile Menu */}
         <UserMenu />

@@ -72,10 +72,10 @@ export function PricingServicesTariffs({
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+          <h3 className="text-sm font-bold text-foreground dark:text-white">
             {tBilingual('Custom Printing & Signage Service Tariffs', 'কাস্টম প্রিন্টিং ও সাইনেজ সেবা ট্যারিফ')}
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             {tBilingual(
               'Dimensional SFT/SQM rate cards for Flex, Vinyl, Backlit, Canvas, Frosted, and Fabric print services.',
               'ব্যানার, ভিনাইল, ব্যাকলিট এবং ক্যানভাস প্রিন্টিংয়ের প্রতি স্কয়ার ফিট রেট কার্ড।'
@@ -84,7 +84,7 @@ export function PricingServicesTariffs({
         </div>
 
         <div className="relative w-64">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             placeholder="Search print services..."
             value={search}
@@ -112,13 +112,13 @@ export function PricingServicesTariffs({
           return (
             <Card
               key={p.id}
-              className="rounded-xl shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
+              className="rounded-xl shadow-xs border-border bg-card overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
             >
               <div>
                 {/* Header */}
-                <div className="p-4 pb-3 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-2">
+                <div className="p-4 pb-3 border-b border-border flex items-start justify-between gap-2">
                   <div>
-                    <div className="font-bold text-slate-900 dark:text-white text-sm">{p.name}</div>
+                    <div className="font-bold text-foreground dark:text-white text-sm">{p.name}</div>
                     {p.name_bn && (
                       <div className="text-xs text-teal-700 dark:text-teal-400 font-medium bangla-text mt-0.5">
                         {p.name_bn}
@@ -132,16 +132,16 @@ export function PricingServicesTariffs({
 
                 {/* Rates Grid */}
                 <div className="p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl text-xs">
+                  <div className="grid grid-cols-2 gap-2 bg-muted p-3 rounded-xl text-xs">
                     <div>
-                      <span className="text-2xs text-slate-400 uppercase font-semibold">Retail Rate</span>
-                      <div className="text-base font-black text-slate-900 dark:text-white tabular-nums">
-                        {formatBDT(baseSell)} <span className="text-2xs text-slate-400 font-normal">/{p.unit || 'sft'}</span>
+                      <span className="text-2xs text-muted-foreground uppercase font-semibold">Retail Rate</span>
+                      <div className="text-base font-black text-foreground dark:text-white tabular-nums">
+                        {formatBDT(baseSell)} <span className="text-2xs text-muted-foreground font-normal">/{p.unit || 'sft'}</span>
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-2xs text-slate-400 uppercase font-semibold">Reseller Wholesale</span>
+                      <span className="text-2xs text-muted-foreground uppercase font-semibold">Reseller Wholesale</span>
                       <div className="text-base font-bold text-blue-700 dark:text-blue-400 tabular-nums">
                         {formatBDT(resellerPrice)}
                       </div>
@@ -150,32 +150,32 @@ export function PricingServicesTariffs({
 
                   {/* Specifications */}
                   <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-2xs text-slate-500">
+                    <div className="flex justify-between text-2xs text-muted-foreground">
                       <span>Base Material Cost:</span>
-                      <span className="tabular-nums font-bold text-slate-700 dark:text-slate-300">
+                      <span className="tabular-nums font-bold text-foreground dark:text-muted-foreground">
                         {baseCost > 0 ? formatBDT(baseCost) : '—'}
                       </span>
                     </div>
 
                     {minBillable > 0 && (
-                      <div className="flex justify-between text-2xs text-slate-500">
+                      <div className="flex justify-between text-2xs text-muted-foreground">
                         <span>Min Billable Area:</span>
                         <span className="tabular-nums font-semibold">{minBillable} sft</span>
                       </div>
                     )}
 
                     {minCharge > 0 && (
-                      <div className="flex justify-between text-2xs text-slate-500">
+                      <div className="flex justify-between text-2xs text-muted-foreground">
                         <span>Min Job Charge:</span>
-                        <span className="tabular-nums font-bold text-slate-800 dark:text-slate-200">
+                        <span className="tabular-nums font-bold text-foreground dark:text-foreground">
                           {formatBDT(minCharge)}
                         </span>
                       </div>
                     )}
 
                     {marginPct !== null && (
-                      <div className="flex justify-between text-2xs pt-1 border-t border-slate-100 dark:border-slate-800">
-                        <span className="text-slate-500">Gross Margin:</span>
+                      <div className="flex justify-between text-2xs pt-1 border-t border-border dark:border-border">
+                        <span className="text-muted-foreground">Gross Margin:</span>
                         <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
                           {marginPct}%
                         </span>
@@ -186,13 +186,13 @@ export function PricingServicesTariffs({
               </div>
 
               {/* Card Footer */}
-              <div className="p-3 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <span className="text-2xs text-slate-400 capitalize">{p.category || 'Print Service'}</span>
+              <div className="p-3 bg-muted/50 border-t border-border flex items-center justify-between">
+                <span className="text-2xs text-muted-foreground capitalize">{p.category || 'Print Service'}</span>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => onOpenEditProductPrice(p)}
-                  className="h-7 px-2.5 text-xs font-bold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-white dark:bg-slate-800"
+                  className="h-7 px-2.5 text-xs font-bold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-card dark:bg-muted"
                 >
                   <Edit2 className="h-3 w-3 mr-1 text-teal-600" />
                   {tBilingual('Edit Tariff', 'দর পরিবর্তন')}

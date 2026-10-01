@@ -77,7 +77,7 @@ function InkFlowPlatformLogo({ className = '' }: { className?: string }) {
             PLATFORM
           </span>
         </div>
-        <div className="text-2xs sm:text-2xs tracking-[0.3em] font-bold text-slate-400 uppercase mt-0.5 leading-none">
+        <div className="text-2xs sm:text-2xs tracking-[0.3em] font-bold text-muted-foreground uppercase mt-0.5 leading-none">
           CONTROL CENTER
         </div>
       </div>
@@ -236,7 +236,7 @@ function PlatformLoginForm() {
         {/* Right Header Area: Live Status Pill & Language Dropdown */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Live Status indicator */}
-          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-2xs text-slate-300 backdrop-blur-md">
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground border border-border text-2xs text-muted-foreground backdrop-blur-md">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -249,17 +249,17 @@ function PlatformLoginForm() {
             <button
               type="button"
               onClick={() => setLangMenuOpen(!langMenuOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-all cursor-pointer shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-foreground hover:bg-secondary border border-border text-xs font-medium text-muted-foreground hover:text-white transition-all cursor-pointer shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500/50"
               aria-expanded={langMenuOpen}
               aria-label="Select Language"
             >
-              <Globe className="h-3.5 w-3.5 text-slate-400" />
+              <Globe className="h-3.5 w-3.5 text-muted-foreground" />
               <span>{language === 'en' ? 'English' : 'বাংলা'}</span>
-              <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-150 ${langMenuOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform duration-150 ${langMenuOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {langMenuOpen && (
-              <div className="absolute right-0 mt-1.5 w-32 rounded-xl bg-[#0e1224] border border-slate-800 shadow-2xl p-1 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
+              <div className="absolute right-0 mt-1.5 w-32 rounded-xl bg-[#0e1224] border border-border shadow-2xl p-1 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
                 <button
                   type="button"
                   onClick={() => {
@@ -267,7 +267,7 @@ function PlatformLoginForm() {
                     setLangMenuOpen(false)
                   }}
                   className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-left transition-colors font-medium cursor-pointer ${
-                    language === 'en' ? 'bg-purple-600/20 text-purple-300' : 'text-slate-200 hover:bg-slate-800'
+                    language === 'en' ? 'bg-purple-600/20 text-purple-300' : 'text-foreground hover:bg-secondary'
                   }`}
                 >
                   <span>English</span>
@@ -280,7 +280,7 @@ function PlatformLoginForm() {
                     setLangMenuOpen(false)
                   }}
                   className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-left transition-colors font-medium cursor-pointer ${
-                    language === 'bn' ? 'bg-purple-600/20 text-purple-300' : 'text-slate-200 hover:bg-slate-800'
+                    language === 'bn' ? 'bg-purple-600/20 text-purple-300' : 'text-foreground hover:bg-secondary'
                   }`}
                 >
                   <span>বাংলা</span>
@@ -300,7 +300,7 @@ function PlatformLoginForm() {
           
           {/* Platform Administration Header & Accent Line */}
           <div>
-            <div className="text-2xs xl:text-2xs font-bold tracking-[0.24em] text-slate-400 uppercase">
+            <div className="text-2xs xl:text-2xs font-bold tracking-[0.24em] text-muted-foreground uppercase">
               {t.platformBadge}
             </div>
             <div className="w-9 h-[2.5px] rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 mt-1.5" />
@@ -315,7 +315,7 @@ function PlatformLoginForm() {
                 {t.headlineSub}
               </span>
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-md">
               {t.heroDesc}
             </p>
           </div>
@@ -323,35 +323,35 @@ function PlatformLoginForm() {
           {/* 3 Platform Security Features */}
           <div className="space-y-2.5 pt-1">
             {/* Feature 1: Platform-level access */}
-            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/40 border border-slate-800/60">
+            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-foreground border border-border">
               <div className="w-8 h-8 rounded-lg bg-purple-950/70 border border-purple-800/50 flex items-center justify-center text-purple-400 shrink-0 shadow-sm mt-0.5">
                 <Shield className="w-4 h-4 text-purple-300" />
               </div>
               <div className="space-y-0.5">
-                <div className="text-xs xl:text-sm font-bold text-slate-200">{t.feat1Title}</div>
-                <div className="text-2xs xl:text-xs text-slate-400 leading-normal">{t.feat1Desc}</div>
+                <div className="text-xs xl:text-sm font-bold text-foreground">{t.feat1Title}</div>
+                <div className="text-2xs xl:text-xs text-muted-foreground leading-normal">{t.feat1Desc}</div>
               </div>
             </div>
 
             {/* Feature 2: Tenant-isolated administration */}
-            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/40 border border-slate-800/60">
+            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-foreground border border-border">
               <div className="w-8 h-8 rounded-lg bg-blue-950/70 border border-blue-800/50 flex items-center justify-center text-blue-400 shrink-0 shadow-sm mt-0.5">
                 <Database className="w-4 h-4 text-blue-300" />
               </div>
               <div className="space-y-0.5">
-                <div className="text-xs xl:text-sm font-bold text-slate-200">{t.feat2Title}</div>
-                <div className="text-2xs xl:text-xs text-slate-400 leading-normal">{t.feat2Desc}</div>
+                <div className="text-xs xl:text-sm font-bold text-foreground">{t.feat2Title}</div>
+                <div className="text-2xs xl:text-xs text-muted-foreground leading-normal">{t.feat2Desc}</div>
               </div>
             </div>
 
             {/* Feature 3: Secure authenticated session */}
-            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900/40 border border-slate-800/60">
+            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-foreground border border-border">
               <div className="w-8 h-8 rounded-lg bg-emerald-950/70 border border-emerald-800/50 flex items-center justify-center text-emerald-400 shrink-0 shadow-sm mt-0.5">
                 <Lock className="w-4 h-4 text-emerald-300" />
               </div>
               <div className="space-y-0.5">
-                <div className="text-xs xl:text-sm font-bold text-slate-200">{t.feat3Title}</div>
-                <div className="text-2xs xl:text-xs text-slate-400 leading-normal">{t.feat3Desc}</div>
+                <div className="text-xs xl:text-sm font-bold text-foreground">{t.feat3Title}</div>
+                <div className="text-2xs xl:text-xs text-muted-foreground leading-normal">{t.feat3Desc}</div>
               </div>
             </div>
           </div>
@@ -359,7 +359,7 @@ function PlatformLoginForm() {
 
         {/* RIGHT COLUMN: Premium Authentication Card */}
         <div className="w-full max-w-[420px] flex justify-center shrink-0">
-          <div className="w-full bg-[#0C1021]/95 backdrop-blur-2xl border border-slate-800/90 rounded-2xl p-5 sm:p-6 shadow-2xl shadow-indigo-950/40 relative z-20">
+          <div className="w-full bg-[#0C1021]/95 backdrop-blur-2xl border border-border rounded-2xl p-5 sm:p-6 shadow-2xl shadow-indigo-950/40 relative z-20">
             
             {/* Card Header Icon & Headings */}
             <div className="text-center space-y-1 mb-4">
@@ -371,10 +371,10 @@ function PlatformLoginForm() {
                 <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">
                   {t.cardTitle}
                 </h2>
-                <p className="text-xs text-slate-300 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {requiresMfa ? t.mfaDesc : t.cardSubtitle}
                 </p>
-                <p className="text-2xs text-slate-400">
+                <p className="text-2xs text-muted-foreground">
                   {t.cardNotice}
                 </p>
               </div>
@@ -417,7 +417,7 @@ function PlatformLoginForm() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="platform-mfa" className="text-2xs font-bold tracking-wider text-slate-400 uppercase">
+                    <Label htmlFor="platform-mfa" className="text-2xs font-bold tracking-wider text-muted-foreground uppercase">
                       {t.mfaLabel}
                     </Label>
                     <div className="relative">
@@ -433,7 +433,7 @@ function PlatformLoginForm() {
                         value={mfaCode}
                         onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
                         placeholder="123456"
-                        className="w-full bg-[#070A16]/90 border border-slate-700/60 text-white placeholder:text-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 tabular-nums tracking-widest text-center text-base sm:text-lg h-10 sm:h-11 rounded-xl outline-none"
+                        className="w-full bg-[#070A16]/90 border border-slate-700/60 text-white placeholder:text-muted-foreground focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 tabular-nums tracking-widest text-center text-base sm:text-lg h-10 sm:h-11 rounded-xl outline-none"
                       />
                     </div>
                   </div>
@@ -445,7 +445,7 @@ function PlatformLoginForm() {
                         setRequiresMfa(false)
                         setError(null)
                       }}
-                      className="text-xs text-slate-400 hover:text-white flex items-center gap-1 min-h-[32px] cursor-pointer"
+                      className="text-xs text-muted-foreground hover:text-white flex items-center gap-1 min-h-[32px] cursor-pointer"
                     >
                       <ChevronLeft className="h-3.5 w-3.5" />
                       <span>{t.mfaBack}</span>
@@ -467,12 +467,12 @@ function PlatformLoginForm() {
                   <div className="space-y-1">
                     <Label
                       htmlFor="platform-email"
-                      className="text-2xs font-bold tracking-wider text-slate-400 uppercase"
+                      className="text-2xs font-bold tracking-wider text-muted-foreground uppercase"
                     >
                       {t.emailLabel}
                     </Label>
                     <div className="relative flex items-center">
-                      <div className="absolute left-3 pointer-events-none text-slate-400">
+                      <div className="absolute left-3 pointer-events-none text-muted-foreground">
                         <Mail className="h-4 w-4" />
                       </div>
                       <input
@@ -486,7 +486,7 @@ function PlatformLoginForm() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder={t.emailPlaceholder}
-                        className="w-full bg-[#070A16]/90 border border-slate-700/60 hover:border-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white placeholder:text-slate-600 transition-all outline-none"
+                        className="w-full bg-[#070A16]/90 border border-slate-700/60 hover:border-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white placeholder:text-muted-foreground transition-all outline-none"
                       />
                     </div>
                   </div>
@@ -495,12 +495,12 @@ function PlatformLoginForm() {
                   <div className="space-y-1">
                     <Label
                       htmlFor="platform-password"
-                      className="text-2xs font-bold tracking-wider text-slate-400 uppercase"
+                      className="text-2xs font-bold tracking-wider text-muted-foreground uppercase"
                     >
                       {t.passwordLabel}
                     </Label>
                     <div className="relative flex items-center">
-                      <div className="absolute left-3 pointer-events-none text-slate-400">
+                      <div className="absolute left-3 pointer-events-none text-muted-foreground">
                         <Lock className="h-4 w-4" />
                       </div>
                       <input
@@ -514,12 +514,12 @@ function PlatformLoginForm() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder={t.passwordPlaceholder}
-                        className="w-full bg-[#070A16]/90 border border-slate-700/60 hover:border-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl pl-9 pr-9 py-2 text-xs sm:text-sm text-white placeholder:text-slate-600 transition-all outline-none"
+                        className="w-full bg-[#070A16]/90 border border-slate-700/60 hover:border-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl pl-9 pr-9 py-2 text-xs sm:text-sm text-white placeholder:text-muted-foreground transition-all outline-none"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-2.5 p-1 text-slate-400 hover:text-slate-200 transition-colors focus:outline-none cursor-pointer"
+                        className="absolute right-2.5 p-1 text-muted-foreground hover:text-foreground transition-colors focus:outline-none cursor-pointer"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -560,15 +560,15 @@ function PlatformLoginForm() {
 
                   {/* Divider */}
                   <div className="relative flex items-center justify-center py-0.5">
-                    <div className="w-full border-t border-slate-800/80" />
-                    <span className="bg-[#0C1021] px-2 text-2xs font-bold tracking-wider text-slate-500 uppercase">
+                    <div className="w-full border-t border-border" />
+                    <span className="bg-[#0C1021] px-2 text-2xs font-bold tracking-wider text-muted-foreground uppercase">
                       {t.orDivider}
                     </span>
-                    <div className="w-full border-t border-slate-800/80" />
+                    <div className="w-full border-t border-border" />
                   </div>
 
                   {/* Business Login Alternative */}
-                  <div className="text-center text-2xs text-slate-400">
+                  <div className="text-center text-2xs text-muted-foreground">
                     {t.lookingForBusiness}{' '}
                     <Link
                       href="/login"
@@ -580,15 +580,15 @@ function PlatformLoginForm() {
                   </div>
 
                   {/* Secure Access Information Box */}
-                  <div className="mt-2.5 p-2.5 rounded-xl bg-[#070A14]/90 border border-slate-800/80 text-2xs text-slate-400 flex items-start gap-2.5">
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-[#070A14]/90 border border-border text-2xs text-muted-foreground flex items-start gap-2.5">
                     <div className="w-4 h-4 rounded-md bg-indigo-950/60 border border-indigo-800/40 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
                       <Shield className="h-2.5 w-2.5 text-indigo-400" />
                     </div>
                     <div className="space-y-0.5">
-                      <div className="font-bold text-slate-300 tracking-wider uppercase text-2xs">
+                      <div className="font-bold text-muted-foreground tracking-wider uppercase text-2xs">
                         {t.secureNoticeTitle}
                       </div>
-                      <div className="leading-relaxed text-slate-400 text-2xs">
+                      <div className="leading-relaxed text-muted-foreground text-2xs">
                         {t.secureNoticeText}
                       </div>
                     </div>
@@ -602,9 +602,9 @@ function PlatformLoginForm() {
       </main>
 
       {/* --- Footer Area --- */}
-      <footer className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-2.5 sm:py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-2xs text-slate-500 border-t border-slate-800/50 shrink-0">
+      <footer className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-2.5 sm:py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-2xs text-muted-foreground border-t border-border shrink-0">
         {/* Platform Motto */}
-        <div className="tracking-[0.22em] font-semibold uppercase text-slate-400 flex items-center gap-1.5 text-2xs">
+        <div className="tracking-[0.22em] font-semibold uppercase text-muted-foreground flex items-center gap-1.5 text-2xs">
           <span>PRINT</span>
           <span className="text-purple-500 font-normal">›</span>
           <span>PEOPLE</span>
@@ -615,16 +615,16 @@ function PlatformLoginForm() {
         </div>
 
         {/* Legal & Support Links */}
-        <div className="flex items-center gap-3 text-slate-500">
-          <Link href="/privacy" className="hover:text-slate-300 transition-colors">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Link href="/privacy" className="hover:text-muted-foreground transition-colors">
             Privacy
           </Link>
           <span>|</span>
-          <Link href="/terms" className="hover:text-slate-300 transition-colors">
+          <Link href="/terms" className="hover:text-muted-foreground transition-colors">
             Terms
           </Link>
           <span>|</span>
-          <Link href="/platform/support" className="hover:text-slate-300 transition-colors">
+          <Link href="/platform/support" className="hover:text-muted-foreground transition-colors">
             Support
           </Link>
         </div>
@@ -637,7 +637,7 @@ export default function PlatformLoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#070913] flex items-center justify-center text-slate-400">
+        <div className="min-h-screen bg-[#070913] flex items-center justify-center text-muted-foreground">
           Loading InkFlow platform console...
         </div>
       }

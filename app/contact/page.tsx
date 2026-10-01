@@ -64,20 +64,20 @@ export default function PublicContactPage() {
 
   return (
     <MarketingDemoProvider>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
+      <div className="min-h-screen bg-muted text-foreground selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden">
         <MarketingNavbar />
 
         <main className="pt-20">
           {/* Banner */}
-          <div className="py-16 sm:py-20 bg-white dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-800 text-center px-4">
+          <div className="py-16 sm:py-20 bg-card border-b border-border text-center px-4">
             <div className="max-w-3xl mx-auto space-y-3">
               <span className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-200/70 dark:border-blue-800/60">
                 Get in Touch
               </span>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white bangla-text tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground dark:text-white bangla-text tracking-tight">
                 {tBilingual('We’re Here to Help Your Press Grow.', 'আপনার প্রেসের সহযোগিতায় আমরা প্রস্তুত।')}
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed bangla-text">
+              <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto leading-relaxed bangla-text">
                 {tBilingual(
                   'Have a question about implementation, pricing, or custom hardware integrations? Reach out to our Dhaka support team.',
                   'সফটওয়্যার বাস্তবায়ন, ট্রেনিং বা কাস্টম ইন্টিগ্রেশনের যেকোনো প্রশ্নে আমাদের সাথে যোগাযোগ করুন।'
@@ -91,17 +91,17 @@ export default function PublicContactPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               {/* Left Info Column (5 Cols) */}
               <div className="lg:col-span-5 space-y-6">
-                <div className="p-6 sm:p-7 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/60 space-y-6 shadow-2xs">
-                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white bangla-text">
+                <div className="p-6 sm:p-7 rounded-2xl border border-border bg-card space-y-6 shadow-2xs">
+                  <h3 className="text-lg sm:text-xl font-bold text-foreground dark:text-white bangla-text">
                     {tBilingual('Dhaka Headquarters & Help Desk', 'ঢাকা প্রধান কার্যালয় ও সাপোর্ট ডেস্ক')}
                   </h3>
 
-                  <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                  <div className="space-y-4 text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">
                     <div className="flex items-start gap-3">
                       <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-slate-900 dark:text-white block">Official Address</span>
-                        <span className="text-slate-600 dark:text-slate-400">
+                        <span className="font-bold text-foreground dark:text-white block">Official Address</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">
                           {contactAddress || 'Level 4, Modern Bhaban, Motijheel C/A, Dhaka-1000, Bangladesh'}
                         </span>
                       </div>
@@ -110,7 +110,7 @@ export default function PublicContactPage() {
                     <div className="flex items-start gap-3">
                       <Phone className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-slate-900 dark:text-white block">Direct Phone & Support Helpline</span>
+                        <span className="font-bold text-foreground dark:text-white block">Direct Phone & Support Helpline</span>
                         <span className="text-blue-600 dark:text-blue-400 font-semibold tabular-nums">
                           {supportHelpline || contactPhone || '+880 1819-876543 / +880 1711-234567'}
                         </span>
@@ -120,8 +120,8 @@ export default function PublicContactPage() {
                     <div className="flex items-start gap-3">
                       <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-slate-900 dark:text-white block">Email Inquiries</span>
-                        <span className="text-slate-600 dark:text-slate-400 tabular-nums">
+                        <span className="font-bold text-foreground dark:text-white block">Email Inquiries</span>
+                        <span className="text-muted-foreground tabular-nums">
                           {contactEmail || 'support@printerp.com.bd'}
                         </span>
                       </div>
@@ -130,15 +130,15 @@ export default function PublicContactPage() {
                     <div className="flex items-start gap-3">
                       <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold text-slate-900 dark:text-white block">Press Support Hours</span>
-                        <span className="text-slate-600 dark:text-slate-400">
+                        <span className="font-bold text-foreground dark:text-white block">Press Support Hours</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">
                           Saturday – Thursday: 9:00 AM – 9:00 PM (Emergency 24/7 for Enterprise)
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800">
+                  <div className="pt-4 border-t border-border dark:border-border">
                     <a
                       href={`https://wa.me/${(supportHelpline || contactPhone || '8801819876543').replace(/\D/g, '')}`}
                       target="_blank"
@@ -154,16 +154,16 @@ export default function PublicContactPage() {
 
               {/* Right Contact Form (7 Cols) */}
               <div className="lg:col-span-7">
-                <div className="p-6 sm:p-8 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-2xs space-y-6">
+                <div className="p-6 sm:p-8 rounded-2xl border border-border bg-card shadow-2xs space-y-6">
                   {submitted ? (
                     <div className="text-center py-12 space-y-4">
                       <div className="h-16 w-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800">
                         <CheckCircle2 className="h-8 w-8" />
                       </div>
-                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white bangla-text">
+                      <h3 className="text-2xl font-bold text-foreground dark:text-white bangla-text">
                         {tBilingual('Message Dispatched!', 'আপনার বার্তা সফলভাবে পৌঁছেছে!')}
                       </h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto leading-relaxed bangla-text">
+                      <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed bangla-text">
                         {tBilingual(
                           `Thank you for reaching out. A ${appName} technical specialist will get back to you within 2 hours.`,
                           `আমাদের টেকনিক্যাল সাপোর্ট টিম দ্রুততম সময়ের মধ্যে আপনার সাথে যোগাযোগ করবে।`
@@ -173,10 +173,10 @@ export default function PublicContactPage() {
                   ) : (
                     <>
                       <div className="space-y-1">
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white bangla-text">
+                        <h3 className="text-xl font-bold text-foreground dark:text-white bangla-text">
                           {tBilingual('Send Us a Message', 'আমাদের একটি বার্তা পাঠান')}
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                           Fill out the details below and we will respond promptly.
                         </p>
                       </div>
@@ -191,7 +191,7 @@ export default function PublicContactPage() {
                       <form onSubmit={handleSubmit} className="space-y-4 text-xs sm:text-sm">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                            <label className="block text-foreground font-semibold mb-1">
                               Your Name *
                             </label>
                             <input
@@ -200,12 +200,12 @@ export default function PublicContactPage() {
                               placeholder="Kamrul Hasan"
                               value={form.name}
                               onChange={(e) => setForm({ ...form, name: e.target.value })}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                            <label className="block text-foreground font-semibold mb-1">
                               Press / Shop Name *
                             </label>
                             <input
@@ -214,14 +214,14 @@ export default function PublicContactPage() {
                               placeholder="e.g. Apex Digital Press"
                               value={form.pressName}
                               onChange={(e) => setForm({ ...form, pressName: e.target.value })}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
                             />
                           </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                            <label className="block text-foreground font-semibold mb-1">
                               Mobile (WhatsApp) *
                             </label>
                             <input
@@ -230,12 +230,12 @@ export default function PublicContactPage() {
                               placeholder="01712-XXXXXX"
                               value={form.phone}
                               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm tabular-nums"
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm tabular-nums"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                            <label className="block text-foreground font-semibold mb-1">
                               Email Address
                             </label>
                             <input
@@ -243,13 +243,13 @@ export default function PublicContactPage() {
                               placeholder="info@yourpress.com.bd"
                               value={form.email}
                               onChange={(e) => setForm({ ...form, email: e.target.value })}
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
                             />
                           </div>
                         </div>
 
                         <div>
-                          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                          <label className="block text-foreground font-semibold mb-1">
                             How can we help your business? *
                           </label>
                           <textarea
@@ -258,7 +258,7 @@ export default function PublicContactPage() {
                             placeholder="Tell us about your machine models, shop location, or specific requirements..."
                             value={form.message}
                             onChange={(e) => setForm({ ...form, message: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm resize-none"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-muted border border-border text-foreground dark:text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm resize-none"
                           />
                         </div>
 
@@ -266,7 +266,7 @@ export default function PublicContactPage() {
                           <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full h-11 font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer bangla-text"
+                            className="w-full h-11 font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer bangla-text"
                           >
                             {isSubmitting ? (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

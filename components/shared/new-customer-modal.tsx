@@ -326,10 +326,10 @@ export function NewCustomerModal({
             <User className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-base font-black text-slate-900 dark:text-white">
+            <h2 className="text-base font-black text-foreground dark:text-white">
               {locale === 'bn' ? 'নতুন কাস্টমার নিবন্ধন' : 'New Customer Registration'}
             </h2>
-            <p className="text-2xs text-slate-500 dark:text-slate-400">
+            <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
               Fast walk-in customer creation, credit limits, delivery addresses, and customer-specific rates
             </p>
           </div>
@@ -344,7 +344,7 @@ export function NewCustomerModal({
                 type="button"
                 variant="outline"
                 onClick={() => setActiveTab('info')}
-                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer text-xs"
+                className="h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted gap-1.5 cursor-pointer text-xs"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Back to Info</span>
@@ -384,7 +384,7 @@ export function NewCustomerModal({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm cursor-pointer rounded-xl"
+                className="w-full sm:w-auto text-xs min-h-[40px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 shadow-sm cursor-pointer rounded-xl"
               >
                 {isSubmitting ? (
                   <>
@@ -402,15 +402,15 @@ export function NewCustomerModal({
     >
       <div className="space-y-4 pt-1 pb-2">
         {/* Tab Switcher */}
-        <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-slate-800/80 text-xs font-semibold gap-1">
+        <div className="flex rounded-xl p-1 bg-muted text-xs font-semibold gap-1">
           <button
             type="button"
             onClick={() => setActiveTab('info')}
             className={cn(
               'flex-1 py-1.5 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer',
               activeTab === 'info'
-                ? 'bg-white text-blue-600 shadow-xs dark:bg-slate-950 dark:text-blue-400'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-blue-600 shadow-xs dark:text-blue-400'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             <User className="h-3.5 w-3.5" />
@@ -423,8 +423,8 @@ export function NewCustomerModal({
             className={cn(
               'flex-1 py-1.5 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer',
               activeTab === 'rates'
-                ? 'bg-white text-blue-600 shadow-xs dark:bg-slate-950 dark:text-blue-400'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-card text-blue-600 shadow-xs dark:text-blue-400'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             <Tag className="h-3.5 w-3.5" />
@@ -453,23 +453,23 @@ export function NewCustomerModal({
               {duplicateMatches.map((m) => (
                 <div
                   key={m.customer.id}
-                  className="p-2.5 rounded-lg bg-white/90 dark:bg-slate-900/90 border border-amber-200/80 dark:border-amber-900/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                  className="p-2.5 rounded-lg bg-card/90 border border-amber-200/80 dark:border-amber-900/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                 >
                   <div>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-slate-900 dark:text-white">
+                      <span className="font-bold text-foreground dark:text-white">
                         {m.customer.name}
                       </span>
                       <Badge variant="outline" className="tabular-nums text-2xs px-1.5 py-0 text-blue-700 bg-blue-50/50 border-blue-200 dark:border-blue-900 dark:text-blue-300">
                         {formatCustomerIdNo(m.customer)}
                       </Badge>
                       {m.customer.company_name && (
-                        <span className="text-slate-500 dark:text-slate-400 text-xs">
+                        <span className="text-muted-foreground text-xs">
                           • {m.customer.company_name}
                         </span>
                       )}
                     </div>
-                    <div className="text-2xs text-slate-500 tabular-nums">
+                    <div className="text-2xs text-muted-foreground tabular-nums">
                       {m.customer.mobile} {m.customer.whatsapp ? `• WA: ${m.customer.whatsapp}` : ''}
                     </div>
                     <div className="text-2xs text-amber-700 dark:text-amber-300 font-medium mt-0.5">
@@ -485,7 +485,7 @@ export function NewCustomerModal({
                         onCustomerCreated?.(m.customer)
                         onOpenChange(false)
                       }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-7 px-2.5"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-7 px-2.5"
                     >
                       Use Existing Customer
                     </Button>
@@ -500,12 +500,12 @@ export function NewCustomerModal({
         {activeTab === 'info' && (
           <div className="space-y-4">
             {/* Section 1: Identity & Category */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                   1
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Identity & Category
                 </h3>
               </div>
@@ -556,7 +556,7 @@ export function NewCustomerModal({
                   <select
                     value={customerType}
                     onChange={(e) => setCustomerType(e.target.value as CustomerCategory)}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium text-slate-800 dark:text-slate-200"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium text-foreground dark:text-foreground"
                   >
                     <option value="retail">Retail (ওয়াক-ইন / রিটেইল)</option>
                     <option value="reseller">Reseller (রিসেলার / সাব-কন্ট্রাক্টর)</option>
@@ -577,7 +577,7 @@ export function NewCustomerModal({
                     onChange={(e) => setCustomerIdNo(e.target.value)}
                     className="text-xs h-9 tabular-nums"
                   />
-                  <p className="text-2xs text-slate-400 mt-1">Leave empty to auto-generate</p>
+                  <p className="text-2xs text-muted-foreground mt-1">Leave empty to auto-generate</p>
                 </div>
 
                 <div>
@@ -619,12 +619,12 @@ export function NewCustomerModal({
             </div>
 
             {/* Section 2: Contact & Phone */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                   2
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Contact & Communication
                 </h3>
               </div>
@@ -659,12 +659,12 @@ export function NewCustomerModal({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <Label className="text-xs font-semibold">WhatsApp Number</Label>
-                    <label className="flex items-center gap-1 text-2xs text-slate-500 cursor-pointer">
+                    <label className="flex items-center gap-1 text-2xs text-muted-foreground cursor-pointer">
                       <input
                         type="checkbox"
                         checked={sameAsMobile}
                         onChange={(e) => setSameAsMobile(e.target.checked)}
-                        className="rounded border-slate-300 text-blue-600 h-3 w-3"
+                        className="rounded border-input text-blue-600 h-3 w-3"
                       />
                       <span>Same as Phone</span>
                     </label>
@@ -695,12 +695,12 @@ export function NewCustomerModal({
             </div>
 
             {/* Section 3: Location & Address */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                   3
                 </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                   Location & Address
                 </h3>
               </div>
@@ -716,7 +716,7 @@ export function NewCustomerModal({
                       setDistrictId(null)
                       setUpazilaId(null)
                     }}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                   >
                     <option value="">Select Division</option>
                     {divisions.map((d) => (
@@ -737,7 +737,7 @@ export function NewCustomerModal({
                       setUpazilaId(null)
                     }}
                     disabled={!divisionId}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium disabled:opacity-50"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium disabled:opacity-50"
                   >
                     <option value="">Select District</option>
                     {districts.map((dst) => (
@@ -754,7 +754,7 @@ export function NewCustomerModal({
                     value={upazilaId || ''}
                     onChange={(e) => setUpazilaId(e.target.value ? Number(e.target.value) : null)}
                     disabled={!districtId}
-                    className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium disabled:opacity-50"
+                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium disabled:opacity-50"
                   >
                     <option value="">Select Thana / Upazila</option>
                     {upazilas.map((u) => (
@@ -791,11 +791,11 @@ export function NewCustomerModal({
             </div>
 
             {/* Section 4: Collapsible Terms & Tax */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 overflow-hidden shadow-xs">
+            <div className="rounded-xl border border-border bg-card overflow-hidden shadow-xs">
               <button
                 type="button"
                 onClick={() => setIsAdditionalOpen(!isAdditionalOpen)}
-                className="w-full flex items-center justify-between p-4 font-bold text-xs text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer"
+                className="w-full flex items-center justify-between p-4 font-bold text-xs text-foreground hover:bg-muted dark:hover:bg-muted/40 cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
@@ -807,7 +807,7 @@ export function NewCustomerModal({
               </button>
 
               {isAdditionalOpen && (
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3.5 bg-slate-50/50 dark:bg-slate-950/40">
+                <div className="p-4 border-t border-border space-y-3.5 bg-muted dark:bg-background">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div>
                       <Label className="text-xs font-semibold mb-1 block">Credit Limit (৳)</Label>
@@ -824,7 +824,7 @@ export function NewCustomerModal({
                       <select
                         value={paymentTerms}
                         onChange={(e) => setPaymentTerms(e.target.value as CustomerPaymentTerms)}
-                        className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                        className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                       >
                         <option value="cash_on_delivery">Cash On Delivery (ক্যাশ অন ডেলিভারি)</option>
                         <option value="advance_50">50% Advance with Order</option>
@@ -862,7 +862,7 @@ export function NewCustomerModal({
                       placeholder="e.g. VIP client; requires proof approval via WhatsApp..."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs"
+                      className="w-full rounded-lg border border-input bg-card p-2.5 text-xs"
                     />
                   </div>
                 </div>
@@ -876,18 +876,18 @@ export function NewCustomerModal({
           <div className="space-y-4">
             <div className="p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-xs flex items-start gap-2.5">
               <Sparkles className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
-              <div className="text-slate-700 dark:text-slate-300 text-xs leading-relaxed">
+              <div className="text-foreground text-xs leading-relaxed">
                 Configure special contracted rates for this customer. When creating quotations or invoices, InkFlow automatically pulls these custom rates.
               </div>
             </div>
 
             {isLoadingProducts ? (
-              <div className="py-12 text-center text-xs text-slate-400">
+              <div className="py-12 text-center text-xs text-muted-foreground">
                 <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2 text-blue-600" />
                 Loading products catalog...
               </div>
             ) : products.length === 0 ? (
-              <div className="py-12 text-center text-xs text-slate-400">
+              <div className="py-12 text-center text-xs text-muted-foreground">
                 No active products found in catalog.
               </div>
             ) : (
@@ -898,21 +898,21 @@ export function NewCustomerModal({
                   return (
                     <div
                       key={prod.id}
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 flex items-center justify-between gap-3 text-xs shadow-xs"
+                      className="p-3 rounded-xl border border-border bg-card flex items-center justify-between gap-3 text-xs shadow-xs"
                     >
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-slate-900 dark:text-white truncate bangla-text">
+                        <div className="font-bold text-foreground dark:text-white truncate bangla-text">
                           {prod.name}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                        <div className="text-xs text-muted-foreground dark:text-muted-foreground">
                           {prod.sku} • Default: ৳{prod.selling_price}/{prod.unit}
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">Custom Rate:</span>
+                        <span className="text-xs text-muted-foreground font-semibold">Custom Rate:</span>
                         <div className="relative w-32">
-                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">৳</span>
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">৳</span>
                           <Input
                             type="number"
                             step="0.01"
@@ -930,10 +930,10 @@ export function NewCustomerModal({
                                 return updated
                               })
                             }}
-                            className="h-8 pl-6 text-right text-xs font-bold tabular-nums bg-slate-50 dark:bg-slate-950"
+                            className="h-8 pl-6 text-right text-xs font-bold tabular-nums bg-muted dark:bg-background"
                           />
                         </div>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 uppercase tabular-nums w-8">
+                        <span className="text-xs text-muted-foreground uppercase tabular-nums w-8">
                           /{prod.unit}
                         </span>
                       </div>

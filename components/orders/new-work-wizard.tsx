@@ -381,7 +381,7 @@ export function NewWorkWizard({
   const content = (
     <div className="space-y-6">
       {/* Step Progress Bar */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-between pb-3 border-b border-border dark:border-border">
         <div className="flex items-center gap-2">
           {[
             { num: 1, labelBn: 'কাস্টমার', labelEn: 'Customer' },
@@ -398,7 +398,7 @@ export function NewWorkWizard({
                   ? 'bg-blue-600 text-white shadow-sm'
                   : step > s.num
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                  : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                  : 'bg-muted text-muted-foreground dark:text-muted-foreground'
               }`}
             >
               <span>{s.num}.</span>
@@ -428,7 +428,7 @@ export function NewWorkWizard({
       {step === 1 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <User className="h-5 w-5 text-blue-600" />
               {tBilingual('1. Select or Add Customer', '১. কাস্টমার নির্বাচন করুন বা নতুন যোগ করুন')}
             </h3>
@@ -479,7 +479,7 @@ export function NewWorkWizard({
                   <Button
                     type="button"
                     onClick={handleQuickCreateCustomer}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-10 px-6"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-10 px-6"
                   >
                     <CheckCircle2 className="h-4 w-4 mr-1.5" />
                     {tBilingual('Save & Continue', 'সংরক্ষণ করে এগিয়ে যান')}
@@ -493,7 +493,7 @@ export function NewWorkWizard({
                 value={customerSearch}
                 onChange={(e) => setCustomerSearch(e.target.value)}
                 placeholder={tBilingual('Search by Name or Phone...', 'কাস্টমারের নাম বা মোবাইল নম্বর লিখুন...')}
-                className="h-12 text-sm bg-white dark:bg-slate-900 border-slate-300"
+                className="h-12 text-sm bg-card border-input"
               />
 
               {selectedCustomer && (
@@ -523,9 +523,9 @@ export function NewWorkWizard({
                 </div>
               )}
 
-              <div className="max-h-60 overflow-y-auto space-y-1.5 border border-slate-200 dark:border-slate-800 rounded-xl p-2 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="max-h-60 overflow-y-auto space-y-1.5 border border-border rounded-xl p-2 bg-muted dark:bg-card">
                 {filteredCustomers.length === 0 ? (
-                  <div className="text-center py-6 text-xs text-slate-500">
+                  <div className="text-center py-6 text-xs text-muted-foreground">
                     {tBilingual('No customer found.', 'কোনো কাস্টমার পাওয়া যায়নি।')}
                     <Button
                       type="button"
@@ -547,12 +547,12 @@ export function NewWorkWizard({
                       className={`p-3 rounded-lg border text-xs cursor-pointer transition-all flex items-center justify-between hover:bg-blue-50/50 dark:hover:bg-blue-950/30 ${
                         selectedCustomer?.id === c.id
                           ? 'border-blue-500 bg-blue-50/40 font-semibold'
-                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900'
+                          : 'border-border bg-card dark:bg-card'
                       }`}
                     >
                       <div>
-                        <div className="font-bold text-slate-900 dark:text-slate-100">{c.name}</div>
-                        <div className="text-2xs text-slate-500 tabular-nums">{(c as any).phone || c.mobile}</div>
+                        <div className="font-bold text-foreground dark:text-foreground">{c.name}</div>
+                        <div className="text-2xs text-muted-foreground tabular-nums">{(c as any).phone || c.mobile}</div>
                       </div>
                       <div className="text-right">
                         {(c as any).current_balance && Number((c as any).current_balance) > 0 ? (
@@ -576,7 +576,7 @@ export function NewWorkWizard({
       {step === 2 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <Printer className="h-5 w-5 text-blue-600" />
               {tBilingual('2. What do they want to make?', '২. কী কাজ বানাতে চান?')}
             </h3>
@@ -596,11 +596,11 @@ export function NewWorkWizard({
                 className={`p-3 rounded-xl border-2 cursor-pointer transition-all text-center space-y-1 ${
                   selectedPreset.id === p.id
                     ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 shadow-xs'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
+                    : 'border-border bg-card hover:border-input'
                 }`}
               >
-                <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{p.nameBn}</div>
-                <div className="text-2xs text-slate-500">{p.nameEn}</div>
+                <div className="text-sm font-bold text-foreground dark:text-foreground">{p.nameBn}</div>
+                <div className="text-2xs text-muted-foreground">{p.nameEn}</div>
                 <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">
                   ৳{p.defaultRate}/{p.defaultUnit}
                 </div>
@@ -609,7 +609,7 @@ export function NewWorkWizard({
           </div>
 
           {/* Dimensions & Quantity Form */}
-          <Card className="border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40">
+          <Card className="border border-border bg-muted dark:bg-card">
             <CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="space-y-1">
@@ -641,7 +641,7 @@ export function NewWorkWizard({
                   <select
                     value={unit}
                     onChange={(e) => setUnit(e.target.value as any)}
-                    className="w-full h-11 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    className="w-full h-11 rounded-md border border-input bg-card px-3 py-2 text-sm font-semibold dark:text-foreground"
                   >
                     <option value="ft">{tBilingual('Feet (ft)', 'ফুট')}</option>
                     <option value="inch">{tBilingual('Inches (in)', 'ইঞ্চি')}</option>
@@ -664,14 +664,14 @@ export function NewWorkWizard({
               {/* Calculated Size & Price Bar */}
               <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900 flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div>
-                  <span className="text-slate-500">মোট মাপ: </span>
-                  <span className="font-bold text-slate-900 dark:text-slate-100 tabular-nums text-sm">
+                  <span className="text-muted-foreground">মোট মাপ: </span>
+                  <span className="font-bold text-foreground tabular-nums text-sm">
                     {totalSqft.toFixed(1)} {unit === 'pcs' ? 'পিস' : 'স্কয়ার ফিট'}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500">রেট: ৳</span>
+                  <span className="text-muted-foreground">রেট: ৳</span>
                   <Input
                     type="number"
                     value={unitRate}
@@ -681,7 +681,7 @@ export function NewWorkWizard({
                 </div>
 
                 <div>
-                  <span className="text-slate-500">মোট বিল: </span>
+                  <span className="text-muted-foreground">মোট বিল: </span>
                   <span className="font-bold text-blue-700 dark:text-blue-300 tabular-nums text-base">
                     ৳{totalAmount.toLocaleString()}
                   </span>
@@ -694,7 +694,7 @@ export function NewWorkWizard({
             <Button type="button" variant="outline" size="sm" onClick={() => setStep(1)} className="text-xs">
               <ArrowLeft className="h-3.5 w-3.5 mr-1" /> {tBilingual('Back', 'পেছনে')}
             </Button>
-            <Button type="button" size="sm" onClick={() => setStep(3)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-10 px-6">
+            <Button type="button" size="sm" onClick={() => setStep(3)} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-10 px-6">
               {tBilingual('Next: Material & Finishing', 'পরবর্তী: ম্যাটেরিয়াল ও ফিনিশিং')} <ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </div>
@@ -705,7 +705,7 @@ export function NewWorkWizard({
       {step === 3 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <Layers className="h-5 w-5 text-blue-600" />
               {tBilingual('3. Material & Finishing Selection', '৩. ম্যাটেরিয়াল ও ফিনিশিং')}
             </h3>
@@ -744,7 +744,7 @@ export function NewWorkWizard({
                       className={`p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-all flex items-center gap-2 ${
                         isSelected
                           ? 'border-blue-500 bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-200'
-                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
+                          : 'border-border bg-card text-foreground dark:text-muted-foreground'
                       }`}
                     >
                       <input type="checkbox" checked={isSelected} readOnly className="rounded text-blue-600" />
@@ -757,8 +757,8 @@ export function NewWorkWizard({
 
             {/* Progressive Disclosure: Advanced Floor Options */}
             {showAdvanced && (
-              <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3 pt-3">
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <div className="p-3 bg-muted rounded-xl border border-border space-y-3 pt-3">
+                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Sparkles className="h-4 w-4 text-blue-600" />
                   <span>{tBilingual('Advanced Production Controls', 'অ্যাডভান্সড প্রোডাকশন সেটিংস')}</span>
                 </div>
@@ -776,7 +776,7 @@ export function NewWorkWizard({
                     <select
                       value={priority}
                       onChange={(e) => setPriority(e.target.value as any)}
-                      className="w-full h-8 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs px-2"
+                      className="w-full h-8 rounded border border-input bg-card text-xs px-2"
                     >
                       <option value="normal">{tBilingual('Normal', 'স্বাভাবিক')}</option>
                       <option value="urgent">{tBilingual('Urgent', 'জরুরি')}</option>
@@ -792,7 +792,7 @@ export function NewWorkWizard({
             <Button type="button" variant="outline" size="sm" onClick={() => setStep(2)} className="text-xs">
               <ArrowLeft className="h-3.5 w-3.5 mr-1" /> {tBilingual('Back', 'পেছনে')}
             </Button>
-            <Button type="button" size="sm" onClick={() => setStep(4)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-10 px-6">
+            <Button type="button" size="sm" onClick={() => setStep(4)} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-10 px-6">
               {tBilingual('Next: Delivery & Payment', 'পরবর্তী: ডেলিভারি ও পেমেন্ট')} <ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </div>
@@ -803,13 +803,13 @@ export function NewWorkWizard({
       {step === 4 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
               <Truck className="h-5 w-5 text-blue-600" />
               {tBilingual('4. Delivery, Advance Payment & Confirmation', '৪. ডেলিভারি ও অগ্রিম পেমেন্ট')}
             </h3>
           </div>
 
-          <Card className="border border-slate-200 dark:border-slate-800">
+          <Card className="border border-border dark:border-border">
             <CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -827,7 +827,7 @@ export function NewWorkWizard({
                   <select
                     value={deliveryType}
                     onChange={(e) => setDeliveryType(e.target.value as any)}
-                    className="w-full h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    className="w-full h-10 rounded-md border border-input bg-card px-3 text-sm font-semibold dark:text-foreground"
                   >
                     <option value="pickup">{tBilingual('Store Pickup', 'দোকান থেকে গ্রহণ')}</option>
                     <option value="courier">{tBilingual('Courier / Transport', 'কুরিয়ার বা পরিবহন')}</option>
@@ -842,7 +842,7 @@ export function NewWorkWizard({
                   <span className="text-xs font-bold text-amber-900 dark:text-amber-200">
                     {tBilingual('Advance Payment Received', 'অগ্রিম টাকা জমা')}
                   </span>
-                  <span className="text-xs tabular-nums font-bold text-slate-600">
+                  <span className="text-xs tabular-nums font-bold text-muted-foreground">
                     {tBilingual('Total: ', 'মোট বিল: ')}{formatBDT(totalAmount)}
                   </span>
                 </div>
@@ -865,7 +865,7 @@ export function NewWorkWizard({
                     <select
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value as any)}
-                      className="w-full h-10 rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                      className="w-full h-10 rounded-md border border-input bg-card px-3 text-xs font-semibold dark:text-foreground"
                     >
                       <option value="cash">Cash (ক্যাশ)</option>
                       <option value="bkash">bKash (বিকাশ)</option>
@@ -876,7 +876,7 @@ export function NewWorkWizard({
                 </div>
 
                 <div className="flex items-center justify-between text-xs pt-1 border-t border-amber-200/60 dark:border-amber-900/60">
-                  <span className="text-slate-600">বাকি থাকবে (Due):</span>
+                  <span className="text-muted-foreground">বাকি থাকবে (Due):</span>
                   <span className={`font-bold tabular-nums text-sm ${dueAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                     ৳{dueAmount.toLocaleString()}
                   </span>

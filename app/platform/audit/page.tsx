@@ -378,7 +378,7 @@ export default function PlatformAuditPage() {
       }
     }
     return {
-      bg: 'bg-slate-800 text-slate-300 border-slate-700',
+      bg: 'bg-secondary text-muted-foreground border-border',
       dot: 'bg-slate-400',
     }
   }
@@ -386,7 +386,7 @@ export default function PlatformAuditPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* 1. Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shadow-inner">
@@ -399,7 +399,7 @@ export default function PlatformAuditPage() {
                   Zero-Trust Immutable
                 </span>
               </h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                 Cryptographically traceable compliance records capturing all superadmin operations, tenant lifecycle transitions, plan modifications, and security interventions.
               </p>
             </div>
@@ -412,7 +412,7 @@ export default function PlatformAuditPage() {
             variant="outline"
             onClick={handleExportCSV}
             disabled={logs.length === 0}
-            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white transition-colors"
           >
             <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5 text-emerald-400" />
             Export CSV
@@ -423,7 +423,7 @@ export default function PlatformAuditPage() {
             variant="outline"
             onClick={handleExportJSON}
             disabled={logs.length === 0}
-            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white transition-colors"
           >
             <FileCode className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
             Export JSON
@@ -437,7 +437,7 @@ export default function PlatformAuditPage() {
               loadMetrics()
             }}
             disabled={loading}
-            className="h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
             Refresh
@@ -448,21 +448,21 @@ export default function PlatformAuditPage() {
       {/* 2. Telemetry KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {/* Total Trail */}
-        <Card className="bg-slate-900/90 border-slate-800/80 rounded-xl shadow-md relative overflow-hidden">
+        <Card className="bg-foreground border-border rounded-xl shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 h-14 w-14 bg-indigo-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
-              <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
                 Total Audit Events
               </div>
               <div className="text-xl font-black text-white mt-0.5 leading-tight">
                 {metricsLoading ? (
-                  <span className="text-slate-600 animate-pulse">...</span>
+                  <span className="text-muted-foreground animate-pulse">...</span>
                 ) : (
                   (metrics?.total_logs ?? totalCount).toLocaleString()
                 )}
               </div>
-              <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1.5">
+              <div className="text-2xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 <span className="font-semibold text-emerald-400">+{metrics?.logs_today ?? 0}</span> today
               </div>
@@ -474,21 +474,21 @@ export default function PlatformAuditPage() {
         </Card>
 
         {/* Security & Auth */}
-        <Card className="bg-slate-900/90 border-slate-800/80 rounded-xl shadow-md relative overflow-hidden">
+        <Card className="bg-foreground border-border rounded-xl shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 h-14 w-14 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
-              <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
                 Auth & Security
               </div>
               <div className="text-xl font-black text-white mt-0.5 leading-tight">
                 {metricsLoading ? (
-                  <span className="text-slate-600 animate-pulse">...</span>
+                  <span className="text-muted-foreground animate-pulse">...</span>
                 ) : (
                   (metrics?.security_events_count ?? 0).toLocaleString()
                 )}
               </div>
-              <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1">
+              <div className="text-2xs text-muted-foreground mt-0.5 flex items-center gap-1">
                 <Lock className="h-3 w-3 text-emerald-400" />
                 <span>Logins, MFA, Passwords</span>
               </div>
@@ -500,21 +500,21 @@ export default function PlatformAuditPage() {
         </Card>
 
         {/* Tenant Governance */}
-        <Card className="bg-slate-900/90 border-slate-800/80 rounded-xl shadow-md relative overflow-hidden">
+        <Card className="bg-foreground border-border rounded-xl shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 h-14 w-14 bg-purple-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
-              <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
                 Tenant & Plan Actions
               </div>
               <div className="text-xl font-black text-white mt-0.5 leading-tight">
                 {metricsLoading ? (
-                  <span className="text-slate-600 animate-pulse">...</span>
+                  <span className="text-muted-foreground animate-pulse">...</span>
                 ) : (
                   (metrics?.tenant_events_count ?? 0).toLocaleString()
                 )}
               </div>
-              <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1">
+              <div className="text-2xs text-muted-foreground mt-0.5 flex items-center gap-1">
                 <Building2 className="h-3 w-3 text-purple-400" />
                 <span>Lifecycle & Tier Changes</span>
               </div>
@@ -526,21 +526,21 @@ export default function PlatformAuditPage() {
         </Card>
 
         {/* Active Superadmins */}
-        <Card className="bg-slate-900/90 border-slate-800/80 rounded-xl shadow-md relative overflow-hidden">
+        <Card className="bg-foreground border-border rounded-xl shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 h-14 w-14 bg-cyan-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
-              <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
                 Privileged Actors
               </div>
               <div className="text-xl font-black text-white mt-0.5 leading-tight">
                 {metricsLoading ? (
-                  <span className="text-slate-600 animate-pulse">...</span>
+                  <span className="text-muted-foreground animate-pulse">...</span>
                 ) : (
                   (metrics?.unique_actors_count ?? 1).toLocaleString()
                 )}
               </div>
-              <div className="text-2xs text-slate-400 mt-0.5 flex items-center gap-1">
+              <div className="text-2xs text-muted-foreground mt-0.5 flex items-center gap-1">
                 <User className="h-3 w-3 text-cyan-400" />
                 <span>Root Administrators</span>
               </div>
@@ -553,23 +553,23 @@ export default function PlatformAuditPage() {
       </div>
 
       {/* 3. Filter & Search Panel */}
-      <Card className="bg-slate-900/80 border-slate-800 rounded-2xl shadow-xl">
+      <Card className="bg-foreground border-border rounded-2xl shadow-xl">
         <CardContent className="p-4 space-y-3.5">
           {/* Top Row: Search & Preset Selectors */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
             {/* Search Input */}
             <div className="md:col-span-4 relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search action, actor name/email, entity ID, or keyword..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-8 h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-500 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="pl-9 pr-8 h-9 text-xs bg-foreground border-border text-slate-100 placeholder:text-muted-foreground rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-ring"
               />
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-2.5 top-2.5 text-slate-500 hover:text-slate-300"
+                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-muted-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -584,7 +584,7 @@ export default function PlatformAuditPage() {
                   setActionCategory(e.target.value)
                   setPage(1)
                 }}
-                className="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
+                className="w-full bg-foreground border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
               >
                 <option value="all">All Action Domains</option>
                 <option value="login">🔐 Logins & Access</option>
@@ -607,7 +607,7 @@ export default function PlatformAuditPage() {
                   setEntityTypeFilter(e.target.value)
                   setPage(1)
                 }}
-                className="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
+                className="w-full bg-foreground border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
               >
                 <option value="all">All Entity Types</option>
                 <option value="company">Company / Tenant</option>
@@ -630,7 +630,7 @@ export default function PlatformAuditPage() {
                   setTargetCompanyFilter(e.target.value)
                   setPage(1)
                 }}
-                className="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
+                className="w-full bg-foreground border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
               >
                 <option value="all">All Target Tenants</option>
                 {companies.map((c) => (
@@ -649,7 +649,7 @@ export default function PlatformAuditPage() {
                   setTimeRangePreset(e.target.value as any)
                   setPage(1)
                 }}
-                className="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
+                className="w-full bg-foreground border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
               >
                 <option value="all">All Time Range</option>
                 <option value="today">Today (24 Hours)</option>
@@ -662,8 +662,8 @@ export default function PlatformAuditPage() {
 
           {/* Custom Date Range Row (only shown if custom is selected) */}
           {timeRangePreset === 'custom' && (
-            <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-800/60 animate-in fade-in-0">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+            <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border animate-in fade-in-0">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>From:</span>
                 <Input
                   type="date"
@@ -672,11 +672,11 @@ export default function PlatformAuditPage() {
                     setCustomStartDate(e.target.value)
                     setPage(1)
                   }}
-                  className="h-8 text-xs bg-slate-950 border-slate-800 text-slate-200 rounded-lg w-36"
+                  className="h-8 text-xs bg-foreground border-border text-foreground rounded-lg w-36"
                 />
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>To:</span>
                 <Input
                   type="date"
@@ -685,7 +685,7 @@ export default function PlatformAuditPage() {
                     setCustomEndDate(e.target.value)
                     setPage(1)
                   }}
-                  className="h-8 text-xs bg-slate-950 border-slate-800 text-slate-200 rounded-lg w-36"
+                  className="h-8 text-xs bg-foreground border-border text-foreground rounded-lg w-36"
                 />
               </div>
 
@@ -697,7 +697,7 @@ export default function PlatformAuditPage() {
                     setCustomStartDate('')
                     setCustomEndDate('')
                   }}
-                  className="h-8 text-xs text-slate-400 hover:text-white"
+                  className="h-8 text-xs text-muted-foreground hover:text-white"
                 >
                   Clear Range
                 </Button>
@@ -707,11 +707,11 @@ export default function PlatformAuditPage() {
 
           {/* Active Filter Indicators & Reset Action */}
           {isFiltered && (
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/60 text-xs">
-              <div className="flex flex-wrap items-center gap-1.5 text-slate-400">
-                <span className="font-semibold text-slate-300">Active Filters:</span>
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border text-xs">
+              <div className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
+                <span className="font-semibold text-muted-foreground">Active Filters:</span>
                 {debouncedSearch && (
-                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-full bg-secondary text-foreground border border-border flex items-center gap-1">
                     Search: &quot;{debouncedSearch}&quot;
                     <button onClick={() => setSearch('')} className="hover:text-red-400">
                       <X className="h-3 w-3" />
@@ -786,13 +786,13 @@ export default function PlatformAuditPage() {
       )}
 
       {/* 5. Audit Logs Table & Stream */}
-      <Card className="bg-slate-900 border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-        <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+      <Card className="bg-foreground border-border rounded-2xl shadow-xl overflow-hidden">
+        <CardHeader className="border-b border-border pb-3.5 bg-foreground">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <span>Compliance Log Stream</span>
-                <span className="text-xs tabular-nums px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                <span className="text-xs tabular-nums px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
                   {totalCount.toLocaleString()} {totalCount === 1 ? 'Record' : 'Records'} Total
                 </span>
                 {isFiltered && (
@@ -801,13 +801,13 @@ export default function PlatformAuditPage() {
                   </span>
                 )}
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400 mt-0.5">
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
                 Timestamped PostgreSQL audit records with cryptographic actor isolation, IP tracking, and change deltas.
               </CardDescription>
             </div>
 
             {/* Page Size Selector */}
-            <div className="flex items-center gap-2 text-xs text-slate-400">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>Show</span>
               <select
                 value={pageSize}
@@ -815,7 +815,7 @@ export default function PlatformAuditPage() {
                   setPageSize(Number(e.target.value))
                   setPage(1)
                 }}
-                className="bg-slate-950 border border-slate-800 text-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-hidden"
+                className="bg-foreground border border-border text-foreground rounded-lg px-2 py-1 text-xs focus:outline-hidden"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -828,7 +828,7 @@ export default function PlatformAuditPage() {
 
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-2xs">
+            <thead className="bg-foreground text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
               <tr>
                 <th className="py-3.5 px-4 min-w-[210px]">Timestamp & Origin</th>
                 <th className="py-3.5 px-4 min-w-[230px]">Superadmin Actor</th>
@@ -838,25 +838,25 @@ export default function PlatformAuditPage() {
                 <th className="py-3.5 px-4 text-right min-w-[100px]">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80 text-slate-200">
+            <tbody className="divide-y divide-border/80 text-foreground">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-slate-500">
+                  <td colSpan={6} className="py-16 text-center text-muted-foreground">
                     <RefreshCw className="h-7 w-7 animate-spin mx-auto mb-2 text-emerald-400" />
-                    <span className="text-sm font-medium text-slate-400">
+                    <span className="text-sm font-medium text-muted-foreground">
                       Querying PostgreSQL immutable audit ledger...
                     </span>
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-slate-500">
+                  <td colSpan={6} className="py-16 text-center text-muted-foreground">
                     <div className="max-w-md mx-auto space-y-3">
-                      <div className="h-12 w-12 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center mx-auto text-slate-400">
+                      <div className="h-12 w-12 rounded-2xl bg-slate-800/80 border border-border flex items-center justify-center mx-auto text-muted-foreground">
                         <FileClock className="h-6 w-6" />
                       </div>
                       <div className="text-base font-bold text-white">No Compliance Records Found</div>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-muted-foreground">
                         No platform audit events match the selected search terms, entity types, or date boundaries.
                       </p>
                       {isFiltered && (
@@ -864,7 +864,7 @@ export default function PlatformAuditPage() {
                           size="sm"
                           variant="outline"
                           onClick={handleResetFilters}
-                          className="text-xs border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                          className="text-xs border-border bg-secondary text-foreground hover:bg-slate-700"
                         >
                           Clear All Filters
                         </Button>
@@ -881,17 +881,17 @@ export default function PlatformAuditPage() {
                       <td className="py-3.5 px-4 align-top min-w-[210px]">
                         <div className="font-semibold text-white flex items-center gap-1.5 whitespace-nowrap">
                           <span>{formatDate(log.created_at)}</span>
-                          <span className="text-slate-400 tabular-nums text-2xs">
+                          <span className="text-muted-foreground tabular-nums text-2xs">
                             {formatTime(log.created_at)}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-1.5 flex-nowrap">
-                          <span className="text-2xs tabular-nums text-slate-300 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs">
+                          <span className="text-2xs tabular-nums text-muted-foreground bg-foreground px-2 py-0.5 rounded-md border border-border flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs">
                             <Clock className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
                             <span>{formatRelativeTime(log.created_at)}</span>
                           </span>
                           <span
-                            className="text-2xs tabular-nums text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs"
+                            className="text-2xs tabular-nums text-muted-foreground bg-foreground px-2 py-0.5 rounded-md border border-border flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs"
                             title={`Origin IP: ${log.ip_address || '127.0.0.1'}`}
                           >
                             <Globe className="h-2.5 w-2.5 text-indigo-400 shrink-0" />
@@ -914,7 +914,7 @@ export default function PlatformAuditPage() {
                               {log.actor_name || 'Platform Administrator'}
                             </div>
                             <div
-                              className="text-2xs tabular-nums text-slate-400 truncate max-w-[170px] mt-0.5 leading-tight"
+                              className="text-2xs tabular-nums text-muted-foreground truncate max-w-[170px] mt-0.5 leading-tight"
                               title={log.actor_email}
                             >
                               {log.actor_email}
@@ -954,7 +954,7 @@ export default function PlatformAuditPage() {
                           {log.target_company_id ? (
                             <Link
                               href={`/platform/companies/${log.target_company_id}`}
-                              className="text-slate-200 hover:text-indigo-400 transition-colors flex items-center gap-1"
+                              className="text-foreground hover:text-indigo-400 transition-colors flex items-center gap-1"
                             >
                               <Building2 className="h-3 w-3 text-indigo-400 shrink-0" />
                               <span className="truncate max-w-[150px]">
@@ -962,13 +962,13 @@ export default function PlatformAuditPage() {
                               </span>
                             </Link>
                           ) : (
-                            <span className="flex items-center gap-1 text-slate-400">
-                              <Terminal className="h-3 w-3 text-slate-500 shrink-0" />
+                            <span className="flex items-center gap-1 text-muted-foreground">
+                              <Terminal className="h-3 w-3 text-muted-foreground shrink-0" />
                               Platform Core System
                             </span>
                           )}
                         </div>
-                        <div className="text-2xs text-slate-400 tabular-nums mt-0.5 truncate max-w-[170px]">
+                        <div className="text-2xs text-muted-foreground tabular-nums mt-0.5 truncate max-w-[170px]">
                           {log.entity_type} {log.entity_id ? `• ${log.entity_id.slice(0, 8)}...` : ''}
                         </div>
                       </td>
@@ -977,20 +977,20 @@ export default function PlatformAuditPage() {
                       <td className="py-3.5 px-4 align-top min-w-[200px] max-w-[240px]">
                         {log.reason ? (
                           <div
-                            className="text-slate-300 text-xs italic line-clamp-2 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-800"
+                            className="text-muted-foreground text-xs italic line-clamp-2 bg-foreground px-2 py-1 rounded-md border border-border"
                             title={log.reason}
                           >
                             &quot;{log.reason}&quot;
                           </div>
                         ) : log.details?.reason ? (
                           <div
-                            className="text-slate-300 text-xs italic line-clamp-2 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-800"
+                            className="text-muted-foreground text-xs italic line-clamp-2 bg-foreground px-2 py-1 rounded-md border border-border"
                             title={log.details.reason}
                           >
                             &quot;{log.details.reason}&quot;
                           </div>
                         ) : (
-                          <span className="text-slate-600 tabular-nums text-2xs">System Stamped</span>
+                          <span className="text-muted-foreground tabular-nums text-2xs">System Stamped</span>
                         )}
                       </td>
 
@@ -1016,7 +1016,7 @@ export default function PlatformAuditPage() {
 
         {/* Table Footer with Pagination Controls */}
         {!loading && logs.length > 0 && (
-          <div className="border-t border-slate-800 px-4 py-3 bg-slate-950/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+          <div className="border-t border-border px-4 py-3 bg-foreground flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
             <div>
               Showing <span className="font-bold text-white">{(page - 1) * pageSize + 1}</span> to{' '}
               <span className="font-bold text-white">{Math.min(page * pageSize, totalCount)}</span> of{' '}
@@ -1029,7 +1029,7 @@ export default function PlatformAuditPage() {
                 variant="outline"
                 onClick={() => setPage(1)}
                 disabled={page === 1}
-                className="h-8 w-8 p-0 border-slate-800 bg-slate-900 text-slate-300 disabled:opacity-40"
+                className="h-8 w-8 p-0 border-border bg-foreground text-muted-foreground disabled:opacity-40"
                 title="First Page"
               >
                 <ChevronsLeft className="h-3.5 w-3.5" />
@@ -1039,13 +1039,13 @@ export default function PlatformAuditPage() {
                 variant="outline"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="h-8 w-8 p-0 border-slate-800 bg-slate-900 text-slate-300 disabled:opacity-40"
+                className="h-8 w-8 p-0 border-border bg-foreground text-muted-foreground disabled:opacity-40"
                 title="Previous Page"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
 
-              <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg tabular-nums text-xs text-slate-200">
+              <span className="px-3 py-1 bg-foreground border border-border rounded-lg tabular-nums text-xs text-foreground">
                 Page {page} of {totalPages}
               </span>
 
@@ -1054,7 +1054,7 @@ export default function PlatformAuditPage() {
                 variant="outline"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="h-8 w-8 p-0 border-slate-800 bg-slate-900 text-slate-300 disabled:opacity-40"
+                className="h-8 w-8 p-0 border-border bg-foreground text-muted-foreground disabled:opacity-40"
                 title="Next Page"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -1064,7 +1064,7 @@ export default function PlatformAuditPage() {
                 variant="outline"
                 onClick={() => setPage(totalPages)}
                 disabled={page === totalPages}
-                className="h-8 w-8 p-0 border-slate-800 bg-slate-900 text-slate-300 disabled:opacity-40"
+                className="h-8 w-8 p-0 border-border bg-foreground text-muted-foreground disabled:opacity-40"
                 title="Last Page"
               >
                 <ChevronsRight className="h-3.5 w-3.5" />
@@ -1077,17 +1077,17 @@ export default function PlatformAuditPage() {
       {/* 7. DETAIL MODAL: AUDIT EVENT INSPECTOR */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in-0">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] flex flex-col">
+          <div className="bg-foreground border border-border rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] flex flex-col">
             {/* Close Button */}
             <button
               onClick={() => setSelectedLog(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
             >
               <X className="h-4 w-4" />
             </button>
 
             {/* Header */}
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-3 border-b border-border pb-3">
               <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
                 <FileClock className="h-5 w-5" />
               </div>
@@ -1103,12 +1103,12 @@ export default function PlatformAuditPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs tabular-nums text-slate-400 truncate max-w-[280px]">
+                  <span className="text-xs tabular-nums text-muted-foreground truncate max-w-[280px]">
                     UUID: {selectedLog.id}
                   </span>
                   <button
                     onClick={() => handleCopyId(selectedLog.id)}
-                    className="text-slate-500 hover:text-slate-300 flex items-center gap-0.5 text-2xs"
+                    className="text-muted-foreground hover:text-muted-foreground flex items-center gap-0.5 text-2xs"
                     title="Copy Event ID"
                   >
                     {copiedId ? (
@@ -1124,13 +1124,13 @@ export default function PlatformAuditPage() {
             {/* Scrollable Modal Body */}
             <div className="space-y-4 overflow-y-auto flex-1 pr-1">
               {/* Event Metadata Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs bg-foreground p-3.5 rounded-xl border border-border">
                 <div>
-                  <span className="text-slate-500 font-medium">Superadmin Actor:</span>
+                  <span className="text-muted-foreground font-medium">Superadmin Actor:</span>
                   <div className="font-bold text-white mt-0.5 truncate" title={selectedLog.actor_name || selectedLog.actor_email}>
                     {selectedLog.actor_name || 'Platform Administrator'}
                   </div>
-                  <div className="text-2xs tabular-nums text-slate-400 truncate mt-0.5">
+                  <div className="text-2xs tabular-nums text-muted-foreground truncate mt-0.5">
                     {selectedLog.actor_email}
                   </div>
                   <div className="mt-1">
@@ -1147,37 +1147,37 @@ export default function PlatformAuditPage() {
                 </div>
 
                 <div>
-                  <span className="text-slate-500 font-medium">Target Scope:</span>
+                  <span className="text-muted-foreground font-medium">Target Scope:</span>
                   <div className="font-bold text-white mt-0.5">
                     {selectedLog.target_company_name || 'Platform Core System'}
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 font-medium">Entity Type / ID:</span>
+                  <span className="text-muted-foreground font-medium">Entity Type / ID:</span>
                   <div className="tabular-nums text-cyan-400 mt-0.5 truncate">
                     {selectedLog.entity_type} {selectedLog.entity_id ? `(${selectedLog.entity_id})` : ''}
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 font-medium">Network IP:</span>
-                  <div className="tabular-nums text-slate-300 mt-0.5 flex items-center gap-1">
-                    <Globe className="h-3 w-3 text-slate-500" />
+                  <span className="text-muted-foreground font-medium">Network IP:</span>
+                  <div className="tabular-nums text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <Globe className="h-3 w-3 text-muted-foreground" />
                     {selectedLog.ip_address || '127.0.0.1'}
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 font-medium">Timestamp (BDT):</span>
-                  <div className="tabular-nums text-slate-300 mt-0.5 text-2xs">
+                  <span className="text-muted-foreground font-medium">Timestamp (BDT):</span>
+                  <div className="tabular-nums text-muted-foreground mt-0.5 text-2xs">
                     {formatDateTime(selectedLog.created_at)}
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 font-medium">User Agent / Client:</span>
-                  <div className="tabular-nums text-slate-400 mt-0.5 text-2xs truncate" title={selectedLog.user_agent || 'System'}>
+                  <span className="text-muted-foreground font-medium">User Agent / Client:</span>
+                  <div className="tabular-nums text-muted-foreground mt-0.5 text-2xs truncate" title={selectedLog.user_agent || 'System'}>
                     {selectedLog.user_agent || 'System Daemon'}
                   </div>
                 </div>
@@ -1199,7 +1199,7 @@ export default function PlatformAuditPage() {
               {/* State Comparison Delta (if previous_state or new_state exist) */}
               {(selectedLog.previous_state || selectedLog.new_state) && (
                 <div className="space-y-2">
-                  <div className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     <Flame className="h-3.5 w-3.5 text-orange-400" />
                     <span>State Mutation Delta (Before vs After)</span>
                   </div>
@@ -1225,7 +1225,7 @@ export default function PlatformAuditPage() {
 
               {/* Full JSON Payload */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-slate-300">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="font-semibold">Complete Event JSON Payload:</span>
                   <button
                     onClick={() => handleCopyJson(selectedLog)}
@@ -1244,14 +1244,14 @@ export default function PlatformAuditPage() {
                     )}
                   </button>
                 </div>
-                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 tabular-nums text-xs text-cyan-300 max-h-52 overflow-y-auto shadow-inner">
+                <div className="p-3.5 rounded-xl bg-foreground border border-border tabular-nums text-xs text-cyan-300 max-h-52 overflow-y-auto shadow-inner">
                   <pre>{JSON.stringify(selectedLog.details, null, 2)}</pre>
                 </div>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-between pt-3 border-t border-border">
               {selectedLog.target_company_id ? (
                 <Link
                   href={`/platform/companies/${selectedLog.target_company_id}`}
@@ -1261,13 +1261,13 @@ export default function PlatformAuditPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               ) : (
-                <span className="text-2xs text-slate-500 tabular-nums">Immutable cryptographic seal</span>
+                <span className="text-2xs text-muted-foreground tabular-nums">Immutable cryptographic seal</span>
               )}
 
               <Button
                 size="sm"
                 onClick={() => setSelectedLog(null)}
-                className="bg-slate-800 hover:bg-slate-700 text-xs text-white"
+                className="bg-secondary hover:bg-slate-700 text-xs text-white"
               >
                 Close Inspector
               </Button>

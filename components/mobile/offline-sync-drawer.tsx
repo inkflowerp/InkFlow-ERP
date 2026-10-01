@@ -57,33 +57,33 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-slate-900 border-l border-slate-800 h-full flex flex-col shadow-2xl cursor-default"
+        className="w-full max-w-md bg-foreground border-l border-border h-full flex flex-col shadow-2xl cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="p-4 border-b border-border flex items-center justify-between bg-foreground">
           <div className="flex items-center gap-2.5">
             <div className={`p-2 rounded-xl border ${isOnline ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'}`}>
               {isOnline ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
             </div>
             <div>
               <h2 className="text-sm font-bold text-white">Offline Hub & Sync Queue</h2>
-              <p className="text-2xs text-slate-400">
+              <p className="text-2xs text-muted-foreground">
                 {isOnline ? 'Connected to Dhaka Cloud' : 'Working Offline (Drafts Protected)'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-secondary"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Sync Controls */}
-        <div className="p-3 bg-slate-950/40 border-b border-slate-800 flex items-center justify-between gap-2">
-          <span className="text-xs text-slate-300 font-medium">
+        <div className="p-3 bg-foreground border-b border-border flex items-center justify-between gap-2">
+          <span className="text-xs text-muted-foreground font-medium">
             {pendingCount} item{pendingCount === 1 ? '' : 's'} waiting to sync
           </span>
           <div className="flex items-center gap-1.5">
@@ -92,7 +92,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                 size="sm"
                 variant="ghost"
                 onClick={clearSynced}
-                className="h-7 text-2xs text-slate-400 hover:text-white"
+                className="h-7 text-2xs text-muted-foreground hover:text-white"
               >
                 Clear Synced
               </Button>
@@ -113,13 +113,13 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
         <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs font-sans">
           {/* Section 1: Offline Mutations Queue */}
           <div>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5 flex items-center justify-between">
               <span>Mutation Queue ({queue.length})</span>
-              <span className="text-2xs text-slate-500 tabular-nums">FIFO Execution</span>
+              <span className="text-2xs text-muted-foreground tabular-nums">FIFO Execution</span>
             </h3>
 
             {queue.length === 0 ? (
-              <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80 text-center text-slate-500">
+              <div className="p-4 rounded-xl bg-foreground border border-border text-center text-muted-foreground">
                 No pending offline mutations.
               </div>
             ) : (
@@ -127,12 +127,12 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                 {queue.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2"
+                    className="p-3 rounded-xl bg-foreground border border-border space-y-2"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="font-bold text-white text-xs">{item.title}</div>
-                        <div className="text-2xs tabular-nums text-slate-400 mt-0.5">
+                        <div className="text-2xs tabular-nums text-muted-foreground mt-0.5">
                           {item.actionType} • {formatTime(item.timestamp)}
                         </div>
                       </div>
@@ -175,7 +175,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                             size="sm"
                             variant="outline"
                             onClick={() => resolveConflict(item.id, 'discard')}
-                            className="h-6 text-2xs border-slate-700 text-slate-300 rounded px-2"
+                            className="h-6 text-2xs border-border text-muted-foreground rounded px-2"
                           >
                             Discard Local
                           </Button>
@@ -184,7 +184,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                     )}
 
                     {item.status === 'failed' && (
-                      <div className="flex items-center justify-between text-2xs pt-1 border-t border-slate-800/60">
+                      <div className="flex items-center justify-between text-2xs pt-1 border-t border-border">
                         <span className="text-rose-400">{item.error || 'Sync failed'}</span>
                         <button
                           onClick={() => retryItem(item.id)}
@@ -202,13 +202,13 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
 
           {/* Section 2: Saved Offline Drafts */}
           <div>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5 flex items-center justify-between">
               <span>Saved Local Drafts ({drafts.length})</span>
-              <span className="text-2xs text-slate-500">Auto-saved</span>
+              <span className="text-2xs text-muted-foreground">Auto-saved</span>
             </h3>
 
             {drafts.length === 0 ? (
-              <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80 text-center text-slate-500">
+              <div className="p-4 rounded-xl bg-foreground border border-border text-center text-muted-foreground">
                 No drafts saved locally.
               </div>
             ) : (
@@ -216,14 +216,14 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                 {drafts.map((draft) => (
                   <div
                     key={draft.id}
-                    className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3"
+                    className="p-3 rounded-xl bg-foreground border border-border flex items-center justify-between gap-3"
                   >
                     <div className="space-y-0.5">
                       <div className="font-bold text-white text-xs flex items-center gap-1.5">
                         <FileText className="h-3.5 w-3.5 text-indigo-400" />
                         <span>{draft.title}</span>
                       </div>
-                      <div className="text-2xs text-slate-500 tabular-nums">
+                      <div className="text-2xs text-muted-foreground tabular-nums">
                         Type: {draft.formType} • Saved {formatTime(draft.updatedAt)}
                       </div>
                     </div>
@@ -231,7 +231,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => deleteDraft(draft.id)}
-                        className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg"
+                        className="p-1.5 text-muted-foreground hover:text-rose-400 rounded-lg"
                         title="Discard Draft"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -245,7 +245,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950 text-2xs text-slate-500 text-center">
+        <div className="p-3 border-t border-border bg-foreground text-2xs text-muted-foreground text-center">
           PrintERP Offline Storage Engine • Safe local storage on device
         </div>
       </div>

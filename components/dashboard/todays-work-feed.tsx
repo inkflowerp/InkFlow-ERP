@@ -124,7 +124,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
       {/* Header & Filter Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
             <Clock className="h-5 w-5 text-blue-600" />
             <span>{tBilingual("Today's Schedule & Tasks", 'আজকের কাজের তালিকা')}</span>
           </h2>
@@ -141,8 +141,8 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
               onClick={() => setFilter(f)}
               className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
                 filter === f
-                  ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400'
+                  ? 'bg-foreground text-white shadow-xs'
+                  : 'bg-muted text-muted-foreground hover:bg-muted dark:text-muted-foreground'
               }`}
             >
               {f === 'all' && tBilingual('All', 'সব')}
@@ -156,14 +156,14 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
 
       {/* Task List */}
       {filteredTasks.length === 0 ? (
-        <Card className="border border-dashed border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+        <Card className="border border-dashed border-input bg-muted dark:bg-card">
           <CardContent className="p-8 text-center space-y-3">
             <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
             <div>
-              <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              <div className="text-sm font-bold text-foreground dark:text-foreground">
                 {tBilingual('No active work in this filter', 'এই ফিল্টারে কোনো কাজ নেই')}
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {tBilingual('All caught up or ready to take a new job order.', 'সব কাজ সম্পন্ন হয়েছে বা নতুন কাজ শুরু করতে পারেন।')}
               </p>
             </div>
@@ -172,7 +172,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                 type="button"
                 size="sm"
                 onClick={onOpenNewWork}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold"
               >
                 + {tBilingual('Create New Work', 'নতুন কাজ যোগ করুন')}
               </Button>
@@ -195,7 +195,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                     ? 'border-2 border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 shadow-sm'
                     : isPaused
                     ? 'border-2 border-amber-500 bg-amber-50/20 dark:bg-amber-950/20'
-                    : 'border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900'
+                    : 'border border-border bg-card dark:bg-card'
                 }`}
               >
                 <CardContent className="p-4 space-y-3">
@@ -221,23 +221,23 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                             {tBilingual('URGENT', 'জরুরি')}
                           </Badge>
                         )}
-                        <span className="text-xs font-semibold text-slate-500">{(task as any).stage_name || task.department || task.task_type}</span>
+                        <span className="text-xs font-semibold text-muted-foreground">{(task as any).stage_name || task.department || task.task_type}</span>
                       </div>
 
-                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 pt-0.5 truncate">
+                      <h3 className="text-base font-bold text-foreground pt-0.5 truncate">
                         {task.task_name}
                       </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                      <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                         {task.customer_name} • {task.product_name}
                       </p>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <div className="text-base font-bold tabular-nums text-slate-900 dark:text-slate-100">
-                        {task.quantity} <span className="text-xs font-normal text-slate-500">{task.unit}</span>
+                      <div className="text-base font-bold tabular-nums text-foreground dark:text-foreground">
+                        {task.quantity} <span className="text-xs font-normal text-muted-foreground">{task.unit}</span>
                       </div>
                       {task.assigned_machine_name && (
-                        <div className="text-2xs text-slate-500 flex items-center justify-end gap-1">
+                        <div className="text-2xs text-muted-foreground flex items-center justify-end gap-1">
                           <Printer className="h-3 w-3" />
                           <span className="truncate max-w-[120px]">{task.assigned_machine_name}</span>
                         </div>
@@ -253,7 +253,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                         size="sm"
                         disabled={actionLoadingId === task.id}
                         onClick={() => handleStart(task)}
-                        className="h-10 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-5 shadow-xs"
+                        className="h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground px-5 shadow-xs"
                       >
                         <Play className="h-4 w-4 mr-1.5 fill-current" />
                         {tBilingual('Start Work', 'শুরু করুন')}
@@ -316,7 +316,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                             size="sm"
                             disabled={actionLoadingId === task.id}
                             onClick={() => handleStart(task)}
-                            className="h-9 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-4"
+                            className="h-9 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground px-4"
                           >
                             <Play className="h-3.5 w-3.5 mr-1 fill-current" />
                             {tBilingual('Resume', 'পুনরায় শুরু')}
@@ -391,7 +391,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
               <Button type="button" variant="outline" size="sm" onClick={() => setCompletingTask(null)} className="text-xs">
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>

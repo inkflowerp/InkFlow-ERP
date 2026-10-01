@@ -59,11 +59,11 @@ export function NextActionModal({ isOpen, onClose, config }: NextActionModalProp
 
         {/* Text */}
         <div className="space-y-1">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+          <h3 className="text-lg font-bold text-foreground dark:text-foreground">
             {tBilingual(config.titleEn, config.titleBn)}
           </h3>
           {(config.descriptionEn || config.descriptionBn) && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
               {tBilingual(config.descriptionEn || '', config.descriptionBn || '')}
             </p>
           )}
@@ -95,7 +95,7 @@ export function NextActionModal({ isOpen, onClose, config }: NextActionModalProp
 
         {/* Secondary Action Buttons */}
         {config.secondaryActions && config.secondaryActions.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-border">
             {config.secondaryActions.map((sec, idx) => (
               <Button
                 key={idx}
@@ -108,7 +108,7 @@ export function NextActionModal({ isOpen, onClose, config }: NextActionModalProp
                 }}
                 className="h-10 text-xs font-semibold justify-start text-left px-3 truncate"
               >
-                {sec.icon && React.createElement(sec.icon, { className: 'h-4 w-4 mr-1.5 shrink-0 text-slate-500' })}
+                {sec.icon && React.createElement(sec.icon, { className: 'h-4 w-4 mr-1.5 shrink-0 text-muted-foreground' })}
                 <span className="truncate">{tBilingual(sec.labelEn, sec.labelBn)}</span>
               </Button>
             ))}

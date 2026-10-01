@@ -27,7 +27,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         >
           {Array.isArray(options)
             ? options.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-background text-foreground dark:bg-card dark:text-card-foreground">
+                <option key={opt.value} value={opt.value} className="bg-background text-foreground dark:text-card-foreground">
                   {opt.label}
                 </option>
               ))

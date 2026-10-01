@@ -588,7 +588,7 @@ export default function DeliveryLogisticsPage() {
         )
       default:
         return (
-          <span className="inline-flex items-center gap-1 text-2xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+          <span className="inline-flex items-center gap-1 text-2xs font-medium text-foreground bg-muted px-2 py-0.5 rounded border border-border dark:border-border">
             {status.replace(/_/g, ' ')}
           </span>
         )
@@ -598,16 +598,16 @@ export default function DeliveryLogisticsPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-7xl pb-12 p-4 sm:p-6 animate-pulse">
-        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="h-10 bg-muted rounded-xl w-1/3" />
         <div className="grid grid-cols-1 sm:grid-cols-6 gap-2.5 sm:gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-[72px] bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-[72px] bg-muted rounded-xl" />
           ))}
         </div>
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+        <div className="h-12 bg-muted rounded-xl" />
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-28 bg-muted rounded-xl" />
           ))}
         </div>
       </div>
@@ -634,21 +634,21 @@ export default function DeliveryLogisticsPage() {
           actions={
             <div className="flex items-center gap-2 flex-wrap">
               <Link href={getTenantNavHref('/production', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
+                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-border dark:border-border">
                   <LayoutGrid className="h-3.5 w-3.5 text-indigo-600" />
                   <span className="hidden sm:inline">Production</span>
                 </Button>
               </Link>
 
               <Link href={getTenantNavHref('/finishing', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
+                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-border dark:border-border">
                   <Scissors className="h-3.5 w-3.5 text-indigo-600" />
                   <span className="hidden sm:inline">Finishing</span>
                 </Button>
               </Link>
 
               <Link href={getTenantNavHref('/operator', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
+                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-border dark:border-border">
                   <Printer className="h-3.5 w-3.5 text-blue-600" />
                   <span className="hidden sm:inline">Terminal</span>
                 </Button>
@@ -659,7 +659,7 @@ export default function DeliveryLogisticsPage() {
                 variant="outline"
                 onClick={() => loadLogisticsData()}
                 disabled={isLoading}
-                className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer text-slate-700 dark:text-slate-300"
+                className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer text-foreground dark:text-muted-foreground"
                 title={tBilingual('Refresh', 'রিফ্রেশ')}
                 aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
               >
@@ -720,25 +720,25 @@ export default function DeliveryLogisticsPage() {
             VIEW 1: CHALLAN DELIVERIES TABLE
            ========================================================================= */}
         {viewMode === 'challans' && (
-          <Card className="border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-            <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <Card className="border-border shadow-xs overflow-hidden">
+            <CardHeader className="py-3 px-4 border-b border-border bg-muted dark:bg-card">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                   <span>{tBilingual('Delivery Challans & Dispatches', 'ডেলিভারি চালান ও ট্রানজিট তালিকা')}</span>
                   <Badge variant="secondary" className="text-2xs tabular-nums font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                     {filteredChallans.length}
                   </Badge>
                 </CardTitle>
-                <span className="text-xs text-slate-500 hidden sm:inline bangla-text">
+                <span className="text-xs text-muted-foreground hidden sm:inline bangla-text">
                   {tBilingual('Transit slips with COD due balance & receiver verification', 'বকেয়া বিল আদায় সতর্কবার্তা ও গ্রহীতার স্বাক্ষর ট্র্যাকিং')}
                 </span>
               </div>
             </CardHeader>
             <CardContent className="p-0">
               {filteredChallans.length === 0 ? (
-                <div className="p-12 text-center text-xs text-slate-400">
-                  <Truck className="h-8 w-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
-                  <p className="font-semibold text-slate-600 dark:text-slate-400">
+                <div className="p-12 text-center text-xs text-muted-foreground">
+                  <Truck className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="font-semibold text-muted-foreground dark:text-muted-foreground">
                     {search ? tBilingual('No challans matching search criteria.', 'অনুসন্ধানের সাথে মিল রেখে কোন চালান পাওয়া যায়নি।') : tBilingual('No delivery challans found.', 'কোন ডেলিভারি চালান পাওয়া যায়নি।')}
                   </p>
                 </div>
@@ -760,25 +760,25 @@ export default function DeliveryLogisticsPage() {
             VIEW 2: ON-SITE INSTALLATIONS TABLE
            ========================================================================= */}
         {viewMode === 'installations' && (
-          <Card className="border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-            <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <Card className="border-border shadow-xs overflow-hidden">
+            <CardHeader className="py-3 px-4 border-b border-border bg-muted dark:bg-card">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <CardTitle className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
                   <span>{tBilingual('On-Site Signage Installations', 'অন-সাইট সাইনেজ ইনস্টলেশন')}</span>
                   <Badge variant="secondary" className="text-2xs tabular-nums font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
                     {filteredInstallations.length}
                   </Badge>
                 </CardTitle>
-                <span className="text-xs text-slate-500 hidden sm:inline bangla-text">
+                <span className="text-xs text-muted-foreground hidden sm:inline bangla-text">
                   {tBilingual('Field rigging, crane hookups, and customer sign-offs', 'মাঠ পর্যায়ের রিগিং, ক্রেন সংযোগ ও সাইট সাইন-অফ')}
                 </span>
               </div>
             </CardHeader>
             <CardContent className="p-0">
               {filteredInstallations.length === 0 ? (
-                <div className="p-12 text-center text-xs text-slate-400">
-                  <Wrench className="h-8 w-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
-                  <p className="font-semibold text-slate-600 dark:text-slate-400">
+                <div className="p-12 text-center text-xs text-muted-foreground">
+                  <Wrench className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="font-semibold text-muted-foreground dark:text-muted-foreground">
                     {search ? tBilingual('No installations matching search criteria.', 'কোন ইনস্টলেশন কাজ পাওয়া যায়নি।') : tBilingual('No on-site installations scheduled.', 'কোন অন-সাইট সাইনেজ কাজ শিডিউল করা নেই।')}
                   </p>
                 </div>
@@ -796,14 +796,14 @@ export default function DeliveryLogisticsPage() {
             VIEW 3: DELIVERY & INSTALLATION CALENDAR
            ========================================================================= */}
         {viewMode === 'calendar' && (
-          <Card className="p-6 space-y-4 border-slate-200 dark:border-slate-800 shadow-xs">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <Card className="p-6 space-y-4 border-border shadow-xs">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
-                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-bold text-base text-foreground dark:text-white flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-blue-600" />
                   {tBilingual('Logistics & Field Dispatch Agenda', 'লজিস্টিক ও ফিল্ড ডিসপ্যাচ ক্যালেন্ডার')}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5 bangla-text">
+                <p className="text-xs text-muted-foreground mt-0.5 bangla-text">
                   {tBilingual('Consolidated schedule view of outgoing delivery transit vans and on-site fitting jobs.', 'চলতি সপ্তাহে আউটগোয়িং ডেলিভারি ভ্যান ও সাইট ফিটিং কাজের ক্যালেন্ডার।')}
                 </p>
               </div>
@@ -829,7 +829,7 @@ export default function DeliveryLogisticsPage() {
 
                 if (dates.length === 0) {
                   return (
-                    <div className="p-10 text-center text-slate-500 text-xs">
+                    <div className="p-10 text-center text-muted-foreground text-xs">
                       {tBilingual('No scheduled deliveries or installations found in this period.', 'এই সময়ের মধ্যে কোন শিডিউল করা ডেলিভারি বা ফিটিং নেই।')}
                     </div>
                   )
@@ -840,12 +840,12 @@ export default function DeliveryLogisticsPage() {
                   const dayInstallations = installations.filter((ins: InstallationRecord) => ins.installation_date === dateStr)
 
                   return (
-                    <div key={dateStr} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2.5">
+                    <div key={dateStr} className="p-4 rounded-xl border border-border bg-muted space-y-2.5">
                       <div className="flex items-center justify-between tabular-nums text-xs">
-                        <span className="font-black text-sm text-slate-900 dark:text-white">
+                        <span className="font-black text-sm text-foreground dark:text-white">
                           📅 {dateStr}
                         </span>
-                        <span className="text-slate-400">
+                        <span className="text-muted-foreground">
                           {dayChallans.length} {tBilingual('Deliveries', 'টি ডেলিভারি')} • {dayInstallations.length} {tBilingual('Installations', 'টি ইনস্টলেশন')}
                         </span>
                       </div>
@@ -853,30 +853,30 @@ export default function DeliveryLogisticsPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {/* Deliveries */}
                         {dayChallans.map((ch: DeliveryChallanRecord) => (
-                          <div key={ch.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-blue-200 dark:border-blue-900 space-y-1 text-xs">
+                          <div key={ch.id} className="p-3 rounded-lg bg-card border border-blue-200 dark:border-blue-900 space-y-1 text-xs">
                             <div className="flex justify-between font-bold">
                               <span className="text-blue-600 tabular-nums">{ch.challan_number}</span>
                               <span className="capitalize text-2xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                                 {ch.status.replace('_', ' ')}
                               </span>
                             </div>
-                            <div className="font-semibold text-slate-800 dark:text-slate-200">{ch.customer_name}</div>
-                            <div className="text-2xs text-slate-500 truncate">📍 {ch.delivery_address}</div>
+                            <div className="font-semibold text-foreground dark:text-foreground">{ch.customer_name}</div>
+                            <div className="text-2xs text-muted-foreground truncate">📍 {ch.delivery_address}</div>
                           </div>
                         ))}
 
                         {/* Installations */}
                         {dayInstallations.map((ins: InstallationRecord) => (
-                          <div key={ins.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-900 space-y-1 text-xs">
+                          <div key={ins.id} className="p-3 rounded-lg bg-card border border-purple-200 dark:border-purple-900 space-y-1 text-xs">
                             <div className="flex justify-between font-bold">
                               <span className="text-purple-600 tabular-nums">{ins.installation_number}</span>
                               <span className="capitalize text-2xs px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
                                 {ins.status.replace('_', ' ')}
                               </span>
                             </div>
-                            <div className="font-semibold text-slate-800 dark:text-slate-200">{ins.customer_name}</div>
-                            <div className="text-2xs text-slate-500 truncate">📍 {ins.site_location}</div>
-                            <div className="text-2xs text-slate-400 tabular-nums">Lead: {ins.installer_lead_name}</div>
+                            <div className="font-semibold text-foreground dark:text-foreground">{ins.customer_name}</div>
+                            <div className="text-2xs text-muted-foreground truncate">📍 {ins.site_location}</div>
+                            <div className="text-2xs text-muted-foreground tabular-nums">Lead: {ins.installer_lead_name}</div>
                           </div>
                         ))}
                       </div>
@@ -900,14 +900,14 @@ export default function DeliveryLogisticsPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-black text-slate-900 dark:text-white">
+                <span className="text-base font-black text-foreground dark:text-white">
                   {tBilingual('Delivery & Consignment Handover', 'ডেলিভারি হ্যান্ডওভার ও প্রাপ্তিস্বীকার')}
                 </span>
                 <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                   {selectedChallanForDelivery?.status === 'partially_delivered' ? 'Partial Fulfillment' : 'Consignment Proof'}
                 </Badge>
               </div>
-              <p className="text-2xs text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
                 {tBilingual('Review line-item fulfillment statuses, select items to dispatch, and record sign-off.', 'আইটেমভিত্তিক ডেলিভারি স্ট্যাটাস পর্যালোচনা করুন এবং প্রাপ্তিস্বীকার সম্পন্ন করুন।')}
               </p>
             </div>
@@ -948,15 +948,15 @@ export default function DeliveryLogisticsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-2xs pt-1">
                   <div>
-                    <span className="text-slate-500 block font-medium">Customer:</span>
-                    <strong className="text-slate-900 dark:text-slate-100 text-xs">{selectedChallanForDelivery.customer_name}</strong>
-                    <div className="text-slate-600 dark:text-slate-400 tabular-nums mt-0.5">📞 {selectedChallanForDelivery.customer_phone}</div>
+                    <span className="text-muted-foreground block font-medium">Customer:</span>
+                    <strong className="text-foreground text-xs">{selectedChallanForDelivery.customer_name}</strong>
+                    <div className="text-muted-foreground tabular-nums mt-0.5">📞 {selectedChallanForDelivery.customer_phone}</div>
                   </div>
                   <div>
-                    <span className="text-slate-500 block font-medium">Destination & Dispatch:</span>
-                    <div className="text-slate-700 dark:text-slate-300 line-clamp-2">📍 {selectedChallanForDelivery.delivery_address}</div>
-                    <div className="text-slate-500 text-2xs mt-0.5">
-                      📅 Scheduled: <span className="tabular-nums font-semibold text-slate-700 dark:text-slate-300">{selectedChallanForDelivery.scheduled_date}</span>
+                    <span className="text-muted-foreground block font-medium">Destination & Dispatch:</span>
+                    <div className="text-foreground line-clamp-2">📍 {selectedChallanForDelivery.delivery_address}</div>
+                    <div className="text-muted-foreground text-2xs mt-0.5">
+                      📅 Scheduled: <span className="tabular-nums font-semibold text-foreground dark:text-muted-foreground">{selectedChallanForDelivery.scheduled_date}</span>
                     </div>
                   </div>
                 </div>
@@ -988,7 +988,7 @@ export default function DeliveryLogisticsPage() {
                   </div>
                 </div>
                 <div className="text-right shrink-0 tabular-nums">
-                  <div className="text-2xs text-slate-500">মোট: {formatBDT(selectedChallanForDelivery.grand_total || 0)}</div>
+                  <div className="text-2xs text-muted-foreground">মোট: {formatBDT(selectedChallanForDelivery.grand_total || 0)}</div>
                   {(selectedChallanForDelivery.due_amount || 0) > 0 ? (
                     <div className="font-black text-rose-600 dark:text-rose-400 text-sm">
                       বকেয়া: {formatBDT(selectedChallanForDelivery.due_amount || 0)}
@@ -1002,20 +1002,20 @@ export default function DeliveryLogisticsPage() {
               </div>
 
               {/* 2. Itemized Products & Services with Status Badges */}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Package className="h-3.5 w-3.5 text-blue-600" />
                     Invoice Products & Operational Status ({items.length})
                   </Label>
-                  <span className="text-2xs text-slate-500">
+                  <span className="text-2xs text-muted-foreground">
                     {nonDeliveredItems.length === 0
                       ? 'All items delivered'
                       : `${selectedItemIds.length} of ${nonDeliveredItems.length} selected for delivery`}
                   </span>
                 </div>
 
-                <div className="divide-y divide-slate-100 dark:divide-slate-800 border rounded-lg border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div className="divide-y divide-border border rounded-lg border-border overflow-hidden">
                   {items.map((it, idx) => {
                     const liveStatus = getLiveItemStatus(it, selectedChallanForDelivery)
                     const isDelivered = it.is_delivered
@@ -1034,10 +1034,10 @@ export default function DeliveryLogisticsPage() {
                         }}
                         className={`p-3 flex items-start justify-between gap-3 text-xs transition-colors cursor-pointer ${
                           isDelivered
-                            ? 'bg-slate-50/70 dark:bg-slate-900/40 opacity-75 cursor-default'
+                            ? 'bg-muted opacity-75 cursor-default'
                             : isSelected
                             ? 'bg-blue-50/40 dark:bg-blue-950/20'
-                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                            : 'hover:bg-muted dark:hover:bg-muted/50'
                         }`}
                       >
                         <div className="flex items-start gap-2.5 min-w-0">
@@ -1054,12 +1054,12 @@ export default function DeliveryLogisticsPage() {
                                 setSelectedItemIds(selectedItemIds.filter((id) => id !== it.id))
                               }
                             }}
-                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="mt-0.5 h-4 w-4 rounded border-input text-blue-600 focus:ring-ring"
                           />
                           <div className="min-w-0">
-                            <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                            <div className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
                               <span>Item {idx + 1}: {it.product_description}</span>
-                              <span className="tabular-nums text-slate-500 text-2xs">
+                              <span className="tabular-nums text-muted-foreground text-2xs">
                                 - {it.quantity} {it.unit}
                               </span>
                               {it.item_kind === 'ready_product' ? (
@@ -1077,12 +1077,12 @@ export default function DeliveryLogisticsPage() {
                               )}
                             </div>
                             {it.dimensions_spec && (
-                              <div className="text-2xs text-slate-500 tabular-nums mt-0.5">
+                              <div className="text-2xs text-muted-foreground tabular-nums mt-0.5">
                                 📐 Specs: {it.dimensions_spec}
                               </div>
                             )}
                             {it.remarks && (
-                              <div className="text-2xs text-slate-400 mt-0.5">
+                              <div className="text-2xs text-muted-foreground mt-0.5">
                                 Note: {it.remarks}
                               </div>
                             )}
@@ -1099,7 +1099,7 @@ export default function DeliveryLogisticsPage() {
               </div>
 
               {/* 3. Receiver Information */}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
@@ -1143,7 +1143,7 @@ export default function DeliveryLogisticsPage() {
               </div>
 
               {/* 4. Action Footer: [Close] and Dynamic [Mark as delivered] vs [Partial Delivery] */}
-              <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+              <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
                 <Button
                   type="button"
                   variant="outline"
@@ -1193,14 +1193,14 @@ export default function DeliveryLogisticsPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-black text-slate-900 dark:text-white">
+                <span className="text-base font-black text-foreground dark:text-white">
                   {tBilingual('Generate New Delivery Challan', 'নতুন ডেলিভারি চালানপত্র তৈরি করুন')}
                 </span>
                 <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                   Logistics
                 </Badge>
               </div>
-              <p className="text-2xs text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
                 {tBilingual('Dispatch printed products or signage structures to the customer site', 'গ্রাহকের ঠিকানায় পণ্য পরিবহনের চালানপত্র প্রস্তুত করুন')}
               </p>
             </div>
@@ -1209,12 +1209,12 @@ export default function DeliveryLogisticsPage() {
       >
         <form onSubmit={handleCreateChallan} className="space-y-4 pt-1">
           {/* Section 1: Customer & Method */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 1
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Customer & Transport Method', 'গ্রাহক ও পরিবহন মাধ্যম')}
               </h3>
             </div>
@@ -1231,7 +1231,7 @@ export default function DeliveryLogisticsPage() {
                     const found = customers.find((c: CustomerRecord) => c.id === e.target.value)
                     if (found) setChAddress(found.address || '')
                   }}
-                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                   required
                 >
                   <option value="">Select customer...</option>
@@ -1250,7 +1250,7 @@ export default function DeliveryLogisticsPage() {
                 <select
                   value={chMethod}
                   onChange={(e) => setChMethod(e.target.value as DeliveryMethod)}
-                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                 >
                   <option value="company_vehicle">Company Vehicle (Pickup/Van)</option>
                   <option value="courier">Courier (Sundarban / SA Paribahan)</option>
@@ -1274,12 +1274,12 @@ export default function DeliveryLogisticsPage() {
           </div>
 
           {/* Section 2: Vehicle & Transit Details */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 2
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Transit & Vehicle Info', 'যানবাহন ও চালকের তথ্য')}
               </h3>
             </div>
@@ -1312,12 +1312,12 @@ export default function DeliveryLogisticsPage() {
           </div>
 
           {/* Section 3: Goods & Dispatch Date */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 3
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Goods & Dispatch Schedule', 'পণ্যের বিবরণ ও তারিখ')}
               </h3>
             </div>
@@ -1378,7 +1378,7 @@ export default function DeliveryLogisticsPage() {
           </div>
 
           {/* Action Footer */}
-          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
@@ -1389,7 +1389,7 @@ export default function DeliveryLogisticsPage() {
             </Button>
             <Button
               type="submit"
-              className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm px-5"
+              className="w-full sm:w-auto min-h-[40px] text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm px-5"
             >
               {tBilingual('Issue Delivery Challan', 'চালানপত্র জারি করুন')}
             </Button>
@@ -1409,14 +1409,14 @@ export default function DeliveryLogisticsPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-black text-slate-900 dark:text-white">
+                <span className="text-base font-black text-foreground dark:text-white">
                   {tBilingual('Schedule On-Site Signage Installation', 'সাইট ইনস্টলেশন শিডিউল করুন')}
                 </span>
                 <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                   Rigging & Setup
                 </Badge>
               </div>
-              <p className="text-2xs text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-muted-foreground dark:text-muted-foreground">
                 {tBilingual('Deploy rigging technicians, cranes, and safety gear to the client installation site', 'সাইটে ফিটিংস টেকনিশিয়ান ও সরঞ্জাম প্রেরণ শিডিউল করুন')}
               </p>
             </div>
@@ -1425,12 +1425,12 @@ export default function DeliveryLogisticsPage() {
       >
         <form onSubmit={handleCreateInstallation} className="space-y-4 pt-1">
           {/* Section 1: Customer & Site */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 1
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Customer & Site Location', 'গ্রাহক ও সাইট লোকেশন')}
               </h3>
             </div>
@@ -1443,7 +1443,7 @@ export default function DeliveryLogisticsPage() {
                 <select
                   value={insCustomer}
                   onChange={(e) => setInsCustomer(e.target.value)}
-                  className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                  className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs font-medium"
                   required
                 >
                   <option value="">Select customer...</option>
@@ -1484,12 +1484,12 @@ export default function DeliveryLogisticsPage() {
           </div>
 
           {/* Section 2: Rigging Crew & Safety Gear */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 2
               </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground dark:text-white uppercase tracking-wider">
                 {tBilingual('Crew Team & Equipment', 'টেকনিশিয়ান টিম ও সরঞ্জাম')}
               </h3>
             </div>
@@ -1534,7 +1534,7 @@ export default function DeliveryLogisticsPage() {
           </div>
 
           {/* Action Footer */}
-          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border dark:border-border">
             <Button
               type="button"
               variant="outline"
@@ -1545,7 +1545,7 @@ export default function DeliveryLogisticsPage() {
             </Button>
             <Button
               type="submit"
-              className="w-full sm:w-auto min-h-[40px] text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm px-5"
+              className="w-full sm:w-auto min-h-[40px] text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm px-5"
             >
               {tBilingual('Dispatch Installation Team', 'টিম শিডিউল করুন')}
             </Button>

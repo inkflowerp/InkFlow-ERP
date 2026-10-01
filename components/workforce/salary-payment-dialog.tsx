@@ -88,13 +88,13 @@ export function SalaryPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-6 bg-white border-slate-200 shadow-xl rounded-2xl space-y-4">
+      <DialogContent className="max-w-md p-6 bg-card border-border shadow-xl rounded-2xl space-y-4">
         <DialogHeader>
-          <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
             <Wallet className="w-5 h-5 text-emerald-600" />
             <span>Disburse Salary Payment</span>
           </DialogTitle>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             {item.employee_name} • {periodName}
           </p>
         </DialogHeader>
@@ -108,16 +108,16 @@ export function SalaryPaymentDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Due Info Card */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 flex items-center justify-between">
+          <div className="p-3.5 rounded-xl border border-border bg-muted flex items-center justify-between">
             <div>
-              <span className="text-slate-400 block text-[11px]">Current Outstanding Due</span>
+              <span className="text-muted-foreground block text-[11px]">Current Outstanding Due</span>
               <span className="text-lg font-bold text-rose-600 tabular-nums">
                 ৳ {currentDue.toLocaleString('en-IN')}
               </span>
             </div>
             <div className="text-right">
-              <span className="text-slate-400 block text-[11px]">Net Salary</span>
-              <span className="text-xs font-semibold text-slate-800 tabular-nums">
+              <span className="text-muted-foreground block text-[11px]">Net Salary</span>
+              <span className="text-xs font-semibold text-foreground tabular-nums">
                 ৳ {Number(item.net_salary || 0).toLocaleString('en-IN')}
               </span>
             </div>
@@ -125,7 +125,7 @@ export function SalaryPaymentDialog({
 
           {/* Amount Input */}
           <div>
-            <Label className="text-xs font-semibold text-slate-700">Payment Amount (৳) *</Label>
+            <Label className="text-xs font-semibold text-foreground">Payment Amount (৳) *</Label>
             <div className="flex items-center gap-2 mt-1">
               <Input
                 type="number"
@@ -139,7 +139,7 @@ export function SalaryPaymentDialog({
                 variant="outline"
                 size="sm"
                 onClick={() => setAmount(currentDue)}
-                className="h-9 text-xs border-slate-200 shrink-0"
+                className="h-9 text-xs border-border shrink-0"
               >
                 Pay Full
               </Button>
@@ -148,7 +148,7 @@ export function SalaryPaymentDialog({
 
           {/* Payment Method Selector */}
           <div>
-            <Label className="text-xs font-semibold text-slate-700">Payment Method</Label>
+            <Label className="text-xs font-semibold text-foreground">Payment Method</Label>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 mt-1.5">
               {(['cash', 'bank', 'bkash', 'nagad', 'rocket'] as PaymentMethod[]).map((m) => (
                 <button
@@ -158,7 +158,7 @@ export function SalaryPaymentDialog({
                   className={`p-2 rounded-lg border text-center uppercase font-bold text-[11px] transition-all ${
                     method === m
                       ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      : 'border-border bg-card text-muted-foreground hover:bg-muted'
                   }`}
                 >
                   {m}
@@ -169,7 +169,7 @@ export function SalaryPaymentDialog({
 
           {/* Reference Number */}
           <div>
-            <Label className="text-xs font-semibold text-slate-700">Transaction Reference / Voucher</Label>
+            <Label className="text-xs font-semibold text-foreground">Transaction Reference / Voucher</Label>
             <Input
               placeholder="e.g. TrxID / Cheque # / Voucher #"
               value={refNum}
@@ -180,7 +180,7 @@ export function SalaryPaymentDialog({
 
           {/* Notes */}
           <div>
-            <Label className="text-xs font-semibold text-slate-700">Payment Notes (Optional)</Label>
+            <Label className="text-xs font-semibold text-foreground">Payment Notes (Optional)</Label>
             <Input
               placeholder="e.g. Paid in cash at outlet counter"
               value={notes}
@@ -190,13 +190,13 @@ export function SalaryPaymentDialog({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="h-8 text-xs border-slate-200"
+              className="h-8 text-xs border-border"
             >
               Cancel
             </Button>

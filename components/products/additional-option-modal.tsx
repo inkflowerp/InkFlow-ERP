@@ -142,14 +142,14 @@ export function AdditionalOptionModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-slate-900 dark:text-white">
+              <span className="text-base font-bold text-foreground dark:text-white">
                 {additional ? 'Edit Additional Work' : 'Add Additional Work'}
               </span>
               <Badge variant="outline" className="text-2xs uppercase tabular-nums py-0.5 px-1.5 bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
                 Substrate & Addon Master
               </Badge>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               Define substrate pastings (PVC Board, Acrylic Mount, Metal Pipe Frame Fabrication).
             </p>
           </div>
@@ -181,7 +181,7 @@ export function AdditionalOptionModal({
                   key={p.name}
                   type="button"
                   onClick={() => handleApplyPreset(p)}
-                  className="px-2.5 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-medium text-2xs hover:border-cyan-500 hover:text-cyan-600 transition-all cursor-pointer flex items-center gap-1"
+                  className="px-2.5 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800 bg-card text-foreground font-medium text-2xs hover:border-cyan-500 hover:text-cyan-600 transition-all cursor-pointer flex items-center gap-1"
                 >
                   <Zap className="w-3 h-3 text-amber-500 shrink-0" />
                   <span>{p.name}</span>
@@ -191,7 +191,7 @@ export function AdditionalOptionModal({
           </div>
         )}
 
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
@@ -229,7 +229,7 @@ export function AdditionalOptionModal({
               <select
                 value={productId}
                 onChange={(e) => handleProductSelect(e.target.value)}
-                className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
               >
                 <option value="">-- Standalone Additional (No Catalog Link) --</option>
                 {consumableMaterials.length > 0 && (
@@ -262,7 +262,7 @@ export function AdditionalOptionModal({
               <select
                 value={pricingMethod}
                 onChange={(e) => setPricingMethod(e.target.value)}
-                className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
               >
                 <option value="sqft">Per Sqft (Board / Sheet Area)</option>
                 <option value="per_piece">Per Piece / Unit</option>
@@ -303,15 +303,15 @@ export function AdditionalOptionModal({
           </div>
 
           {/* Live Margin Calculation Card */}
-          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-muted border border-border dark:border-slate-700/60 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Gross Profit: <span className="tabular-nums font-bold text-slate-900 dark:text-white">৳{marginMath.grossProfit.toFixed(2)}</span>
+              <span className="text-xs font-semibold text-foreground dark:text-muted-foreground">
+                Gross Profit: <span className="tabular-nums font-bold text-foreground dark:text-white">৳{marginMath.grossProfit.toFixed(2)}</span>
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xs text-slate-500">Margin:</span>
+              <span className="text-2xs text-muted-foreground">Margin:</span>
               <Badge
                 variant="outline"
                 className={cn(
@@ -329,12 +329,12 @@ export function AdditionalOptionModal({
           </div>
 
           <div className="pt-1">
-            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground dark:text-foreground">
               <input
                 type="checkbox"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                className="w-4 h-4 rounded text-blue-600 focus:ring-ring"
               />
               <span>Active for quotation and service configuration</span>
             </label>
@@ -342,13 +342,13 @@ export function AdditionalOptionModal({
         </div>
 
         {/* Standardized Bottom Action Bar */}
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-input text-foreground hover:bg-muted dark:hover:bg-muted"
           >
             Cancel
           </Button>
@@ -356,7 +356,7 @@ export function AdditionalOptionModal({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs flex items-center gap-2 cursor-pointer"
           >
             {isSubmitting ? (
               <>

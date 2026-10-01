@@ -235,9 +235,9 @@ export default function CompanyProfileSettingsPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-5xl animate-pulse">
-        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
-        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-20 bg-muted rounded-2xl w-full" />
+        <div className="h-12 bg-muted rounded-xl w-3/4" />
+        <div className="h-48 bg-muted rounded-2xl w-full" />
       </div>
     )
   }
@@ -297,7 +297,7 @@ export default function CompanyProfileSettingsPage() {
       <form onSubmit={handleSave} className="space-y-6">
         {/* 1. Corporate Names & Logo */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <FileText className="h-4 w-4 text-blue-600" />
               Corporate Names & Branding
@@ -344,16 +344,16 @@ export default function CompanyProfileSettingsPage() {
                 onChange={handleChange}
                 placeholder="e.g. Rapid Print Solutions Limited"
               />
-              <p className="text-2xs text-slate-500">
+              <p className="text-2xs text-muted-foreground">
                 Official entity name utilized for NBR tax Mushak vouchers and legal vendor contracts.
               </p>
             </div>
 
             {/* Logo */}
-            <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="space-y-2 pt-2 border-t border-border dark:border-border">
               <Label htmlFor="logo_url">Company Logo URL (কোম্পানির লোগো)</Label>
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                <div className="h-16 w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex items-center justify-center overflow-hidden shrink-0">
+                <div className="h-16 w-24 rounded-lg border border-border bg-muted flex items-center justify-center overflow-hidden shrink-0">
                   {formData.logo_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
@@ -366,8 +366,8 @@ export default function CompanyProfileSettingsPage() {
                     />
                   ) : (
                     <div className="text-center p-2">
-                      <ImageIcon className="h-5 w-5 mx-auto text-slate-400" />
-                      <span className="text-2xs text-slate-400 block mt-0.5">No Logo</span>
+                      <ImageIcon className="h-5 w-5 mx-auto text-muted-foreground" />
+                      <span className="text-2xs text-muted-foreground block mt-0.5">No Logo</span>
                     </div>
                   )}
                 </div>
@@ -379,7 +379,7 @@ export default function CompanyProfileSettingsPage() {
                     onChange={handleChange}
                     placeholder="https://example.com/logo.png"
                   />
-                  <span className="text-2xs text-slate-500 block">
+                  <span className="text-2xs text-muted-foreground block">
                     Printed at the top of client quotations, work challans, and money receipts.
                   </span>
                 </div>
@@ -390,7 +390,7 @@ export default function CompanyProfileSettingsPage() {
 
         {/* 2. Contact & Digital Channels */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <Phone className="h-4 w-4 text-emerald-600" />
               Contact & Digital Channels
@@ -445,7 +445,7 @@ export default function CompanyProfileSettingsPage() {
 
         {/* 3. Address & Print Hub */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <MapPin className="h-4 w-4 text-red-600" />
               Print Hub & Commercial Address
@@ -497,7 +497,7 @@ export default function CompanyProfileSettingsPage() {
 
         {/* 4. Tax & Legal Registrations */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-purple-600" />
               Tax & Business Registrations
@@ -536,7 +536,7 @@ export default function CompanyProfileSettingsPage() {
 
         {/* 5. Office Hours & Holiday Schedule */}
         <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+          <CardHeader className="pb-3 border-b border-border dark:border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <Clock className="h-4 w-4 text-blue-600" />
               Office Hours & Holiday Schedule
@@ -555,13 +555,13 @@ export default function CompanyProfileSettingsPage() {
                 placeholder="e.g. 9:00 AM - 8:00 PM (Sat - Thu)"
               />
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-xs text-slate-500">Presets:</span>
+                <span className="text-xs text-muted-foreground">Presets:</span>
                 {OFFICE_HOURS_PRESETS.map((preset) => (
                   <button
                     key={preset}
                     type="button"
                     onClick={() => setFormData({ ...formData, office_hours: preset })}
-                    className="text-2xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+                    className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-border dark:border-border"
                   >
                     {preset}
                   </button>
@@ -569,7 +569,7 @@ export default function CompanyProfileSettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="space-y-2 pt-3 border-t border-border dark:border-border">
               <Label htmlFor="holidays">
                 Weekly Holiday & Closed Days (সাপ্তাহিক ছুটি ও বন্ধের দিন)
               </Label>
@@ -581,13 +581,13 @@ export default function CompanyProfileSettingsPage() {
                 placeholder="e.g. Friday (সাপ্তাহিক ছুটি)"
               />
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-xs text-slate-500">Presets:</span>
+                <span className="text-xs text-muted-foreground">Presets:</span>
                 {HOLIDAY_PRESETS.map((preset) => (
                   <button
                     key={preset}
                     type="button"
                     onClick={() => setFormData({ ...formData, holidays: preset })}
-                    className="text-2xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+                    className="text-2xs px-2.5 py-1 rounded-md bg-muted text-foreground hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-border dark:border-border"
                   >
                     {preset}
                   </button>

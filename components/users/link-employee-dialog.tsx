@@ -107,7 +107,7 @@ export function LinkEmployeeDialog({
     >
       <div className="space-y-4 pt-1">
         <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name, employee ID, mobile..."
             value={search}
@@ -116,9 +116,9 @@ export function LinkEmployeeDialog({
           />
         </div>
 
-        <div className="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg">
+        <div className="max-h-64 overflow-y-auto divide-y divide-border border border-border rounded-lg">
           {filteredEmployees.length === 0 ? (
-            <div className="p-6 text-center text-sm text-slate-500">
+            <div className="p-6 text-center text-sm text-muted-foreground">
               No matching employees found in workforce directory.
             </div>
           ) : (
@@ -136,18 +136,18 @@ export function LinkEmployeeDialog({
                     isSelected
                       ? 'bg-blue-50/80 dark:bg-blue-950/30'
                       : isAlreadyLinkedOther
-                      ? 'opacity-50 cursor-not-allowed bg-slate-50/50 dark:bg-slate-900/20'
-                      : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                      ? 'opacity-50 cursor-not-allowed bg-muted/50 dark:bg-card'
+                      : 'hover:bg-muted dark:hover:bg-muted/50'
                   }`}
                 >
                   <div className="min-w-0">
-                    <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <div className="font-semibold text-foreground flex items-center gap-2">
                       <span className="truncate">{emp.name}</span>
                       <Badge variant="outline" className="text-xs font-mono font-normal">
                         {emp.employee_id_number || 'EMP'}
                       </Badge>
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
+                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                       <span>{emp.department || 'General'}</span>
                       {emp.role && <span>• {emp.role}</span>}
                       {emp.mobile && <span>• {emp.mobile}</span>}
@@ -164,7 +164,7 @@ export function LinkEmployeeDialog({
                         <Check className="h-3.5 w-3.5" />
                       </div>
                     ) : (
-                      <div className="h-6 w-6 rounded-full border border-slate-300 dark:border-slate-600" />
+                      <div className="h-6 w-6 rounded-full border border-input dark:border-slate-600" />
                     )}
                   </div>
                 </button>
@@ -184,7 +184,7 @@ export function LinkEmployeeDialog({
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
@@ -192,7 +192,7 @@ export function LinkEmployeeDialog({
             size="sm"
             onClick={handleLink}
             disabled={!selectedEmpId || isSubmitting}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium gap-1.5"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium gap-1.5"
           >
             {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             Confirm Link

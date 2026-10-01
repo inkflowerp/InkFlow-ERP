@@ -100,7 +100,7 @@ export function HoldTaskModal({
           <select
             value={holdReason}
             onChange={(e) => setHoldReason(e.target.value as HoldReason)}
-            className="w-full text-xs rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-xs focus:border-amber-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="w-full text-xs rounded-md border border-input bg-card px-3 py-2 text-foreground shadow-xs focus:border-amber-500 focus:outline-hidden dark:text-foreground"
           >
             {Object.entries(HOLD_REASON_LABELS).map(([key, item]) => (
               <option key={key} value={key}>
@@ -124,7 +124,7 @@ export function HoldTaskModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

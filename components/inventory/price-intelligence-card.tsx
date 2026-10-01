@@ -77,7 +77,7 @@ export function PriceIntelligenceCard({
                   ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300'
                   : isDown
                   ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300'
-                  : 'bg-slate-100 text-slate-800 border-slate-300'
+                  : 'bg-muted text-foreground border-input'
               )}
             >
               {isUp ? (
@@ -85,7 +85,7 @@ export function PriceIntelligenceCard({
               ) : isDown ? (
                 <TrendingDown className="h-3 w-3 text-emerald-600" />
               ) : (
-                <Minus className="h-3 w-3 text-slate-500" />
+                <Minus className="h-3 w-3 text-muted-foreground" />
               )}
               <span>{summary.price_change_percent > 0 ? `+${summary.price_change_percent}%` : `${summary.price_change_percent}%`} vs prev</span>
             </Badge>
@@ -96,29 +96,29 @@ export function PriceIntelligenceCard({
       {/* Metric Tiles HUD */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {/* Metric 1: Inward Price */}
-        <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
-          <div className="text-2xs font-medium text-slate-500 dark:text-slate-400">Current Inward Price</div>
+        <div className="p-2 rounded-lg bg-card border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
+          <div className="text-2xs font-medium text-muted-foreground dark:text-muted-foreground">Current Inward Price</div>
           <div className="text-sm font-black text-indigo-700 dark:text-indigo-300 tabular-nums mt-0.5">
             {formatBDT(currentUnitPrice)}
           </div>
-          <div className="text-2xs text-slate-400 font-sans">per {purchaseUnit}</div>
+          <div className="text-2xs text-muted-foreground font-sans">per {purchaseUnit}</div>
         </div>
 
         {/* Metric 2: Normalized / sqft */}
-        <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
-          <div className="text-2xs font-medium text-slate-500 dark:text-slate-400">Normalized Cost</div>
-          <div className="text-sm font-black text-slate-900 dark:text-white tabular-nums mt-0.5">
+        <div className="p-2 rounded-lg bg-card border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
+          <div className="text-2xs font-medium text-muted-foreground dark:text-muted-foreground">Normalized Cost</div>
+          <div className="text-sm font-black text-foreground dark:text-white tabular-nums mt-0.5">
             {summary.normalized_cost_per_sft !== undefined
               ? formatBDT(summary.normalized_cost_per_sft)
               : formatBDT(currentUnitPrice)}
           </div>
-          <div className="text-2xs text-slate-400 font-sans">
+          <div className="text-2xs text-muted-foreground font-sans">
             {summary.normalized_cost_per_sft !== undefined ? 'per sqft' : `per ${purchaseUnit}`}
           </div>
         </div>
 
         {/* Metric 3: Lowest Recorded */}
-        <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-emerald-100 dark:border-emerald-900/40 shadow-2xs">
+        <div className="p-2 rounded-lg bg-card border border-emerald-100 dark:border-emerald-900/40 shadow-2xs">
           <div className="text-2xs font-medium text-emerald-700 dark:text-emerald-400">Lowest Recorded</div>
           <div className="text-sm font-black text-emerald-700 dark:text-emerald-300 tabular-nums mt-0.5">
             {formatBDT(summary.lowest_cost)}
@@ -129,19 +129,19 @@ export function PriceIntelligenceCard({
         </div>
 
         {/* Metric 4: Market Average */}
-        <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
-          <div className="text-2xs font-medium text-slate-500 dark:text-slate-400">Recorded Average</div>
-          <div className="text-sm font-black text-slate-800 dark:text-slate-200 tabular-nums mt-0.5">
+        <div className="p-2 rounded-lg bg-card border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
+          <div className="text-2xs font-medium text-muted-foreground dark:text-muted-foreground">Recorded Average</div>
+          <div className="text-sm font-black text-foreground tabular-nums mt-0.5">
             {formatBDT(summary.average_cost)}
           </div>
-          <div className="text-2xs text-slate-400 font-sans">{summary.total_records_count} past purchase(s)</div>
+          <div className="text-2xs text-muted-foreground font-sans">{summary.total_records_count} past purchase(s)</div>
         </div>
       </div>
 
       {/* Supplier Comparison Quick Table */}
       {summary.supplier_comparison.length > 0 && (
         <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-2xs font-bold text-slate-700 dark:text-slate-300">
+          <div className="flex items-center justify-between text-2xs font-bold text-foreground dark:text-muted-foreground">
             <span className="flex items-center gap-1">
               <Building2 className="h-3 w-3 text-indigo-600" />
               Supplier Price Comparison ({summary.supplier_comparison.length})
@@ -169,16 +169,16 @@ export function PriceIntelligenceCard({
             {summary.supplier_comparison.map((sup, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between p-2 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-xs"
+                className="flex items-center justify-between p-2 rounded-lg bg-card/80 border border-border text-xs"
               >
                 <div className="truncate pr-2">
-                  <div className="font-bold text-slate-900 dark:text-white truncate">{sup.supplier_name}</div>
-                  <div className="text-2xs text-slate-400 flex items-center gap-1 tabular-nums">
+                  <div className="font-bold text-foreground dark:text-white truncate">{sup.supplier_name}</div>
+                  <div className="text-2xs text-muted-foreground flex items-center gap-1 tabular-nums">
                     <Calendar className="h-2.5 w-2.5" /> {sup.last_purchase_date || 'Recent'}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="tabular-nums font-black text-slate-900 dark:text-white">
+                  <div className="tabular-nums font-black text-foreground dark:text-white">
                     {formatBDT(sup.latest_price)}
                   </div>
                   {sup.normalized_price_per_sft && (
@@ -193,20 +193,20 @@ export function PriceIntelligenceCard({
 
           {/* Historical Log Drawer */}
           {showHistory && summary.history.length > 0 && (
-            <div className="p-2.5 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 mt-2 animate-in fade-in-0">
-              <div className="text-2xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+            <div className="p-2.5 bg-card rounded-lg border border-border space-y-1.5 mt-2 animate-in fade-in-0">
+              <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                 <History className="h-3 w-3" /> Historical Purchase Events Log
               </div>
-              <div className="max-h-36 overflow-y-auto space-y-1 divide-y divide-slate-100 dark:divide-slate-900 text-xs">
+              <div className="max-h-36 overflow-y-auto space-y-1 divide-y divide-border dark:divide-slate-900 text-xs">
                 {summary.history.map((h, i) => (
                   <div key={i} className="pt-1 flex items-center justify-between tabular-nums text-2xs">
                     <div>
-                      <span className="font-bold text-slate-800 dark:text-slate-200">{h.supplier_name}</span>
-                      <span className="text-slate-400 text-2xs ml-1.5 font-sans">
+                      <span className="font-bold text-foreground dark:text-foreground">{h.supplier_name}</span>
+                      <span className="text-muted-foreground text-2xs ml-1.5 font-sans">
                         {h.purchase_date} {h.challan_number ? `• Ch: ${h.challan_number}` : ''}
                       </span>
                     </div>
-                    <div className="font-bold text-slate-900 dark:text-white">
+                    <div className="font-bold text-foreground dark:text-white">
                       {formatBDT(h.unit_purchase_price)} / {h.purchase_unit} ({h.quantity_received} {h.purchase_unit})
                     </div>
                   </div>

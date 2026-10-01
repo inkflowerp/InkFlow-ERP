@@ -322,18 +322,18 @@ export function QuickActionsBar({
 
   return (
     <>
-      <Card className={cn('p-3.5 sm:p-4 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between', className)}>
+      <Card className={cn('p-3.5 sm:p-4 bg-card border border-border rounded-2xl sm:rounded-3xl shadow-xs flex flex-col justify-between', className)}>
         {/* Header Label Row */}
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 shrink-0">
+            <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:text-blue-400 shrink-0">
               <Zap className="h-3.5 w-3.5" />
             </span>
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 bangla-text">
+            <h2 className="text-xs font-black uppercase tracking-wider text-foreground bangla-text">
               {tBilingual('Quick Actions', 'দ্রুত তৈরি ও এন্ট্রি')}
             </h2>
           </div>
-          <span className="text-2xs text-slate-500 dark:text-slate-400 font-medium hidden sm:inline bangla-text">
+          <span className="text-2xs text-muted-foreground font-medium hidden sm:inline bangla-text">
             {tBilingual('1-click direct creation modals • No page change', '১-ক্লিকে সরাসরি তৈরি করুন • পেজ পরিবর্তনের প্রয়োজন নেই')}
           </span>
         </div>
@@ -347,7 +347,7 @@ export function QuickActionsBar({
                 key={action.id}
                 type="button"
                 onClick={action.onClick}
-                className="group relative flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xs active:scale-[0.98] transition-all duration-200 cursor-pointer text-left min-h-[56px] select-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="group relative flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-border dark:border-border/80 bg-muted hover:bg-card hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xs active:scale-[0.98] transition-all duration-200 cursor-pointer text-left min-h-[56px] select-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {/* Visual Icon Container */}
                 <div
@@ -361,10 +361,10 @@ export function QuickActionsBar({
 
                 {/* Title & Subtitle */}
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight bangla-text break-words">
+                  <div className="text-xs sm:text-sm font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight bangla-text break-words">
                     {tBilingual(action.labelEn, action.labelBn)}
                   </div>
-                  <div className="text-2xs sm:text-2xs text-slate-500 dark:text-slate-400 truncate bangla-text mt-0.5 leading-tight">
+                  <div className="text-2xs sm:text-2xs text-muted-foreground truncate bangla-text mt-0.5 leading-tight">
                     {tBilingual(action.subEn, action.subBn)}
                   </div>
                 </div>

@@ -256,7 +256,7 @@ export default function EmployeeAttendancePage() {
         iconColor="text-indigo-600 dark:text-indigo-400"
         actions={
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs tabular-nums font-bold text-slate-700 dark:text-slate-200">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted border border-border text-xs tabular-nums font-bold text-foreground dark:text-foreground">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{currentTime || '00:00:00'}</span>
             </div>
@@ -267,7 +267,7 @@ export default function EmployeeAttendancePage() {
               size="sm"
               onClick={loadAttendanceData}
               disabled={isLoading}
-              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 h-9 w-9 p-0 rounded-xl flex items-center justify-center shrink-0 cursor-pointer"
+              className="border-border text-foreground hover:bg-muted h-9 w-9 p-0 rounded-xl flex items-center justify-center shrink-0 cursor-pointer"
               title={tBilingual('Refresh', 'রিফ্রেশ')}
               aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
             >
@@ -322,17 +322,17 @@ export default function EmployeeAttendancePage() {
               </div>
 
               <div>
-                <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
                   {tBilingual('Today\'s Shift Status', 'আজকের শিফট অবস্থা')}
                 </span>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5">
+                <h3 className="text-base sm:text-lg font-bold text-foreground dark:text-white mt-0.5">
                   {todayStatus.hasCheckedOut
                     ? tBilingual('Completed for Today', 'আজকের শিফট সম্পন্ন (প্রস্থান সম্পন্ন)')
                     : todayStatus.hasCheckedIn
                     ? tBilingual('Checked In • Shift Active', 'কর্মস্থলে উপস্থিত (শিফট সক্রিয়)')
                     : tBilingual('Not Checked In Yet', 'এখনো হাজিরা দেওয়া হয়নি')}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {currentDate} • <span className="tabular-nums text-indigo-600 dark:text-indigo-400 font-bold">{currentTime}</span>
                 </p>
               </div>
@@ -357,16 +357,16 @@ export default function EmployeeAttendancePage() {
 
           {/* Today Details Grid */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1">
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{tBilingual('Check-In Time', 'প্রবেশ সময়')}</span>
-              <p className="text-base sm:text-lg tabular-nums font-bold text-slate-900 dark:text-white">
+            <div className="p-4 rounded-xl bg-muted border border-border space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">{tBilingual('Check-In Time', 'প্রবেশ সময়')}</span>
+              <p className="text-base sm:text-lg tabular-nums font-bold text-foreground dark:text-white">
                 {todayStatus.checkInTime || '— — : — —'}
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1">
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{tBilingual('Check-Out Time', 'প্রস্থান সময়')}</span>
-              <p className="text-base sm:text-lg tabular-nums font-bold text-slate-900 dark:text-white">
+            <div className="p-4 rounded-xl bg-muted border border-border space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">{tBilingual('Check-Out Time', 'প্রস্থান সময়')}</span>
+              <p className="text-base sm:text-lg tabular-nums font-bold text-foreground dark:text-white">
                 {todayStatus.checkOutTime || '— — : — —'}
               </p>
             </div>
@@ -397,12 +397,12 @@ export default function EmployeeAttendancePage() {
           </div>
 
           {/* Device Hardware Readiness Status Pills */}
-          <div className="p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="p-3.5 bg-muted border border-border rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-4">
               {/* Camera Status */}
               <div className="flex items-center gap-1.5">
-                <Camera className={`h-3.5 w-3.5 ${cameraPermission === 'denied' ? 'text-rose-500' : 'text-slate-400'}`} />
-                <span className="text-slate-500 dark:text-slate-400">Camera:</span>
+                <Camera className={`h-3.5 w-3.5 ${cameraPermission === 'denied' ? 'text-rose-500' : 'text-muted-foreground'}`} />
+                <span className="text-muted-foreground dark:text-muted-foreground">Camera:</span>
                 <span className={`font-semibold ${
                   cameraPermission === 'granted'
                     ? 'text-emerald-600 dark:text-emerald-400'
@@ -416,8 +416,8 @@ export default function EmployeeAttendancePage() {
 
               {/* GPS Status */}
               <div className="flex items-center gap-1.5">
-                <Navigation className={`h-3.5 w-3.5 ${gpsPermission === 'denied' ? 'text-rose-500' : 'text-slate-400'}`} />
-                <span className="text-slate-500 dark:text-slate-400">GPS:</span>
+                <Navigation className={`h-3.5 w-3.5 ${gpsPermission === 'denied' ? 'text-rose-500' : 'text-muted-foreground'}`} />
+                <span className="text-muted-foreground dark:text-muted-foreground">GPS:</span>
                 <span className={`font-semibold ${
                   gpsPermission === 'granted'
                     ? 'text-emerald-600 dark:text-emerald-400'
@@ -430,15 +430,15 @@ export default function EmployeeAttendancePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-slate-500 text-2xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-2xs">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>{tBilingual('Authoritative Geofence & QR Verified', 'কিউআর ও জিপিএস ভেরিফাইড')}</span>
             </div>
           </div>
 
           {/* Footer Correction Link */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <span className="text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-muted-foreground pt-2 border-t border-border dark:border-border">
+            <span className="text-muted-foreground dark:text-muted-foreground">
               {tBilingual('Need to correct a missed or late punch?', 'ভুলে যাওয়া বা দেরিতে হওয়া পাঞ্চ সংশোধন করতে চান?')}
             </span>
 
@@ -458,18 +458,18 @@ export default function EmployeeAttendancePage() {
       </Card>
 
       {/* Attendance History */}
-      <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-sm overflow-hidden">
-        <CardHeader className="p-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+      <Card className="border-border bg-card rounded-2xl shadow-sm overflow-hidden">
+        <CardHeader className="p-5 pb-4 border-b border-border dark:border-border">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <History className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              <CardTitle className="text-slate-900 dark:text-white text-base">
+              <CardTitle className="text-foreground dark:text-white text-base">
                 {tBilingual('Your Attendance History', 'আপনার হাজিরা বিবরণ')}
               </CardTitle>
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-1.5 bg-muted p-1 rounded-xl border border-border dark:border-border">
               {(['ALL', 'CHECK_IN', 'CHECK_OUT'] as const).map((filter) => (
                 <button
                   key={filter}
@@ -478,7 +478,7 @@ export default function EmployeeAttendancePage() {
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     historyFilter === filter
                       ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                      : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                   }`}
                 >
                   {filter === 'ALL'
@@ -492,11 +492,11 @@ export default function EmployeeAttendancePage() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-0 divide-y divide-slate-100 dark:divide-slate-800">
+        <CardContent className="p-0 divide-y divide-border dark:divide-border">
           {filteredHistory.length === 0 ? (
             <div className="p-12 text-center space-y-2">
-              <Clock className="h-8 w-8 text-slate-400 dark:text-slate-600 mx-auto" />
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <Clock className="h-8 w-8 text-muted-foreground mx-auto" />
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                 {tBilingual('No attendance records found matching filter.', 'কোনো হাজিরা রেকর্ড পাওয়া যায়নি।')}
               </p>
             </div>
@@ -504,7 +504,7 @@ export default function EmployeeAttendancePage() {
             filteredHistory.map((rec) => (
               <div
                 key={rec.id}
-                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted dark:hover:bg-muted/30 transition-colors"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -517,8 +517,8 @@ export default function EmployeeAttendancePage() {
                     >
                       {rec.attendance_type.replace('_', ' ')}
                     </Badge>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">{rec.attendance_date}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+                    <span className="text-xs font-bold text-foreground dark:text-white">{rec.attendance_date}</span>
+                    <span className="text-xs text-muted-foreground tabular-nums">
                       {new Date(rec.checked_at).toLocaleTimeString('en-US', {
                         timeZone: 'Asia/Dhaka',
                         hour: '2-digit',
@@ -528,20 +528,20 @@ export default function EmployeeAttendancePage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground dark:text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                      <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>{rec.location_name || 'Workplace Terminal'}</span>
                     </span>
                     <span>•</span>
-                    <span>Distance: <strong className="text-slate-700 dark:text-slate-300">{Math.round(rec.distance_from_location_meters)}m</strong></span>
+                    <span>Distance: <strong className="text-foreground dark:text-muted-foreground">{Math.round(rec.distance_from_location_meters)}m</strong></span>
                     <span>•</span>
-                    <span>GPS Acc: <strong className="text-slate-700 dark:text-slate-300">±{Math.round(rec.gps_accuracy_meters)}m</strong></span>
+                    <span>GPS Acc: <strong className="text-foreground dark:text-muted-foreground">±{Math.round(rec.gps_accuracy_meters)}m</strong></span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-auto">
-                  <Badge variant="outline" className="text-2xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+                  <Badge variant="outline" className="text-2xs bg-muted border-border text-muted-foreground dark:text-muted-foreground">
                     {rec.verification_status}
                   </Badge>
 
@@ -555,7 +555,7 @@ export default function EmployeeAttendancePage() {
                       setCorrType(rec.attendance_type === 'CHECK_IN' ? 'CHECK_IN' : 'CHECK_OUT')
                       setIsCorrectionOpen(true)
                     }}
-                    className="h-8 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                    className="h-8 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-muted rounded-lg"
                   >
                     {tBilingual('Correction', 'সংশোধন')}
                   </Button>
@@ -606,25 +606,25 @@ export default function EmployeeAttendancePage() {
               )}
 
               <div className="space-y-1.5">
-                <Label htmlFor="corrDate" className="text-xs font-semibold text-slate-700 dark:text-slate-300">{tBilingual('Date', 'তারিখ')}</Label>
+                <Label htmlFor="corrDate" className="text-xs font-semibold text-foreground dark:text-muted-foreground">{tBilingual('Date', 'তারিখ')}</Label>
                 <Input
                   id="corrDate"
                   type="date"
                   value={corrDate}
                   onChange={(e) => setCorrDate(e.target.value)}
-                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs h-10 rounded-xl"
+                  className="bg-muted border-border text-foreground dark:text-white text-xs h-10 rounded-xl"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="corrType" className="text-xs font-semibold text-slate-700 dark:text-slate-300">{tBilingual('Punch Type', 'পাঞ্চের ধরন')}</Label>
+                  <Label htmlFor="corrType" className="text-xs font-semibold text-foreground dark:text-muted-foreground">{tBilingual('Punch Type', 'পাঞ্চের ধরন')}</Label>
                   <select
                     id="corrType"
                     value={corrType}
                     onChange={(e) => setCorrType(e.target.value as any)}
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-semibold"
+                    className="w-full h-10 px-3 rounded-xl border border-border bg-muted text-foreground dark:text-white text-xs font-semibold"
                   >
                     <option value="CHECK_IN">{tBilingual('Check-In', 'প্রবেশ')}</option>
                     <option value="CHECK_OUT">{tBilingual('Check-Out', 'প্রস্থান')}</option>
@@ -632,20 +632,20 @@ export default function EmployeeAttendancePage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="corrTime" className="text-xs font-semibold text-slate-700 dark:text-slate-300">{tBilingual('Corrected Time', 'সংশোধিত সময়')}</Label>
+                  <Label htmlFor="corrTime" className="text-xs font-semibold text-foreground dark:text-muted-foreground">{tBilingual('Corrected Time', 'সংশোধিত সময়')}</Label>
                   <Input
                     id="corrTime"
                     type="time"
                     value={corrTime}
                     onChange={(e) => setCorrTime(e.target.value)}
-                    className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs h-10 rounded-xl"
+                    className="bg-muted border-border text-foreground dark:text-white text-xs h-10 rounded-xl"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="corrReason" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <Label htmlFor="corrReason" className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                   {tBilingual('Reason for Correction', 'সংশোধনের কারণ')} *
                 </Label>
                 <textarea
@@ -654,17 +654,17 @@ export default function EmployeeAttendancePage() {
                   value={corrReason}
                   onChange={(e) => setCorrReason(e.target.value)}
                   placeholder={tBilingual('e.g. Phone battery died, Device GPS failed, On-site client job', 'যেমন: ফোনের চার্জ শেষ ছিল, সাইটে কাজের ব্যস্ততা ছিল')}
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full p-3 rounded-xl border border-border bg-muted text-foreground dark:text-white text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                   required
                 />
               </div>
 
-              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-border dark:border-border">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setIsCorrectionOpen(false)}
-                  className="w-full sm:w-auto h-10 sm:h-9 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-xl"
+                  className="w-full sm:w-auto h-10 sm:h-9 border-border text-foreground text-xs rounded-xl"
                 >
                   {tBilingual('Cancel', 'বাতিল')}
                 </Button>

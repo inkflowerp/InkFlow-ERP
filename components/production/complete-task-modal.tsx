@@ -332,8 +332,8 @@ export function CompleteTaskModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Task Summary Banner */}
-        <div className="p-3.5 bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2 text-xs">
-          <div className="flex items-center justify-between gap-2 flex-wrap font-bold text-slate-900 dark:text-white">
+        <div className="p-3.5 bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800/40 border border-border rounded-xl space-y-2 text-xs">
+          <div className="flex items-center justify-between gap-2 flex-wrap font-bold text-foreground dark:text-white">
             <div className="flex items-center gap-2">
               <span className="text-sm font-black tracking-tight">{task.task_name}</span>
               <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
@@ -348,52 +348,52 @@ export function CompleteTaskModal({
                 task.status === 'in_progress' ? 'bg-emerald-500 text-white' :
                 task.status === 'paused' ? 'bg-amber-500 text-white' :
                 task.status === 'on_hold' ? 'bg-rose-500 text-white' :
-                'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+                'bg-muted text-foreground dark:text-foreground'
               }>
                 {task.status.toUpperCase()}
               </Badge>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-2xs pt-1 border-t border-slate-200/80 dark:border-slate-800">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-2xs pt-1 border-t border-border dark:border-border">
             <div className="space-y-0.5">
-              <span className="text-slate-400 font-semibold uppercase tracking-wider block">Job / Invoice:</span>
-              <strong className="text-slate-800 dark:text-slate-200 tabular-nums text-xs">{task.job_number || task.invoice_number || 'N/A'}</strong>
+              <span className="text-muted-foreground font-semibold uppercase tracking-wider block">Job / Invoice:</span>
+              <strong className="text-foreground tabular-nums text-xs">{task.job_number || task.invoice_number || 'N/A'}</strong>
             </div>
 
             <div className="space-y-0.5">
-              <span className="text-slate-400 font-semibold uppercase tracking-wider block">Customer:</span>
-              <strong className="text-slate-800 dark:text-slate-200 truncate block text-xs" title={task.customer_name || 'Direct Client'}>
+              <span className="text-muted-foreground font-semibold uppercase tracking-wider block">Customer:</span>
+              <strong className="text-foreground truncate block text-xs" title={task.customer_name || 'Direct Client'}>
                 {task.customer_name || 'Direct Client'}
               </strong>
             </div>
 
             <div className="space-y-0.5">
-              <span className="text-slate-400 font-semibold uppercase tracking-wider block">Print Size / Specs:</span>
-              <strong className="text-slate-800 dark:text-slate-200 block text-xs">
+              <span className="text-muted-foreground font-semibold uppercase tracking-wider block">Print Size / Specs:</span>
+              <strong className="text-foreground block text-xs">
                 {parsedDims.displayStr}
               </strong>
             </div>
 
             <div className="space-y-0.5">
-              <span className="text-slate-400 font-semibold uppercase tracking-wider block">Station / Machine:</span>
-              <strong className="text-slate-800 dark:text-slate-200 truncate block text-xs">
+              <span className="text-muted-foreground font-semibold uppercase tracking-wider block">Station / Machine:</span>
+              <strong className="text-foreground truncate block text-xs">
                 {task.assigned_machine_name || 'Floor Station'}
               </strong>
             </div>
           </div>
 
           {(task.required_material || (task as any).service_name) && (
-            <div className="flex items-center gap-3 text-2xs text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60 flex-wrap">
+            <div className="flex items-center gap-3 text-2xs text-muted-foreground pt-1 border-t border-border dark:border-border/60 flex-wrap">
               {task.required_material && (
                 <span className="flex items-center gap-1">
-                  <span className="font-semibold text-slate-400">Material:</span>
+                  <span className="font-semibold text-muted-foreground">Material:</span>
                   <strong className="text-blue-700 dark:text-blue-300">{task.required_material}</strong>
                 </span>
               )}
               {(task as any).service_name && (
                 <span className="flex items-center gap-1">
-                  <span className="font-semibold text-slate-400">Service:</span>
+                  <span className="font-semibold text-muted-foreground">Service:</span>
                   <strong className="text-indigo-700 dark:text-indigo-300">{(task as any).service_name}</strong>
                 </span>
               )}
@@ -440,7 +440,7 @@ export function CompleteTaskModal({
         {/* Quantities Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <Label className="text-xs font-bold text-foreground dark:text-muted-foreground">
               Good Quantity Completed (সঠিক পরিমাণ)
             </Label>
             <div className="flex items-center gap-2">
@@ -453,7 +453,7 @@ export function CompleteTaskModal({
                 className="tabular-nums font-bold text-base h-10"
                 required
               />
-              <span className="text-xs font-bold uppercase text-slate-500 shrink-0">
+              <span className="text-xs font-bold uppercase text-muted-foreground shrink-0">
                 {task.unit || 'pcs'}
               </span>
             </div>
@@ -467,7 +467,7 @@ export function CompleteTaskModal({
           {/* Mounted Roll Media Link & Selector */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <Disc className="h-3.5 w-3.5 text-blue-600" />
                 <span>Select Print Roll (রোল নির্বাচন)</span>
               </Label>
@@ -484,7 +484,7 @@ export function CompleteTaskModal({
             <select
               value={selectedRollId}
               onChange={(e) => setSelectedRollId(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs tabular-nums font-bold"
+              className="w-full h-10 px-3 rounded-lg border border-border bg-card text-xs tabular-nums font-bold"
             >
               <option value="">-- No roll deduction (Sheet-fed / Pre-cut / Manual) --</option>
               {availableRolls.map((roll) => (
@@ -529,7 +529,7 @@ export function CompleteTaskModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Orientation Switcher */}
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
                   <span>Print Orientation</span>
                   {rollCalc && (
                     <Badge variant={rollCalc.is_fit_across_width ? 'outline' : 'destructive'} className="text-2xs py-0">
@@ -562,9 +562,9 @@ export function CompleteTaskModal({
 
               {/* Bleed / Lead-in Allowance */}
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
                   <span>Bleed / Lead-in Allowance</span>
-                  <span className="text-2xs tabular-nums text-slate-500">
+                  <span className="text-2xs tabular-nums text-muted-foreground">
                     = {(bleedInches / 12).toFixed(2)} ft
                   </span>
                 </Label>
@@ -578,7 +578,7 @@ export function CompleteTaskModal({
                     className="h-8 tabular-nums text-xs font-bold"
                     placeholder="e.g. 3"
                   />
-                  <span className="text-xs font-bold text-slate-500 shrink-0">inches</span>
+                  <span className="text-xs font-bold text-muted-foreground shrink-0">inches</span>
                 </div>
               </div>
             </div>
@@ -598,13 +598,13 @@ export function CompleteTaskModal({
 
             {/* LIVE TELEMETRY CALCULATION HUD */}
             {rollCalc && (
-              <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-blue-100 dark:border-blue-900/40 text-xs space-y-1.5">
-                <div className="flex items-center justify-between tabular-nums text-2xs text-slate-600 dark:text-slate-400">
+              <div className="p-2.5 bg-card rounded-lg border border-blue-100 dark:border-blue-900/40 text-xs space-y-1.5">
+                <div className="flex items-center justify-between tabular-nums text-2xs text-muted-foreground dark:text-muted-foreground">
                   <span>Good Linear Feed:</span>
-                  <strong className="text-slate-900 dark:text-white">{rollCalc.linear_feed_ft} ft</strong>
+                  <strong className="text-foreground dark:text-white">{rollCalc.linear_feed_ft} ft</strong>
                 </div>
                 {rollCalc.bleed_allowance_ft > 0 && (
-                  <div className="flex items-center justify-between tabular-nums text-2xs text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between tabular-nums text-2xs text-muted-foreground dark:text-muted-foreground">
                     <span>+ Bleed Allowance ({bleedInches}&quot;):</span>
                     <strong className="text-blue-600">+{rollCalc.bleed_allowance_ft} ft</strong>
                   </div>
@@ -615,14 +615,14 @@ export function CompleteTaskModal({
                     <strong>+{rollCalc.wastage_length_ft} ft</strong>
                   </div>
                 )}
-                <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between tabular-nums text-xs">
-                  <span className="font-bold text-slate-800 dark:text-slate-200">Total Linear Deduction:</span>
+                <div className="pt-1.5 border-t border-border flex items-center justify-between tabular-nums text-xs">
+                  <span className="font-bold text-foreground dark:text-foreground">Total Linear Deduction:</span>
                   <span className="font-black text-rose-600 dark:text-rose-400 text-sm">
                     -{rollCalc.total_linear_deduction_ft} ft ({rollCalc.total_utilized_area_sft} SFT)
                   </span>
                 </div>
                 <div className="flex items-center justify-between tabular-nums text-xs pt-0.5">
-                  <span className="font-bold text-slate-800 dark:text-slate-200">Remaining Roll Length:</span>
+                  <span className="font-bold text-foreground dark:text-foreground">Remaining Roll Length:</span>
                   <span className="font-black text-emerald-600 dark:text-emerald-400">
                     {rollCalc.roll_current_length_ft} ft ➔ {rollCalc.new_remaining_length_ft} ft
                   </span>
@@ -660,7 +660,7 @@ export function CompleteTaskModal({
         )}
 
         {/* Scrap / Wastage Toggle */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-2 border-t border-border dark:border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <input
@@ -668,7 +668,7 @@ export function CompleteTaskModal({
                 id="hasScrap"
                 checked={hasScrap}
                 onChange={(e) => setHasScrap(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500 cursor-pointer"
+                className="h-4 w-4 rounded border-input text-rose-600 focus:ring-rose-500 cursor-pointer"
               />
               <Label htmlFor="hasScrap" className="text-xs font-bold text-rose-700 dark:text-rose-400 cursor-pointer flex items-center gap-1">
                 <AlertTriangle className="h-3.5 w-3.5" />
@@ -702,7 +702,7 @@ export function CompleteTaskModal({
                       setScrapWastageLengthFt(val)
                       setScrapQty(val)
                     }}
-                    className="h-9 tabular-nums font-bold text-sm bg-white dark:bg-slate-900 border-rose-300 dark:border-rose-800"
+                    className="h-9 tabular-nums font-bold text-sm bg-card border-rose-300 dark:border-rose-800"
                     placeholder={selectedRoll ? 'e.g. 2.5 ft' : 'e.g. 5'}
                     required={hasScrap}
                   />
@@ -723,7 +723,7 @@ export function CompleteTaskModal({
                       setDefectReason(e.target.value as any)
                       setScrapWastageReason(e.target.value)
                     }}
-                    className="w-full h-9 px-2.5 rounded-md border border-rose-300 dark:border-rose-800 bg-white dark:bg-slate-900 text-xs font-semibold"
+                    className="w-full h-9 px-2.5 rounded-md border border-rose-300 dark:border-rose-800 bg-card text-xs font-semibold"
                     required={hasScrap}
                   >
                     <option value="">-- Select Press Defect Reason --</option>
@@ -744,7 +744,7 @@ export function CompleteTaskModal({
                   value={scrapNotes}
                   onChange={(e) => setScrapNotes(e.target.value)}
                   placeholder="e.g. Head scratched middle 4ft of banner / Color banding during roll end"
-                  className="h-9 text-xs bg-white dark:bg-slate-900 border-rose-300"
+                  className="h-9 text-xs bg-card border-rose-300"
                 />
               </div>
             </div>
@@ -754,7 +754,7 @@ export function CompleteTaskModal({
         {/* Machine Running Meter Optional Reading */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
           <div className="space-y-1">
-            <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+            <Label className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
               Machine Meter Reading (মেশিন কাউন্টার - ঐচ্ছিক)
             </Label>
             <Input
@@ -767,7 +767,7 @@ export function CompleteTaskModal({
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+            <Label className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
               Operator Notes / Handover Remarks
             </Label>
             <Input
@@ -780,7 +780,7 @@ export function CompleteTaskModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border dark:border-border">
           <Button
             type="button"
             variant="outline"

@@ -80,7 +80,7 @@ export function AppShell({
     <RealtimeProvider>
       <SubscriptionProvider initialSnapshot={initialSubscriptionSnapshot}>
         <ToastProvider>
-          <div className="flex h-screen max-h-screen bg-background text-foreground flex-col overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-slate-900">
+          <div className="flex h-screen max-h-screen bg-background text-foreground flex-col overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-foreground">
             <div className="print:hidden">
               <PlatformSupportBanner />
               <NetworkBanner onOpenSyncDrawer={() => setSyncDrawerOpen(true)} />

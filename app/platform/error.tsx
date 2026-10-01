@@ -25,7 +25,7 @@ export default function PlatformError({ error, reset }: PlatformErrorProps) {
         Platform Service Exception
       </h2>
 
-      <p className="max-w-md text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">
+      <p className="max-w-md text-xs sm:text-sm text-muted-foreground mb-6 leading-relaxed">
         {error.message || 'An unexpected error occurred while loading platform metrics or administrative data.'}
       </p>
 
@@ -33,7 +33,7 @@ export default function PlatformError({ error, reset }: PlatformErrorProps) {
         <Button
           variant="outline"
           onClick={() => reset()}
-          className="h-10 px-4 gap-2 bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800 font-semibold cursor-pointer min-h-[44px]"
+          className="h-10 px-4 gap-2 bg-foreground border-border text-foreground hover:bg-secondary font-semibold cursor-pointer min-h-[44px]"
         >
           <RefreshCw className="h-4 w-4" />
           <span>Retry Operation</span>
