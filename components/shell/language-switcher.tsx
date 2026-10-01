@@ -20,7 +20,11 @@ export function LanguageSwitcher({
   const { locale, setLocale } = useI18n()
 
   const toggleLanguage = () => {
-    setLocale(locale === 'en' ? 'bn' : 'en')
+    const next = locale === 'en' ? 'bn' : 'en'
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('printerp_locale_explicit', 'true')
+    }
+    setLocale(next)
   }
 
   const isBn = locale === 'bn'

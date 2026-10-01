@@ -210,6 +210,7 @@ export interface TenantSessionData {
   primaryRole: string
   responsibilities: string[]
   permissions: string[]
+  defaultLocale?: 'en' | 'bn'
   loginTime: string
   token: string
 }
@@ -231,6 +232,7 @@ export interface TenantContext {
   responsibilities?: string[]
   permissions: string[]
   isSupportMode?: boolean
+  defaultLocale?: 'en' | 'bn'
 }
 
 export interface PlatformSupportSession {

@@ -34,7 +34,24 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<LocaleMode>(DEFAULT_LOCALE)
 
   useEffect(() => {
-    const saved = localStorage.getItem('printerp_locale') as string | null
+    let cookieLocale: string | null = null
+    if (typeof document !== 'undefined') {
+      const match = document.cookie.split('; ').find((r) => r.startsWith('printerp_locale='))
+      if (match) cookieLocale = match.split('=')[1]
+      if (!cookieLocale) {
+        const sMatch = document.cookie.split('; ').find((r) => r.startsWith('printerp_tenant_session='))
+        if (sMatch) {
+          try {
+            const parsed = JSON.parse(decodeURIComponent(sMatch.split('=')[1]))
+            if (parsed?.defaultLocale === 'en' || parsed?.defaultLocale === 'bn') {
+              cookieLocale = parsed.defaultLocale
+            }
+          } catch {}
+        }
+      }
+    }
+
+    const saved = (localStorage.getItem('printerp_locale') as string | null) || cookieLocale
     if (saved === 'en' || saved === 'bn') {
       setLocaleState(saved)
     } else if (saved === 'bi') {
@@ -45,7 +62,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const setLocale = (newLocale: LocaleMode) => {
     setLocaleState(newLocale)
-    localStorage.setItem('printerp_locale', newLocale)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('printerp_locale', newLocale)
+      document.cookie = `printerp_locale=${newLocale}; path=/; max-age=31536000; SameSite=Lax`
+    }
   }
 
   const t = (keyPath: string): string => {

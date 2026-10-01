@@ -62,7 +62,7 @@ function OnboardingWizard() {
   const isPaidPlan = Boolean(planParam && planParam !== 'trial')
   const totalSteps = isPaidPlan ? 8 : 7
 
-  const { locale, tBilingual } = useI18n()
+  const { locale, setLocale, tBilingual } = useI18n()
   const { trialDays, paidPlans, activePaymentGateways } = usePublicSubscriptionPlans()
 
   // Paid Plan & Gateway State for Step 8
@@ -102,13 +102,20 @@ function OnboardingWizard() {
       address: '',
       address_bn: '',
       currency: 'BDT',
-      default_language: 'bn',
+      default_language: (locale === 'en' ? 'en' : 'bn'),
       owner_name: '',
       owner_email: '',
       owner_phone: '',
       owner_password: '',
     },
   })
+
+  // Synchronize form default_language if user toggles header LanguageSwitcher
+  React.useEffect(() => {
+    if (locale === 'en' || locale === 'bn') {
+      setValue('default_language', locale)
+    }
+  }, [locale, setValue])
 
   // Prefill owner information if user just signed up or has session; redirect if already onboarded
   React.useEffect(() => {
@@ -317,6 +324,16 @@ function OnboardingWizard() {
             email: data.owner_email.toLowerCase().trim(),
             password: data.owner_password,
           })
+        } catch {}
+      }
+
+      // Ensure the tenant's chosen default language is active and synchronized in browser
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('printerp_locale', data.default_language)
+          localStorage.removeItem('printerp_locale_explicit')
+          document.cookie = `printerp_locale=${data.default_language}; path=/; max-age=31536000; SameSite=Lax`
+          setLocale(data.default_language as 'en' | 'bn')
         } catch {}
       }
 
@@ -773,7 +790,16 @@ function OnboardingWizard() {
                       return (
                         <div
                           key={lang.code}
-                          onClick={() => setValue('default_language', lang.code as 'en' | 'bn')}
+                          onClick={() => {
+                            const chosen = lang.code as 'en' | 'bn'
+                            setValue('default_language', chosen)
+                            setLocale(chosen)
+                            if (typeof window !== 'undefined') {
+                              localStorage.setItem('printerp_locale', chosen)
+                              localStorage.removeItem('printerp_locale_explicit')
+                              document.cookie = `printerp_locale=${chosen}; path=/; max-age=31536000; SameSite=Lax`
+                            }
+                          }}
                           className={cn(
                             'cursor-pointer rounded-xl border p-4 transition-all flex items-center justify-between',
                             isSelected

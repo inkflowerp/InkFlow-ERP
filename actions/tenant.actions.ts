@@ -92,15 +92,22 @@ export async function createCompanyAction(
       primaryRole: 'business_owner',
       responsibilities: ['business_owner'],
       permissions: membership?.effectivePermissions || [],
+      defaultLocale: (company as any).default_locale || data.default_language || 'bn',
       loginTime: new Date().toISOString(),
       token: `auth-${effectiveUserId}`,
     }
 
     const cookieStore = await cookies()
+    const cookieOpts = await getCookieOptions()
     cookieStore.set(
       TENANT_SESSION_COOKIE,
       encodeURIComponent(JSON.stringify(sessionData)),
-      await getCookieOptions()
+      cookieOpts
+    )
+    cookieStore.set(
+      'printerp_locale',
+      data.default_language || (company as any).default_locale || 'bn',
+      cookieOpts
     )
   }
 

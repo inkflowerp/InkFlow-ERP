@@ -62,6 +62,9 @@ export default function LocalizationSettingsPage() {
     setIsLoading(true)
     setIsSaved(false)
     try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('printerp_locale_explicit')
+      }
       setLocale(languageMode)
       if (company?.id) {
         await updateCompanyAction(company.id, {

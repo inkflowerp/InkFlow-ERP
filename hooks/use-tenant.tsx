@@ -15,6 +15,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { PlatformTenantCompany } from '@/types/platform.types'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
 import { switchCompanyAction } from '@/actions/tenant.actions'
+import { useI18n } from '@/i18n/context'
 
 const TenantContext = createContext<TenantContextType | null>(null)
 
@@ -80,7 +81,7 @@ function resolveCompanyFromContextOrStore(
       office_hours: '9:00 AM - 8:00 PM (Sat - Thu)',
       holidays: 'Friday',
       currency: 'BDT',
-      default_locale: 'bn',
+      default_locale: (ctx as any).defaultLocale || 'bn',
       logo_url: null,
       is_active: true,
       settings: { vat_rate: 7.5, bilingual_invoicing: true },
@@ -209,6 +210,21 @@ export function TenantProvider({
   const [settings, setSettings] = useState<CompanySettingsRow | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [syncedUser, setSyncedUser] = useState<CompanyUserWithProfile | null>(null)
+  const i18n = useI18n()
+
+  // Ensure active UI locale matches tenant organization's selected default language
+  useEffect(() => {
+    const tenantDefault =
+      company?.default_locale ||
+      (session as any)?.defaultLocale ||
+      (initialTenantContext as any)?.defaultLocale
+    if (tenantDefault === 'en' || tenantDefault === 'bn') {
+      const explicitChoice = typeof window !== 'undefined' ? localStorage.getItem('printerp_locale_explicit') : null
+      if (!explicitChoice && i18n.locale !== tenantDefault) {
+        i18n.setLocale(tenantDefault)
+      }
+    }
+  }, [company?.default_locale, session, initialTenantContext, i18n])
 
   // Map session role to TenantRole ('owner' | 'manager' | 'operator' | etc.)
   const currentRole: TenantRole = useMemo(() => {

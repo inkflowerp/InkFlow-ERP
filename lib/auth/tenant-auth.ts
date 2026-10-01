@@ -288,6 +288,7 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       branchName: companyUser.branch?.name,
       responsibilities: companyUser.responsibilities || [primaryRole],
       permissions: effectivePermissions || [],
+      defaultLocale: company.default_locale === 'en' ? 'en' : 'bn',
     }
 
     // Cache verified tenant context for 30s
