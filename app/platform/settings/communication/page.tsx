@@ -159,6 +159,8 @@ export default function PlatformEmailGatewayPage() {
         setSenderName(gwRes.data.sender_name || 'InkFlow Platform')
         setSenderEmail(gwRes.data.sender_email || 'inkflow.erp@gmail.com')
         setReplyToEmail(gwRes.data.reply_to_email || 'inkflow.erp@gmail.com')
+      } else {
+        setGateway(null)
       }
 
       if (tplRes.success && tplRes.data) {
@@ -205,6 +207,7 @@ export default function PlatformEmailGatewayPage() {
     setDisconnecting(true)
     const res = await disconnectPlatformGmailAction()
     if (res.success) {
+      setGateway(null)
       showNotification('Platform Gmail disconnected. System credentials revoked.', 'success')
       await loadData()
     } else {

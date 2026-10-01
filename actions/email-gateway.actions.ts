@@ -57,14 +57,40 @@ export async function getPlatformEmailGatewayAction(): Promise<{
       return { success: true, data: sanitizeGatewayRecord(data) }
     }
 
-    // Check local data store
-    const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
-    const platLocal = localGateways.find((g) => !g.tenant_id && g.is_default)
-    if (platLocal) {
-      return { success: true, data: sanitizeGatewayRecord(platLocal) }
+    // Check environment SMTP fallback
+    if (process.env.SMTP_HOST) {
+      const envSmtp: EmailGatewayRecord = {
+        id: 'gw-platform-env-smtp',
+        tenant_id: null,
+        scope_type: 'PLATFORM',
+        provider: 'smtp',
+        type: 'transactional',
+        smtp_host: process.env.SMTP_HOST,
+        smtp_port: Number(process.env.SMTP_PORT) || 587,
+        smtp_username: process.env.SMTP_USER || process.env.SMTP_USERNAME || null,
+        encrypted_credentials: null,
+        encryption_type: (process.env.SMTP_SECURE === 'true' ? 'ssl' : 'tls') as any,
+        sender_name: process.env.PLATFORM_SENDER_NAME || process.env.SMTP_FROM_NAME || 'InkFlow Platform',
+        sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'inkflow.erp@gmail.com',
+        reply_to_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_REPLY_TO || 'inkflow.erp@gmail.com',
+        status: 'active',
+        is_default: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      return { success: true, data: sanitizeGatewayRecord(envSmtp) }
     }
 
-    return { success: true, data: sanitizeGatewayRecord(DEFAULT_PLATFORM_GATEWAY) }
+    // Check local data store (development/tests only)
+    if (process.env.NODE_ENV !== 'production') {
+      const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
+      const platLocal = localGateways.find((g) => !g.tenant_id && g.is_default && g.status === 'active')
+      if (platLocal) {
+        return { success: true, data: sanitizeGatewayRecord(platLocal) }
+      }
+    }
+
+    return { success: true, data: null }
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to retrieve platform gateway' }
   }

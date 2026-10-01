@@ -112,7 +112,22 @@ export async function GET(request: NextRequest) {
     } as EmailGatewayRecord
 
     try {
-      // Find existing Gmail gateway for this scope
+      // 1. Deactivate other non-Gmail gateways as default before making Gmail default
+      try {
+        let deactQuery = (adminClient as any)
+          .from('email_gateways')
+          .update({ is_default: false })
+          .neq('provider', 'gmail')
+
+        if (statePayload.scopeType === 'PLATFORM') {
+          deactQuery = deactQuery.is('tenant_id', null)
+        } else {
+          deactQuery = deactQuery.eq('tenant_id', statePayload.tenantId!)
+        }
+        await deactQuery
+      } catch {}
+
+      // 2. Find existing Gmail gateway for this scope
       let query = (adminClient as any)
         .from('email_gateways')
         .select('id')
@@ -136,6 +151,8 @@ export async function GET(request: NextRequest) {
 
         if (!error && data) {
           savedRecord = data
+        } else if (error) {
+          console.error('[GoogleOAuthCallback] Failed to update email_gateways row:', error)
         }
       } else {
         const candidateUserId = isValidUuid(statePayload.userId) ? statePayload.userId : null
@@ -166,23 +183,10 @@ export async function GET(request: NextRequest) {
 
         if (!insertRes.error && insertRes.data) {
           savedRecord = insertRes.data
+        } else if (insertRes.error) {
+          console.error('[GoogleOAuthCallback] Failed to insert email_gateways row:', insertRes.error)
         }
       }
-
-      // Mark other non-Gmail gateways as non-default for this scope
-      try {
-        let deactQuery = (adminClient as any)
-          .from('email_gateways')
-          .update({ is_default: false })
-          .neq('provider', 'gmail')
-
-        if (statePayload.scopeType === 'PLATFORM') {
-          deactQuery = deactQuery.is('tenant_id', null)
-        } else {
-          deactQuery = deactQuery.eq('tenant_id', statePayload.tenantId!)
-        }
-        await deactQuery
-      } catch {}
     } catch (dbErr) {
       console.warn('[GoogleOAuthCallback] Database persist warning, proceeding with in-memory store:', dbErr)
     }
