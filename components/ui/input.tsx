@@ -5,10 +5,12 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   icon?: React.ReactNode
   rightElement?: React.ReactNode
   error?: string
+  containerClassName?: string
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, icon, rightElement, error, ...props }, ref) => {
+  (rawProps, ref) => {
+    const { className, type, icon, rightElement, error, containerClassName, ...props } = rawProps
     const inputElement = (
       <input
         type={type}
@@ -24,14 +26,21 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       />
     )
 
-    const hasWrapper = Boolean(icon || rightElement || 'error' in props || error)
+    // A component must NEVER toggle between wrapped (div) and bare (input) during its lifecycle,
+    // as changing the root element type unmounts the DOM node and drops focus.
+    // If icon, rightElement, or error was ever passed (even if error is undefined or becomes undefined),
+    // we keep the wrapper stable.
+    const hasWrapperRef = React.useRef(false)
+    if (icon || rightElement || ('error' in rawProps) || Boolean(error)) {
+      hasWrapperRef.current = true
+    }
 
-    if (!hasWrapper) {
+    if (!hasWrapperRef.current) {
       return inputElement
     }
 
     return (
-      <div className="relative w-full">
+      <div className={cn('relative w-full', containerClassName)}>
         {icon && (
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
             {icon}

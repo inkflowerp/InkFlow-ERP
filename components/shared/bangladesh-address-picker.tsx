@@ -65,12 +65,12 @@ export function BangladeshAddressPicker({
   }, [upazilaId])
 
   useEffect(() => {
-    if (address !== undefined) setStreetAddress(address)
-  }, [address])
+    if (address !== undefined && address !== streetAddress) setStreetAddress(address)
+  }, [address, streetAddress])
 
   useEffect(() => {
-    if (addressBn !== undefined) setStreetAddressBn(addressBn)
-  }, [addressBn])
+    if (addressBn !== undefined && addressBn !== streetAddressBn) setStreetAddressBn(addressBn)
+  }, [addressBn, streetAddressBn])
 
   // Filter districts by division
   const availableDistricts = BD_DISTRICTS.filter((d) => d.division_id === selectedDivision)

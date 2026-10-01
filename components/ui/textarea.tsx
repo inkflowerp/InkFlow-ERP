@@ -3,10 +3,12 @@ import { cn } from '@/lib/utils'
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: string
+  containerClassName?: string
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, error, ...props }, ref) => {
+  (rawProps, ref) => {
+    const { className, error, containerClassName, ...props } = rawProps
     const textareaElement = (
       <textarea
         className={cn(
@@ -19,16 +21,21 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       />
     )
 
-    const hasWrapper = Boolean('error' in props || error)
+    // A component must NEVER toggle between wrapped (div) and bare (textarea) during its lifecycle,
+    // as changing the root element type unmounts the DOM node and drops focus.
+    const hasWrapperRef = React.useRef(false)
+    if (('error' in rawProps) || Boolean(error)) {
+      hasWrapperRef.current = true
+    }
 
-    if (!hasWrapper) {
+    if (!hasWrapperRef.current) {
       return textareaElement
     }
 
     return (
-      <div className="w-full">
+      <div className={cn('w-full', containerClassName)}>
         {textareaElement}
-        <p className="mt-1 text-xs text-destructive font-medium">{error}</p>
+        {error && <p className="mt-1 text-xs text-destructive font-medium">{error}</p>}
       </div>
     )
   }
