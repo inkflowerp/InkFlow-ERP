@@ -398,7 +398,7 @@ export class PdfGeneratorService {
     // Bank & MFS details on Left side
     const payInfoY = currentY
     doc.drawText('PAYMENT INSTRUCTIONS:', 40, payInfoY + 8, { font: 'F2', size: 8, color: [100, 116, 139] })
-    doc.drawText('Bank: Islami Bank Bangladesh PLC / DBBL', 40, payInfoY + 22, { font: 'F1', size: 8, color: [71, 85, 105] })
+    doc.drawText('Bank: ' + (company?.bank_details || 'Bank Transfer / Cash / Cheque'), 40, payInfoY + 22, { font: 'F1', size: 8, color: [71, 85, 105] })
     doc.drawText('Account Name: ' + compName, 40, payInfoY + 34, { font: 'F1', size: 8, color: [71, 85, 105] })
     doc.drawText('bKash / Nagad Merchant: ' + compPhone, 40, payInfoY + 46, { font: 'F1', size: 8, color: [71, 85, 105] })
     doc.drawText('Please mention Invoice #' + invoice.invoice_number + ' in payment reference.', 40, payInfoY + 58, { font: 'F3', size: 8, color: [100, 116, 139] })

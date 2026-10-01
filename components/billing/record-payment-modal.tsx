@@ -120,7 +120,7 @@ export function RecordPaymentModal({
   })
   const [receivedByName, setReceivedByName] = useState('Cashier / Accountant')
   const [referenceNo, setReferenceNo] = useState('')
-  const [bankName, setBankName] = useState('Islami Bank Bangladesh PLC')
+  const [bankName, setBankName] = useState('')
   const [notes, setNotes] = useState('')
 
   // Submission State

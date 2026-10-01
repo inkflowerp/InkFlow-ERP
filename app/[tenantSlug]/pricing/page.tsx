@@ -624,7 +624,7 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">
             {(() => {
               const withMargin = products.filter((p) => Number(p.selling_price) > 0 && Number(p.base_cost) > 0)
-              if (withMargin.length === 0) return '42%'
+              if (withMargin.length === 0) return '0%'
               const avg = Math.round(
                 withMargin.reduce(
                   (sum, p) => sum + ((Number(p.selling_price) - Number(p.base_cost)) / Number(p.selling_price)) * 100,
@@ -634,7 +634,21 @@ export default function PricingManagementPage() {
               return `${avg}%`
             })()}
           </div>
-          <div className="text-2xs text-emerald-600 font-semibold mt-0.5">Healthy gross margin</div>
+          <div className="text-2xs text-emerald-600 font-semibold mt-0.5">
+            {(() => {
+              const withMargin = products.filter((p) => Number(p.selling_price) > 0 && Number(p.base_cost) > 0)
+              if (withMargin.length === 0) return tBilingual('No active margin data', 'কোনো মার্জিন ডেটা নেই')
+              const avg = Math.round(
+                withMargin.reduce(
+                  (sum, p) => sum + ((Number(p.selling_price) - Number(p.base_cost)) / Number(p.selling_price)) * 100,
+                  0
+                ) / withMargin.length
+              )
+              if (avg >= 35) return tBilingual('Healthy gross margin', 'স্বাস্থ্যকর মোট মুনাফা')
+              if (avg >= 15) return tBilingual('Moderate margin', 'মাঝারি মুনাফা')
+              return tBilingual('Low margin alert', 'কম মুনাফার সতর্কতা')
+            })()}
+          </div>
         </Card>
       </div>
 

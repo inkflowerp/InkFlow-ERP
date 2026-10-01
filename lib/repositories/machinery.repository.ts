@@ -187,8 +187,8 @@ export class MachineryRepository {
     const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
     let records = all.filter((m: MachineryRecord) => !m.company_id || m.company_id === companyId || companyId === 'default')
 
-    // If local store is also empty, auto-seed standard press fleet
-    if (records.length === 0) {
+    // If local store is also empty in test environment, provision test press fleet
+    if (records.length === 0 && process.env.NODE_ENV === 'test') {
       const seeded: MachineryRecord[] = Object.keys(PRESET_MACHINES).map((key) =>
         buildDefaultMachineryRecord(key, companyId)
       )

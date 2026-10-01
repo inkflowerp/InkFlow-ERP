@@ -310,6 +310,65 @@ export function OwnerDashboard({
     }
   }, [data, company?.id])
 
+  // Real Computed Operations & Pipeline Metrics (Zero demo data fallbacks)
+  const realTotalOrders = useMemo(() => {
+    let storeOrdersCount = 0
+    if (typeof window !== 'undefined') {
+      try {
+        const orders = [
+          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company?.slug) || []),
+          ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, company?.id) || []),
+        ]
+        const seen = new Set<string>()
+        storeOrdersCount = orders.filter((o) => o?.id && !seen.has(o.id) && seen.add(o.id)).length
+      } catch {}
+    }
+    const pipelineSum =
+      (safeData.pipelineCounts?.newWork ?? 0) +
+      (safeData.pipelineCounts?.production ?? 0) +
+      (safeData.pipelineCounts?.ready ?? 0) +
+      (safeData.pipelineCounts?.delivered ?? 0)
+    return Math.max(storeOrdersCount, pipelineSum, safeData.salesMetrics.todaySalesCount ?? 0)
+  }, [company?.id, company?.slug, safeData])
+
+  const realPendingOrders = useMemo(() => {
+    return (safeData.receivablesMetrics.unpaidInvoicesCount ?? 0) > 0
+      ? (safeData.receivablesMetrics.unpaidInvoicesCount ?? 0)
+      : (safeData.pipelineCounts?.newWork ?? 0) + (safeData.pipelineCounts?.quotation ?? 0)
+  }, [safeData])
+
+  const realProductionCount = useMemo(() => {
+    return (
+      safeData.productionSummary?.activeCount ??
+      ((safeData.segmentMetrics?.digital.activeJobsCount ?? 0) +
+        (safeData.segmentMetrics?.offset.activeJobsCount ?? 0) +
+        (safeData.segmentMetrics?.signage.activeJobsCount ?? 0))
+    )
+  }, [safeData])
+
+  const realReadyForDeliveryCount = useMemo(() => {
+    return (
+      (safeData.deliverySummary?.scheduledCount ?? 0) +
+        (safeData.deliverySummary?.assignedCount ?? 0) ||
+      (safeData.pipelineCounts?.ready ?? 0) ||
+      (safeData.segmentMetrics?.digital.completedTodayCount ?? 0)
+    )
+  }, [safeData])
+
+  const salesTrend = useMemo(() => {
+    if (safeData.salesMetrics.salesChangePercent === null || safeData.salesMetrics.salesChangePercent === undefined) {
+      return undefined
+    }
+    const val = safeData.salesMetrics.salesChangePercent
+    return {
+      value: `${Math.abs(val)}%`,
+      labelEn: 'vs yesterday',
+      labelBn: 'গতকালের তুলনায়',
+      direction: (val >= 0 ? 'up' : 'down') as 'up' | 'down',
+      isGood: val >= 0,
+    }
+  }, [safeData.salesMetrics.salesChangePercent])
+
   // Filtered Production Jobs according to Printing Streams
   const filteredProductionJobs = (safeData.productionSummary.topJobs || []).filter((j) => {
     const name = `${j.productName || ''} ${j.currentStage || ''}`.toLowerCase()
@@ -686,84 +745,37 @@ export function OwnerDashboard({
             <KpiCard
               titleEn="Total Orders"
               titleBn="মোট অর্ডার"
-              value={
-                (safeData.salesMetrics.todaySalesCount ?? 0) > 0
-                  ? 1248 + (safeData.salesMetrics.todaySalesCount ?? 0)
-                  : 1248
-              }
+              value={realTotalOrders}
               icon={ShoppingCart}
               colorVariant="blue"
-              trend={{
-                value: '12.5%',
-                labelEn: 'vs last month',
-                labelBn: 'গত মাসের তুলনায়',
-                direction: 'up',
-                isGood: true,
-              }}
+              trend={salesTrend}
             />
 
             {/* 2. Pending Orders */}
             <KpiCard
               titleEn="Pending Orders"
               titleBn="অপেক্ষমান অর্ডার"
-              value={
-                (safeData.receivablesMetrics.unpaidInvoicesCount ?? 0) > 0
-                  ? 86 + (safeData.receivablesMetrics.unpaidInvoicesCount ?? 0)
-                  : 86
-              }
+              value={realPendingOrders}
               icon={Clock}
               colorVariant="amber"
-              trend={{
-                value: '3.6%',
-                labelEn: 'vs yesterday',
-                labelBn: 'গতকালের তুলনায়',
-                direction: 'up',
-                isGood: false,
-              }}
             />
 
             {/* 3. Production */}
             <KpiCard
               titleEn="Production"
               titleBn="চলমান প্রোডাকশন"
-              value={
-                (safeData.segmentMetrics?.digital.activeJobsCount ?? 0) +
-                (safeData.segmentMetrics?.offset.activeJobsCount ?? 0) +
-                (safeData.segmentMetrics?.signage.activeJobsCount ?? 0) > 0
-                  ? (safeData.segmentMetrics?.digital.activeJobsCount ?? 0) +
-                    (safeData.segmentMetrics?.offset.activeJobsCount ?? 0) +
-                    (safeData.segmentMetrics?.signage.activeJobsCount ?? 0)
-                  : 42
-              }
+              value={realProductionCount}
               icon={Settings}
               colorVariant="indigo"
-              trend={{
-                value: '16.7%',
-                labelEn: 'vs last week',
-                labelBn: 'গত সপ্তাহের তুলনায়',
-                direction: 'up',
-                isGood: true,
-              }}
             />
 
             {/* 4. Ready for Delivery */}
             <KpiCard
               titleEn="Ready for Delivery"
               titleBn="ডেলিভারি প্রস্তুত"
-              value={
-                (safeData.segmentMetrics?.digital.completedTodayCount ?? 0) > 0
-                  ? 27 + (safeData.segmentMetrics?.digital.completedTodayCount ?? 0)
-                  : 27
-              }
+              value={realReadyForDeliveryCount}
               icon={Truck}
               colorVariant="emerald"
-              trend={{
-                value: '28.6%',
-                labelEn: 'vs yesterday',
-                labelBn: 'গতকালের তুলনায়',
-                direction: 'up',
-                isGood: true,
-              }}
             />
 
             {/* ROW 2: Financials */}
@@ -771,63 +783,31 @@ export function OwnerDashboard({
             <KpiCard
               titleEn="Total Sales"
               titleBn="মোট বিক্রয়"
-              value={
-                (safeData.profitMetrics.totalRevenue ?? 0) > 0
-                  ? safeData.profitMetrics.totalRevenue
-                  : 842500
-              }
+              value={safeData.profitMetrics.totalRevenue || safeData.salesMetrics.todaySales || 0}
               isCurrency={true}
               icon={BarChart3}
               colorVariant="emerald"
-              trend={{
-                value: '12.8%',
-                labelEn: 'vs last month',
-                labelBn: 'গত মাসের তুলনায়',
-                direction: 'up',
-                isGood: true,
-              }}
+              trend={salesTrend}
             />
 
             {/* 6. Outstanding */}
             <KpiCard
               titleEn="Outstanding"
               titleBn="বকেয়া বাকি"
-              value={
-                (safeData.receivablesMetrics.totalDue ?? 0) > 0
-                  ? safeData.receivablesMetrics.totalDue
-                  : 216000
-              }
+              value={safeData.receivablesMetrics.totalDue ?? 0}
               isCurrency={true}
               icon={FileText}
               colorVariant="rose"
-              trend={{
-                value: '5.4%',
-                labelEn: 'vs last month',
-                labelBn: 'গত মাসের তুলনায়',
-                direction: 'up',
-                isGood: false,
-              }}
             />
 
             {/* 7. Production Cost */}
             <KpiCard
               titleEn="Production Cost"
               titleBn="উৎপাদন খরচ"
-              value={
-                (safeData.profitMetrics.totalCost ?? 0) > 0
-                  ? safeData.profitMetrics.totalCost
-                  : 384000
-              }
+              value={safeData.profitMetrics.totalCost ?? 0}
               isCurrency={true}
               icon={Coins}
               colorVariant="slate"
-              trend={{
-                value: '4.2%',
-                labelEn: 'vs last month',
-                labelBn: 'গত মাসের তুলনায়',
-                direction: 'down',
-                isGood: true,
-              }}
             />
 
             {/* 8. Net Profit */}
@@ -835,20 +815,12 @@ export function OwnerDashboard({
               titleEn="Net Profit"
               titleBn="নিট লাভ"
               value={
-                (safeData.profitMetrics.grossProfit ?? 0) > 0
-                  ? safeData.profitMetrics.grossProfit
-                  : 172500
+                safeData.profitMetrics.grossProfit ||
+                (safeData.profitMetrics.totalRevenue ? safeData.profitMetrics.totalRevenue - safeData.profitMetrics.totalCost : 0)
               }
               isCurrency={true}
               icon={TrendingUp}
               colorVariant="emerald"
-              trend={{
-                value: '20.4%',
-                labelEn: 'vs last month',
-                labelBn: 'গত মাসের তুলনায়',
-                direction: 'up',
-                isGood: true,
-              }}
             />
           </KpiGrid>
         )}

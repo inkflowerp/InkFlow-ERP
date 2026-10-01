@@ -89,7 +89,9 @@ function MobileOperatorPanelContent() {
   })
   const [machineries, setMachineries] = useState<MachineryRecord[]>(() => {
     try {
-      return PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      const presetKeys = ['heidelberg_sm74', 'roland_truevis', 'polar_115x', 'fuji_xerox_c1000i', 'manual_finishing']
+      return all.filter((m) => !presetKeys.includes(m.id) && (!m.company_id || m.company_id === (company?.id || slug)))
     } catch {
       return []
     }
@@ -289,9 +291,11 @@ function MobileOperatorPanelContent() {
       }
 
       if (machRes.success && machRes.data) {
-        setMachineries(machRes.data)
+        const presetKeys = ['heidelberg_sm74', 'roland_truevis', 'polar_115x', 'fuji_xerox_c1000i', 'manual_finishing']
+        const cleanedMachineries = machRes.data.filter((m) => !presetKeys.includes(m.id))
+        setMachineries(cleanedMachineries)
         try {
-          PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, machRes.data, false)
+          PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, cleanedMachineries, false)
         } catch {}
       }
     } catch (_) {

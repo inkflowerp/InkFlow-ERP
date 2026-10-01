@@ -56,9 +56,24 @@ export function CashBankView({
   const [selectedStatementAccount, setSelectedStatementAccount] = useState<AccountRecord | null>(null)
 
   const liquidAccounts = useMemo(() => {
-    return accounts.filter(
-      (a) => a.account_subtype === 'CASH' || a.account_subtype === 'BANK' || a.account_subtype === 'MFS'
-    )
+    return accounts.filter((a) => {
+      const isLiquid = a.account_subtype === 'CASH' || a.account_subtype === 'BANK' || a.account_subtype === 'MFS'
+      if (!isLiquid) return false
+      // Only show accounts that the tenant / business owner added
+      if (a.is_system) return false
+      const meta = a.metadata as any
+      if (
+        meta?.mfs_wallet_number === '01711000000' ||
+        meta?.mfs_wallet_number === '01811000000' ||
+        meta?.mfs_wallet_number === '01911000000' ||
+        meta?.account_number_masked === '•••• •••• 4589' ||
+        a.name?.includes('(Islami Bank)') ||
+        a.name?.includes('(Main Drawer)')
+      ) {
+        return false
+      }
+      return true
+    })
   }, [accounts])
 
   // Compute total balances by subtype

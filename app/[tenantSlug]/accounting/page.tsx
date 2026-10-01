@@ -238,17 +238,38 @@ function AccountingContent() {
         getCashClosingsAction(undefined, effCompany).catch(() => ({ success: false, data: [] })),
       ])
 
+      const isDemoAccount = (a: AccountRecord) => {
+        const meta = a.metadata as any
+        return Boolean(
+          meta?.mfs_wallet_number === '01711000000' ||
+          meta?.mfs_wallet_number === '01811000000' ||
+          meta?.mfs_wallet_number === '01911000000' ||
+          meta?.account_number_masked === '•••• •••• 4589' ||
+          a.name?.includes('(Islami Bank)') ||
+          (a.is_system && (a.code === '1030' || a.code === '1031' || a.code === '1032'))
+        )
+      }
+
       if (accRes && accRes.success && Array.isArray(accRes.data) && accRes.data.length > 0) {
-        setAccounts(accRes.data)
+        setAccounts(accRes.data.filter((a) => !isDemoAccount(a)))
       } else {
         const localAccounts = PrintERPDataStore.get<AccountRecord[]>(STORAGE_KEYS.ACCOUNTS) || []
-        const companyAccounts = localAccounts.filter((a) => !a.company_id || a.company_id === effCompany || a.company_id === 'default')
+        const companyAccounts = localAccounts.filter((a) => (!a.company_id || a.company_id === effCompany || a.company_id === 'default') && !isDemoAccount(a))
         if (companyAccounts.length > 0) {
           setAccounts(companyAccounts)
         } else if (accRes && accRes.success && Array.isArray(accRes.data)) {
-          setAccounts(accRes.data)
+          setAccounts(accRes.data.filter((a) => !isDemoAccount(a)))
         }
       }
+
+      // Purge any demo accounts cached in local storage for this tenant
+      try {
+        const localAccs = PrintERPDataStore.get<AccountRecord[]>(STORAGE_KEYS.ACCOUNTS) || []
+        const filteredAccs = localAccs.filter((a) => !isDemoAccount(a))
+        if (localAccs.length !== filteredAccs.length) {
+          PrintERPDataStore.set(STORAGE_KEYS.ACCOUNTS, filteredAccs, false)
+        }
+      } catch {}
 
       if (dashRes && dashRes.success && dashRes.data) setDashboardMetrics(dashRes.data)
       if (arRes && arRes.success && arRes.data) setReceivables(arRes.data)
