@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedPlatformContext } from '@/lib/auth/platform-auth'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { generateGoogleAuthUrl, getGoogleOAuthDiagnostics } from '@/lib/email/oauth/google-oauth'
+import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,6 +15,7 @@ export async function GET(request: NextRequest) {
     const scopeParam = searchParams.get('scope') || 'tenant'
     const tenantIdParam = searchParams.get('tenantId')
     const rawReturnUrl = searchParams.get('returnUrl')
+    const origin = resolveRequestOrigin(request)
     const returnUrlParam =
       rawReturnUrl &&
       rawReturnUrl.startsWith('/') &&
@@ -26,15 +28,16 @@ export async function GET(request: NextRequest) {
 
     let scopeType: 'PLATFORM' | 'TENANT' = 'TENANT'
     let resolvedTenantId: string | null = null
+    let resolvedSlug: string | null = null
     let userId: string = ''
 
     if (isPlatform) {
       const platformUser = await getAuthenticatedPlatformContext()
       if (!platformUser || !platformUser.isActive) {
-        return NextResponse.json(
-          { error: 'Unauthorized: Platform admin authorization required' },
-          { status: 401 }
-        )
+        const returnUrl = returnUrlParam || '/platform/settings/communication'
+        const redirectUrl = new URL(returnUrl, request.url)
+        redirectUrl.searchParams.set('error', 'unauthorized')
+        return NextResponse.redirect(redirectUrl)
       }
       scopeType = 'PLATFORM'
       resolvedTenantId = null
@@ -47,19 +50,20 @@ export async function GET(request: NextRequest) {
           !tenantUser.permissions.includes('settings.edit') &&
           !tenantUser.permissions.includes('settings.manage'))
       ) {
-        return NextResponse.json(
-          { error: 'Unauthorized: Tenant admin settings.edit permission required' },
-          { status: 401 }
-        )
+        const returnUrl = returnUrlParam || `/${tenantUser?.companySlug || tenantIdParam || 'tenant'}/settings/email`
+        const redirectUrl = new URL(returnUrl, request.url)
+        redirectUrl.searchParams.set('error', 'unauthorized')
+        return NextResponse.redirect(redirectUrl)
       }
       scopeType = 'TENANT'
       resolvedTenantId = tenantUser.companyId
+      resolvedSlug = tenantUser.companySlug
       userId = tenantUser.userId
     }
 
-    const diag = getGoogleOAuthDiagnostics()
+    const diag = getGoogleOAuthDiagnostics(origin)
     if (!diag.isConfigured) {
-      const returnUrl = returnUrlParam || (isPlatform ? '/platform/settings/communication' : `/${resolvedTenantId || 'tenant'}/settings/email`)
+      const returnUrl = returnUrlParam || (isPlatform ? '/platform/settings/communication' : `/${resolvedSlug || resolvedTenantId || 'tenant'}/settings/email`)
       const redirectUrl = new URL(returnUrl, request.url)
       redirectUrl.searchParams.set('error', 'google_client_id_missing')
       return NextResponse.redirect(redirectUrl)
@@ -70,6 +74,7 @@ export async function GET(request: NextRequest) {
       tenantId: resolvedTenantId,
       userId,
       returnUrl: returnUrlParam,
+      requestOrigin: origin,
     })
 
     return NextResponse.redirect(authUrl)

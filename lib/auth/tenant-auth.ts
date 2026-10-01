@@ -226,8 +226,8 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       targetSlugOrId !== 'c-01' &&
       targetSlugOrId !== 'default' &&
       targetSlugOrId !== 'all' &&
-      company.slug !== targetSlugOrId.toLowerCase().trim() &&
-      company.id !== targetSlugOrId
+      company.slug?.toLowerCase().trim() !== targetSlugOrId.toLowerCase().trim() &&
+      company.id?.toLowerCase().trim() !== targetSlugOrId.toLowerCase().trim()
     ) {
       tenantContextCache.set(contextCacheKey, { context: null, expiresAt: Date.now() + 5000 })
       return null // FAIL CLOSED: Access to non-member company denied

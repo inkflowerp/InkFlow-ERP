@@ -28,9 +28,20 @@ export async function GET(request: NextRequest) {
     console.warn('[GoogleOAuthCallback] Google returned error:', oauthError)
     const statePayload = verifyGoogleOAuthState(state)
     if (statePayload) {
-      const returnBase = statePayload.scopeType === 'PLATFORM'
-        ? '/platform/settings/communication'
-        : `/${statePayload.tenantId || 'tenant'}/settings/email`
+      let returnBase = '/platform/settings/communication'
+      if (statePayload.scopeType === 'TENANT') {
+        try {
+          const adminClient = createAdminClient()
+          const { data: comp } = await (adminClient as any)
+            .from('companies')
+            .select('slug')
+            .eq('id', statePayload.tenantId)
+            .maybeSingle()
+          returnBase = `/${comp?.slug || 'tenant'}/settings/email`
+        } catch {
+          returnBase = `/${statePayload.tenantId || 'tenant'}/settings/email`
+        }
+      }
       const errUrl = new URL(statePayload.returnUrl || returnBase, origin)
       errUrl.searchParams.set('error', oauthError)
       return NextResponse.redirect(errUrl)
@@ -51,7 +62,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // 3. Exchange Authorization Code for Tokens
-    const tokenResponse = await exchangeGoogleAuthCode(code)
+    const tokenResponse = await exchangeGoogleAuthCode(code, statePayload.redirectUri)
     const { access_token, refresh_token, expires_in, scope } = tokenResponse
 
     // 4. Retrieve Google Identity Profile
@@ -91,41 +102,69 @@ export async function GET(request: NextRequest) {
     }
 
     // 6. Upsert into database
-    let query = (adminClient as any).from('email_gateways').select('id')
+    let savedRecord: EmailGatewayRecord = {
+      id: `gw-gmail-${Date.now()}`,
+      ...gatewayPayload,
+    } as EmailGatewayRecord
 
-    if (statePayload.scopeType === 'PLATFORM') {
-      query = query.is('tenant_id', null)
-    } else {
-      query = query.eq('tenant_id', statePayload.tenantId!)
-    }
-
-    const { data: existing } = await query.maybeSingle()
-
-    let savedRecord: EmailGatewayRecord
-
-    if (existing?.id) {
-      const { data, error } = await (adminClient as any)
+    try {
+      // Find existing Gmail gateway for this scope
+      let query = (adminClient as any)
         .from('email_gateways')
-        .update(gatewayPayload)
-        .eq('id', existing.id)
-        .select()
-        .single()
+        .select('id')
+        .eq('provider', 'gmail')
 
-      if (error) throw error
-      savedRecord = data
-    } else {
-      const { data, error } = await (adminClient as any)
-        .from('email_gateways')
-        .insert({
-          ...gatewayPayload,
-          created_by: statePayload.userId,
-          created_at: nowIso,
-        })
-        .select()
-        .single()
+      if (statePayload.scopeType === 'PLATFORM') {
+        query = query.is('tenant_id', null)
+      } else {
+        query = query.eq('tenant_id', statePayload.tenantId!)
+      }
 
-      if (error) throw error
-      savedRecord = data
+      const { data: existing } = await query.maybeSingle()
+
+      if (existing?.id) {
+        const { data, error } = await (adminClient as any)
+          .from('email_gateways')
+          .update(gatewayPayload)
+          .eq('id', existing.id)
+          .select()
+          .single()
+
+        if (!error && data) {
+          savedRecord = data
+        }
+      } else {
+        const { data, error } = await (adminClient as any)
+          .from('email_gateways')
+          .insert({
+            ...gatewayPayload,
+            created_by: statePayload.userId,
+            created_at: nowIso,
+          })
+          .select()
+          .single()
+
+        if (!error && data) {
+          savedRecord = data
+        }
+      }
+
+      // Mark other non-Gmail gateways as non-default for this scope
+      try {
+        let deactQuery = (adminClient as any)
+          .from('email_gateways')
+          .update({ is_default: false })
+          .neq('provider', 'gmail')
+
+        if (statePayload.scopeType === 'PLATFORM') {
+          deactQuery = deactQuery.is('tenant_id', null)
+        } else {
+          deactQuery = deactQuery.eq('tenant_id', statePayload.tenantId!)
+        }
+        await deactQuery
+      } catch {}
+    } catch (dbErr) {
+      console.warn('[GoogleOAuthCallback] Database persist warning, proceeding with in-memory store:', dbErr)
     }
 
     // 7. Update in-memory / local data store

@@ -36,6 +36,22 @@ export class GatewayRegistry {
     try {
       switch (category) {
         case 'email': {
+          let secret: string | undefined =
+            credentials.password || credentials.api_key || credentials.secret_key
+          if (provider === 'gmail') {
+            secret =
+              credentials.tokens ||
+              (credentials.refresh_token || credentials.access_token
+                ? JSON.stringify({
+                    access_token: credentials.access_token,
+                    refresh_token: credentials.refresh_token,
+                  })
+                : credentials.password || credentials.api_key)
+          }
+
+          const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printerp.com'
+          const senderName = publicConfig.sender_name || publicConfig.gmail_display_name || 'PrintERP'
+
           const emailProvider = createEmailProvider({
             id: 'test-gw',
             provider: provider as any,
@@ -43,11 +59,13 @@ export class GatewayRegistry {
             smtp_port: publicConfig.smtp_port ? Number(publicConfig.smtp_port) : undefined,
             smtp_username: publicConfig.smtp_username,
             encryption_type: publicConfig.encryption_type || 'tls',
-            sender_name: publicConfig.sender_name || 'PrintERP',
-            sender_email: publicConfig.sender_email || 'test@printerp.com',
+            sender_name: senderName,
+            sender_email: senderEmail,
+            gmail_account_email: publicConfig.gmail_account_email || senderEmail,
+            gmail_display_name: publicConfig.gmail_display_name || senderName,
             reply_to_email: publicConfig.reply_to_email,
-            extra_settings: publicConfig,
-            decrypted_secret: credentials.password || credentials.api_key || credentials.secret_key,
+            extra_settings: { ...publicConfig, ...credentials },
+            decrypted_secret: secret,
           })
 
           const res = await emailProvider.verifyConnection()
@@ -207,8 +225,21 @@ export class GatewayRegistry {
     try {
       switch (category) {
         case 'email': {
-          const senderEmail = publicConfig.sender_email || 'test@printerp.com'
-          const senderName = publicConfig.sender_name || 'PrintERP Test'
+          let secret: string | undefined =
+            credentials.password || credentials.api_key || credentials.secret_key
+          if (provider === 'gmail') {
+            secret =
+              credentials.tokens ||
+              (credentials.refresh_token || credentials.access_token
+                ? JSON.stringify({
+                    access_token: credentials.access_token,
+                    refresh_token: credentials.refresh_token,
+                  })
+                : credentials.password || credentials.api_key)
+          }
+
+          const senderEmail = publicConfig.sender_email || publicConfig.gmail_account_email || 'test@printerp.com'
+          const senderName = publicConfig.sender_name || publicConfig.gmail_display_name || 'PrintERP Test'
           const emailProvider = createEmailProvider({
             id: 'test-send',
             provider: provider as any,
@@ -218,9 +249,11 @@ export class GatewayRegistry {
             encryption_type: publicConfig.encryption_type || 'tls',
             sender_name: senderName,
             sender_email: senderEmail,
+            gmail_account_email: publicConfig.gmail_account_email || senderEmail,
+            gmail_display_name: publicConfig.gmail_display_name || senderName,
             reply_to_email: publicConfig.reply_to_email,
-            extra_settings: publicConfig,
-            decrypted_secret: credentials.password || credentials.api_key || credentials.secret_key,
+            extra_settings: { ...publicConfig, ...credentials },
+            decrypted_secret: secret,
           })
 
           const res = await emailProvider.sendEmail({

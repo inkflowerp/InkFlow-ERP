@@ -640,8 +640,8 @@ export async function disconnectTenantGmailAction(
       try {
         const decrypted = decryptSecret(existing.encrypted_credentials)
         const parsed = JSON.parse(decrypted)
-        if (parsed.refresh_token) {
-          await revokeGoogleToken(parsed.refresh_token)
+        if (parsed.refresh_token || parsed.access_token) {
+          await revokeGoogleToken(parsed.refresh_token || parsed.access_token)
         }
       } catch {}
     }
@@ -650,12 +650,13 @@ export async function disconnectTenantGmailAction(
       .from('email_gateways')
       .delete()
       .eq('tenant_id', companyId)
+      .eq('provider', 'gmail')
 
     // Remove from local store
     const localGateways = EmailDataStore.get<EmailGatewayRecord[]>('printerp_email_gateways') || []
     EmailDataStore.set(
       'printerp_email_gateways',
-      localGateways.filter((g) => g.tenant_id !== companyId)
+      localGateways.filter((g) => g.tenant_id !== companyId || g.provider !== 'gmail')
     )
 
     try {

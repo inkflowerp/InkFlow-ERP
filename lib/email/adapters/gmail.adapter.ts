@@ -107,20 +107,31 @@ export class GmailProviderAdapter implements IEmailProvider {
     const boundary = `====_PrintERP_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_====`
     const altBoundary = `====_Alt_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_====`
 
-    const fromAddress =
-      typeof payload.from === 'string'
+    // Safely extract sender address with fallbacks
+    const effectiveSenderEmail =
+      (typeof payload.from === 'string'
         ? payload.from
-        : payload.from.name
-        ? `"${payload.from.name.replace(/"/g, '')}" <${payload.from.address}>`
-        : payload.from.address
+        : payload.from?.address) ||
+      this.config.gmail_account_email ||
+      this.config.sender_email ||
+      'notifications@printerp.com'
 
-    const senderEmail = typeof payload.from === 'string' ? payload.from : payload.from.address
-    const domainMatch = senderEmail.match(/@([a-zA-Z0-9.-]+)/)
+    const senderDisplayName =
+      (typeof payload.from === 'object' && payload.from?.name) ||
+      this.config.gmail_display_name ||
+      this.config.sender_name ||
+      ''
+
+    const fromAddress = senderDisplayName
+      ? `"${senderDisplayName.replace(/"/g, '')}" <${effectiveSenderEmail}>`
+      : effectiveSenderEmail
+
+    const domainMatch = effectiveSenderEmail.match(/@([a-zA-Z0-9.-]+)/)
     const senderDomain = domainMatch
       ? domainMatch[1]
       : this.config.gmail_account_email?.split('@')[1] || 'gmail.com'
 
-    const toAddresses = Array.isArray(payload.to) ? payload.to.join(', ') : payload.to
+    const toAddresses = Array.isArray(payload.to) ? payload.to.join(', ') : (payload.to || '')
     const ccAddresses = payload.cc ? (Array.isArray(payload.cc) ? payload.cc.join(', ') : payload.cc) : undefined
     const bccAddresses = payload.bcc ? (Array.isArray(payload.bcc) ? payload.bcc.join(', ') : payload.bcc) : undefined
     const replyTo = payload.replyTo || this.config.reply_to_email || undefined
@@ -128,7 +139,7 @@ export class GmailProviderAdapter implements IEmailProvider {
     const headers: string[] = [
       `From: ${fromAddress}`,
       `To: ${toAddresses}`,
-      `Subject: =?UTF-8?B?${Buffer.from(payload.subject, 'utf8').toString('base64')}?=`,
+      `Subject: =?UTF-8?B?${Buffer.from(payload.subject || '', 'utf8').toString('base64')}?=`,
       `Date: ${new Date().toUTCString()}`,
       `Message-ID: <${Date.now()}.${Math.random().toString(36).substring(2, 8)}@${senderDomain}>`,
       'MIME-Version: 1.0',
@@ -154,15 +165,16 @@ export class GmailProviderAdapter implements IEmailProvider {
     }
 
     if (!hasListUnsubscribe) {
-      headers.push(`List-Unsubscribe: <mailto:${senderEmail}?subject=unsubscribe>`)
+      headers.push(`List-Unsubscribe: <mailto:${effectiveSenderEmail}?subject=unsubscribe>`)
       headers.push('List-Unsubscribe-Post: List-Unsubscribe=One-Click')
     }
 
     // Ensure non-empty plain-text alternative (avoids MIME_HTML_ONLY spam penalty)
+    const htmlContent = payload.html || ''
     const plainText =
       payload.text && payload.text.trim().length > 0
         ? payload.text
-        : payload.html
+        : htmlContent
             .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
             .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
             .replace(/<[^>]*>?/gm, ' ')
@@ -354,7 +366,8 @@ export class GmailProviderAdapter implements IEmailProvider {
     try {
       let token = await this.ensureValidAccessToken()
 
-      let response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
+      // Primary identity & token validation using userinfo (allowed under userinfo.email / userinfo.profile scopes)
+      let response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: { Authorization: `Bearer ${token}` },
       })
 
@@ -362,7 +375,14 @@ export class GmailProviderAdapter implements IEmailProvider {
         const refreshed = await refreshGoogleAccessToken(this.refreshToken)
         this.accessToken = refreshed.access_token
         this.tokenExpiresAt = new Date(refreshed.expires_at).getTime()
-        response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
+        if (this.config.onTokenRefreshed) {
+          await this.config.onTokenRefreshed({
+            access_token: refreshed.access_token,
+            expires_at: refreshed.expires_at,
+            refresh_token: this.refreshToken,
+          })
+        }
+        response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
           headers: { Authorization: `Bearer ${this.accessToken}` },
         })
       }
@@ -385,12 +405,13 @@ export class GmailProviderAdapter implements IEmailProvider {
         }
       }
 
+      const verifiedEmail = data.email || this.config.gmail_account_email || this.config.sender_email
       return {
         success: true,
         provider: 'gmail',
         latencyMs,
-        message: `Gmail API connection verified for ${data.emailAddress} (${latencyMs}ms)`,
-        details: data,
+        message: `Gmail API connection verified for ${verifiedEmail} (${latencyMs}ms)`,
+        details: { emailAddress: verifiedEmail, name: data.name },
       }
     } catch (err: any) {
       const latencyMs = Date.now() - startTime

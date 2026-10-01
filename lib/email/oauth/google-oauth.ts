@@ -11,6 +11,7 @@ export interface GoogleOAuthStatePayload {
   tenantId: string | null
   userId: string
   returnUrl?: string
+  redirectUri?: string
   ts: number
   nonce: string
 }
@@ -52,9 +53,10 @@ export interface GoogleOAuthDiagnostics {
 /**
  * Returns Google OAuth Client configuration from environment
  */
-export function getGoogleOAuthConfig() {
+export function getGoogleOAuthConfig(requestOriginOrExplicitUri?: string) {
   const clientId =
     process.env.GOOGLE_CLIENT_ID ||
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
     process.env.GOOGLE_OAUTH_CLIENT_ID ||
     ''
   const clientSecret =
@@ -68,13 +70,29 @@ export function getGoogleOAuthConfig() {
     process.env.GOOGLE_OAUTH_REDIRECT_URI ||
     ''
 
+  if (!redirectUri && requestOriginOrExplicitUri) {
+    if (requestOriginOrExplicitUri.startsWith('http://') || requestOriginOrExplicitUri.startsWith('https://')) {
+      if (requestOriginOrExplicitUri.includes('/api/email/oauth/google/callback')) {
+        redirectUri = requestOriginOrExplicitUri
+      } else {
+        redirectUri = `${requestOriginOrExplicitUri.replace(/\/$/, '')}/api/email/oauth/google/callback`
+      }
+    }
+  }
+
   if (!redirectUri) {
     if (process.env.NEXT_PUBLIC_APP_URL) {
       redirectUri = `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
+    } else if (process.env.APP_URL) {
+      redirectUri = `${process.env.APP_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
     } else if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
       redirectUri = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
+    } else if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+      const vUrl = process.env.NEXT_PUBLIC_VERCEL_URL.replace(/\/$/, '')
+      redirectUri = `${vUrl.startsWith('http') ? vUrl : `https://${vUrl}`}/api/email/oauth/google/callback`
     } else if (process.env.VERCEL_URL) {
-      redirectUri = `https://${process.env.VERCEL_URL.replace(/\/$/, '')}/api/email/oauth/google/callback`
+      const vUrl = process.env.VERCEL_URL.replace(/\/$/, '')
+      redirectUri = `${vUrl.startsWith('http') ? vUrl : `https://${vUrl}`}/api/email/oauth/google/callback`
     } else {
       redirectUri = 'http://localhost:3000/api/email/oauth/google/callback'
     }
@@ -86,8 +104,8 @@ export function getGoogleOAuthConfig() {
 /**
  * Returns safe server-side diagnostics without leaking secrets
  */
-export function getGoogleOAuthDiagnostics(): GoogleOAuthDiagnostics {
-  const { clientId, clientSecret, redirectUri } = getGoogleOAuthConfig()
+export function getGoogleOAuthDiagnostics(requestOriginOrExplicitUri?: string): GoogleOAuthDiagnostics {
+  const { clientId, clientSecret, redirectUri } = getGoogleOAuthConfig(requestOriginOrExplicitUri)
   const issues: string[] = []
 
   const isMockOrEmptyId =
@@ -211,21 +229,24 @@ export function generateGoogleAuthUrl(params: {
   userId: string
   returnUrl?: string
   loginHint?: string
+  redirectUri?: string
+  requestOrigin?: string
 }): string {
-  const diag = getGoogleOAuthDiagnostics()
+  const diag = getGoogleOAuthDiagnostics(params.redirectUri || params.requestOrigin)
   if (!diag.isConfigured && !isTestEnvironment()) {
     throw new Error(`Google OAuth is not configured: ${diag.issues.join(' ')}`)
   }
 
-  const { clientId, redirectUri } = getGoogleOAuthConfig()
+  const { clientId, redirectUri } = getGoogleOAuthConfig(params.redirectUri || params.requestOrigin)
   const effectiveClientId = clientId || (isTestEnvironment() ? 'mock-google-client-id.apps.googleusercontent.com' : '')
-  const effectiveRedirectUri = redirectUri || 'http://localhost:3000/api/email/oauth/google/callback'
+  const effectiveRedirectUri = params.redirectUri || redirectUri || 'http://localhost:3000/api/email/oauth/google/callback'
 
   const state = generateGoogleOAuthState({
     scopeType: params.scopeType,
     tenantId: params.tenantId,
     userId: params.userId,
     returnUrl: params.returnUrl,
+    redirectUri: effectiveRedirectUri,
   })
 
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
@@ -248,8 +269,9 @@ export function generateGoogleAuthUrl(params: {
 /**
  * Exchanges authorization code for Access & Refresh tokens
  */
-export async function exchangeGoogleAuthCode(code: string): Promise<GoogleTokenResponse> {
-  const { clientId, clientSecret, redirectUri } = getGoogleOAuthConfig()
+export async function exchangeGoogleAuthCode(code: string, explicitRedirectUri?: string): Promise<GoogleTokenResponse> {
+  const { clientId, clientSecret, redirectUri } = getGoogleOAuthConfig(explicitRedirectUri)
+  const effectiveRedirectUri = explicitRedirectUri || redirectUri
 
   // In test environment with mock code
   if (isTestEnvironment() || code.startsWith('mock-')) {
@@ -270,7 +292,7 @@ export async function exchangeGoogleAuthCode(code: string): Promise<GoogleTokenR
       code,
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: redirectUri,
+      redirect_uri: effectiveRedirectUri,
       grant_type: 'authorization_code',
     }),
   })

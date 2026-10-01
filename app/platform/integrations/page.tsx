@@ -43,6 +43,7 @@ import {
   FileText,
   AlertCircle,
   HelpCircle,
+  Sparkles,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -114,6 +115,51 @@ interface ProviderMeta {
 
 const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
   // EMAIL
+  gmail: {
+    id: 'gmail',
+    category: 'email',
+    name: 'Gmail (Google OAuth 2.0)',
+    nameBn: 'জি-মেইল (গুগল ও-অথ ২.০)',
+    tagline: 'Google Gmail REST API with OAuth 2.0 token management & high deliverability',
+    icon: Mail,
+    docsUrl: 'https://developers.google.com/gmail/api/guides',
+    popular: true,
+    defaultEnv: 'live',
+    credentialFields: [
+      {
+        key: 'tokens',
+        label: 'OAuth 2.0 Token Store',
+        placeholder: 'Managed automatically via Google Sign-In or paste JSON credentials',
+        type: 'password',
+        required: false,
+        description: 'Auto-populated when connecting via 1-click Google OAuth button',
+      },
+    ],
+    configFields: [
+      {
+        key: 'sender_name',
+        label: 'From Display Name',
+        placeholder: 'PrintERP Platform',
+        type: 'text',
+        required: true,
+        defaultValue: 'PrintERP Platform',
+      },
+      {
+        key: 'sender_email',
+        label: 'Google Account Email',
+        placeholder: 'admin@yourcompany.com',
+        type: 'text',
+        required: true,
+      },
+      {
+        key: 'reply_to_email',
+        label: 'Reply-To Email',
+        placeholder: 'support@yourcompany.com',
+        type: 'text',
+        required: false,
+      },
+    ],
+  },
   smtp: {
     id: 'smtp',
     category: 'email',
@@ -2181,6 +2227,33 @@ export default function PlatformIntegrationsPage() {
                   </a>
                 )}
               </div>
+
+              {/* Special 1-Click Google OAuth Banner for Gmail */}
+              {selectedMeta.id === 'gmail' && (
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-blue-600" />
+                      <span className="text-xs font-bold text-blue-950 uppercase tracking-wider">
+                        1-Click Google Authorization
+                      </span>
+                    </div>
+                    <p className="text-xs text-blue-800">
+                      Connect via official Google OAuth 2.0 consent screen. No need to manage manual passwords or API keys.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      window.location.href = '/api/email/oauth/google/start?scope=platform'
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-9 px-4 shrink-0 font-medium shadow-sm flex items-center gap-1.5"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    Sign in with Google
+                  </Button>
+                </div>
+              )}
 
               {/* Integration Name & Environment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

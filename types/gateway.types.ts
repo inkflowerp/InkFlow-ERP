@@ -15,7 +15,7 @@ export type GatewayStatus =
 
 export type GatewayEnvironment = 'sandbox' | 'live'
 
-export type EmailProviderType = 'smtp' | 'resend' | 'sendgrid' | 'ses'
+export type EmailProviderType = 'gmail' | 'smtp' | 'resend' | 'sendgrid' | 'ses'
 export type SmsProviderType = 'greenweb' | 'bulksmsbd' | 'ssl_wireless' | 'twilio'
 export type PaymentProviderType = 'bkash' | 'sslcommerz' | 'nagad' | 'uddoktapay' | 'stripe'
 export type WhatsAppProviderType = 'openwa' | 'meta_whatsapp'
