@@ -66,6 +66,24 @@ export class SmtpProviderAdapter implements IEmailProvider {
           ? `"${payload.from.name}" <${payload.from.address}>`
           : payload.from.address
 
+      const senderRaw = typeof payload.from === 'string' ? payload.from : payload.from.address
+      const senderDomainMatch = senderRaw.match(/@([a-zA-Z0-9.-]+)/)
+      const senderDomain = senderDomainMatch
+        ? senderDomainMatch[1]
+        : this.config.smtp_username?.includes('@')
+        ? this.config.smtp_username.split('@')[1]
+        : 'printerp.com'
+
+      // Enterprise deliverability headers to prevent spam classification
+      const deliverabilityHeaders: Record<string, string> = {
+        'Auto-Submitted': 'auto-generated',
+        'X-Auto-Response-Suppress': 'All',
+        'X-Mailer': 'InkFlow ERP Engine',
+        'List-Unsubscribe': `<mailto:notifications@${senderDomain}?subject=unsubscribe>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        ...payload.headers,
+      }
+
       const mailOptions: SendMailOptions = {
         from: fromAddress,
         to: payload.to,
@@ -75,7 +93,12 @@ export class SmtpProviderAdapter implements IEmailProvider {
         subject: payload.subject,
         html: payload.html,
         text: payload.text,
-        headers: payload.headers,
+        headers: deliverabilityHeaders,
+        envelope: {
+          from: senderRaw,
+          to: Array.isArray(payload.to) ? payload.to : [payload.to],
+        },
+        messageId: `<${Date.now()}.${Math.random().toString(36).substring(2, 10)}@${senderDomain}>`,
         attachments: payload.attachments?.map((att) => ({
           filename: att.filename,
           content: att.content,

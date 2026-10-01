@@ -29,7 +29,71 @@ export function interpolateVariables(
 }
 
 /**
+ * Converts rich HTML email bodies into compliant, cleanly formatted plain text.
+ * Preserves anchor URLs so spam filters do not detect an HTML-link-mismatch,
+ * decodes entities, converts bullet points, and cleans whitespace.
+ */
+export function htmlToPlainText(html: string): string {
+  if (!html) return ''
+
+  let text = html
+
+  // 1. Remove style and script blocks entirely
+  text = text.replace(/<style[\s\S]*?<\/style>/gi, '')
+  text = text.replace(/<script[\s\S]*?<\/script>/gi, '')
+
+  // 2. Convert hyperlinks: <a href="url">text</a> -> text (url)
+  text = text.replace(/<a\b[^>]*href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, href, linkText) => {
+    const cleanText = linkText.replace(/<[^>]+>/g, '').trim()
+    const cleanHref = href.trim()
+    if (!cleanText || cleanText === cleanHref) return cleanHref
+    if (cleanHref.startsWith('mailto:') || cleanHref.startsWith('tel:')) return cleanText
+    return `${cleanText} (${cleanHref})`
+  })
+
+  // 3. Convert headers and horizontal rules
+  text = text.replace(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/gi, '\n\n$1\n----------------------------------------\n')
+  text = text.replace(/<hr[^>]*>/gi, '\n----------------------------------------\n')
+
+  // 4. Convert lists
+  text = text.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, ' • $1\n')
+
+  // 5. Convert line breaks, paragraphs, table rows, and cells
+  text = text.replace(/<br\s*\/?>/gi, '\n')
+  text = text.replace(/<\/p>/gi, '\n\n')
+  text = text.replace(/<\/tr>/gi, '\n')
+  text = text.replace(/<\/div>/gi, '\n')
+  text = text.replace(/<td[^>]*>([\s\S]*?)<\/td>/gi, ' $1 ')
+
+  // 6. Strip all remaining HTML tags
+  text = text.replace(/<[^>]+>/g, '')
+
+  // 7. Decode HTML entities
+  text = text
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;/gi, "'")
+    .replace(/&#39;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&copy;/gi, '©')
+    .replace(/&#([0-9]+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+
+  // 8. Collapse whitespace and excessive newlines
+  text = text
+    .split('\n')
+    .map((line) => line.trim())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+  return text
+}
+
+/**
  * Wraps email body content with a modern, responsive HTML container
+ * optimized for spam filter passing (proper tables, hidden preheader, compliant footer).
  */
 export function wrapHtmlEmail(
   contentHtml: string,
@@ -39,12 +103,15 @@ export function wrapHtmlEmail(
     accentColor?: string
     footerText?: string
     year?: number
+    preheader?: string
+    recipientEmail?: string
   } = {}
 ): string {
-  const companyName = options.companyName || 'PrintERP SaaS'
+  const companyName = options.companyName || 'InkFlow ERP'
   const accentColor = options.accentColor || '#4f46e5' // Indigo 600
   const year = options.year || new Date().getFullYear()
   const footer = options.footerText || `© ${year} ${companyName}. All rights reserved.`
+  const preheaderText = options.preheader || 'Notification from InkFlow Cloud Platform'
 
   return `
 <!DOCTYPE html>
@@ -144,7 +211,12 @@ export function wrapHtmlEmail(
   </style>
 </head>
 <body>
-  <div class="wrapper">
+  <!-- Hidden preheader text to prevent CSS preview leakage in Gmail/Apple Mail -->
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">
+    ${preheaderText}
+  </div>
+
+  <div class="wrapper" role="presentation">
     <div class="header">
       <h1>${companyName}</h1>
       <div class="subtitle">Commercial Printing & Production Notification</div>
@@ -153,8 +225,12 @@ export function wrapHtmlEmail(
       ${contentHtml}
     </div>
     <div class="footer">
-      ${footer}
-      <div style="margin-top: 6px; font-size: 11px; color: #94a3b8;">This is an automated communication from PrintERP SaaS.</div>
+      <div style="font-weight: 600; color: #475569; margin-bottom: 4px;">${companyName}</div>
+      <div>${footer}</div>
+      <div style="margin-top: 8px; font-size: 11px; color: #94a3b8; line-height: 1.5;">
+        You received this authentic transactional notification regarding your account or printing order.
+        To ensure delivery directly to your inbox, please add our sender address to your safe contacts.
+      </div>
     </div>
   </div>
 </body>

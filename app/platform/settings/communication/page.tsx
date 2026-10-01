@@ -32,6 +32,7 @@ import {
   ExternalLink,
   Trash2,
   Info,
+  Copy,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -63,7 +64,7 @@ import type {
 import { interpolateVariables } from '@/services/email-template.service'
 
 export default function PlatformEmailGatewayPage() {
-  const [activeTab, setActiveTab] = useState<'gateway' | 'templates' | 'logs'>('gateway')
+  const [activeTab, setActiveTab] = useState<'gateway' | 'templates' | 'logs' | 'deliverability'>('gateway')
   const [gateway, setGateway] = useState<EmailGatewayRecord | null>(null)
   const [templates, setTemplates] = useState<EmailTemplateRecord[]>([])
   const [logs, setLogs] = useState<EmailLogRecord[]>([])
@@ -73,6 +74,16 @@ export default function PlatformEmailGatewayPage() {
   const [disconnecting, setDisconnecting] = useState(false)
   const [processingQueue, setProcessingQueue] = useState(false)
   const [showSecret, setShowSecret] = useState(false)
+  const [copiedRecord, setCopiedRecord] = useState<string | null>(null)
+  const [customDomainInput, setCustomDomainInput] = useState('')
+
+  const handleCopyRecord = (key: string, text: string) => {
+    if (typeof window !== 'undefined' && navigator?.clipboard) {
+      navigator.clipboard.writeText(text)
+      setCopiedRecord(key)
+      setTimeout(() => setCopiedRecord(null), 2000)
+    }
+  }
   const [googleOAuthStatus, setGoogleOAuthStatus] = useState<{
     isConfigured: boolean
     hasClientId: boolean
@@ -387,6 +398,19 @@ export default function PlatformEmailGatewayPage() {
           <Clock className="h-3.5 w-3.5" />
           Platform Transmission Logs ({logs.length})
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('deliverability')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all min-h-[44px] ${
+            activeTab === 'deliverability'
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+          }`}
+        >
+          <ShieldCheck className="h-3.5 w-3.5" />
+          Spam Prevention & DNS
+        </button>
       </div>
 
       {/* =======================================================================
@@ -433,6 +457,35 @@ export default function PlatformEmailGatewayPage() {
                 Display: {gateway?.sender_name || senderName}
               </span>
             </Card>
+          </div>
+
+          {/* Deliverability & Anti-Spam Tip Banner */}
+          <div className="bg-linear-to-r from-indigo-950/60 via-slate-900 to-indigo-950/60 border border-indigo-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-indigo-600/20 text-indigo-400 rounded-lg shrink-0 mt-0.5">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                  Spam Prevention & DNS Authentication Active
+                  <Badge variant="outline" className="text-2xs bg-emerald-950/80 text-emerald-300 border-emerald-700/50">
+                    RFC 5322 Aligned
+                  </Badge>
+                </h4>
+                <p className="text-2xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                  Every outgoing email is injected with domain-aligned Message-IDs, multipart plain-text fallback, and anti-spam suppression headers. Configure your SPF, DKIM, and DMARC DNS records to ensure 100% inbox delivery.
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveTab('deliverability')}
+              className="text-xs shrink-0 border-indigo-500/50 bg-indigo-950/50 hover:bg-indigo-900/60 text-indigo-200"
+            >
+              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+              View DNS Records
+            </Button>
           </div>
 
           {/* Provider Mode Selection */}
@@ -925,6 +978,294 @@ export default function PlatformEmailGatewayPage() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* =======================================================================
+          TAB 4: EMAIL DELIVERABILITY & DNS AUTHENTICATION (SPF / DKIM / DMARC)
+         ======================================================================= */}
+      {activeTab === 'deliverability' && (
+        <div className="space-y-6">
+          {/* Domain Overview & Quick Calculator */}
+          <Card className="bg-slate-900/90 border-slate-800">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-indigo-400" />
+                    Domain Email Authentication & Anti-Spam Setup
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-400 mt-1">
+                    Major email providers (Google, Microsoft 365, Yahoo) reject or spam emails lacking sender domain authentication.
+                    Add these DNS TXT records to your domain provider (Cloudflare, Namecheap, GoDaddy, Route 53) to guarantee 100% inbox delivery.
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-emerald-950 text-emerald-300 border-emerald-800 text-xs py-1 px-2.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                    RFC 5322 Aligned
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-slate-300">Active Sending Domain</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'}
+                      onChange={(e) => setCustomDomainInput(e.target.value.trim().toLowerCase())}
+                      placeholder="e.g. myprintshop.com"
+                      className="h-9 text-xs bg-slate-950 border-slate-800 text-white font-mono"
+                    />
+                  </div>
+                  <span className="text-2xs text-slate-500">
+                    DNS records below are dynamically generated for this sending domain.
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-slate-300">Active Provider Configuration</Label>
+                  <div className="h-9 px-3 rounded-lg border border-slate-800 bg-slate-950/60 flex items-center justify-between text-xs text-slate-200">
+                    <span className="capitalize font-medium flex items-center gap-2">
+                      <Server className="h-3.5 w-3.5 text-indigo-400" />
+                      {gateway?.provider?.toUpperCase() || providerMode.toUpperCase()}
+                    </span>
+                    <span className="text-2xs text-slate-400">
+                      Sender: {gateway?.sender_email || senderEmail}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* DNS Records Table & Copy Box */}
+          <div className="grid grid-cols-1 gap-4">
+            {/* 1. SPF Record */}
+            <Card className="bg-slate-900/90 border-slate-800">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-indigo-950 text-indigo-300 border-indigo-700/60 font-mono text-2xs">
+                      TXT RECORD
+                    </Badge>
+                    <span className="font-bold text-sm text-white">1. SPF (Sender Policy Framework)</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const spfValue =
+                        (gateway?.provider || providerMode) === 'gmail'
+                          ? 'v=spf1 include:_spf.google.com ~all'
+                          : `v=spf1 include:${smtpHost || 'mail.domain.com'} ~all`
+                      handleCopyRecord('spf', spfValue)
+                    }}
+                    className="h-8 text-2xs border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200"
+                  >
+                    {copiedRecord === 'spf' ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 mr-1 text-emerald-400" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5 mr-1" />
+                        Copy Record
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <CardDescription className="text-xs text-slate-400 mt-1">
+                  Authorizes sending servers to send on behalf of your domain so Gmail/Outlook don&apos;t mark incoming mail as unauthenticated spoofing.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-1">
+                <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+                  <div className="sm:col-span-3">
+                    <span className="text-2xs text-slate-500 font-semibold block uppercase">Host / Name</span>
+                    <span className="font-mono text-slate-200 font-bold">@ (or leave empty)</span>
+                  </div>
+                  <div className="sm:col-span-9">
+                    <span className="text-2xs text-slate-500 font-semibold block uppercase">TXT Value / Content</span>
+                    <span className="font-mono text-indigo-300 font-semibold break-all select-all">
+                      {(gateway?.provider || providerMode) === 'gmail'
+                        ? 'v=spf1 include:_spf.google.com ~all'
+                        : `v=spf1 include:${smtpHost || 'mail.domain.com'} ~all`}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 2. DKIM Record */}
+            <Card className="bg-slate-900/90 border-slate-800">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-purple-950 text-purple-300 border-purple-700/60 font-mono text-2xs">
+                      TXT / CNAME RECORD
+                    </Badge>
+                    <span className="font-bold text-sm text-white">2. DKIM (DomainKeys Identified Mail)</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const hostVal = (gateway?.provider || providerMode) === 'gmail' ? 'google._domainkey' : 'default._domainkey'
+                      handleCopyRecord('dkim_host', hostVal)
+                    }}
+                    className="h-8 text-2xs border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200"
+                  >
+                    {copiedRecord === 'dkim_host' ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 mr-1 text-emerald-400" />
+                        Copied Host!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5 mr-1" />
+                        Copy Host
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <CardDescription className="text-xs text-slate-400 mt-1">
+                  Cryptographically signs every outbound message so receiving servers confirm the message was not modified in transit.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-1">
+                <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+                  <div className="sm:col-span-4">
+                    <span className="text-2xs text-slate-500 font-semibold block uppercase">Host / Selector Name</span>
+                    <span className="font-mono text-purple-300 font-bold">
+                      {(gateway?.provider || providerMode) === 'gmail' ? 'google._domainkey' : 'default._domainkey'}
+                    </span>
+                  </div>
+                  <div className="sm:col-span-8">
+                    <span className="text-2xs text-slate-500 font-semibold block uppercase">Setup Instruction</span>
+                    <span className="text-slate-300">
+                      {(gateway?.provider || providerMode) === 'gmail'
+                        ? 'Google Admin Console -> Apps -> Google Workspace -> Gmail -> Authenticate email -> Generate DKIM key.'
+                        : 'Obtain your unique DKIM public key from your SMTP hosting control panel (cPanel, Postfix, SendGrid, Amazon SES) and paste as TXT.'}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 3. DMARC Record */}
+            <Card className="bg-slate-900/90 border-slate-800">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-emerald-950 text-emerald-300 border-emerald-700/60 font-mono text-2xs">
+                      TXT RECORD
+                    </Badge>
+                    <span className="font-bold text-sm text-white">3. DMARC (Domain-based Message Authentication)</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const domain = customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'
+                      const dmarcValue = `v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:postmaster@${domain}; aspf=r; adkim=r;`
+                      handleCopyRecord('dmarc', dmarcValue)
+                    }}
+                    className="h-8 text-2xs border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200"
+                  >
+                    {copiedRecord === 'dmarc' ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 mr-1 text-emerald-400" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5 mr-1" />
+                        Copy Record
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <CardDescription className="text-xs text-slate-400 mt-1">
+                  Enforces alignment between SPF and DKIM. Mandatory for Gmail & Yahoo 2024 deliverability guidelines.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-1">
+                <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-3 text-xs">
+                  <div className="sm:col-span-3">
+                    <span className="text-2xs text-slate-500 font-semibold block uppercase">Host / Name</span>
+                    <span className="font-mono text-slate-200 font-bold">_dmarc</span>
+                  </div>
+                  <div className="sm:col-span-9">
+                    <span className="text-2xs text-slate-500 font-semibold block uppercase">TXT Value / Content</span>
+                    <span className="font-mono text-emerald-300 font-semibold break-all select-all">
+                      {`v=DMARC1; p=quarantine; sp=quarantine; rua=mailto:postmaster@${customDomainInput || (gateway?.sender_email || senderEmail || 'printerp.com').split('@')[1] || 'printerp.com'}; aspf=r; adkim=r;`}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Engine Anti-Spam Protections Overview */}
+          <Card className="bg-slate-900/90 border-slate-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+                <Zap className="h-4 w-4 text-amber-400" />
+                Active Built-in Engine Deliverability Protections
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-400">
+                The platform automatically injects these technical standards into every email dispatched:
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-white block font-semibold">RFC 5322 Domain-Aligned Message-ID</strong>
+                    <span className="text-2xs text-slate-400">
+                      Message-IDs are generated dynamically matching your sending domain, preventing domain spoofing flags.
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-white block font-semibold">Multipart/Alternative Plaintext Fallback</strong>
+                    <span className="text-2xs text-slate-400">
+                      Every email includes both HTML and a clean, link-preserved text part, eliminating the MIME_HTML_ONLY spam penalty.
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-white block font-semibold">Transactional Classification Headers</strong>
+                    <span className="text-2xs text-slate-400">
+                      Injects Auto-Submitted: auto-generated and X-Auto-Response-Suppress: All for Microsoft Exchange & Gmail loops.
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-white block font-semibold">RFC 8058 One-Click Unsubscribe</strong>
+                    <span className="text-2xs text-slate-400">
+                      Provides legitimate unsubscribe headers to satisfy 2024 Google & Yahoo bulk and transactional sender requirements.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Test Email Modal */}

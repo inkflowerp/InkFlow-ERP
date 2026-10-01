@@ -3,7 +3,7 @@
 // Canonical URL builders for tenant-scoped links, document sharing, and notifications.
 // ==============================================================================
 
-import { getRootDomain, isReservedSlug, resolveHostname } from './tenant-resolution'
+import { getRootDomain, isReservedSlug, resolveHostname } from './tenant-resolution.ts'
 
 /**
  * Returns the fully qualified origin for a given tenant subdomain.

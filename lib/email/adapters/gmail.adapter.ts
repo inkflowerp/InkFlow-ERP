@@ -114,6 +114,12 @@ export class GmailProviderAdapter implements IEmailProvider {
         ? `"${payload.from.name.replace(/"/g, '')}" <${payload.from.address}>`
         : payload.from.address
 
+    const senderEmail = typeof payload.from === 'string' ? payload.from : payload.from.address
+    const domainMatch = senderEmail.match(/@([a-zA-Z0-9.-]+)/)
+    const senderDomain = domainMatch
+      ? domainMatch[1]
+      : this.config.gmail_account_email?.split('@')[1] || 'gmail.com'
+
     const toAddresses = Array.isArray(payload.to) ? payload.to.join(', ') : payload.to
     const ccAddresses = payload.cc ? (Array.isArray(payload.cc) ? payload.cc.join(', ') : payload.cc) : undefined
     const bccAddresses = payload.bcc ? (Array.isArray(payload.bcc) ? payload.bcc.join(', ') : payload.bcc) : undefined
@@ -124,22 +130,45 @@ export class GmailProviderAdapter implements IEmailProvider {
       `To: ${toAddresses}`,
       `Subject: =?UTF-8?B?${Buffer.from(payload.subject, 'utf8').toString('base64')}?=`,
       `Date: ${new Date().toUTCString()}`,
-      `Message-ID: <${Date.now()}.${Math.random().toString(36).substring(2, 8)}@printerp.com>`,
+      `Message-ID: <${Date.now()}.${Math.random().toString(36).substring(2, 8)}@${senderDomain}>`,
       'MIME-Version: 1.0',
+      'Auto-Submitted: auto-generated',
+      'X-Auto-Response-Suppress: All',
+      'X-Mailer: InkFlow ERP Engine',
     ]
 
     if (ccAddresses) headers.push(`Cc: ${ccAddresses}`)
     if (bccAddresses) headers.push(`Bcc: ${bccAddresses}`)
     if (replyTo) headers.push(`Reply-To: ${replyTo}`)
 
+    // Check if custom List-Unsubscribe is passed
+    let hasListUnsubscribe = false
     if (payload.headers) {
       for (const [key, value] of Object.entries(payload.headers)) {
+        if (key.toLowerCase() === 'list-unsubscribe') hasListUnsubscribe = true
         // Prevent header injection
         const cleanKey = key.replace(/[\r\n]/g, '')
         const cleanVal = String(value).replace(/[\r\n]/g, '')
         headers.push(`${cleanKey}: ${cleanVal}`)
       }
     }
+
+    if (!hasListUnsubscribe) {
+      headers.push(`List-Unsubscribe: <mailto:${senderEmail}?subject=unsubscribe>`)
+      headers.push('List-Unsubscribe-Post: List-Unsubscribe=One-Click')
+    }
+
+    // Ensure non-empty plain-text alternative (avoids MIME_HTML_ONLY spam penalty)
+    const plainText =
+      payload.text && payload.text.trim().length > 0
+        ? payload.text
+        : payload.html
+            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+            .replace(/<[^>]*>?/gm, ' ')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim() || 'Notification from InkFlow'
 
     const hasAttachments = payload.attachments && payload.attachments.length > 0
 
@@ -154,12 +183,10 @@ export class GmailProviderAdapter implements IEmailProvider {
       messageBody += `Content-Type: multipart/alternative; boundary="${altBoundary}"\r\n\r\n`
 
       // Plain Text
-      if (payload.text) {
-        messageBody += `--${altBoundary}\r\n`
-        messageBody += 'Content-Type: text/plain; charset="UTF-8"\r\n'
-        messageBody += 'Content-Transfer-Encoding: base64\r\n\r\n'
-        messageBody += `${Buffer.from(payload.text, 'utf8').toString('base64')}\r\n\r\n`
-      }
+      messageBody += `--${altBoundary}\r\n`
+      messageBody += 'Content-Type: text/plain; charset="UTF-8"\r\n'
+      messageBody += 'Content-Transfer-Encoding: base64\r\n\r\n'
+      messageBody += `${Buffer.from(plainText, 'utf8').toString('base64')}\r\n\r\n`
 
       // HTML
       messageBody += `--${altBoundary}\r\n`
@@ -193,12 +220,10 @@ export class GmailProviderAdapter implements IEmailProvider {
       headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`)
       messageBody += `${headers.join('\r\n')}\r\n\r\n`
 
-      if (payload.text) {
-        messageBody += `--${boundary}\r\n`
-        messageBody += 'Content-Type: text/plain; charset="UTF-8"\r\n'
-        messageBody += 'Content-Transfer-Encoding: base64\r\n\r\n'
-        messageBody += `${Buffer.from(payload.text, 'utf8').toString('base64')}\r\n\r\n`
-      }
+      messageBody += `--${boundary}\r\n`
+      messageBody += 'Content-Type: text/plain; charset="UTF-8"\r\n'
+      messageBody += 'Content-Transfer-Encoding: base64\r\n\r\n'
+      messageBody += `${Buffer.from(plainText, 'utf8').toString('base64')}\r\n\r\n`
 
       messageBody += `--${boundary}\r\n`
       messageBody += 'Content-Type: text/html; charset="UTF-8"\r\n'

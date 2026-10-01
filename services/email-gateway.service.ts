@@ -22,6 +22,7 @@ import type { DecryptedGatewayConfig } from '../lib/email/types.ts'
 import {
   interpolateVariables,
   wrapHtmlEmail,
+  htmlToPlainText,
   DEFAULT_EMAIL_TEMPLATES,
 } from './email-template.service.ts'
 
@@ -139,6 +140,30 @@ export class EmailGatewayService {
 
       if (!platErr && platformGw) {
         return platformGw as EmailGatewayRecord
+      }
+
+      // Check environment variables fallback for platform when unconfigured in DB
+      if (process.env.SMTP_HOST) {
+        return {
+          id: 'gw-platform-env-smtp',
+          tenant_id: null,
+          scope_type: 'PLATFORM',
+          provider: 'smtp',
+          type: 'transactional',
+          smtp_host: process.env.SMTP_HOST,
+          smtp_port: Number(process.env.SMTP_PORT) || 587,
+          smtp_username: process.env.SMTP_USER || process.env.SMTP_USERNAME || null,
+          encrypted_credentials: process.env.SMTP_PASS || process.env.SMTP_PASSWORD || null,
+          encryption_type: (process.env.SMTP_SECURE === 'true' ? 'ssl' : 'tls') as any,
+          sender_name: process.env.SMTP_FROM_NAME || 'PrintERP Notifications',
+          sender_email: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'notifications@printerp.com',
+          reply_to_email: process.env.SMTP_REPLY_TO || 'support@printerp.com',
+          status: 'active',
+          is_default: true,
+          extra_settings: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
       }
 
       return null
@@ -416,13 +441,30 @@ export class EmailGatewayService {
           finalHtml = wrapHtmlEmail(interpolatedBody, {
             companyName: variables.company_name || gateway.sender_name,
           })
-          finalText = interpolatedBody.replace(/<[^>]*>?/gm, '')
+          finalText = htmlToPlainText(interpolatedBody)
         } else {
           finalSubject = customSubject || `Notification: ${eventType}`
           finalHtml = wrapHtmlEmail(`<p>${JSON.stringify(variables)}</p>`, {
             companyName: gateway.sender_name,
           })
+          finalText = htmlToPlainText(finalHtml)
         }
+      }
+
+      // Guarantee clean plaintext alternative if missing or empty (prevents MIME_HTML_ONLY spam penalty)
+      if (!finalText && finalHtml) {
+        finalText = htmlToPlainText(finalHtml)
+      }
+
+      // If custom HTML snippet lacks an outer HTML envelope, wrap it for consistent rendering and spam-safe footer
+      if (
+        finalHtml &&
+        !finalHtml.toLowerCase().includes('<html') &&
+        !finalHtml.toLowerCase().includes('<!doctype')
+      ) {
+        finalHtml = wrapHtmlEmail(finalHtml, {
+          companyName: variables.company_name || gateway.sender_name,
+        })
       }
 
       // 4. Asynchronous queue dispatch
@@ -467,12 +509,24 @@ export class EmailGatewayService {
       const decryptedConfig = this.prepareDecryptedConfig(gateway)
       const provider = createEmailProvider(decryptedConfig)
 
+      // Align sender email address with authenticated account to avoid SPF/DMARC misalignment
+      let effectiveSenderEmail = gateway.sender_email
+      if (gateway.provider === 'gmail' && gateway.gmail_account_email) {
+        effectiveSenderEmail = gateway.gmail_account_email
+      } else if (
+        gateway.provider === 'smtp' &&
+        gateway.smtp_username &&
+        gateway.smtp_username.includes('@') &&
+        (!effectiveSenderEmail || effectiveSenderEmail === 'notifications@printerp.com')
+      ) {
+        effectiveSenderEmail = gateway.smtp_username
+      } else if (!effectiveSenderEmail) {
+        effectiveSenderEmail = 'notifications@printerp.com'
+      }
+
       const fromAddress = {
         name: gateway.sender_name || gateway.gmail_display_name || 'PrintERP Notifications',
-        address:
-          gateway.provider === 'gmail' && gateway.gmail_account_email
-            ? gateway.gmail_account_email
-            : (gateway.sender_email || gateway.gmail_account_email || 'notifications@printerp.com'),
+        address: effectiveSenderEmail,
       }
 
       const sendResult = await provider.sendEmail({
@@ -483,6 +537,12 @@ export class EmailGatewayService {
         html: finalHtml,
         text: finalText,
         attachments,
+        headers: {
+          'Auto-Submitted': 'auto-generated',
+          'X-Auto-Response-Suppress': 'All',
+          'X-Mailer': 'InkFlow ERP Engine',
+          ...((options as any).headers || {}),
+        },
         metadata,
       })
 

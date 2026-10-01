@@ -43,12 +43,26 @@ export class ResendProviderAdapter implements IEmailProvider {
           ? `${payload.from.name} <${payload.from.address}>`
           : payload.from.address
 
+      const senderRaw = typeof payload.from === 'string' ? payload.from : payload.from.address
+      const senderDomainMatch = senderRaw.match(/@([a-zA-Z0-9.-]+)/)
+      const senderDomain = senderDomainMatch ? senderDomainMatch[1] : 'printerp.com'
+
+      const deliverabilityHeaders: Record<string, string> = {
+        'Auto-Submitted': 'auto-generated',
+        'X-Auto-Response-Suppress': 'All',
+        'X-Mailer': 'InkFlow ERP Engine',
+        'List-Unsubscribe': `<mailto:notifications@${senderDomain}?subject=unsubscribe>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        ...payload.headers,
+      }
+
       const body: Record<string, any> = {
         from: fromAddress,
         to: Array.isArray(payload.to) ? payload.to : [payload.to],
         subject: payload.subject,
         html: payload.html,
         text: payload.text,
+        headers: deliverabilityHeaders,
       }
 
       if (payload.replyTo || this.config.reply_to_email) {

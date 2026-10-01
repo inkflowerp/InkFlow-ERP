@@ -194,6 +194,7 @@ export interface SendEmailOptions {
   sentBy?: string | null
   queueNow?: boolean
   language?: 'en' | 'bn'
+  headers?: Record<string, string>
 }
 
 export interface EmailAttachment {

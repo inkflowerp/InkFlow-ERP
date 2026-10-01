@@ -59,7 +59,18 @@ export class SesProviderAdapter implements IEmailProvider {
           ? `"${payload.from.name}" <${payload.from.address}>`
           : payload.from.address
 
-      const headers: Record<string, string> = { ...payload.headers }
+      const senderRaw = typeof payload.from === 'string' ? payload.from : payload.from.address
+      const senderDomainMatch = senderRaw.match(/@([a-zA-Z0-9.-]+)/)
+      const senderDomain = senderDomainMatch ? senderDomainMatch[1] : 'printerp.com'
+
+      const headers: Record<string, string> = {
+        'Auto-Submitted': 'auto-generated',
+        'X-Auto-Response-Suppress': 'All',
+        'X-Mailer': 'InkFlow ERP Engine',
+        'List-Unsubscribe': `<mailto:notifications@${senderDomain}?subject=unsubscribe>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        ...payload.headers,
+      }
       if (this.config.extra_settings?.ses_config_set) {
         headers['X-SES-CONFIGURATION-SET'] = this.config.extra_settings.ses_config_set
       }
@@ -74,6 +85,11 @@ export class SesProviderAdapter implements IEmailProvider {
         html: payload.html,
         text: payload.text,
         headers,
+        envelope: {
+          from: senderRaw,
+          to: Array.isArray(payload.to) ? payload.to : [payload.to],
+        },
+        messageId: `<${Date.now()}.${Math.random().toString(36).substring(2, 10)}@${senderDomain}>`,
         attachments: payload.attachments?.map((att) => ({
           filename: att.filename,
           content: att.content,
