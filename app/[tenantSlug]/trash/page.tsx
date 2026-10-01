@@ -96,7 +96,7 @@ function TrashContent() {
         })
         const merged = Array.from(map.values())
         setTrashItems(merged)
-        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, merged, tenantSlug)
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, merged, true, tenantSlug)
       }
     } catch (e) {
       console.error('Error fetching trash items:', e)
@@ -171,7 +171,7 @@ function TrashContent() {
 
       setTrashItems((prev) => prev.filter((t) => t.id !== item.id))
       const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
-      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== item.id), tenantSlug)
+      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== item.id), true, tenantSlug)
 
       showNotification(
         tBilingual(
@@ -198,7 +198,7 @@ function TrashContent() {
 
       setTrashItems((prev) => prev.filter((t) => t.id !== itemToPermanentDelete.id))
       const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
-      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== itemToPermanentDelete.id), tenantSlug)
+      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== itemToPermanentDelete.id), true, tenantSlug)
 
       setIsPermanentModalOpen(false)
       setItemToPermanentDelete(null)
@@ -228,10 +228,10 @@ function TrashContent() {
       if (categoryToClear) {
         setTrashItems((prev) => prev.filter((t) => t.category !== categoryToClear))
         const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
-        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.category !== categoryToClear), tenantSlug)
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.category !== categoryToClear), true, tenantSlug)
       } else {
         setTrashItems([])
-        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [], tenantSlug)
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [], true, tenantSlug)
       }
 
       setIsEmptyTrashModalOpen(false)

@@ -131,7 +131,11 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
     const targetCompanySlug = companySlug ? String(companySlug).toLowerCase().trim() : null
 
     if (cId) {
-      return (targetId && cId === targetId) || (targetSlug && cId === targetSlug) || (targetCompanySlug && cId === targetCompanySlug)
+      return Boolean(
+        (targetId && cId === targetId) ||
+        (targetSlug && cId === targetSlug) ||
+        (targetCompanySlug && cId === targetCompanySlug)
+      )
     }
     return false
   }
@@ -181,7 +185,11 @@ function getLocalPayments(slug?: string, companySlug?: string, companyId?: strin
     const targetCompanySlug = companySlug ? String(companySlug).toLowerCase().trim() : null
 
     if (cId) {
-      return (targetId && cId === targetId) || (targetSlug && cId === targetSlug) || (targetCompanySlug && cId === targetCompanySlug)
+      return Boolean(
+        (targetId && cId === targetId) ||
+        (targetSlug && cId === targetSlug) ||
+        (targetCompanySlug && cId === targetCompanySlug)
+      )
     }
     return false
   }

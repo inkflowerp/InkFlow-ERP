@@ -164,7 +164,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       if (res.success && res.data) {
         setOwnerSnapshot(res.data)
         try {
-          PrintERPDataStore.set('printerp_dashboard_snapshot_cache' as any, res.data, slug)
+          PrintERPDataStore.set('printerp_dashboard_snapshot_cache' as any, res.data, true, slug)
         } catch {}
       } else {
         if (!ownerSnapshot) {

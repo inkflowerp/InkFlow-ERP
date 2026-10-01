@@ -676,8 +676,8 @@ export class PrintERPDataStore {
    */
   static set<T = any>(
     key: StorageKey,
-    data: T | string,
-    emitEvent: boolean | T = true,
+    data: any,
+    emitEvent: boolean | T | string = true,
     tenantSlug?: string,
     broadcastCrossTab = true
   ): T {
