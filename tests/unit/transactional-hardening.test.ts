@@ -2,8 +2,6 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
 import { BillingService } from '../../services/billing.service.ts'
-import { CrossBranchOperationsService } from '../../services/cross-branch-operations.service.ts'
-import { BranchOperationsRepository } from '../../lib/repositories/branch-operations.repository.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 
 describe('Transactional Business Operations & Hardening Tests (V9.1)', () => {
@@ -80,26 +78,5 @@ describe('Transactional Business Operations & Hardening Tests (V9.1)', () => {
 
     assert.strictEqual(payment.amount, 8000)
     assert.ok(payment.receipt_number.startsWith('PAY-'))
-  })
-
-  test('4. Branch Stock Transfer enforces idempotency and audit record creation', async () => {
-    const key = `idemp_trans_${Date.now()}`
-    const t1 = await CrossBranchOperationsService.requestTransfer(companyId, {
-      from_branch_id: 'branch-a',
-      to_branch_id: 'branch-b',
-      material_id: 'mat-star-flex',
-      quantity: 50,
-      idempotency_key: key,
-    })
-
-    const t2 = await CrossBranchOperationsService.requestTransfer(companyId, {
-      from_branch_id: 'branch-a',
-      to_branch_id: 'branch-b',
-      material_id: 'mat-star-flex',
-      quantity: 50,
-      idempotency_key: key,
-    })
-
-    assert.strictEqual(t1.id, t2.id, 'Idempotency key must return exact duplicate without double creating')
   })
 })

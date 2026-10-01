@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       'lucide-react',
       'recharts',
-      'date-fns',
       'clsx',
       'tailwind-merge',
       'zod',
