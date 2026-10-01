@@ -101,8 +101,11 @@ export class TenantService {
             currency: data.currency || existingCompany.currency,
             default_locale: data.default_locale || data.default_language || existingCompany.default_locale,
           })
+          TenantRepository.invalidateCompanyCache(existingCompany.id)
+          TenantRepository.invalidateCompanyCache(existingCompany.slug)
 
           if (resolvedOwnerId) {
+            TenantRepository.invalidateMembershipCache(resolvedOwnerId)
             await TenantRepository.resolveUserMembership(resolvedOwnerId, existingCompany.id)
           }
 
@@ -221,6 +224,13 @@ export class TenantService {
         },
         resolvedOwnerId || undefined
       )
+
+      TenantRepository.invalidateCompanyCache(created.slug)
+      TenantRepository.invalidateCompanyCache(created.id)
+      TenantRepository.invalidateCompanyCache(data.slug)
+      if (resolvedOwnerId) {
+        TenantRepository.invalidateMembershipCache(resolvedOwnerId)
+      }
 
       // Generate real-time platform notification for tenant registration
       try {

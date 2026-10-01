@@ -184,6 +184,8 @@ export class TenantRepository {
         logo_url: companyData.logo_url || null,
         currency: companyData.currency || 'BDT',
         default_locale: companyData.default_locale || 'bn',
+        owner_id: ownerUserId || null,
+        created_by: ownerUserId || null,
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -312,6 +314,7 @@ export class TenantRepository {
               branch_id: mainBranch?.id || null,
               status: 'active',
               invited_email: companyData.email || null,
+              responsibilities: ['business_owner'],
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             },
@@ -353,6 +356,21 @@ export class TenantRepository {
       }
     }
 
+    // Invalidate and immediately prime cache with new company
+    TenantRepository.invalidateCompanyCache(newCompany.slug)
+    TenantRepository.invalidateCompanyCache(newCompany.id)
+    TenantRepository.companySlugCache.set(newCompany.slug.toLowerCase().trim(), {
+      data: newCompany as unknown as CompanyRow,
+      expiresAt: Date.now() + 60000,
+    })
+    TenantRepository.companyIdCache.set(newCompany.id, {
+      data: newCompany as unknown as CompanyRow,
+      expiresAt: Date.now() + 60000,
+    })
+    if (ownerUserId) {
+      TenantRepository.invalidateMembershipCache(ownerUserId)
+    }
+
     return newCompany as unknown as CompanyRow
   }
 
@@ -377,15 +395,20 @@ export class TenantRepository {
         return null
       }
       const company = (data as CompanyRow) || null
-      TenantRepository.companySlugCache.set(cleanSlug, {
-        data: company,
-        expiresAt: Date.now() + 60000,
-      })
-      if (company?.id) {
-        TenantRepository.companyIdCache.set(company.id, {
+      // DO NOT CACHE NULL: Avoid negative caching so freshly registered tenants are instantly resolvable
+      if (company) {
+        TenantRepository.companySlugCache.set(cleanSlug, {
           data: company,
           expiresAt: Date.now() + 60000,
         })
+        if (company?.id) {
+          TenantRepository.companyIdCache.set(company.id, {
+            data: company,
+            expiresAt: Date.now() + 60000,
+          })
+        }
+      } else {
+        TenantRepository.companySlugCache.delete(cleanSlug)
       }
       return company
     } catch {
@@ -413,15 +436,20 @@ export class TenantRepository {
         return null
       }
       const company = (data as CompanyRow) || null
-      TenantRepository.companyIdCache.set(id, {
-        data: company,
-        expiresAt: Date.now() + 60000,
-      })
-      if (company?.slug) {
-        TenantRepository.companySlugCache.set(company.slug.toLowerCase().trim(), {
+      // DO NOT CACHE NULL
+      if (company) {
+        TenantRepository.companyIdCache.set(id, {
           data: company,
           expiresAt: Date.now() + 60000,
         })
+        if (company?.slug) {
+          TenantRepository.companySlugCache.set(company.slug.toLowerCase().trim(), {
+            data: company,
+            expiresAt: Date.now() + 60000,
+          })
+        }
+      } else {
+        TenantRepository.companyIdCache.delete(id)
       }
       return company
     } catch {
@@ -1224,9 +1252,24 @@ export class TenantRepository {
       return lower || 'general_staff'
     })
 
+    let isTenantMembershipOwner = false
+    try {
+      const { data: tm } = await (admin as any)
+        .from('tenant_memberships')
+        .select('role')
+        .eq('company_id', company.id)
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .maybeSingle()
+      if (tm?.role === 'owner' || tm?.role === 'business_owner') {
+        isTenantMembershipOwner = true
+      }
+    } catch {}
+
     const isCompanyOwner = (company as any)?.owner_id === userId
     const isOwner =
       isCompanyOwner ||
+      isTenantMembershipOwner ||
       (!employeeRole && (
         responsibilities.includes('owner') ||
         responsibilities.includes('business_owner') ||

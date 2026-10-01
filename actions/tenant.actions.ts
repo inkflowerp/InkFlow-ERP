@@ -53,6 +53,13 @@ export async function createCompanyAction(
   const company = result.data
   const effectiveUserId = (result as any).ownerUserId || resolvedUserId
 
+  // Ensure caches are invalidated for the newly created company so immediate lookups succeed
+  TenantRepository.invalidateCompanyCache(company.slug)
+  TenantRepository.invalidateCompanyCache(company.id)
+  if (effectiveUserId) {
+    TenantRepository.invalidateMembershipCache(effectiveUserId)
+  }
+
   // 1. Establish active Supabase Auth user session if owner email & password were provided
   if (data.owner_email && data.owner_password) {
     try {
