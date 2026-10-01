@@ -83,15 +83,15 @@ export async function dispatchWhatsAppCampaignAction(params: {
     if (params.recipientFilter === 'all_customers' || params.recipientFilter === 'active_customers') {
       let query = (adminClient as any)
         .from('customers')
-        .select('id, name, phone')
+        .select('id, name, mobile')
         .eq('company_id', tenantId)
-        .not('phone', 'is', null)
+        .not('mobile', 'is', null)
         .limit(300)
 
       const { data: customers } = await query
       if (customers) {
         for (const c of customers) {
-          const { isValid, formatted } = normalizeBdPhoneNumber(c.phone, false)
+          const { isValid, formatted } = normalizeBdPhoneNumber(c.mobile, false)
           if (isValid && formatted) {
             recipients.push({ phone: formatted, name: c.name, customerId: c.id })
           }
@@ -100,16 +100,16 @@ export async function dispatchWhatsAppCampaignAction(params: {
     } else if (params.recipientFilter === 'employees') {
       const { data: employees } = await (adminClient as any)
         .from('employees')
-        .select('id, full_name, phone')
+        .select('id, name, mobile')
         .eq('company_id', tenantId)
-        .not('phone', 'is', null)
+        .not('mobile', 'is', null)
         .limit(200)
 
       if (employees) {
         for (const e of employees) {
-          const { isValid, formatted } = normalizeBdPhoneNumber(e.phone, false)
+          const { isValid, formatted } = normalizeBdPhoneNumber(e.mobile, false)
           if (isValid && formatted) {
-            recipients.push({ phone: formatted, name: e.full_name, employeeId: e.id })
+            recipients.push({ phone: formatted, name: e.name, employeeId: e.id })
           }
         }
       }

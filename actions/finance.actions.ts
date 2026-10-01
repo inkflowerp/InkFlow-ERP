@@ -10,22 +10,11 @@ import { verifyServerPermission } from '@/lib/auth/rbac.server'
 import type { AccountRecord } from '@/types/finance.types'
 
 async function resolveCompanyId(companyIdOrSlug?: string): Promise<string> {
-  try {
-    return await getTenantCompanyId(companyIdOrSlug)
-  } catch {
-    if (companyIdOrSlug && companyIdOrSlug !== 'default' && companyIdOrSlug !== 'my-company') {
-      return companyIdOrSlug
-    }
-    try {
-      const { headers } = await import('next/headers')
-      const headerStore = await headers()
-      const headerSlug = headerStore.get('x-tenant-slug')
-      if (headerSlug && headerSlug !== 'default' && headerSlug !== 'c-01') {
-        return headerSlug
-      }
-    } catch {}
-    return 'default'
+  const companyId = await getTenantCompanyId(companyIdOrSlug)
+  if (!companyId) {
+    throw new Error('Unauthorized: Valid authenticated tenant session required.')
   }
+  return companyId
 }
 
 export async function getAccountsAction(branchId?: string, companyIdOrSlug?: string) {

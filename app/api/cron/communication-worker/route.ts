@@ -12,8 +12,8 @@ export async function GET(request: Request) {
     const authHeader = request.headers.get('authorization')
     const cronSecret = process.env.CRON_SECRET
 
-    // Enforce fail-closed Bearer token verification if secret is configured
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    // Enforce fail-closed Bearer token verification
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized cron request' }, { status: 401 })
     }
 

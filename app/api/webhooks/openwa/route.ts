@@ -66,6 +66,12 @@ export async function POST(request: NextRequest) {
       request.headers.get('x-openwa-signature') ||
       request.headers.get('X-OpenWA-Signature')
     const configuredSecret = process.env.OPENWA_WEBHOOK_SECRET
+    const isProd = process.env.NODE_ENV === 'production'
+
+    if (isProd && !configuredSecret) {
+      console.error('[OpenWA Webhook] OPENWA_WEBHOOK_SECRET is not configured in production.')
+      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
+    }
 
     if (configuredSecret) {
       const isValidSig = verifyOpenWAWebhookSignature(rawBody, signature, configuredSecret)
@@ -258,19 +264,19 @@ export async function POST(request: NextRequest) {
             .from('customers')
             .select('id, name')
             .eq('company_id', tenantId)
-            .ilike('phone', `%${recipientPhone.slice(-10)}%`)
+            .ilike('mobile', `%${recipientPhone.slice(-10)}%`)
             .maybeSingle()
 
           // Check if matches an employee
           const { data: matchedEmployee } = await (adminClient as any)
             .from('employees')
-            .select('id, full_name')
+            .select('id, name')
             .eq('company_id', tenantId)
-            .ilike('phone', `%${recipientPhone.slice(-10)}%`)
+            .ilike('mobile', `%${recipientPhone.slice(-10)}%`)
             .maybeSingle()
 
           const contactType = matchedCustomer ? 'customer' : matchedEmployee ? 'employee' : 'customer'
-          const displayName = matchedCustomer?.name || matchedEmployee?.full_name || senderName
+          const displayName = matchedCustomer?.name || matchedEmployee?.name || senderName
 
           const { data: newContact } = await (adminClient as any)
             .from('whatsapp_contacts')

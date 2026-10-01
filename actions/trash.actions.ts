@@ -5,11 +5,18 @@ import { TrashService } from '@/services/trash.service'
 import type { TrashCategory } from '@/types/trash.types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 
+async function resolveTrashTenant(requestedCompanyId?: string) {
+  const tenant = await getCurrentTenant(requestedCompanyId)
+  if (!tenant || !tenant.companyId) {
+    throw new Error('Unauthorized: Valid authenticated tenant session required.')
+  }
+  return tenant
+}
+
 export async function getTrashItemsAction(companyId?: string, category?: TrashCategory) {
   try {
-    const tenant = await getCurrentTenant(companyId)
-    const effectiveCompanyId = companyId || tenant?.companyId || 'default'
-    const data = await TrashService.getTrashItems(effectiveCompanyId, category)
+    const tenant = await resolveTrashTenant(companyId)
+    const data = await TrashService.getTrashItems(tenant.companyId, category)
     return { success: true, data }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch trash items' }
@@ -18,9 +25,8 @@ export async function getTrashItemsAction(companyId?: string, category?: TrashCa
 
 export async function getTrashSummaryAction(companyId?: string) {
   try {
-    const tenant = await getCurrentTenant(companyId)
-    const effectiveCompanyId = companyId || tenant?.companyId || 'default'
-    const summary = await TrashService.getTrashSummary(effectiveCompanyId)
+    const tenant = await resolveTrashTenant(companyId)
+    const summary = await TrashService.getTrashSummary(tenant.companyId)
     return { success: true, summary }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to get trash summary' }
@@ -51,9 +57,9 @@ export async function moveToTrashAction(
       tenantSlug = arg4
     }
 
-    const tenant = await getCurrentTenant(companyId)
-    const effectiveCompanyId = companyId || tenant?.companyId || item?.company_id || 'default'
-    const deletedByName = tenant?.fullName || (tenant as any)?.email || 'System User'
+    const tenant = await resolveTrashTenant(companyId)
+    const effectiveCompanyId = tenant.companyId
+    const deletedByName = tenant.fullName || (tenant as any)?.email || 'System User'
 
     const record = await TrashService.moveToTrash({
       category,
@@ -95,9 +101,8 @@ export async function restoreFromTrashAction(
       tenantSlug = arg3
     }
 
-    const tenant = await getCurrentTenant(companyId)
-    const effectiveCompanyId = companyId || tenant?.companyId || 'default'
-    const restored = await TrashService.restoreFromTrash(trashId, effectiveCompanyId)
+    const tenant = await resolveTrashTenant(companyId)
+    const restored = await TrashService.restoreFromTrash(trashId, tenant.companyId)
 
     if (tenantSlug) {
       try {
@@ -131,9 +136,8 @@ export async function permanentDeleteAction(
       tenantSlug = arg3
     }
 
-    const tenant = await getCurrentTenant(companyId)
-    const effectiveCompanyId = companyId || tenant?.companyId || 'default'
-    await TrashService.permanentDelete(trashId, effectiveCompanyId)
+    const tenant = await resolveTrashTenant(companyId)
+    await TrashService.permanentDelete(trashId, tenant.companyId)
 
     if (tenantSlug) {
       try {
@@ -167,9 +171,8 @@ export async function emptyTrashAction(
       tenantSlug = arg3
     }
 
-    const tenant = await getCurrentTenant(companyId)
-    const effectiveCompanyId = companyId || tenant?.companyId || 'default'
-    const count = await TrashService.emptyTrash(effectiveCompanyId, category)
+    const tenant = await resolveTrashTenant(companyId)
+    const count = await TrashService.emptyTrash(tenant.companyId, category)
 
     if (tenantSlug) {
       try {
@@ -203,9 +206,8 @@ export async function purgeExpiredTrashAction(
       retentionDays = arg3
     }
 
-    const tenant = await getCurrentTenant(companyId)
-    const effectiveCompanyId = companyId || tenant?.companyId || 'default'
-    const result = await TrashService.purgeExpiredTrash(effectiveCompanyId, retentionDays)
+    const tenant = await resolveTrashTenant(companyId)
+    const result = await TrashService.purgeExpiredTrash(tenant.companyId, retentionDays)
 
     if (tenantSlug) {
       try {

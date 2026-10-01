@@ -4,6 +4,19 @@ import { revalidatePath } from 'next/cache'
 import { CompanyUsersService } from '@/services/company-users.service'
 import { EntitlementService } from '@/services/entitlement.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
+import { TenantRepository } from '@/lib/repositories/tenant.repository'
+
+async function isSelfTarget(targetCompanyUserId: string, companyId: string, currentUserId?: string): Promise<boolean> {
+  if (!targetCompanyUserId || !currentUserId || !companyId) return false
+  if (targetCompanyUserId === currentUserId) return true
+  try {
+    const users = await TenantRepository.getCompanyUsers(companyId)
+    const target = users.find((u) => u.id === targetCompanyUserId)
+    return target?.user_id === currentUserId
+  } catch {
+    return false
+  }
+}
 
 export async function createCompanyUserAction(params: {
   companyId: string
@@ -99,7 +112,7 @@ export async function toggleUserStatusAction(
   }
 
   // Anti-self-disable check
-  if (tenant.userId && companyUserId === tenant.userId) {
+  if (await isSelfTarget(companyUserId, tenant.companyId, tenant.userId)) {
     return { success: false, message: 'You cannot disable your own active user account.' }
   }
 
@@ -130,7 +143,7 @@ export async function changeUserRoleAction(
   }
 
   // Anti-self-escalation check
-  if (tenant.companyRole !== 'business_owner' && tenant.userId === companyUserId) {
+  if (tenant.companyRole !== 'business_owner' && (await isSelfTarget(companyUserId, tenant.companyId, tenant.userId))) {
     return { success: false, message: 'Self-escalation denied: You cannot change your own role.' }
   }
 
@@ -228,7 +241,7 @@ export async function updateUserAccessAndPermissionsAction(params: {
   }
 
   // Anti-self-escalation check
-  if (tenant.companyRole !== 'business_owner' && tenant.userId === params.companyUserId) {
+  if (tenant.companyRole !== 'business_owner' && (await isSelfTarget(params.companyUserId, tenant.companyId, tenant.userId))) {
     return { success: false, message: 'Self-escalation denied: You cannot modify your own access privileges.' }
   }
 
@@ -465,7 +478,7 @@ export async function removeLoginAction(params: {
   }
 
   // Anti-self-remove check
-  if (tenant.userId && params.companyUserId === tenant.userId) {
+  if (await isSelfTarget(params.companyUserId, tenant.companyId, tenant.userId)) {
     return { success: false, message: 'You cannot remove your own active login account.' }
   }
 

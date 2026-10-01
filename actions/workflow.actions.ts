@@ -16,7 +16,8 @@ export async function toggleWorkflowRuleAction(
   }
 
   const res = await WorkflowService.toggleRule(tenant.companyId, ruleId, isActive)
-  revalidatePath('/[tenantSlug]/settings/automations', 'page')
+  if (tenant.companySlug) revalidatePath(`/${tenant.companySlug}/settings/automations`, 'page')
+  revalidatePath('/', 'layout')
   return res
 }
 
@@ -30,7 +31,8 @@ export async function saveWorkflowRuleAction(
   }
 
   const res = await WorkflowService.saveRule(tenant.companyId, ruleData)
-  revalidatePath('/[tenantSlug]/settings/automations', 'page')
+  if (tenant.companySlug) revalidatePath(`/${tenant.companySlug}/settings/automations`, 'page')
+  revalidatePath('/', 'layout')
   return res
 }
 
@@ -44,7 +46,8 @@ export async function deleteWorkflowRuleAction(
   }
 
   const res = await WorkflowService.deleteRule(tenant.companyId, ruleId)
-  revalidatePath('/[tenantSlug]/settings/automations', 'page')
+  if (tenant.companySlug) revalidatePath(`/${tenant.companySlug}/settings/automations`, 'page')
+  revalidatePath('/', 'layout')
   return res
 }
 
@@ -75,7 +78,8 @@ export async function testTriggerWorkflowRuleAction(
   }
 
   const res = await WorkflowService.simulateRuleRun(tenant.companyId, ruleId, customPayload)
-  revalidatePath('/[tenantSlug]/settings/automations', 'page')
+  if (tenant.companySlug) revalidatePath(`/${tenant.companySlug}/settings/automations`, 'page')
+  revalidatePath('/', 'layout')
   return res
 }
 
@@ -99,7 +103,8 @@ export async function dispatchWorkflowEventAction(
       entityId,
       payload
     )
-    revalidatePath('/[tenantSlug]/settings/automations', 'page')
+    if (tenant.companySlug) revalidatePath(`/${tenant.companySlug}/settings/automations`, 'page')
+    revalidatePath('/', 'layout')
     return { success: true, data: logs }
   } catch (err: any) {
     return { success: false, message: err?.message || 'Failed to dispatch workflow trigger' }

@@ -260,91 +260,107 @@ export async function createNewWorkIntakeAction(
       })
     }
 
-    // 4. If Design is required, create a Designer job ticket
-    let designJobId: string | null = null
-    if (routing === 'design_required') {
-      const designJob = await DesignRepository.createDesignJob({
+    // 4, 5, 6: Downstream Pipeline (Protected with compensating rollback)
+    let prodJob: any = null
+    try {
+      // 4. If Design is required, create a Designer job ticket
+      let designJobId: string | null = null
+      if (routing === 'design_required') {
+        const designJob = await DesignRepository.createDesignJob({
+          company_id: companyId,
+          title: input.jobTitle,
+          customer_id: input.customerId,
+          customer_name: input.customerName,
+          deadline: input.deliveryDate,
+          priority: input.priority || 'normal',
+          status: 'received',
+          workflow_routing: 'design_required',
+          commercial_status: 'invoice_created',
+          invoice_id: invoice.id,
+          invoice_number: invoice.invoice_number,
+          instructions: input.notes || `Artwork design needed for ${input.jobTitle} (${input.width}x${input.height} ${input.unit})`,
+        })
+        designJobId = designJob.id
+      }
+
+      // 5. Create Production Job
+      const finishings = input.selectedFinishings || []
+      prodJob = await ProductionRepository.createProductionJob({
         company_id: companyId,
-        title: input.jobTitle,
-        customer_id: input.customerId,
+        production_job_number: jobNumber,
         customer_name: input.customerName,
-        deadline: input.deliveryDate,
+        product_name: input.jobTitle,
+        department: routing === 'design_required' ? 'design' : 'printing',
+        stage: routing === 'design_required' ? 'design' : 'printing',
+        status: 'queued',
         priority: input.priority || 'normal',
-        status: 'received',
-        workflow_routing: 'design_required',
-        commercial_status: 'invoice_created',
-        invoice_id: invoice.id,
-        invoice_number: invoice.invoice_number,
-        instructions: input.notes || `Artwork design needed for ${input.jobTitle} (${input.width}x${input.height} ${input.unit})`,
+        deadline: input.deliveryDate,
+        dimensions_spec: `${input.width} × ${input.height} ${input.unit}`,
+        quantity: input.quantity,
+        material_spec: `${input.materialName}${finishings.length ? ' (' + finishings.join(', ') + ')' : ''}`,
+        assigned_workers: [],
+        production_instructions: input.notes || undefined,
+        has_rework: false,
+        rework_count: 0,
       })
-      designJobId = designJob.id
-    }
 
-    // 5. Create Production Job
-    const finishings = input.selectedFinishings || []
-    const prodJob = await ProductionRepository.createProductionJob({
-      company_id: companyId,
-      production_job_number: jobNumber,
-      customer_name: input.customerName,
-      product_name: input.jobTitle,
-      department: routing === 'design_required' ? 'design' : 'printing',
-      stage: routing === 'design_required' ? 'design' : 'printing',
-      status: 'queued',
-      priority: input.priority || 'normal',
-      deadline: input.deliveryDate,
-      dimensions_spec: `${input.width} × ${input.height} ${input.unit}`,
-      quantity: input.quantity,
-      material_spec: `${input.materialName}${finishings.length ? ' (' + finishings.join(', ') + ')' : ''}`,
-      assigned_workers: [],
-      production_instructions: input.notes || undefined,
-      has_rework: false,
-      rework_count: 0,
-    })
+      // 6. Create Production Task
+      const totalSqft =
+        input.unit === 'ft'
+          ? input.width * input.height * input.quantity
+          : input.unit === 'inch'
+          ? (input.width * input.height * input.quantity) / 144
+          : input.quantity
 
-    // 6. Create Production Task
-    const totalSqft =
-      input.unit === 'ft'
-        ? input.width * input.height * input.quantity
-        : input.unit === 'inch'
-        ? (input.width * input.height * input.quantity) / 144
-        : input.quantity
-
-    await ProductionTaskRepository.createTask({
-      company_id: companyId,
-      production_job_id: prodJob.id,
-      task_name: `Print: ${input.jobTitle} (${input.width}x${input.height} ${input.unit})`,
-      stage_name: 'printing',
-      department: 'printing',
-      task_type: 'printing',
-      sequence_order: 1,
-      quantity: input.quantity,
-      unit: input.unit,
-      status: 'queued',
-      customer_name: input.customerName,
-      product_name: input.jobTitle,
-      job_number: jobNumber,
-      assigned_machine_name: input.assignedMachine || 'Large Format Eco-Solvent #1',
-      estimated_duration_minutes: Math.max(15, Math.round(totalSqft * 0.5)),
-    })
-
-    if (finishings.length > 0) {
       await ProductionTaskRepository.createTask({
         company_id: companyId,
         production_job_id: prodJob.id,
-        task_name: `Finishing: ${finishings.join(', ')} - ${input.jobTitle}`,
-        stage_name: 'finishing',
-        department: 'finishing',
-        task_type: 'finishing',
-        sequence_order: 2,
+        task_name: `Print: ${input.jobTitle} (${input.width}x${input.height} ${input.unit})`,
+        stage_name: 'printing',
+        department: 'printing',
+        task_type: 'printing',
+        sequence_order: 1,
         quantity: input.quantity,
         unit: input.unit,
         status: 'queued',
         customer_name: input.customerName,
         product_name: input.jobTitle,
         job_number: jobNumber,
-        assigned_machine_name: 'Manual Finishing Bench',
-        estimated_duration_minutes: Math.max(10, Math.round(input.quantity * 2)),
+        assigned_machine_name: input.assignedMachine || 'Large Format Eco-Solvent #1',
+        estimated_duration_minutes: Math.max(15, Math.round(totalSqft * 0.5)),
       })
+
+      if (finishings.length > 0) {
+        await ProductionTaskRepository.createTask({
+          company_id: companyId,
+          production_job_id: prodJob.id,
+          task_name: `Finishing: ${finishings.join(', ')} - ${input.jobTitle}`,
+          stage_name: 'finishing',
+          department: 'finishing',
+          task_type: 'finishing',
+          sequence_order: 2,
+          quantity: input.quantity,
+          unit: input.unit,
+          status: 'queued',
+          customer_name: input.customerName,
+          product_name: input.jobTitle,
+          job_number: jobNumber,
+          assigned_machine_name: 'Manual Finishing Bench',
+          estimated_duration_minutes: Math.max(10, Math.round(input.quantity * 2)),
+        })
+      }
+    } catch (downstreamErr: any) {
+      console.error('[OrderIntake] Downstream creation failed, auto-cancelling preliminary invoice:', downstreamErr)
+      try {
+        await BillingRepository.cancelInvoice(
+          invoice.id,
+          `Auto-cancelled due to job intake pipeline error: ${downstreamErr?.message || 'Unknown error'}`,
+          tenant?.fullName || 'System',
+          companyId,
+          tenant?.userId
+        )
+      } catch {}
+      throw new Error(`Order intake partially failed during production ticket creation: ${downstreamErr?.message || 'Internal error'}. The preliminary invoice was cancelled.`)
     }
 
     // Audit Logging

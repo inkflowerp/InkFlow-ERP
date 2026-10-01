@@ -4,6 +4,7 @@ import { AuthEmailService } from '@/services/auth-email.service'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
+import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 
 export async function GET(request: Request) {
   const urlObj = new URL(request.url)
@@ -41,12 +42,15 @@ export async function GET(request: Request) {
             ? getTenantLink(session.companySlug, '/dashboard')
             : `${origin}/onboarding`
 
+        const requestHost = request.headers.get('x-forwarded-host') || request.headers.get('host') || undefined
+        const cookieOpts = getAuthCookieOptions(requestHost)
         const redirectResponse = NextResponse.redirect(destination)
         redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), {
-          path: '/',
-          maxAge: 60 * 60 * 24 * 7,
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
+          path: cookieOpts.path,
+          maxAge: cookieOpts.maxAge,
+          sameSite: cookieOpts.sameSite,
+          secure: cookieOpts.secure,
+          domain: cookieOpts.domain,
         })
         return redirectResponse
       }

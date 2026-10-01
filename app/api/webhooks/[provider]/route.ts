@@ -327,6 +327,12 @@ export async function POST(
     const eventObj = payload.data?.object || {}
     providerEventId = payload.id || eventObj.id
 
+    const stripeSecret = process.env.STRIPE_WEBHOOK_SECRET
+    const stripeSig = request.headers.get('stripe-signature')
+    if (stripeSecret && !stripeSig) {
+      return NextResponse.json({ error: 'Missing stripe signature' }, { status: 400 })
+    }
+
     if (
       payload.type === 'checkout.session.completed' ||
       payload.type === 'payment_intent.succeeded' ||
@@ -353,6 +359,12 @@ export async function POST(
   else if (provider === 'telegram' || provider === 'telegram_bot') {
     eventType = 'telegram_update'
     providerEventId = String(payload.update_id || '')
+
+    const telegramSecret = process.env.TELEGRAM_BOT_WEBHOOK_SECRET
+    const telegramHeader = request.headers.get('x-telegram-bot-api-secret-token')
+    if (telegramSecret && telegramHeader !== telegramSecret) {
+      return NextResponse.json({ error: 'Unauthorized Telegram webhook token' }, { status: 401 })
+    }
     isVerified = true
   }
 

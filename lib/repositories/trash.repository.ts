@@ -9,11 +9,10 @@ import {
 } from '../../types/trash.types.ts'
 
 function matchesCompany(itemCompanyId?: string, targetCompanyId?: string): boolean {
-  if (!targetCompanyId || targetCompanyId === 'default' || targetCompanyId === 'all') return true
-  if (!itemCompanyId || itemCompanyId === 'default') return true
-  if (itemCompanyId === targetCompanyId) return true
-  if (itemCompanyId === 'c-01' || targetCompanyId === 'c-01') return true
-  return false
+  if (targetCompanyId === 'all') return false // Disallow dangerous wildcard wipes
+  if (!targetCompanyId) return true // Platform cron / system cleanup (e.g. purgeExpiredTrash)
+  if (targetCompanyId === 'default' && (!itemCompanyId || itemCompanyId === 'default')) return true
+  return itemCompanyId === targetCompanyId
 }
 
 export class TrashRepository {

@@ -202,7 +202,7 @@ export async function createInvoiceAction(
     let customerPhone = payload.customer_phone || ''
     let customerAddress = payload.customer_address || ''
     let customerEmail = payload.customer_email || null
-    let customerBin = payload.customer_email || null
+    let customerBin = payload.customer_bin || null
 
     if (!resolvedCustomerId && payload.new_customer) {
       const newCust = payload.new_customer

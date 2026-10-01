@@ -253,8 +253,11 @@ export async function createPurchaseOrderAction(
 
     revalidatePath('/purchases')
     revalidatePath('/purchases/orders')
-    revalidatePath('/[tenantSlug]/inventory', 'page')
-    revalidatePath('/[tenantSlug]/purchases', 'page')
+    if (tenant.companySlug) {
+      revalidatePath(`/${tenant.companySlug}/inventory`, 'page')
+      revalidatePath(`/${tenant.companySlug}/purchases`, 'page')
+    }
+    revalidatePath('/', 'layout')
     return { success: true, data: created }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to create purchase order.' }
@@ -398,8 +401,11 @@ export async function receiveGoodsAction(
     revalidatePath('/purchases/receipts')
     revalidatePath(`/purchases/${params.purchase_order_id}`)
     revalidatePath('/inventory')
-    revalidatePath('/[tenantSlug]/inventory', 'page')
-    revalidatePath('/[tenantSlug]/purchases', 'page')
+    if (tenant.companySlug) {
+      revalidatePath(`/${tenant.companySlug}/inventory`, 'page')
+      revalidatePath(`/${tenant.companySlug}/purchases`, 'page')
+    }
+    revalidatePath('/', 'layout')
     return { success: true, data: result }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to process goods receipt.' }

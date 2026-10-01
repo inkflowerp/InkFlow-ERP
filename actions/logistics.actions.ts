@@ -12,6 +12,14 @@ export interface ServerActionResult<T> {
   error?: string
 }
 
+async function resolveLogisticsTenant(requestedCompanyId?: string) {
+  const tenant = await getCurrentTenant(requestedCompanyId)
+  if (!tenant || !tenant.companyId) {
+    throw new Error('Unauthorized: Valid authenticated tenant session required.')
+  }
+  return tenant
+}
+
 /**
  * Server Action: Fetch delivery challans for the active tenant
  */
@@ -19,19 +27,8 @@ export async function getChallansAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<DeliveryChallanRecord[]>> {
   try {
-    let companyId = requestedCompanyId || ''
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) {
-        companyId = tenant.companyId
-      }
-    } catch {}
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: Valid company context required.' }
-    }
-
-    const challans = await LogisticsService.getChallans(companyId)
+    const tenant = await resolveLogisticsTenant(requestedCompanyId)
+    const challans = await LogisticsService.getChallans(tenant.companyId)
     return { success: true, data: challans }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch delivery challans' }
@@ -46,19 +43,8 @@ export async function getChallanByIdAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<DeliveryChallanRecord | null>> {
   try {
-    let companyId = requestedCompanyId || ''
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) {
-        companyId = tenant.companyId
-      }
-    } catch {}
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: Valid company context required.' }
-    }
-
-    const challan = await LogisticsService.getChallanById(id, companyId)
+    const tenant = await resolveLogisticsTenant(requestedCompanyId)
+    const challan = await LogisticsService.getChallanById(id, tenant.companyId)
     return { success: true, data: challan }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch delivery challan' }
@@ -73,25 +59,11 @@ export async function createChallanAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<DeliveryChallanRecord>> {
   try {
-    let companyId = requestedCompanyId || ''
-    let creatorName = 'Logistics Coordinator'
-
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) {
-        companyId = tenant.companyId
-        creatorName = tenant.fullName || creatorName
-      }
-    } catch {}
-
-    if (!companyId) {
-      companyId = payload.company_id || 'default'
-    }
-
+    const tenant = await resolveLogisticsTenant(requestedCompanyId || payload.company_id)
     const challan = await LogisticsService.createChallan({
       ...payload,
-      company_id: companyId,
-      dispatched_by_name: payload.dispatched_by_name || creatorName,
+      company_id: tenant.companyId,
+      dispatched_by_name: payload.dispatched_by_name || tenant.fullName || 'Logistics Coordinator',
     })
 
     try {
@@ -117,19 +89,8 @@ export async function updateChallanStatusAction(
   extraUpdates?: Partial<DeliveryChallanRecord>
 ): Promise<ServerActionResult<DeliveryChallanRecord>> {
   try {
-    let companyId = requestedCompanyId || ''
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) {
-        companyId = tenant.companyId
-      }
-    } catch {}
-
-    if (!companyId) {
-      companyId = (extraUpdates as any)?.company_id || 'default'
-    }
-
-    const updated = await LogisticsService.updateChallanStatus(id, status, companyId, extraUpdates)
+    const tenant = await resolveLogisticsTenant(requestedCompanyId)
+    const updated = await LogisticsService.updateChallanStatus(id, status, tenant.companyId, extraUpdates)
 
     try {
       revalidatePath('/[tenantSlug]/delivery', 'page')
@@ -152,19 +113,8 @@ export async function getInstallationsAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<InstallationRecord[]>> {
   try {
-    let companyId = requestedCompanyId || ''
-    try {
-      const tenant = await getCurrentTenant(requestedCompanyId)
-      if (tenant?.companyId) {
-        companyId = tenant.companyId
-      }
-    } catch {}
-
-    if (!companyId) {
-      return { success: false, error: 'Unauthorized: Valid company context required.' }
-    }
-
-    const installations = await LogisticsService.getInstallations(companyId)
+    const tenant = await resolveLogisticsTenant(requestedCompanyId)
+    const installations = await LogisticsService.getInstallations(tenant.companyId)
     return { success: true, data: installations }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch installations' }

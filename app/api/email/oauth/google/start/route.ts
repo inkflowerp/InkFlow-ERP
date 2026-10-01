@@ -13,7 +13,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const scopeParam = searchParams.get('scope') || 'tenant'
     const tenantIdParam = searchParams.get('tenantId')
-    const returnUrlParam = searchParams.get('returnUrl') || undefined
+    const rawReturnUrl = searchParams.get('returnUrl')
+    const returnUrlParam =
+      rawReturnUrl &&
+      rawReturnUrl.startsWith('/') &&
+      !rawReturnUrl.startsWith('//') &&
+      !rawReturnUrl.startsWith('/\\')
+        ? rawReturnUrl
+        : undefined
 
     const isPlatform = scopeParam.toLowerCase() === 'platform'
 

@@ -175,9 +175,25 @@ export async function GET(request: NextRequest) {
         redirectDestination = `${origin}/${slug}/settings/email?gmail=connected`
       }
     } else {
-      const parsed = new URL(redirectDestination, origin)
-      parsed.searchParams.set('gmail', 'connected')
-      redirectDestination = parsed.toString()
+      let safePath = redirectDestination
+      if (
+        !safePath.startsWith('/') ||
+        safePath.startsWith('//') ||
+        safePath.startsWith('/\\')
+      ) {
+        safePath = '/settings/email'
+      }
+      try {
+        const parsed = new URL(safePath, origin)
+        if (parsed.origin === origin) {
+          parsed.searchParams.set('gmail', 'connected')
+          redirectDestination = parsed.toString()
+        } else {
+          redirectDestination = `${origin}/settings/email?gmail=connected`
+        }
+      } catch {
+        redirectDestination = `${origin}/settings/email?gmail=connected`
+      }
     }
 
     return NextResponse.redirect(redirectDestination)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentPlatformUser, hasPlatformPermission } from '@/lib/auth/platform-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { TenantRepository } from '@/lib/repositories/tenant.repository'
 
 export async function GET(
   request: NextRequest,
@@ -56,11 +57,18 @@ export async function GET(
       .select('*')
       .eq('company_id', companyId)
 
-    // 3. Fetch Company Users (excluding sensitive credential hashes)
-    const { data: users } = await (admin as any)
-      .from('company_users')
-      .select('id, email, full_name, role, is_active, created_at, last_login_at')
-      .eq('company_id', companyId)
+    // 3. Fetch Company Users (with user profile details)
+    const rawUsers = await TenantRepository.getCompanyUsers(companyId)
+    const exportUsers = (rawUsers || []).map((u) => ({
+      id: u.id,
+      user_id: u.user_id,
+      email: u.profile?.email || u.invited_email || '',
+      full_name: u.profile?.full_name || '',
+      role: u.role?.name || u.role?.slug || 'member',
+      status: u.status,
+      created_at: u.created_at,
+      last_login_at: u.last_login_at || null,
+    }))
 
     // 4. Construct export archive
     const exportData = {
@@ -83,7 +91,7 @@ export async function GET(
         settings: company.settings,
       },
       subscriptions: subscriptions || [],
-      users: users || [],
+      users: exportUsers,
     }
 
     const filename = `tenant-export-${company.slug || companyId}-${new Date().toISOString().slice(0, 10)}.json`

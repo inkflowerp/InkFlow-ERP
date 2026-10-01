@@ -23,26 +23,18 @@ export interface ServerActionResult<T> {
 }
 
 async function resolveTenantContext(requestedCompanyId?: string) {
-  let companyId = requestedCompanyId || ''
-  let userId = 'system'
-  let userEmail = 'system@printerp.local'
-  let userName = 'Operator'
-
-  try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (tenant?.companyId) {
-      companyId = tenant.companyId
-      userId = tenant.userId || userId
-      userEmail = tenant.userEmail || userEmail
-      userName = tenant.fullName || userName
-    }
-  } catch {}
-
-  if (!companyId) {
-    companyId = requestedCompanyId || 'default'
+  const tenant = await getCurrentTenant(requestedCompanyId)
+  if (!tenant || !tenant.companyId) {
+    throw new Error('Unauthorized: Valid authenticated tenant session required.')
   }
 
-  return { companyId, userId, userEmail, userName }
+  return {
+    companyId: tenant.companyId,
+    userId: tenant.userId || 'system',
+    userEmail: tenant.userEmail || '',
+    userName: tenant.fullName || 'Operator',
+    tenantSlug: tenant.companySlug,
+  }
 }
 
 /**

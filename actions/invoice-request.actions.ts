@@ -22,22 +22,14 @@ export async function createInvoiceRequestAction(
   }
 ): Promise<ServerActionResult<InvoiceRequestRecord>> {
   try {
-    let companyId = input.companyId
-    let userId: string | null = null
-    let userEmail: string | null = null
-    let userName = input.requestedByName || 'Designer'
-
     const tenant = await getCurrentTenant(input.companyId)
-    if (tenant && tenant.companyId) {
-      companyId = tenant.companyId
-      userId = tenant.userId || null
-      userEmail = tenant.userEmail || null
-      userName = input.requestedByName || tenant.fullName || 'Designer'
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
-
-    if (!companyId) {
-      return { success: false, error: 'Company context is required to create invoice request.' }
-    }
+    const companyId = tenant.companyId
+    const userId = tenant.userId || null
+    const userEmail = tenant.userEmail || null
+    const userName = input.requestedByName || tenant.fullName || 'Designer'
 
     const created = await InvoiceRequestService.createInvoiceRequest({
       ...input,
@@ -88,16 +80,11 @@ export async function getInvoiceRequestsAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<InvoiceRequestRecord[]>> {
   try {
-    let companyId = requestedCompanyId
     const tenant = await getCurrentTenant(requestedCompanyId)
-    if (tenant && tenant.companyId) {
-      companyId = tenant.companyId
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
-
-    if (!companyId) {
-      return { success: false, error: 'Company context is required to fetch invoice requests.' }
-    }
-    const data = await InvoiceRequestService.getRequests(companyId, filters)
+    const data = await InvoiceRequestService.getRequests(tenant.companyId, filters)
     return { success: true, data }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch invoice requests' }
@@ -113,18 +100,12 @@ export async function cancelInvoiceRequestAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<boolean>> {
   try {
-    let companyId = requestedCompanyId
-    let userName = 'Manager'
     const tenant = await getCurrentTenant(requestedCompanyId)
-    if (tenant && tenant.companyId) {
-      companyId = tenant.companyId
-      userName = tenant.fullName || 'Manager'
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
-
-    if (!companyId) {
-      return { success: false, error: 'Company context is required to cancel invoice request.' }
-    }
-    const success = await InvoiceRequestService.cancelRequest(requestId, companyId, reason, userName)
+    const userName = tenant.fullName || 'Manager'
+    const success = await InvoiceRequestService.cancelRequest(requestId, tenant.companyId, reason, userName)
     revalidatePath('/', 'layout')
     return { success: true, data: success }
   } catch (error: any) {
