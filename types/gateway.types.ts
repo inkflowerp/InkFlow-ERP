@@ -63,7 +63,8 @@ export interface SanitizedGatewayRecord {
   is_default: boolean
   environment: GatewayEnvironment
   has_credentials: boolean
-  masked_credentials: Record<string, string> // e.g. { api_key: 'sk_live_••••••1234' }
+  masked_credentials: Record<string, string> // e.g. { api_key: '••••••••' }
+  needs_reentry?: boolean // true if credentials require re-entry due to key rotation or decryption issues
   public_config: Record<string, any>
   status: GatewayStatus
   last_tested_at?: string | null

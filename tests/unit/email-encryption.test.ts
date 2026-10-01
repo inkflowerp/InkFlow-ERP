@@ -13,7 +13,7 @@ describe('Email Gateway Security & Encryption Tests', () => {
     const rawApiKey = 're_123456789_abcdef_sec_live_key'
     const encrypted = encryptSecret(rawApiKey)
 
-    assert.ok(encrypted.startsWith('v1:'), 'Encrypted string must start with version prefix')
+    assert.ok(encrypted.startsWith('v2:') || encrypted.startsWith('v1:'), 'Encrypted string must start with version prefix')
     assert.notStrictEqual(encrypted, rawApiKey, 'Encrypted string must not match raw key')
 
     const decrypted = decryptSecret(encrypted)

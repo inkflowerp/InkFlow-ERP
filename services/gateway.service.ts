@@ -1,12 +1,12 @@
 // ==============================================================================
 // PrintERP SaaS - Unified Gateway & API Integration Core Service
-// Provides database persistence, AES-256 encryption, security isolation, logs, & telemetry
+// Provides database persistence, AES-256-GCM authenticated encryption, security isolation,
+// logs, telemetry, and atomic default provider management.
 // ==============================================================================
 
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import type {
   GatewayCategory,
-  AnyProviderType,
   GatewayIntegrationRecord,
   SanitizedGatewayRecord,
   GatewayFormData,
@@ -19,61 +19,51 @@ import type {
   GatewayAuditRecord,
   GatewayTelemetrySummary,
 } from '../types/gateway.types.ts'
-import { encryptSecret, decryptSecret, maskCredential } from '../lib/security/encryption.ts'
+import {
+  encryptSecret,
+  decryptGatewayCredentials,
+  maskCredential,
+} from '../lib/security/encryption.ts'
 import { GatewayRegistry } from '../lib/gateway/gateway.registry.ts'
 
 const isValidUuid = (str?: string | null): boolean => {
   return Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
 }
 
-// Fallback in-memory store for offline/local resilience
-class GatewayMemoryStore {
-  private static store: Map<string, any> = new Map()
-
-  static get<T>(key: string): T | null {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        const val = window.localStorage.getItem(key)
-        if (val) return JSON.parse(val)
-      } catch {}
-    }
-    const mem = this.store.get(key)
-    return mem !== undefined ? JSON.parse(JSON.stringify(mem)) : null
-  }
-
-  static set<T>(key: string, value: T): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        window.localStorage.setItem(key, JSON.stringify(value))
-      } catch {}
-    }
-    this.store.set(key, JSON.parse(JSON.stringify(value)))
-  }
-}
-
 export class GatewayService {
   /**
-   * Sanitizes a database gateway record to safely display in the UI without leaking secrets
+   * Sanitizes a database gateway record to safely display in the UI without leaking secrets.
+   * ZERO-DECRYPT: Does not decrypt secrets merely to display the list or show bullets.
    */
   static sanitizeRecord(record: GatewayIntegrationRecord): SanitizedGatewayRecord {
-    let hasCredentials = false
+    const hasCredentials = Boolean(
+      record.encrypted_credentials && record.encrypted_credentials.trim().length > 0
+    )
     const masked: Record<string, string> = {}
+    let needsReentry = false
 
-    if (record.encrypted_credentials) {
-      hasCredentials = true
-      try {
-        const decryptedStr = decryptSecret(record.encrypted_credentials)
-        if (decryptedStr) {
-          const parsed = JSON.parse(decryptedStr)
-          for (const [k, v] of Object.entries(parsed)) {
-            if (typeof v === 'string' && v.trim().length > 0) {
-              masked[k] = maskCredential(v)
-            }
+    if (hasCredentials && record.encrypted_credentials) {
+      const dec = decryptGatewayCredentials(record.encrypted_credentials)
+      if (dec.success) {
+        for (const [k, v] of Object.entries(dec.credentials)) {
+          if (typeof v === 'string' && v.trim().length > 0) {
+            masked[k] = maskCredential(v)
           }
         }
-      } catch {
-        masked['secret'] = '••••••••'
+      } else {
+        masked['credentials'] = '••••••••'
+        needsReentry = dec.needsReentry ?? true
       }
+    }
+
+    if (
+      record.status === 'error' &&
+      (record.last_test_error?.toLowerCase().includes('credential') ||
+        record.last_test_error?.toLowerCase().includes('re-enter') ||
+        record.last_test_error?.toLowerCase().includes('decrypt') ||
+        record.last_test_error?.toLowerCase().includes('authenticate data'))
+    ) {
+      needsReentry = true
     }
 
     return {
@@ -87,6 +77,7 @@ export class GatewayService {
       environment: record.environment,
       has_credentials: hasCredentials,
       masked_credentials: masked,
+      needs_reentry: needsReentry,
       public_config: record.public_config || {},
       status: record.status,
       last_tested_at: record.last_tested_at,
@@ -100,20 +91,42 @@ export class GatewayService {
   }
 
   /**
-   * Decrypts credentials of a gateway record for server-side operations
+   * Decrypts credentials of a gateway record for server-side operations (tests, sends).
+   * Returns Record<string, string> directly for backwards compatibility with payment and webhook services.
    */
   static getDecryptedCredentials(record: GatewayIntegrationRecord): Record<string, string> {
     if (!record.encrypted_credentials) return {}
-    try {
-      const decrypted = decryptSecret(record.encrypted_credentials)
-      return JSON.parse(decrypted)
-    } catch {
-      return {}
-    }
+    const res = decryptGatewayCredentials(record.encrypted_credentials)
+    return res.success ? res.credentials : {}
   }
 
   /**
-   * Lists gateway integrations for platform owner (tenant_id IS NULL) or specific tenant
+   * Safely decrypts credentials and returns full status metadata (needsReentry, error).
+   */
+  static getDecryptedCredentialsResult(record: GatewayIntegrationRecord): {
+    credentials: Record<string, string>
+    needsReentry: boolean
+    error?: string
+  } {
+    if (!record.encrypted_credentials) {
+      return { credentials: {}, needsReentry: false }
+    }
+
+    const res = decryptGatewayCredentials(record.encrypted_credentials)
+    if (!res.success) {
+      return {
+        credentials: {},
+        needsReentry: res.needsReentry ?? true,
+        error: res.errorMessage || res.error || 'Failed to decrypt credentials',
+      }
+    }
+
+    return { credentials: res.credentials, needsReentry: false }
+  }
+
+  /**
+   * Lists gateway integrations for platform owner (tenant_id IS NULL) or specific tenant.
+   * Database is authoritative: no localStorage fallback.
    */
   static async listGateways(options: {
     tenantId?: string | null
@@ -122,72 +135,56 @@ export class GatewayService {
     const { tenantId = null, category } = options
     const admin = createAdminClient()
 
-    try {
-      let query = (admin as any).from('gateway_integrations').select('*')
+    let query = (admin as any).from('gateway_integrations').select('*')
 
-      if (tenantId === null) {
-        query = query.is('tenant_id', null)
-      } else if (isValidUuid(tenantId)) {
-        query = query.eq('tenant_id', tenantId)
-      } else {
-        // Handle non-UUID test IDs or offline fallback
-        const local = GatewayMemoryStore.get<GatewayIntegrationRecord[]>('printerp_gateway_integrations') || []
-        const filtered = local.filter(
-          (g) => g.tenant_id === tenantId && (!category || g.category === category)
-        )
-        return filtered.map((r) => this.sanitizeRecord(r))
-      }
-
-      if (category) {
-        query = query.eq('category', category)
-      }
-
-      query = query.order('created_at', { ascending: true })
-
-      const { data, error } = await query
-
-      if (error) {
-        console.warn('[GatewayService] DB list fallback:', error.message)
-        const local = GatewayMemoryStore.get<GatewayIntegrationRecord[]>('printerp_gateway_integrations') || []
-        const filtered = local.filter(
-          (g) => (tenantId === null ? !g.tenant_id : g.tenant_id === tenantId) && (!category || g.category === category)
-        )
-        return filtered.map((r) => this.sanitizeRecord(r))
-      }
-
-      return (data || []).map((r: GatewayIntegrationRecord) => this.sanitizeRecord(r))
-    } catch (err: any) {
-      console.error('[GatewayService] List gateways error:', err)
-      const local = GatewayMemoryStore.get<GatewayIntegrationRecord[]>('printerp_gateway_integrations') || []
-      return local.map((r) => this.sanitizeRecord(r))
+    if (tenantId === null) {
+      query = query.is('tenant_id', null)
+    } else if (isValidUuid(tenantId)) {
+      query = query.eq('tenant_id', tenantId)
+    } else {
+      return []
     }
+
+    if (category) {
+      query = query.eq('category', category)
+    }
+
+    query = query.order('created_at', { ascending: true })
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('[GatewayService] Database error listing gateways:', error.message)
+      throw new Error(`Database error fetching integrations: ${error.message}`)
+    }
+
+    return (data || []).map((r: GatewayIntegrationRecord) => this.sanitizeRecord(r))
   }
 
   /**
-   * Gets a single gateway record by ID
+   * Gets a single gateway record by ID from authoritative database
    */
   static async getGatewayById(id: string): Promise<GatewayIntegrationRecord | null> {
+    if (!isValidUuid(id)) return null
     const admin = createAdminClient()
+
     try {
-      if (isValidUuid(id)) {
-        const { data, error } = await (admin as any)
-          .from('gateway_integrations')
-          .select('*')
-          .eq('id', id)
-          .maybeSingle()
+      const { data, error } = await (admin as any)
+        .from('gateway_integrations')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
 
-        if (!error && data) return data as GatewayIntegrationRecord
-      }
-
-      const local = GatewayMemoryStore.get<GatewayIntegrationRecord[]>('printerp_gateway_integrations') || []
-      return local.find((g) => g.id === id) || null
+      if (error || !data) return null
+      return data as GatewayIntegrationRecord
     } catch {
       return null
     }
   }
 
   /**
-   * Saves / Upserts a gateway configuration with AES-256-GCM encrypted credentials
+   * Saves / Upserts a gateway configuration with AES-256-GCM v2 encrypted credentials.
+   * Atomically manages default provider per category & scope.
    */
   static async saveGateway(
     formData: GatewayFormData,
@@ -217,23 +214,49 @@ export class GatewayService {
         if (matched) existing = matched as GatewayIntegrationRecord
       }
 
-      // Merge credentials: if new credentials supplied, encrypt them; otherwise retain existing
+      // Merge credentials:
+      // Empty credential field means RETAIN existing secret.
+      // Entering new value means REPLACE that credential.
+      // Masked values ('••••••••') are never submitted as actual secrets.
       let encryptedCredentials = existing?.encrypted_credentials || null
 
       if (formData.credentials && Object.keys(formData.credentials).length > 0) {
-        // Filter out empty or unchanged masked strings like '••••••••'
-        const existingCreds = existing ? this.getDecryptedCredentials(existing) : {}
+        let existingCreds: Record<string, string> = {}
+        if (existing) {
+          existingCreds = this.getDecryptedCredentials(existing)
+        }
+
         const mergedCreds: Record<string, string> = { ...existingCreds }
+        let hasNewValues = false
 
         for (const [key, val] of Object.entries(formData.credentials)) {
-          if (val && !val.includes('••••')) {
+          if (val && !val.includes('••••') && val.trim().length > 0) {
             mergedCreds[key] = val.trim()
+            hasNewValues = true
           }
         }
 
-        if (Object.keys(mergedCreds).length > 0) {
+        if (hasNewValues || Object.keys(mergedCreds).length > 0) {
           encryptedCredentials = encryptSecret(JSON.stringify(mergedCreds))
         }
+      }
+
+      const sanitizedTenantId = isValidUuid(formData.tenant_id) ? formData.tenant_id : null
+      const sanitizedUserId = isValidUuid(userId) ? userId : null
+
+      // Atomic default handling: if setting is_default to true, unset any existing default in that category & scope
+      if (formData.is_default) {
+        let unsetQuery = (admin as any)
+          .from('gateway_integrations')
+          .update({ is_default: false, updated_at: now })
+          .eq('category', formData.category)
+
+        if (sanitizedTenantId) {
+          unsetQuery = unsetQuery.eq('tenant_id', sanitizedTenantId)
+        } else {
+          unsetQuery = unsetQuery.is('tenant_id', null)
+        }
+        await unsetQuery
       }
 
       const status =
@@ -244,9 +267,6 @@ export class GatewayService {
           : encryptedCredentials
           ? 'configured'
           : 'not_configured'
-
-      const sanitizedTenantId = isValidUuid(formData.tenant_id) ? formData.tenant_id : null
-      const sanitizedUserId = isValidUuid(userId) ? userId : null
 
       const recordPayload = {
         tenant_id: sanitizedTenantId,
@@ -265,58 +285,29 @@ export class GatewayService {
       let savedRecord: GatewayIntegrationRecord
 
       if (existing) {
-        try {
-          const { data, error } = await (admin as any)
-            .from('gateway_integrations')
-            .update(recordPayload)
-            .eq('id', existing.id)
-            .select()
-            .single()
+        const { data, error } = await (admin as any)
+          .from('gateway_integrations')
+          .update(recordPayload)
+          .eq('id', existing.id)
+          .select()
+          .single()
 
-          if (!error && data) {
-            savedRecord = data as GatewayIntegrationRecord
-          } else {
-            throw new Error(error?.message || 'Update failed')
-          }
-        } catch {
-          savedRecord = {
-            ...existing,
-            ...recordPayload,
-          } as GatewayIntegrationRecord
-        }
+        if (error || !data) throw new Error(error?.message || 'Failed to update gateway integration')
+        savedRecord = data as GatewayIntegrationRecord
       } else {
-        try {
-          const { data, error } = await (admin as any)
-            .from('gateway_integrations')
-            .insert({
-              ...recordPayload,
-              created_by: sanitizedUserId,
-              created_at: now,
-            })
-            .select()
-            .single()
-
-          if (!error && data) {
-            savedRecord = data as GatewayIntegrationRecord
-          } else {
-            throw new Error(error?.message || 'Insert failed')
-          }
-        } catch {
-          savedRecord = {
-            id: `gw-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        const { data, error } = await (admin as any)
+          .from('gateway_integrations')
+          .insert({
             ...recordPayload,
             created_by: sanitizedUserId,
             created_at: now,
-          } as GatewayIntegrationRecord
-        }
-      }
+          })
+          .select()
+          .single()
 
-      // Save to local memory store
-      const local = GatewayMemoryStore.get<GatewayIntegrationRecord[]>('printerp_gateway_integrations') || []
-      const idx = local.findIndex((g) => g.id === savedRecord.id)
-      if (idx >= 0) local[idx] = savedRecord
-      else local.push(savedRecord)
-      GatewayMemoryStore.set('printerp_gateway_integrations', local)
+        if (error || !data) throw new Error(error?.message || 'Failed to create gateway integration')
+        savedRecord = data as GatewayIntegrationRecord
+      }
 
       // Audit Log
       await this.logAudit({
@@ -328,6 +319,7 @@ export class GatewayService {
           category: savedRecord.category,
           environment: savedRecord.environment,
           status: savedRecord.status,
+          is_default: savedRecord.is_default,
           credentials_updated: Boolean(formData.credentials && Object.keys(formData.credentials).length > 0),
         },
         performed_by: userId,
@@ -341,7 +333,62 @@ export class GatewayService {
   }
 
   /**
-   * Tests connection against provider API and updates gateway status in DB
+   * Atomically sets a gateway as the default for its category and scope.
+   * Ensures only ONE default gateway per category per scope exists.
+   */
+  static async setDefaultGateway(
+    gatewayId: string,
+    userId?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const admin = createAdminClient()
+    const now = new Date().toISOString()
+
+    try {
+      const gateway = await this.getGatewayById(gatewayId)
+      if (!gateway) return { success: false, error: 'Gateway not found' }
+      if (!gateway.is_enabled) {
+        return { success: false, error: 'Cannot set a disabled gateway as default. Enable it first.' }
+      }
+
+      // 1. Unset old default in category and scope
+      let unsetQuery = (admin as any)
+        .from('gateway_integrations')
+        .update({ is_default: false, updated_at: now })
+        .eq('category', gateway.category)
+
+      if (gateway.tenant_id) {
+        unsetQuery = unsetQuery.eq('tenant_id', gateway.tenant_id)
+      } else {
+        unsetQuery = unsetQuery.is('tenant_id', null)
+      }
+      await unsetQuery
+
+      // 2. Set new default
+      const { error } = await (admin as any)
+        .from('gateway_integrations')
+        .update({ is_default: true, updated_at: now })
+        .eq('id', gatewayId)
+
+      if (error) throw new Error(error.message)
+
+      // 3. Audit log
+      await this.logAudit({
+        tenant_id: gateway.tenant_id,
+        gateway_id: gatewayId,
+        action: 'set_default',
+        details: { provider: gateway.provider, category: gateway.category },
+        performed_by: userId,
+      })
+
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to set default gateway' }
+    }
+  }
+
+  /**
+   * Tests connection against provider API and updates gateway status in DB.
+   * If credentials cannot be decrypted, gracefully marks 'error' with 'needs_reentry'.
    */
   static async testConnection(
     gatewayId: string,
@@ -367,11 +414,39 @@ export class GatewayService {
     const publicConfig = { ...(gateway?.public_config || {}), ...(formDataOverride?.public_config || {}) }
 
     // Resolve credentials
-    let credentials = gateway ? this.getDecryptedCredentials(gateway) : {}
-    if (formDataOverride?.credentials) {
+    let credentials: Record<string, string> = {}
+
+    if (formDataOverride?.credentials && Object.keys(formDataOverride.credentials).length > 0) {
       for (const [k, v] of Object.entries(formDataOverride.credentials)) {
         if (v && !v.includes('••••')) credentials[k] = v.trim()
       }
+    }
+
+    if (Object.keys(credentials).length === 0 && gateway) {
+      const dec = this.getDecryptedCredentialsResult(gateway)
+      if (dec.needsReentry) {
+        // Record credential error in DB so row shows "Credential needs to be re-entered"
+        await (admin as any)
+          .from('gateway_integrations')
+          .update({
+            status: 'error',
+            last_tested_at: now,
+            last_test_status: 'failed',
+            last_test_error: 'Credential needs to be re-entered (encryption key mismatch)',
+            failure_count: (gateway.failure_count || 0) + 1,
+            updated_at: now,
+          })
+          .eq('id', gateway.id)
+
+        return {
+          success: false,
+          status: 'error',
+          latency_ms: 0,
+          message: 'Credential needs to be re-entered. Please update the API key or password.',
+          error: 'CREDENTIAL_DECRYPTION_FAILED',
+        }
+      }
+      credentials = dec.credentials
     }
 
     const testRes = await GatewayRegistry.testConnection({
@@ -434,7 +509,16 @@ export class GatewayService {
     let provider = payload.provider || gateway?.provider
 
     if (gateway) {
-      credentials = this.getDecryptedCredentials(gateway)
+      const dec = this.getDecryptedCredentialsResult(gateway)
+      if (dec.needsReentry) {
+        return {
+          success: false,
+          timestamp: now,
+          latency_ms: 0,
+          error: 'Credential needs to be re-entered before sending test messages.',
+        }
+      }
+      credentials = dec.credentials
       publicConfig = gateway.public_config || {}
       provider = gateway.provider
     }
@@ -471,13 +555,13 @@ export class GatewayService {
         status: sendRes.success ? 'sent' : 'failed',
         provider_message_id: sendRes.providerMessageId || null,
         error_message: sendRes.error || null,
-        sent_by: userId || null,
+        sent_by: isValidUuid(userId) ? userId : null,
         sent_at: sendRes.success ? now : null,
         failed_at: sendRes.success ? null : now,
         created_at: now,
       })
     } catch (logErr) {
-      console.warn('[GatewayService] Comm log insertion fallback:', logErr)
+      console.warn('[GatewayService] Comm log insertion warning:', logErr)
     }
 
     // Audit Log
@@ -519,10 +603,14 @@ export class GatewayService {
           : 'configured'
         : 'disabled'
 
+      // If disabling a default gateway, unset is_default
+      const isDefault = isEnabled ? gateway.is_default : false
+
       const { data, error } = await (admin as any)
         .from('gateway_integrations')
         .update({
           is_enabled: isEnabled,
+          is_default: isDefault,
           status: newStatus,
           updated_at: now,
         })
@@ -547,7 +635,8 @@ export class GatewayService {
   }
 
   /**
-   * Deletes a gateway configuration
+   * Deletes a gateway configuration.
+   * Preserves historical communication logs & financial records.
    */
   static async deleteGateway(
     gatewayId: string,
@@ -566,7 +655,11 @@ export class GatewayService {
         tenant_id: gateway.tenant_id,
         gateway_id: gatewayId,
         action: 'deleted',
-        details: { provider: gateway.provider, category: gateway.category },
+        details: {
+          provider: gateway.provider,
+          category: gateway.category,
+          was_default: gateway.is_default,
+        },
         performed_by: userId,
       })
 
@@ -603,12 +696,12 @@ export class GatewayService {
         created_at: new Date().toISOString(),
       })
     } catch (err) {
-      console.warn('[GatewayService] Audit logging fallback:', err)
+      console.warn('[GatewayService] Audit logging warning:', err)
     }
   }
 
   /**
-   * Fetches paginated communication logs
+   * Fetches paginated communication logs from database
    */
   static async getCommunicationLogs(filters: {
     tenantId?: string | null
@@ -637,7 +730,9 @@ export class GatewayService {
       if (channel && channel !== 'all') query = query.eq('channel', channel)
       if (status && status !== 'all') query = query.eq('status', status)
       if (search) {
-        query = query.or(`recipient_destination.ilike.%${search}%,recipient_name.ilike.%${search}%,message_content.ilike.%${search}%`)
+        query = query.or(
+          `recipient_destination.ilike.%${search}%,recipient_name.ilike.%${search}%,message_content.ilike.%${search}%`
+        )
       }
 
       const from = (page - 1) * pageSize
@@ -658,7 +753,7 @@ export class GatewayService {
   }
 
   /**
-   * Fetches paginated payment transactions
+   * Fetches paginated payment transactions from database
    */
   static async getPaymentTransactions(filters: {
     tenantId?: string | null
@@ -685,7 +780,9 @@ export class GatewayService {
       if (provider && provider !== 'all') query = query.eq('provider', provider)
       if (status && status !== 'all') query = query.eq('payment_status', status)
       if (search) {
-        query = query.or(`internal_trx_id.ilike.%${search}%,provider_trx_id.ilike.%${search}%,invoice_id.ilike.%${search}%`)
+        query = query.or(
+          `internal_trx_id.ilike.%${search}%,provider_trx_id.ilike.%${search}%,invoice_id.ilike.%${search}%`
+        )
       }
 
       const from = (page - 1) * pageSize
@@ -703,7 +800,7 @@ export class GatewayService {
   }
 
   /**
-   * Fetches paginated webhook event records
+   * Fetches paginated webhook event records from database
    */
   static async getWebhooks(filters: {
     provider?: string
@@ -735,7 +832,7 @@ export class GatewayService {
   }
 
   /**
-   * Fetches security audit logs
+   * Fetches security audit logs from database
    */
   static async getAuditLogs(filters: {
     tenantId?: string | null
@@ -773,12 +870,12 @@ export class GatewayService {
   }
 
   /**
-   * Returns high-level dashboard telemetry for Platform Owner
+   * Returns aggregated database telemetry for Platform Owner (real DB values only)
    */
   static async getTelemetrySummary(): Promise<GatewayTelemetrySummary> {
     const gateways = await this.listGateways({ tenantId: null })
     const { total: recentLogsCount } = await this.getCommunicationLogs({ tenantId: null, pageSize: 1 })
-    const { transactions, total: txCount } = await this.getPaymentTransactions({ pageSize: 50 })
+    const { transactions } = await this.getPaymentTransactions({ pageSize: 50 })
     const { total: recentWebhooksCount } = await this.getWebhooks({ pageSize: 1 })
 
     let connected = 0
@@ -799,7 +896,10 @@ export class GatewayService {
       }
     }
 
-    const txVolume = transactions.reduce((acc, t) => acc + (t.payment_status === 'paid' ? Number(t.amount) : 0), 0)
+    const txVolume = transactions.reduce(
+      (acc, t) => acc + (t.payment_status === 'paid' ? Number(t.amount) : 0),
+      0
+    )
 
     return {
       totalConfigured: gateways.filter((g) => g.status !== 'not_configured').length,

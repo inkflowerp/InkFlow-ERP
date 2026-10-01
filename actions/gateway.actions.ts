@@ -137,6 +137,29 @@ export async function togglePlatformGatewayAction(
 }
 
 /**
+ * Server Action: Set Default Gateway for Category (Atomic single-default)
+ */
+export async function setDefaultPlatformGatewayAction(
+  gatewayId: string
+): Promise<ApiResponse<boolean>> {
+  try {
+    const user = await getCurrentPlatformUser()
+    if (!user) {
+      return { success: false, error: 'Unauthorized: Platform admin session required.' }
+    }
+
+    const res = await GatewayService.setDefaultGateway(gatewayId, user.id)
+    if (!res.success) {
+      return { success: false, error: res.error || 'Failed to set default gateway' }
+    }
+
+    return { success: true, data: true }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to set default gateway' }
+  }
+}
+
+/**
  * Server Action: Delete Platform Gateway Integration
  */
 export async function deletePlatformGatewayAction(

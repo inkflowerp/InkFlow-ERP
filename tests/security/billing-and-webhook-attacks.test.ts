@@ -44,7 +44,7 @@ describe('Security Attack Tests: Billing, Gateway Credentials & Webhooks', () =>
     const originalText = 'SuperSecretDbPassword2026!$%'
     const ciphertext = encryptSecret(originalText)
     assert.notStrictEqual(ciphertext, originalText)
-    assert.ok(ciphertext.startsWith('v1:'), 'Ciphertext must be serialized with version header')
+    assert.ok(ciphertext.startsWith('v2:') || ciphertext.startsWith('v1:'), 'Ciphertext must be serialized with version header')
 
     const decrypted = decryptSecret(ciphertext)
     assert.strictEqual(decrypted, originalText)

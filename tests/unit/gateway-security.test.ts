@@ -9,7 +9,7 @@ describe('Gateway Security & Encryption Tests', () => {
     const rawSecret = 'sk_live_very_secret_bKash_app_key_998877'
     const encrypted = encryptSecret(rawSecret)
 
-    assert.ok(encrypted.startsWith('v1:'))
+    assert.ok(encrypted.startsWith('v2:') || encrypted.startsWith('v1:'))
     assert.notStrictEqual(encrypted, rawSecret)
 
     const decrypted = decryptSecret(encrypted)

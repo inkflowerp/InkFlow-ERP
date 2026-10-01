@@ -70,7 +70,7 @@ export async function GET(
       .eq('category', 'whatsapp')
       .maybeSingle()
 
-    const creds = gw ? GatewayService.getDecryptedCredentials(gw) : {}
+    const creds: Record<string, string> = gw ? GatewayService.getDecryptedCredentials(gw) : {}
     const expectedToken =
       gw?.public_config?.verify_token ||
       creds?.verify_token ||
