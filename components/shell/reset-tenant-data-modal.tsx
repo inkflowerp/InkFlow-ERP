@@ -55,7 +55,7 @@ export function ResetTenantDataModal({
 
     try {
       const pathSlug = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : ''
-      const effectiveSlug = companySlug || PrintERPDataStore.getActiveTenantSlug() || pathSlug || 'default'
+      const effectiveSlug = companySlug || PrintERPDataStore.getActiveTenantSlug() || pathSlug || ''
       const effectiveCompanyId = companyId || effectiveSlug
       const aliases = [
         effectiveSlug,

@@ -690,6 +690,10 @@ export class PrintERPDataStore {
       actualTenantSlug = data
       actualData = emitEvent as T
       actualEmitEvent = true
+    } else if (typeof emitEvent === 'string') {
+      // Handle overload: set(key, data, tenantSlug)
+      actualTenantSlug = emitEvent
+      actualEmitEvent = true
     }
 
     const effectiveKey = this.getEffectiveKey(key, actualTenantSlug)

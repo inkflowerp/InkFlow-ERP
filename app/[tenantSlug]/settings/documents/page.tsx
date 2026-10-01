@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useParams } from 'next/navigation'
 import {
   FileText,
   Printer,
@@ -38,7 +38,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/formatters'
 import {
-  DEMO_DOCUMENT_TEMPLATES,
+  DEFAULT_DOCUMENT_TEMPLATES,
   DEFAULT_TAX_SETTINGS,
 } from '@/services/tax-and-docs.service'
 import {
@@ -58,10 +58,12 @@ import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref, getTenantBaseUrl, formatDocumentUrl } from '@/lib/tenant/tenant-url'
 
 export default function DocumentDesignerPage() {
+  const params = useParams()
+  const routeSlug = (params?.tenantSlug as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const pathname = usePathname()
-  const slug = company?.slug || 'rangao'
+  const slug = routeSlug || company?.slug || ''
 
   const [mounted, setMounted] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<DocumentType>('quotation')
@@ -78,15 +80,17 @@ export default function DocumentDesignerPage() {
 
   const [templates, setTemplates] = useDataStore<Record<DocumentType, DocumentTemplateConfigRecord>>(
     STORAGE_KEYS.DOCUMENT_TEMPLATES,
-    DEMO_DOCUMENT_TEMPLATES
+    DEFAULT_DOCUMENT_TEMPLATES,
+    slug
   )
   const [taxSettings] = useDataStore<CompanyTaxSettingsRecord>(
     STORAGE_KEYS.TAX_SETTINGS,
-    DEFAULT_TAX_SETTINGS
+    DEFAULT_TAX_SETTINGS,
+    slug
   )
   const [notification, setNotification] = useState<string | null>(null)
 
-  const activeTpl = templates[selectedDoc] || DEMO_DOCUMENT_TEMPLATES[selectedDoc]
+  const activeTpl = templates[selectedDoc] || DEFAULT_DOCUMENT_TEMPLATES[selectedDoc]
 
   const showNotification = (msg: string) => {
     setNotification(msg)

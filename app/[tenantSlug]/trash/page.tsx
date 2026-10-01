@@ -59,24 +59,23 @@ function TrashContent() {
   const tabParam = searchParams?.get('tab')
   const { company } = useTenant()
   const { tBilingual } = useI18n()
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
-  const companyId = company?.id || 'default'
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
+  const companyId = company?.id || ''
 
-  const [trashItems, setTrashItems] = useDataStore<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, [])
+  const [trashItems, setTrashItems] = useDataStore<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, [], tenantSlug)
   const [selectedCategory, setSelectedCategory] = useState<string>(tabParam || 'all')
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isActionPending, setIsActionPending] = useState(false)
 
-  // Resilient company matching across UUID, slug, default, and c-01
+  // Resilient company matching strictly within tenant boundaries
   const matchesCompany = useCallback(
     (item: TrashRecord) => {
-      if (!companyId || companyId === 'default' || companyId === 'all') return true
-      if (!item.company_id || item.company_id === 'default') return true
-      if (item.company_id === companyId) return true
-      if (tenantSlug && (item.company_id === tenantSlug || companyId === tenantSlug)) return true
-      if (company?.slug && (item.company_id === company.slug || companyId === company.slug)) return true
-      if (item.company_id === 'c-01' || companyId === 'c-01') return true
+      if (!companyId && !tenantSlug) return true
+      if (!item.company_id) return false
+      if (companyId && item.company_id === companyId) return true
+      if (tenantSlug && item.company_id === tenantSlug) return true
+      if (company?.slug && item.company_id === company.slug) return true
       return false
     },
     [companyId, tenantSlug, company?.slug]
@@ -97,14 +96,14 @@ function TrashContent() {
         })
         const merged = Array.from(map.values())
         setTrashItems(merged)
-        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, merged)
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, merged, tenantSlug)
       }
     } catch (e) {
       console.error('Error fetching trash items:', e)
     } finally {
       setIsLoading(false)
     }
-  }, [companyId, trashItems, setTrashItems])
+  }, [companyId, tenantSlug, trashItems, setTrashItems])
 
   useEffect(() => {
     if (tabParam) {
@@ -171,8 +170,8 @@ function TrashContent() {
       }
 
       setTrashItems((prev) => prev.filter((t) => t.id !== item.id))
-      const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
-      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== item.id))
+      const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
+      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== item.id), tenantSlug)
 
       showNotification(
         tBilingual(
@@ -198,8 +197,8 @@ function TrashContent() {
       }
 
       setTrashItems((prev) => prev.filter((t) => t.id !== itemToPermanentDelete.id))
-      const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
-      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== itemToPermanentDelete.id))
+      const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
+      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.id !== itemToPermanentDelete.id), tenantSlug)
 
       setIsPermanentModalOpen(false)
       setItemToPermanentDelete(null)
@@ -228,11 +227,11 @@ function TrashContent() {
 
       if (categoryToClear) {
         setTrashItems((prev) => prev.filter((t) => t.category !== categoryToClear))
-        const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
-        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.category !== categoryToClear))
+        const storeItems = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS, tenantSlug) || []
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, storeItems.filter((t) => t.category !== categoryToClear), tenantSlug)
       } else {
         setTrashItems([])
-        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [])
+        PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [], tenantSlug)
       }
 
       setIsEmptyTrashModalOpen(false)

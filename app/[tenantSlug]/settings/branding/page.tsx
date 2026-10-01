@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 
+import { useParams } from 'next/navigation'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
@@ -32,8 +33,11 @@ const COLOR_PRESETS = [
 ]
 
 export default function BrandingSettingsPage() {
+  const params = useParams()
+  const routeSlug = (params?.tenantSlug as string) || ''
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const slug = routeSlug || company?.slug || ''
   const [mounted, setMounted] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -45,12 +49,12 @@ export default function BrandingSettingsPage() {
   const [branding, setBranding] = useDataStore(STORAGE_KEYS.BRANDING_SETTINGS, {
     company_name: company?.name || '',
     primary_color: '#2563eb',
-    logo_url: company?.logo_url || settings?.logo_url || 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
-    invoice_logo_url: company?.logo_url || settings?.logo_url || 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
-    quotation_logo_url: company?.logo_url || settings?.logo_url || 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
-    footer_text: 'Thank you for choosing our print services. Delivery within 24-48 hours from proof sign-off.',
-    footer_text_bn: 'আমাদের প্রিন্টিং সেবায় আস্থা রাখার জন্য ধন্যবাদ। প্রুফ অনুমোদনের ২৪-৪৮ ঘণ্টার মধ্যে ডেলিভারি সম্পন্ন হয়।',
-  })
+    logo_url: company?.logo_url || settings?.logo_url || '',
+    invoice_logo_url: company?.logo_url || settings?.logo_url || '',
+    quotation_logo_url: company?.logo_url || settings?.logo_url || '',
+    footer_text: 'Thank you for choosing our print services.',
+    footer_text_bn: 'আমাদের প্রিন্টিং সেবায় আস্থা রাখার জন্য ধন্যবাদ।',
+  }, slug)
 
   // Sync logo if available on company
   React.useEffect(() => {

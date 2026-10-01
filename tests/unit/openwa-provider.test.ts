@@ -27,10 +27,10 @@ describe('OpenWA Provider & Adapter Unit Tests', () => {
     assert.deepEqual(err.rawResponse, { sessionId: 'tenant-1' });
   });
 
-  it('4. OpenWAAdapter validateCredentials passes when baseUrl and apiKey provided', () => {
+  it('4. OpenWAAdapter validateCredentials validates baseUrl and supports optional apiKey for self-hosted', () => {
     const validAdapter = new OpenWAAdapter({ baseUrl: 'http://localhost:2785', apiKey: 'valid-secret' });
     const invalidAdapter1 = new OpenWAAdapter({ baseUrl: '', apiKey: 'valid-secret' });
-    const invalidAdapter2 = new OpenWAAdapter({ baseUrl: 'http://localhost:2785', apiKey: '' });
+    const validSelfHostedAdapter = new OpenWAAdapter({ baseUrl: 'http://localhost:2785', apiKey: '' });
 
     const validRes = validAdapter.validateCredentials();
     assert.equal(validRes.valid, true);
@@ -38,8 +38,8 @@ describe('OpenWA Provider & Adapter Unit Tests', () => {
     const invalidRes1 = invalidAdapter1.validateCredentials();
     assert.equal(invalidRes1.valid, false);
 
-    const invalidRes2 = invalidAdapter2.validateCredentials();
-    assert.equal(invalidRes2.valid, false);
+    const validSelfHostedRes = validSelfHostedAdapter.validateCredentials();
+    assert.equal(validSelfHostedRes.valid, true);
   });
 
   it('5. OpenWAAdapter checkNumberExists rejects invalid phone formats gracefully without network call', async () => {

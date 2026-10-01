@@ -18,7 +18,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useParams } from 'next/navigation'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
@@ -49,6 +49,8 @@ const HOLIDAY_PRESETS = [
 ]
 
 export default function CompanyProfileSettingsPage() {
+  const params = useParams()
+  const routeSlug = (params?.tenantSlug as string) || ''
   const { company, settings, refreshTenant } = useTenant()
   const { accountTypeMeta, isTrial, daysRemainingInTrial } = useSubscription()
   const { locale, tBilingual } = useI18n()
@@ -57,7 +59,7 @@ export default function CompanyProfileSettingsPage() {
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const slug = company?.slug || 'rangao'
+  const slug = routeSlug || company?.slug || ''
 
   useEffect(() => {
     setMounted(true)
@@ -77,7 +79,7 @@ export default function CompanyProfileSettingsPage() {
     bin_no: company?.bin_no || '',
     office_hours: company?.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
     holidays: company?.holidays || (settings as any)?.holidays || 'Friday (সাপ্তাহিক ছুটি)',
-  })
+  }, slug)
 
   // Form State initialized from tenant data
   const [formData, setFormData] = useState({

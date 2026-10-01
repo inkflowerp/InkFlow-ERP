@@ -102,7 +102,7 @@ export class EmailGatewayService {
         return tenantLocal || null
       } else {
         const platformLocal = localGateways.find((g) => !g.tenant_id && g.status === 'active')
-        return platformLocal || DEFAULT_PLATFORM_GATEWAY
+        return platformLocal || { ...DEFAULT_PLATFORM_GATEWAY, status: 'active' }
       }
     }
 

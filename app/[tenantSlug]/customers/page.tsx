@@ -70,12 +70,9 @@ function removeLocalCustomer(id: string, slug?: string, companySlug?: string, co
   if (typeof window === 'undefined') return
   try {
     const candidateKeys = [
-      STORAGE_KEYS.CUSTOMERS,
       slug ? `${STORAGE_KEYS.CUSTOMERS}__${slug}` : null,
-      companySlug ? `${STORAGE_KEYS.CUSTOMERS}__${companySlug}` : null,
+      companySlug && companySlug !== slug ? `${STORAGE_KEYS.CUSTOMERS}__${companySlug}` : null,
       companyId ? `${STORAGE_KEYS.CUSTOMERS}__${companyId}` : null,
-      `${STORAGE_KEYS.CUSTOMERS}__rangao`,
-      `${STORAGE_KEYS.CUSTOMERS}__default`,
     ].filter(Boolean) as string[]
 
     candidateKeys.forEach((key) => {
@@ -91,22 +88,9 @@ function removeLocalCustomer(id: string, slug?: string, companySlug?: string, co
       } catch {}
     })
 
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i)
-      if (k && (k.startsWith('printerp_tenant_customers') || k.includes('customer'))) {
-        try {
-          const raw = localStorage.getItem(k)
-          if (raw && raw.includes(id)) {
-            const parsed = JSON.parse(raw)
-            if (Array.isArray(parsed)) {
-              const filtered = parsed.filter((c: any) => c?.id !== id)
-              localStorage.setItem(k, JSON.stringify(filtered))
-            }
-          }
-        } catch {}
-      }
-    }
-    PrintERPDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id)
+    if (slug) PrintERPDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id, slug)
+    if (companySlug && companySlug !== slug) PrintERPDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id, companySlug)
+    if (companyId) PrintERPDataStore.removeItem(STORAGE_KEYS.CUSTOMERS, id, companyId)
   } catch {}
 }
 
@@ -114,11 +98,23 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
   if (typeof window === 'undefined') return []
   const invMap = new Map<string, any>()
   const keys = [
-    STORAGE_KEYS.INVOICES,
     slug ? `${STORAGE_KEYS.INVOICES}__${slug}` : null,
-    companySlug ? `${STORAGE_KEYS.INVOICES}__${companySlug}` : null,
+    companySlug && companySlug !== slug ? `${STORAGE_KEYS.INVOICES}__${companySlug}` : null,
     companyId ? `${STORAGE_KEYS.INVOICES}__${companyId}` : null,
   ].filter(Boolean) as string[]
+
+  const isMatching = (item: any) => {
+    if (!item || !item.id) return false
+    if (!companyId && !slug && !companySlug) return true
+    const cId = item.company_id ? String(item.company_id).toLowerCase().trim() : null
+    const targetId = companyId ? String(companyId).toLowerCase().trim() : null
+    const targetSlug = slug ? String(slug).toLowerCase().trim() : null
+    const targetCompanySlug = companySlug ? String(companySlug).toLowerCase().trim() : null
+    if (cId) {
+      return (targetId && cId === targetId) || (targetSlug && cId === targetSlug) || (targetCompanySlug && cId === targetCompanySlug)
+    }
+    return false
+  }
 
   keys.forEach((key) => {
     try {
@@ -127,7 +123,7 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
         const parsed = JSON.parse(raw)
         if (Array.isArray(parsed)) {
           parsed.forEach((inv) => {
-            if (inv && inv.id) invMap.set(inv.id, inv)
+            if (isMatching(inv)) invMap.set(inv.id, inv)
           })
         }
       }
@@ -135,12 +131,12 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
   })
 
   const storeItems = [
-    ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, slug) || []),
-    ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companySlug) || []),
-    ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []),
+    ...(slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companySlug) || []) : []),
+    ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
   ]
   storeItems.forEach((inv) => {
-    if (inv && inv.id) invMap.set(inv.id, inv)
+    if (isMatching(inv)) invMap.set(inv.id, inv)
   })
 
   return Array.from(invMap.values())
@@ -150,11 +146,23 @@ function getLocalPayments(slug?: string, companySlug?: string, companyId?: strin
   if (typeof window === 'undefined') return []
   const payMap = new Map<string, any>()
   const keys = [
-    STORAGE_KEYS.PAYMENTS,
     slug ? `${STORAGE_KEYS.PAYMENTS}__${slug}` : null,
-    companySlug ? `${STORAGE_KEYS.PAYMENTS}__${companySlug}` : null,
+    companySlug && companySlug !== slug ? `${STORAGE_KEYS.PAYMENTS}__${companySlug}` : null,
     companyId ? `${STORAGE_KEYS.PAYMENTS}__${companyId}` : null,
   ].filter(Boolean) as string[]
+
+  const isMatching = (item: any) => {
+    if (!item || !item.id) return false
+    if (!companyId && !slug && !companySlug) return true
+    const cId = item.company_id ? String(item.company_id).toLowerCase().trim() : null
+    const targetId = companyId ? String(companyId).toLowerCase().trim() : null
+    const targetSlug = slug ? String(slug).toLowerCase().trim() : null
+    const targetCompanySlug = companySlug ? String(companySlug).toLowerCase().trim() : null
+    if (cId) {
+      return (targetId && cId === targetId) || (targetSlug && cId === targetSlug) || (targetCompanySlug && cId === targetCompanySlug)
+    }
+    return false
+  }
 
   keys.forEach((key) => {
     try {
@@ -163,7 +171,7 @@ function getLocalPayments(slug?: string, companySlug?: string, companyId?: strin
         const parsed = JSON.parse(raw)
         if (Array.isArray(parsed)) {
           parsed.forEach((pay) => {
-            if (pay && pay.id) payMap.set(pay.id, pay)
+            if (isMatching(pay)) payMap.set(pay.id, pay)
           })
         }
       }
@@ -171,12 +179,12 @@ function getLocalPayments(slug?: string, companySlug?: string, companyId?: strin
   })
 
   const storeItems = [
-    ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, slug) || []),
-    ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, companySlug) || []),
-    ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS) || []),
+    ...(slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, companySlug) || []) : []),
+    ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.PAYMENTS, companyId) || []) : []),
   ]
   storeItems.forEach((pay) => {
-    if (pay && pay.id) payMap.set(pay.id, pay)
+    if (isMatching(pay)) payMap.set(pay.id, pay)
   })
 
   return Array.from(payMap.values())
@@ -186,11 +194,23 @@ function getLocalOrders(slug?: string, companySlug?: string, companyId?: string)
   if (typeof window === 'undefined') return []
   const ordMap = new Map<string, any>()
   const keys = [
-    STORAGE_KEYS.ORDERS,
     slug ? `${STORAGE_KEYS.ORDERS}__${slug}` : null,
-    companySlug ? `${STORAGE_KEYS.ORDERS}__${companySlug}` : null,
+    companySlug && companySlug !== slug ? `${STORAGE_KEYS.ORDERS}__${companySlug}` : null,
     companyId ? `${STORAGE_KEYS.ORDERS}__${companyId}` : null,
   ].filter(Boolean) as string[]
+
+  const isMatching = (item: any) => {
+    if (!item || !item.id) return false
+    if (!companyId && !slug && !companySlug) return true
+    const cId = item.company_id ? String(item.company_id).toLowerCase().trim() : null
+    const targetId = companyId ? String(companyId).toLowerCase().trim() : null
+    const targetSlug = slug ? String(slug).toLowerCase().trim() : null
+    const targetCompanySlug = companySlug ? String(companySlug).toLowerCase().trim() : null
+    if (cId) {
+      return (targetId && cId === targetId) || (targetSlug && cId === targetSlug) || (targetCompanySlug && cId === targetCompanySlug)
+    }
+    return false
+  }
 
   keys.forEach((key) => {
     try {
@@ -199,7 +219,7 @@ function getLocalOrders(slug?: string, companySlug?: string, companyId?: string)
         const parsed = JSON.parse(raw)
         if (Array.isArray(parsed)) {
           parsed.forEach((ord) => {
-            if (ord && ord.id) ordMap.set(ord.id, ord)
+            if (isMatching(ord)) ordMap.set(ord.id, ord)
           })
         }
       }
@@ -207,12 +227,12 @@ function getLocalOrders(slug?: string, companySlug?: string, companyId?: string)
   })
 
   const storeItems = [
-    ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, slug) || []),
-    ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companySlug) || []),
-    ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []),
+    ...(slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companySlug) || []) : []),
+    ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companyId) || []) : []),
   ]
   storeItems.forEach((ord) => {
-    if (ord && ord.id) ordMap.set(ord.id, ord)
+    if (isMatching(ord)) ordMap.set(ord.id, ord)
   })
 
   return Array.from(ordMap.values())

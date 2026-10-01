@@ -70,7 +70,7 @@ export default function CompanySettingsPage() {
   const params = useParams()
   const pathname = usePathname()
   const router = useRouter()
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'rangao'
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
   const [mounted, setMounted] = useState(false)
   const [isSaved, setIsSaved] = useState(false)

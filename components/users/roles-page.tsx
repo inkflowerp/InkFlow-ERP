@@ -19,12 +19,15 @@ import {
   listBranchesAction,
 } from '@/actions/company-users.actions'
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
+import { useParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 export function RolesPage() {
+  const params = useParams()
+  const routeSlug = (params?.tenantSlug as string) || ''
   const { company } = useTenant()
   const companyId = company?.id || ''
-  const companySlug = company?.slug || 'rangao'
+  const companySlug = routeSlug || company?.slug || ''
 
   const [activeTab, setActiveTab] = useState<'matrix' | 'simulator' | 'audit'>('matrix')
   const [users, setUsers] = useState<CompanyUserWithProfile[]>([])

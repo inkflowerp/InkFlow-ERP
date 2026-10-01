@@ -292,7 +292,7 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
   if (!raw || typeof raw !== 'object') {
     return {
       id: `quo-${Date.now()}`,
-      company_id: 'c-01',
+      company_id: '',
       quotation_number: 'QUO-UNKNOWN',
       customer_name: 'Unknown Customer',
       customer_phone: '',
@@ -426,7 +426,7 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
 
   return {
     id,
-    company_id: String(raw.company_id || 'c-01'),
+    company_id: raw.company_id ? String(raw.company_id) : '',
     quotation_number: quotationNumber,
     customer_id: raw.customer_id || null,
     customer_name: customerName,
@@ -622,12 +622,15 @@ export function deduplicateQuotations(
       const targetId = String(targetCompanyId).toLowerCase().trim()
       const targetS = targetSlug ? String(targetSlug).toLowerCase().trim() : null
 
-      if (cId && cId !== 'default' && cId !== 'c-01') {
+      if (cId) {
         const matchesTargetId = cId === targetId
         const matchesTargetSlug = targetS ? cId === targetS : false
-        if (!matchesTargetId && !matchesTargetSlug && targetId !== 'default' && targetId !== 'c-01') {
+        if (!matchesTargetId && !matchesTargetSlug) {
           continue
         }
+      } else {
+        // Unscoped records without company_id must not leak into a scoped tenant
+        continue
       }
     }
 

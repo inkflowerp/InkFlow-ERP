@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 import {
   Bell,
   Save,
@@ -62,9 +63,12 @@ import { notify } from '@/lib/notifications/notification-bus'
 import { useToast } from '@/components/shared/toast-feedback'
 
 export default function NotificationSettingsPage() {
+  const params = useParams()
+  const routeSlug = (params?.tenantSlug as string) || ''
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const { showToast } = useToast()
+  const slug = routeSlug || company?.slug || ''
   const [mounted, setMounted] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -95,7 +99,7 @@ export default function NotificationSettingsPage() {
     email_enabled: true,
     low_stock_alerts: true,
     low_stock_threshold: 50, // 50 sft / rolls
-  })
+  }, slug)
 
   useEffect(() => {
     if (company?.whatsapp || settings?.whatsapp) {

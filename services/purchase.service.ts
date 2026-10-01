@@ -31,13 +31,13 @@ export class PurchaseService {
   // ==========================================
 
   static async getPurchaseRequests(
-    companyId: string = 'c-01',
+    companyId: string = '',
     options?: { branchId?: string | null; status?: string; search?: string }
   ): Promise<PurchaseRequestRecord[]> {
     return PurchaseRepository.getPurchaseRequests(companyId, options)
   }
 
-  static async getPurchaseRequestById(id: string, companyId: string = 'c-01'): Promise<PurchaseRequestRecord | null> {
+  static async getPurchaseRequestById(id: string, companyId: string = ''): Promise<PurchaseRequestRecord | null> {
     return PurchaseRepository.getPurchaseRequestById(id, companyId)
   }
 
@@ -74,7 +74,7 @@ export class PurchaseService {
   static async approvePurchaseRequest(
     id: string,
     approver: { id?: string | null; name: string; email?: string },
-    companyId: string = 'c-01',
+    companyId: string = '',
     autoCreatePO: boolean = true
   ): Promise<{ request: PurchaseRequestRecord; po?: PurchaseOrderRecord }> {
     const pr = await this.getPurchaseRequestById(id, companyId)
@@ -145,7 +145,7 @@ export class PurchaseService {
   static async rejectPurchaseRequest(
     id: string,
     rejector: { id?: string | null; name: string; reason: string; email?: string },
-    companyId: string = 'c-01'
+    companyId: string = ''
   ): Promise<PurchaseRequestRecord> {
     const pr = await this.getPurchaseRequestById(id, companyId)
     if (!pr) throw new Error(`Purchase Request ${id} not found.`)
@@ -182,13 +182,13 @@ export class PurchaseService {
   // ==========================================
 
   static async getPurchaseOrders(
-    companyId: string = 'c-01',
+    companyId: string = '',
     options?: { branchId?: string | null; status?: string; supplierId?: string; search?: string }
   ): Promise<PurchaseOrderRecord[]> {
     return PurchaseRepository.getPurchaseOrders(companyId, options)
   }
 
-  static async getPurchaseOrderById(id: string, companyId: string = 'c-01'): Promise<PurchaseOrderRecord | null> {
+  static async getPurchaseOrderById(id: string, companyId: string = ''): Promise<PurchaseOrderRecord | null> {
     return PurchaseRepository.getPurchaseOrderById(id, companyId)
   }
 
@@ -227,7 +227,7 @@ export class PurchaseService {
   static async approvePurchaseOrder(
     id: string,
     approver: { id?: string | null; name: string; email?: string },
-    companyId: string = 'c-01'
+    companyId: string = ''
   ): Promise<PurchaseOrderRecord> {
     const po = await this.getPurchaseOrderById(id, companyId)
     if (!po) throw new Error(`Purchase Order ${id} not found.`)
@@ -264,7 +264,7 @@ export class PurchaseService {
   static async sendPurchaseOrder(
     id: string,
     sender: { name: string; email?: string },
-    companyId: string = 'c-01'
+    companyId: string = ''
   ): Promise<PurchaseOrderRecord> {
     const po = await this.getPurchaseOrderById(id, companyId)
     if (!po) throw new Error(`Purchase Order ${id} not found.`)
@@ -298,7 +298,7 @@ export class PurchaseService {
   // ==========================================
 
   static async getGoodsReceivedNotes(
-    companyId: string = 'c-01',
+    companyId: string = '',
     options?: { poId?: string; supplierId?: string }
   ): Promise<GoodsReceivedNoteRecord[]> {
     return PurchaseRepository.getGoodsReceivedNotes(companyId, options)
@@ -640,7 +640,7 @@ export class PurchaseService {
   // ==========================================
 
   static async getSupplierReturns(
-    companyId: string = 'c-01',
+    companyId: string = '',
     options?: { supplierId?: string; poId?: string; status?: string }
   ): Promise<SupplierReturnRecord[]> {
     return PurchaseRepository.getSupplierReturns(companyId, options)

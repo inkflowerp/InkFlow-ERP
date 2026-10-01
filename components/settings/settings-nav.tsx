@@ -33,7 +33,7 @@ export function SettingsNav() {
   const { isOwner, can } = usePermissions()
   const { locale, tBilingual } = useI18n()
   const [mounted, setMounted] = useState(false)
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'rangao'
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
   useEffect(() => {
     setMounted(true)

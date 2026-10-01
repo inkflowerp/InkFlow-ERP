@@ -32,14 +32,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { useParams } from 'next/navigation'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { formatDate } from '@/lib/formatters'
 import {
-  DEMO_CHANNEL_CONFIGS,
-  DEMO_MESSAGE_TEMPLATES,
+  DEFAULT_CHANNEL_CONFIGS,
+  DEFAULT_MESSAGE_TEMPLATES,
   renderTemplate,
   createSmsProvider,
 } from '@/services/communication.service'
@@ -57,29 +58,36 @@ import { formatBDT } from '@/lib/formatters'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 
 export default function CommunicationsHubPage() {
+  const params = useParams()
+  const routeSlug = (params?.tenantSlug as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = routeSlug || company?.slug || ''
 
   const [notifications, setNotifications] = useDataStore<InAppNotificationRecord[]>(
     STORAGE_KEYS.IN_APP_NOTIFICATIONS,
-    []
+    [],
+    slug
   )
   const [channels, setChannels] = useDataStore<ChannelConfigRecord[]>(
     STORAGE_KEYS.CHANNEL_CONFIGS,
-    DEMO_CHANNEL_CONFIGS
+    DEFAULT_CHANNEL_CONFIGS,
+    slug
   )
   const [templates, setTemplates] = useDataStore<MessageTemplateRecord[]>(
     STORAGE_KEYS.MESSAGE_TEMPLATES,
-    DEMO_MESSAGE_TEMPLATES
+    DEFAULT_MESSAGE_TEMPLATES,
+    slug
   )
   const [commLogs, setCommLogs] = useDataStore<CommunicationLogRecord[]>(
     STORAGE_KEYS.COMMUNICATION_LOGS,
-    []
+    [],
+    slug
   )
   const [customers] = useDataStore<CustomerRecord[]>(
     STORAGE_KEYS.CUSTOMERS,
-    []
+    [],
+    slug
   )
 
   const [activeTab, setActiveTab] = useState<'in_app' | 'logs' | 'templates' | 'gateways'>('in_app')

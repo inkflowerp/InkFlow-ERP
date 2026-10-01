@@ -42,7 +42,7 @@ export default function TenantSupportPage() {
   const { company } = useTenant()
   const params = useParams()
   const pathname = usePathname()
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'rangao'
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
   const [mounted, setMounted] = useState(false)
 
   const [isModalOpen, setIsModalOpen] = useState(false)

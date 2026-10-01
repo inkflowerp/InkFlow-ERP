@@ -53,19 +53,7 @@ interface BranchItem {
   isActive: boolean
 }
 
-const DEFAULT_MAIN_BRANCH: BranchItem[] = [
-  {
-    id: 'b-01',
-    code: 'HQ-MAIN',
-    name: 'Head Office & Main Facility',
-    nameBn: 'প্রধান কার্যালয় ও কেন্দ্রীয় কারখানা',
-    phone: '+880 1700-000000',
-    address: 'Dhaka, Bangladesh',
-    managerName: 'Operations Lead',
-    isMain: true,
-    isActive: true,
-  },
-]
+const DEFAULT_MAIN_BRANCH: BranchItem[] = []
 
 export default function BranchesSettingsPage() {
   const router = useRouter()
@@ -74,10 +62,10 @@ export default function BranchesSettingsPage() {
   const { isOwner, can } = usePermissions()
   const { locale, tBilingual } = useI18n()
   const [mounted, setMounted] = useState(false)
-  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'app'
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
-  const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, DEFAULT_MAIN_BRANCH)
+  const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, DEFAULT_MAIN_BRANCH, tenantSlug)
   const [searchQuery, setSearchQuery] = useState('')
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)

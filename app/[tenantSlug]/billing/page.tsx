@@ -117,14 +117,24 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
   const invoiceMap = new Map<string, InvoiceRecord>()
 
   const candidateKeys = [
-    STORAGE_KEYS.INVOICES,
     slug ? `${STORAGE_KEYS.INVOICES}__${slug}` : null,
-    companySlug ? `${STORAGE_KEYS.INVOICES}__${companySlug}` : null,
+    companySlug && companySlug !== slug ? `${STORAGE_KEYS.INVOICES}__${companySlug}` : null,
     companyId ? `${STORAGE_KEYS.INVOICES}__${companyId}` : null,
-    `${STORAGE_KEYS.INVOICES}__rangao`,
-    `${STORAGE_KEYS.INVOICES}__billing`,
-    `${STORAGE_KEYS.INVOICES}__default`,
   ].filter(Boolean) as string[]
+
+  const isMatchingTenant = (inv: any): boolean => {
+    if (!inv || !inv.id) return false
+    if (!companyId && !slug && !companySlug) return true
+    const cId = inv.company_id ? String(inv.company_id).toLowerCase().trim() : null
+    const targetId = companyId ? String(companyId).toLowerCase().trim() : null
+    const targetSlug = slug ? String(slug).toLowerCase().trim() : null
+    const targetCompanySlug = companySlug ? String(companySlug).toLowerCase().trim() : null
+
+    if (cId) {
+      return (targetId && cId === targetId) || (targetSlug && cId === targetSlug) || (targetCompanySlug && cId === targetCompanySlug)
+    }
+    return false
+  }
 
   candidateKeys.forEach((key) => {
     try {
@@ -133,39 +143,20 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
         const parsed = JSON.parse(raw)
         if (Array.isArray(parsed)) {
           parsed.forEach((inv) => {
-            if (inv && inv.id) invoiceMap.set(inv.id, inv)
+            if (isMatchingTenant(inv)) invoiceMap.set(inv.id, inv)
           })
         }
       }
     } catch {}
   })
 
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i)
-      if (k && k.startsWith(STORAGE_KEYS.INVOICES)) {
-        try {
-          const raw = localStorage.getItem(k)
-          if (raw) {
-            const parsed = JSON.parse(raw)
-            if (Array.isArray(parsed)) {
-              parsed.forEach((inv) => {
-                if (inv && inv.id) invoiceMap.set(inv.id, inv)
-              })
-            }
-          }
-        } catch {}
-      }
-    }
-  } catch {}
-
   const storeItems = [
-    ...(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, slug) || []),
-    ...(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companySlug) || []),
-    ...(PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []),
+    ...(slug ? (PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companySlug) || []) : []),
+    ...(companyId ? (PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
   ]
   storeItems.forEach((inv) => {
-    if (inv && inv.id) invoiceMap.set(inv.id, inv)
+    if (isMatchingTenant(inv)) invoiceMap.set(inv.id, inv)
   })
 
   return Array.from(invoiceMap.values())
@@ -176,14 +167,24 @@ function getLocalPayments(slug?: string, companySlug?: string, companyId?: strin
   const paymentMap = new Map<string, PaymentRecord>()
 
   const candidateKeys = [
-    STORAGE_KEYS.PAYMENTS,
     slug ? `${STORAGE_KEYS.PAYMENTS}__${slug}` : null,
-    companySlug ? `${STORAGE_KEYS.PAYMENTS}__${companySlug}` : null,
+    companySlug && companySlug !== slug ? `${STORAGE_KEYS.PAYMENTS}__${companySlug}` : null,
     companyId ? `${STORAGE_KEYS.PAYMENTS}__${companyId}` : null,
-    `${STORAGE_KEYS.PAYMENTS}__rangao`,
-    `${STORAGE_KEYS.PAYMENTS}__billing`,
-    `${STORAGE_KEYS.PAYMENTS}__default`,
   ].filter(Boolean) as string[]
+
+  const isMatchingTenant = (p: any): boolean => {
+    if (!p || !p.id) return false
+    if (!companyId && !slug && !companySlug) return true
+    const cId = p.company_id ? String(p.company_id).toLowerCase().trim() : null
+    const targetId = companyId ? String(companyId).toLowerCase().trim() : null
+    const targetSlug = slug ? String(slug).toLowerCase().trim() : null
+    const targetCompanySlug = companySlug ? String(companySlug).toLowerCase().trim() : null
+
+    if (cId) {
+      return (targetId && cId === targetId) || (targetSlug && cId === targetSlug) || (targetCompanySlug && cId === targetCompanySlug)
+    }
+    return false
+  }
 
   candidateKeys.forEach((key) => {
     try {
@@ -192,39 +193,20 @@ function getLocalPayments(slug?: string, companySlug?: string, companyId?: strin
         const parsed = JSON.parse(raw)
         if (Array.isArray(parsed)) {
           parsed.forEach((p) => {
-            if (p && p.id) paymentMap.set(p.id, p)
+            if (isMatchingTenant(p)) paymentMap.set(p.id, p)
           })
         }
       }
     } catch {}
   })
 
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i)
-      if (k && k.startsWith(STORAGE_KEYS.PAYMENTS)) {
-        try {
-          const raw = localStorage.getItem(k)
-          if (raw) {
-            const parsed = JSON.parse(raw)
-            if (Array.isArray(parsed)) {
-              parsed.forEach((p) => {
-                if (p && p.id) paymentMap.set(p.id, p)
-              })
-            }
-          }
-        } catch {}
-      }
-    }
-  } catch {}
-
   const storeItems = [
-    ...(PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, slug) || []),
-    ...(PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companySlug) || []),
-    ...(PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []),
+    ...(slug ? (PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companySlug) || []) : []),
+    ...(companyId ? (PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companyId) || []) : []),
   ]
   storeItems.forEach((p) => {
-    if (p && p.id) paymentMap.set(p.id, p)
+    if (isMatchingTenant(p)) paymentMap.set(p.id, p)
   })
 
   return Array.from(paymentMap.values())

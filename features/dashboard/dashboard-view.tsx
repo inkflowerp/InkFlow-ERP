@@ -104,7 +104,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
   const { userCtx, can, isOwner, isBranchManager, isSales, isDesigner, isOperator, isAccountant, isDelivery, isStore, activeRole, activeResponsibilities, isMultiRole } = usePermissions()
   const { locale, tBilingual } = useI18n()
 
-  const slug = company?.slug || tenantSlug || 'my-company'
+  const slug = company?.slug || tenantSlug || ''
   const canSeeFinancials = isOwner || isBranchManager || isSales || isAccountant || can('view', 'invoices') || can('view', 'reports')
 
   // Multi-Responsibility active workspace selection state
@@ -112,16 +112,16 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
 
 
   // Live Data Stores
-  const [orders, , orderHelpers] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
-  const [customers, , custHelpers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
-  const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
-  const [payments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [])
-  const [expenses] = useDataStore<ExpenseRecord[]>(STORAGE_KEYS.EXPENSES, [])
-  const [materials] = useDataStore<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, [])
-  const [productionJobs, , prodHelpers] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
-  const [designJobs] = useDataStore<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, [])
-  const [deliveryChallans, , deliveryHelpers] = useDataStore<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [])
-  const [quotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
+  const [orders, , orderHelpers] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [], slug)
+  const [customers, , custHelpers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [], slug)
+  const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [], slug)
+  const [payments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [], slug)
+  const [expenses] = useDataStore<ExpenseRecord[]>(STORAGE_KEYS.EXPENSES, [], slug)
+  const [materials] = useDataStore<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, [], slug)
+  const [productionJobs, , prodHelpers] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [], slug)
+  const [designJobs] = useDataStore<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, [], slug)
+  const [deliveryChallans, , deliveryHelpers] = useDataStore<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [], slug)
+  const [quotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [], slug)
 
   // State Management
   const [activeModal, setActiveModal] = useState<string | null>(null)
@@ -142,14 +142,14 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
   useEffect(() => {
     if (!ownerSnapshot && typeof window !== 'undefined') {
       try {
-        const cached = PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any)
+        const cached = PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any, slug)
         if (cached && cached.companyId && company?.id && cached.companyId === company.id) {
           setOwnerSnapshot(cached)
           setIsLoadingOwner(false)
         }
       } catch {}
     }
-  }, [company?.id, ownerSnapshot])
+  }, [company?.id, ownerSnapshot, slug])
 
   const fetchOwnerSnapshot = useCallback(async (isBackground = false) => {
     if (!isOwner) return
@@ -164,7 +164,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       if (res.success && res.data) {
         setOwnerSnapshot(res.data)
         try {
-          PrintERPDataStore.set('printerp_dashboard_snapshot_cache' as any, res.data, false)
+          PrintERPDataStore.set('printerp_dashboard_snapshot_cache' as any, res.data, slug)
         } catch {}
       } else {
         if (!ownerSnapshot) {

@@ -576,7 +576,7 @@ export function NewQuotationModal({
   const { locale, tBilingual } = useI18n()
   const { company, currentUser } = useTenant()
   const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
-  const slug = tenantSlug || company?.slug || PrintERPDataStore.getActiveTenantSlug() || 'classic-printer'
+  const slug = tenantSlug || company?.slug || PrintERPDataStore.getActiveTenantSlug() || ''
 
   // -------------------------------------------------------------
   // CUSTOMER STATE (Multi-field keyword search)

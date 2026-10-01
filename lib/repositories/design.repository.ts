@@ -30,18 +30,19 @@ export class DesignRepository {
       }
 
       const isMatchingTenant = (itemCompId?: string | null) => {
-        if (!itemCompId || itemCompId === 'default' || !companyId || companyId === 'default' || companyId === 'all' || companyId === 'my-company' || itemCompId === 'c-01' || companyId === 'c-01') return true
+        if (!companyId || companyId === 'all') return true
+        if (!itemCompId) return false
         if (itemCompId === companyId) return true
         if (typeof companyId === 'string' && typeof itemCompId === 'string') {
           if (companyId.toLowerCase() === itemCompId.toLowerCase()) return true
-          const cleanRec = itemCompId.replace(/^comp-/, '').replace(/^co-/, '').toLowerCase()
-          const cleanReq = companyId.replace(/^comp-/, '').replace(/^co-/, '').toLowerCase()
+          const cleanRec = itemCompId.replace(/^(comp|co|c)-/i, '').toLowerCase()
+          const cleanReq = companyId.replace(/^(comp|co|c)-/i, '').toLowerCase()
           if (cleanRec && cleanReq && cleanRec === cleanReq) return true
         }
         return false
       }
 
-      const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      const all: DesignJobRecord[] = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
       const cleanAll = all.filter((d: DesignJobRecord) => !d?.id?.startsWith('dsn-ref-'))
       if (cleanAll.length !== all.length) {
         PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, cleanAll)
@@ -58,8 +59,8 @@ export class DesignRepository {
 
       // Auto-pull design required and design check work from Commercial Orders & Job Hub
       const orders: any[] = [
+        ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companyId) || []) : []),
         ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []),
-        ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companyId) || []),
       ]
 
       try {
@@ -79,12 +80,10 @@ export class DesignRepository {
         }
       } catch {}
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && companyId) {
         try {
           const candidateKeys = [
-            STORAGE_KEYS.ORDERS,
             `${STORAGE_KEYS.ORDERS}__${companyId}`,
-            `${STORAGE_KEYS.ORDERS}__default`,
           ]
           for (const key of candidateKeys) {
             const raw = localStorage.getItem(key)
@@ -100,8 +99,8 @@ export class DesignRepository {
 
       // Also load Invoices to cross-hydrate items, specs, materials, finishing, and add-ons
       const invoices: any[] = [
+        ...(companyId ? (PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
         ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []),
-        ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companyId) || []),
       ]
 
       try {
@@ -121,12 +120,10 @@ export class DesignRepository {
         }
       } catch {}
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && companyId) {
         try {
           const candidateKeys = [
-            STORAGE_KEYS.INVOICES,
             `${STORAGE_KEYS.INVOICES}__${companyId}`,
-            `${STORAGE_KEYS.INVOICES}__default`,
           ]
           for (const key of candidateKeys) {
             const raw = localStorage.getItem(key)
@@ -427,7 +424,10 @@ export class DesignRepository {
 
       if (hasHealedJobs || newAutoJobs.length > 0) {
         const mergedJobs = Array.from(jobMap.values())
-        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, mergedJobs)
+        const otherTenantJobs = (PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []).filter(
+          (j) => !isMatchingTenant(j.company_id)
+        )
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, [...otherTenantJobs, ...mergedJobs])
       }
 
       return Array.from(jobMap.values())

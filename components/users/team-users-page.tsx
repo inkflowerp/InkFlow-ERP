@@ -40,15 +40,18 @@ import { CreateUserWizard } from '@/components/users/create-user-wizard'
 import { EditUserAccessDialog } from '@/components/users/edit-user-access-dialog'
 import { LinkEmployeeDialog } from '@/components/users/link-employee-dialog'
 import { UserDetailDrawer } from '@/components/users/user-detail'
+import { useParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 export function TeamUsersPage() {
+  const params = useParams()
+  const routeSlug = (params?.tenantSlug as string) || ''
   const { company, currentUser } = useTenant()
   const { showToast } = useToast()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, usage } = useSubscription()
 
   const companyId = company?.id || ''
-  const tenantSlug = company?.slug || 'rangao'
+  const tenantSlug = routeSlug || company?.slug || ''
   const currentUserId = currentUser?.user_id || currentUser?.id || ''
 
   // Data states

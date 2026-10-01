@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useParams } from 'next/navigation'
 import {
   FileText,
   Save,
@@ -44,7 +44,6 @@ import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 import {
   DEFAULT_TAX_SETTINGS,
-  DEMO_TAX_SETTINGS,
   calculateVat,
 } from '@/services/tax-and-docs.service'
 import { CompanyTaxSettingsRecord, VatPricingMode } from '@/types/tax-and-docs.types'
@@ -66,10 +65,12 @@ const BANGLADESH_COMMISSIONERATES = [
 ]
 
 export default function TaxPage() {
+  const params = useParams()
+  const routeSlug = (params?.tenantSlug as string) || ''
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const pathname = usePathname()
-  const slug = company?.slug || 'rangao'
+  const slug = routeSlug || company?.slug || ''
   const [mounted, setMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
@@ -93,11 +94,12 @@ export default function TaxPage() {
 
   const [taxSettings, setTaxSettings] = useDataStore<CompanyTaxSettingsRecord>(
     STORAGE_KEYS.TAX_SETTINGS,
-    defaultSettings
+    defaultSettings,
+    slug
   )
 
-  const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [])
-  const [purchases] = useDataStore<any[]>(STORAGE_KEYS.PURCHASE_ORDERS, [])
+  const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [], slug)
+  const [purchases] = useDataStore<any[]>(STORAGE_KEYS.PURCHASE_ORDERS, [], slug)
 
   // Compute live NBR VAT return from store (Mushak 9.1 Summary)
   const vatReturnSummary = useMemo(() => {

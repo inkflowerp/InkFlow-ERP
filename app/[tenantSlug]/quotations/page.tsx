@@ -138,13 +138,9 @@ function getLocalQuotations(slug?: string, companySlug?: string, companyId?: str
   const rawList: any[] = []
 
   const candidateKeys = [
-    STORAGE_KEYS.QUOTATIONS,
     slug ? `${STORAGE_KEYS.QUOTATIONS}__${slug}` : null,
-    companySlug ? `${STORAGE_KEYS.QUOTATIONS}__${companySlug}` : null,
+    companySlug && companySlug !== slug ? `${STORAGE_KEYS.QUOTATIONS}__${companySlug}` : null,
     companyId ? `${STORAGE_KEYS.QUOTATIONS}__${companyId}` : null,
-    `${STORAGE_KEYS.QUOTATIONS}__rangao`,
-    `${STORAGE_KEYS.QUOTATIONS}__quotations`,
-    `${STORAGE_KEYS.QUOTATIONS}__default`,
   ].filter(Boolean) as string[]
 
   candidateKeys.forEach((key) => {
@@ -157,38 +153,11 @@ function getLocalQuotations(slug?: string, companySlug?: string, companyId?: str
     } catch {}
   })
 
-  // Deep scan localStorage for any quotation-related keys
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i)
-      if (
-        k &&
-        (k.startsWith('printerp_tenant_quotations') ||
-          k.startsWith('printerp_quotations') ||
-          k.startsWith(STORAGE_KEYS.QUOTATIONS) ||
-          k.includes('quotation') ||
-          k.includes('quotes') ||
-          k.includes('draft') ||
-          k.includes('outbox') ||
-          k.includes('inkflow'))
-      ) {
-        try {
-          const raw = localStorage.getItem(k)
-          if (raw) {
-            const extracted = extractQuotationsFromAny(raw)
-            if (extracted.length > 0) rawList.push(...extracted)
-          }
-        } catch {}
-      }
-    }
-  } catch {}
-
-  // Direct DataStore reads
+  // Direct DataStore reads strictly scoped to tenant
   const storeItems = [
-    ...(PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, slug) || []),
-    ...(PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companySlug) || []),
-    ...(PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []),
-    ...(PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, 'default') || []),
+    ...(slug ? (PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, slug) || []) : []),
+    ...(companySlug && companySlug !== slug ? (PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companySlug) || []) : []),
+    ...(companyId ? (PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companyId) || []) : []),
   ]
   rawList.push(...storeItems)
 
@@ -196,19 +165,15 @@ function getLocalQuotations(slug?: string, companySlug?: string, companyId?: str
 }
 
 /**
- * Removes a quotation from all localStorage keys and local DataStore caches
+ * Removes a quotation from tenant-scoped localStorage keys and local DataStore caches
  */
 function removeLocalQuotation(id: string, quotationNumber?: string, slug?: string, companySlug?: string, companyId?: string) {
   if (typeof window === 'undefined') return
   try {
     const candidateKeys = [
-      STORAGE_KEYS.QUOTATIONS,
       slug ? `${STORAGE_KEYS.QUOTATIONS}__${slug}` : null,
-      companySlug ? `${STORAGE_KEYS.QUOTATIONS}__${companySlug}` : null,
+      companySlug && companySlug !== slug ? `${STORAGE_KEYS.QUOTATIONS}__${companySlug}` : null,
       companyId ? `${STORAGE_KEYS.QUOTATIONS}__${companyId}` : null,
-      `${STORAGE_KEYS.QUOTATIONS}__rangao`,
-      `${STORAGE_KEYS.QUOTATIONS}__quotations`,
-      `${STORAGE_KEYS.QUOTATIONS}__default`,
     ].filter(Boolean) as string[]
 
     candidateKeys.forEach((key) => {
@@ -226,33 +191,8 @@ function removeLocalQuotation(id: string, quotationNumber?: string, slug?: strin
       } catch {}
     })
 
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i)
-      if (
-        k &&
-        (k.startsWith('printerp_tenant_quotations') ||
-          k.startsWith('printerp_quotations') ||
-          k.includes('quotation') ||
-          k.includes('quotes'))
-      ) {
-        try {
-          const raw = localStorage.getItem(k)
-          if (raw && (raw.includes(id) || (quotationNumber && raw.includes(quotationNumber)))) {
-            const parsed = JSON.parse(raw)
-            if (Array.isArray(parsed)) {
-              const filtered = parsed.filter(
-                (q: any) => q?.id !== id && (!quotationNumber || q?.quotation_number !== quotationNumber)
-              )
-              localStorage.setItem(k, JSON.stringify(filtered))
-            }
-          }
-        } catch {}
-      }
-    }
-
-    PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
     if (slug) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, slug)
-    if (companySlug) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companySlug)
+    if (companySlug && companySlug !== slug) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companySlug)
     if (companyId) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
   } catch {}
 }
