@@ -39,11 +39,17 @@ export interface DecryptedCredentialsResult {
 }
 
 /**
- * Derives a 32-byte master key from the dedicated ENCRYPTION_SECRET environment variable.
+ * Derives a 32-byte master key from the dedicated ENCRYPTION_SECRET environment variable
+ * or server-side secret keys (SUPABASE_SERVICE_ROLE_KEY, SUPABASE_SECRET_KEY, APP_SECRET).
  * Fails closed if missing in non-test environments.
  */
 export function getMasterKey(keyId = CURRENT_KEY_ID): Buffer {
-  const secret = process.env.ENCRYPTION_SECRET
+  const secret =
+    process.env.ENCRYPTION_SECRET ||
+    process.env.ENCRYPTION_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.APP_SECRET
 
   if (!secret) {
     if (isTestEnvironment()) {
@@ -51,7 +57,7 @@ export function getMasterKey(keyId = CURRENT_KEY_ID): Buffer {
     }
     throw new CredentialEncryptionError(
       'CREDENTIAL_NOT_CONFIGURED',
-      'FAIL CLOSED: ENCRYPTION_SECRET is required on server for credential encryption.'
+      'FAIL CLOSED: ENCRYPTION_SECRET or server secret key is required on server for credential encryption.'
     )
   }
 
@@ -151,7 +157,31 @@ export function decryptSecret(encryptedString: string): string {
       decrypted += decipher.final('utf8')
       return decrypted
     } catch (err: any) {
-      if (err instanceof CredentialEncryptionError) throw err
+      if (err instanceof CredentialEncryptionError && err.code === 'CREDENTIAL_NOT_CONFIGURED') throw err
+
+      // Attempt key rotation fallback candidates with this keyId
+      const candidateSecrets: string[] = []
+      if (process.env.ENCRYPTION_SECRET) candidateSecrets.push(process.env.ENCRYPTION_SECRET)
+      if (process.env.ENCRYPTION_KEY) candidateSecrets.push(process.env.ENCRYPTION_KEY)
+      if (process.env.SUPABASE_SERVICE_ROLE_KEY) candidateSecrets.push(process.env.SUPABASE_SERVICE_ROLE_KEY)
+      if (process.env.SUPABASE_SECRET_KEY) candidateSecrets.push(process.env.SUPABASE_SECRET_KEY)
+      if (process.env.APP_SECRET) candidateSecrets.push(process.env.APP_SECRET)
+      if (isTestEnvironment()) candidateSecrets.push('test_encryption_secret_key_32_chars_ok!')
+
+      const salt = `${DEFAULT_SALT}-${keyId}`
+      for (const candSecret of candidateSecrets) {
+        try {
+          const candKey = crypto.scryptSync(candSecret, salt, 32)
+          const candDecipher = crypto.createDecipheriv(ALGORITHM, candKey, iv)
+          candDecipher.setAuthTag(authTag)
+          let dec = candDecipher.update(cipherHex, 'hex', 'utf8')
+          dec += candDecipher.final('utf8')
+          return dec
+        } catch {
+          // try next candidate
+        }
+      }
+
       throw new CredentialEncryptionError(
         'CREDENTIAL_KEY_MISMATCH',
         'Decryption failed: Unsupported state or unable to authenticate data'
