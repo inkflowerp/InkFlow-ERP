@@ -41,9 +41,14 @@ export function PlatformHeader() {
     })
   }, [])
 
-  // Global keyboard shortcut '/' to open search
+  // Global keyboard shortcut '/' to open search, 'Escape' to close modals/menus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setProfileMenuOpen(false)
+        setSearchOpen(false)
+        return
+      }
       if (
         (e.key === '/' || (e.ctrlKey && e.key.toLowerCase() === 'k')) &&
         !['input', 'textarea', 'select'].includes((e.target as HTMLElement)?.tagName?.toLowerCase())

@@ -38,20 +38,62 @@ import { PlatformDashboardMetrics, NeedsAttentionItem } from '@/types/platform.t
 export default function PlatformDashboardPage() {
   const [data, setData] = useState<(PlatformDashboardMetrics & { needs_attention: NeedsAttentionItem[] }) | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [dateRange, setDateRange] = useState<'today' | '7d' | '30d' | '90d'>('30d')
 
   const loadData = async () => {
     setLoading(true)
-    const res = await getPlatformDashboardOverviewAction()
-    if (res.success && res.data) {
-      setData(res.data)
+    setError(null)
+    try {
+      const res = await getPlatformDashboardOverviewAction()
+      if (res.success && res.data) {
+        setData(res.data)
+      } else {
+        setError(res.error || 'Failed to load platform dashboard metrics.')
+      }
+    } catch (err: any) {
+      setError(err?.message || 'A network or system error occurred while fetching platform metrics.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   useEffect(() => {
     loadData()
   }, [])
+
+  if (error && !data) {
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-red-900/50 bg-red-950/20 p-8 text-center my-8 shadow-xl">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10 text-red-400 border border-red-500/20 mb-4 shadow-lg shadow-red-950/50">
+          <AlertOctagon className="h-7 w-7" />
+        </div>
+        <h2 className="text-lg font-bold text-white mb-1">Unable to Load Platform Metrics</h2>
+        <p className="max-w-md text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">
+          {error}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button
+            onClick={loadData}
+            className="h-9 px-4 gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer text-xs min-h-[38px]"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span>Retry Overview</span>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="h-9 px-4 border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800 text-xs min-h-[38px]"
+          >
+            <Link href="/platform/tenants">
+              <Building2 className="h-3.5 w-3.5 mr-1.5" />
+              <span>Tenant Directory</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   if (loading || !data) {
     return (
@@ -60,6 +102,11 @@ export default function PlatformDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-28 bg-slate-900 border border-slate-800 rounded-2xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-24 bg-slate-900 border border-slate-800 rounded-2xl" />
           ))}
         </div>
       </div>
@@ -112,14 +159,43 @@ export default function PlatformDashboardPage() {
           </Button>
 
           <Link
-            href="/platform/companies"
+            href="/platform/tenants"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all shrink-0 min-h-[36px]"
           >
             <Building2 className="h-3.5 w-3.5" />
-            <span>Companies</span>
+            <span>Tenants</span>
           </Link>
         </div>
       </div>
+
+      {/* 5.1b ZERO-TENANT ONBOARDING GUIDANCE BANNER */}
+      {data.total_companies === 0 && (
+        <div className="relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 via-purple-950/40 to-slate-900/80 p-5 sm:p-6 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-2xs font-bold uppercase tracking-wider border border-indigo-500/30">
+                <Sparkles className="h-3 w-3 text-amber-400" />
+                Pristine Baseline • Ready for Onboarding
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-white">
+                Platform is Initialized with Zero Active Tenants
+              </h3>
+              <p className="text-xs text-slate-300/80 max-w-xl leading-relaxed">
+                The full system reset was completed successfully. Platform Owner credentials are authenticated. You can now onboard your first commercial tenant printing hub or configure subscription tiers.
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <Link
+                href="/platform/tenants"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer min-h-[38px]"
+              >
+                <Building2 className="h-4 w-4" />
+                <span>Onboard First Tenant</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 5.2 NEEDS ATTENTION (Top Priority Section) */}
       <div className="space-y-3">
@@ -306,7 +382,7 @@ export default function PlatformDashboardPage() {
               </CardDescription>
             </div>
             <Link
-              href="/platform/companies"
+              href="/platform/tenants"
               className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
             >
               View Directory →
@@ -316,7 +392,7 @@ export default function PlatformDashboardPage() {
           <CardContent className="p-4 space-y-3">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
               <Link
-                href="/platform/companies?health=healthy"
+                href="/platform/tenants?health=healthy"
                 className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40 hover:bg-emerald-900/30 transition-colors"
               >
                 <div className="text-xs font-bold text-emerald-400 uppercase">Healthy</div>
@@ -327,7 +403,7 @@ export default function PlatformDashboardPage() {
               </Link>
 
               <Link
-                href="/platform/companies?health=at_risk"
+                href="/platform/tenants?health=at_risk"
                 className="p-3 rounded-xl bg-amber-950/30 border border-amber-800/40 hover:bg-amber-900/30 transition-colors"
               >
                 <div className="text-xs font-bold text-amber-400 uppercase">At Risk</div>
@@ -338,7 +414,7 @@ export default function PlatformDashboardPage() {
               </Link>
 
               <Link
-                href="/platform/companies?health=critical"
+                href="/platform/tenants?health=critical"
                 className="p-3 rounded-xl bg-red-950/30 border border-red-800/40 hover:bg-red-900/30 transition-colors"
               >
                 <div className="text-xs font-bold text-red-400 uppercase">Critical</div>
@@ -349,7 +425,7 @@ export default function PlatformDashboardPage() {
               </Link>
 
               <Link
-                href="/platform/companies?status=suspended"
+                href="/platform/tenants?status=suspended"
                 className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 hover:bg-slate-800/60 transition-colors"
               >
                 <div className="text-xs font-bold text-slate-400 uppercase">Suspended</div>
@@ -391,26 +467,34 @@ export default function PlatformDashboardPage() {
 
           <CardContent className="p-4 space-y-3">
             <div className="space-y-2">
-              {data.subscription_metrics.map((tier) => (
-                <div
-                  key={tier.plan_code}
-                  className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-bold text-white">{tier.plan_name}</span>
-                    <span className="text-2xs tabular-nums px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase">
-                      {tier.plan_code}
-                    </span>
-                  </div>
+              {data.subscription_metrics && data.subscription_metrics.length > 0 ? (
+                data.subscription_metrics.map((tier) => (
+                  <div
+                    key={tier.plan_code}
+                    className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="font-bold text-white">{tier.plan_name}</span>
+                      <span className="text-2xs tabular-nums px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase">
+                        {tier.plan_code}
+                      </span>
+                    </div>
 
-                  <div className="flex items-center gap-4">
-                    <span className="text-slate-400">{tier.active_subscribers} tenants</span>
-                    <div className="tabular-nums font-bold text-emerald-400 text-right">
-                      <CurrencyDisplay amount={tier.mrr_bdt} /> / mo
+                    <div className="flex items-center gap-4">
+                      <span className="text-slate-400">{tier.active_subscribers} tenants</span>
+                      <div className="tabular-nums font-bold text-emerald-400 text-right">
+                        <CurrencyDisplay amount={tier.mrr_bdt} /> / mo
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/80 text-center text-xs text-slate-500 space-y-1">
+                  <CreditCard className="h-6 w-6 mx-auto text-slate-600" />
+                  <p className="font-semibold text-slate-300">No active subscriptions yet</p>
+                  <p className="text-2xs text-slate-500">Tier revenue analytics will calculate automatically as tenants subscribe.</p>
                 </div>
-              ))}
+              )}
             </div>
 
             <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs font-semibold">

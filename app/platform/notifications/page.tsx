@@ -579,7 +579,7 @@ export default function PlatformNotificationsPage() {
                   : isBilling
                   ? '/platform/subscriptions'
                   : isTenant
-                  ? '/platform/companies'
+                  ? '/platform/tenants'
                   : isSecurity
                   ? '/platform/security'
                   : isHealth

@@ -38,7 +38,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Sheet, SheetHeader, SheetContent } from '@/components/ui/sheet'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { usePlatformNotifications } from '@/hooks/use-platform-notifications'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
@@ -145,13 +144,6 @@ export function PlatformSidebar() {
         localStorage.getItem('printerp_active_tenant')
       if (localSlug) {
         setBusinessSlug(localSlug)
-        return
-      }
-
-      // 4. Check data store platform companies
-      const platformCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
-      if (platformCompanies.length > 0 && platformCompanies[0].slug) {
-        setBusinessSlug(platformCompanies[0].slug)
         return
       }
     } catch {
@@ -358,7 +350,10 @@ export function PlatformSidebar() {
   }
 
   const renderFooter = (isMobile = false, isCollapsed = false) => {
-    const businessHref = getTenantLink(businessSlug, '/dashboard')
+    const hasActiveTenant = Boolean(businessSlug)
+    const businessHref = hasActiveTenant ? getTenantLink(businessSlug, '/dashboard') : '/platform/tenants'
+    const buttonLabel = hasActiveTenant ? 'Exit to Business ERP' : 'Tenant Directory'
+    const tooltipTitle = hasActiveTenant ? `Exit to Business ERP (${businessSlug})` : 'Tenant Directory'
 
     return (
       <div className="p-2.5 border-t border-slate-800 bg-slate-950/80 space-y-2 shrink-0 select-none">
@@ -381,7 +376,7 @@ export function PlatformSidebar() {
             >
               <span className="flex items-center gap-2">
                 <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform text-indigo-400" />
-                <span>Exit to Business ERP</span>
+                <span>{buttonLabel}</span>
               </span>
               <ExternalLink className="h-3 w-3 text-slate-500 group-hover:text-indigo-400 transition-colors" />
             </Link>
@@ -389,7 +384,7 @@ export function PlatformSidebar() {
         ) : (
           <Link
             href={businessHref}
-            title={`Exit to Business ERP (${businessSlug})`}
+            title={tooltipTitle}
             className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 hover:border-indigo-500/40 transition-colors cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4 text-indigo-400" />
