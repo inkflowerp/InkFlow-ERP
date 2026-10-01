@@ -102,4 +102,20 @@ describe('Gateway Provider Adapters Unit Tests', () => {
     assert.strictEqual(res.success, false)
     assert.ok(res.error?.includes('not configured') || res.error?.includes('missing') || res.error?.includes('Token'))
   })
+
+  it('12. OpenWA WhatsApp adapter validates missing base URL fail-closed', async () => {
+    const { OpenWAAdapter } = await import('../../lib/whatsapp/adapters/openwa.adapter.ts')
+    const adapter = new OpenWAAdapter({ baseUrl: '' })
+    const res = await adapter.testConnection()
+    assert.strictEqual(res.success, false)
+    assert.ok(res.message.includes('not configured') || res.message.includes('Missing OPENWA_BASE_URL'))
+  })
+
+  it('13. OpenWAClient normalizes protocol and treats apiKey as optional for self-hosted engines', async () => {
+    const { OpenWAClient } = await import('../../lib/integrations/openwa/client.ts')
+    const client = new OpenWAClient({ baseUrl: 'wa.internal.net:8080' })
+    assert.strictEqual(client.configured, true)
+    const credsCheck = client.validateCredentials()
+    assert.strictEqual(credsCheck.valid, true)
+  })
 })

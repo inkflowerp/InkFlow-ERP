@@ -171,7 +171,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     popular: true,
     defaultEnv: 'live',
     credentialFields: [
-      { key: 'password', label: 'SMTP Password / App Password', placeholder: '••••••••••••••••', type: 'password', required: true, description: 'Application-specific password' },
+      { key: 'password', label: 'SMTP Password / App Password', placeholder: 'Enter SMTP Password or App Password', type: 'password', required: true, description: 'Application-specific password' },
     ],
     configFields: [
       { key: 'smtp_host', label: 'SMTP Host', placeholder: 'smtp.gmail.com', type: 'text', required: true },
@@ -243,7 +243,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     defaultEnv: 'live',
     credentialFields: [
       { key: 'access_key_id', label: 'AWS Access Key ID', placeholder: 'AKIAIOSFODNN7EXAMPLE', type: 'text', required: true },
-      { key: 'secret_access_key', label: 'AWS Secret Access Key', placeholder: '••••••••••••••••••••••••••••••••••••••••', type: 'password', required: true },
+      { key: 'secret_access_key', label: 'AWS Secret Access Key', placeholder: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY', type: 'password', required: true },
     ],
     configFields: [
       {
@@ -278,7 +278,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     popular: true,
     defaultEnv: 'live',
     credentialFields: [
-      { key: 'token', label: 'Greenweb API Access Token', placeholder: 'gw_live_••••••••', type: 'password', required: true, description: 'Generated from Greenweb SMS portal' },
+      { key: 'token', label: 'Greenweb API Access Token', placeholder: 'Enter Greenweb API Access Token', type: 'password', required: true, description: 'Generated from Greenweb SMS portal' },
     ],
     configFields: [
       { key: 'sender_id', label: 'Approved Masking Name / Sender ID', placeholder: 'PRINTERP', type: 'text', required: false, description: 'Leave empty for non-masking standard rate' },
@@ -295,7 +295,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     docsUrl: 'http://bulksmsbd.net/api',
     defaultEnv: 'live',
     credentialFields: [
-      { key: 'api_key', label: 'BulkSMSBD API Key', placeholder: '••••••••••••••••••••••••', type: 'password', required: true },
+      { key: 'api_key', label: 'BulkSMSBD API Key', placeholder: 'Enter BulkSMSBD API Key', type: 'password', required: true },
     ],
     configFields: [
       { key: 'sender_id', label: 'Sender ID / Mask', placeholder: '8809612000000', type: 'text', required: true },
@@ -312,7 +312,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     docsUrl: 'https://smsplus.sslwireless.com',
     defaultEnv: 'live',
     credentialFields: [
-      { key: 'api_token', label: 'SSL SMS API Token', placeholder: '••••••••••••••••••••', type: 'password', required: true },
+      { key: 'api_token', label: 'SSL SMS API Token', placeholder: 'Enter SSL SMS API Token', type: 'password', required: true },
       { key: 'sid', label: 'Stakeholder ID (SID)', placeholder: 'PRINTERP_CORP', type: 'text', required: true },
     ],
     configFields: [
@@ -330,7 +330,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     defaultEnv: 'live',
     credentialFields: [
       { key: 'account_sid', label: 'Twilio Account SID', placeholder: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', type: 'text', required: true },
-      { key: 'auth_token', label: 'Twilio Auth Token', placeholder: '••••••••••••••••••••••••••••••••', type: 'password', required: true },
+      { key: 'auth_token', label: 'Twilio Auth Token', placeholder: 'Enter Twilio Auth Token', type: 'password', required: true },
     ],
     configFields: [
       { key: 'from_number', label: 'Twilio Phone Number / Alphanumeric Sender', placeholder: '+15551234567', type: 'text', required: true },
@@ -350,10 +350,10 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     popular: true,
     defaultEnv: 'sandbox',
     credentialFields: [
-      { key: 'app_key', label: 'bKash App Key', placeholder: '••••••••••••••••••••••••', type: 'text', required: true },
-      { key: 'app_secret', label: 'bKash App Secret', placeholder: '••••••••••••••••••••••••••••••••••••••••', type: 'password', required: true },
+      { key: 'app_key', label: 'bKash App Key', placeholder: 'Enter bKash App Key', type: 'text', required: true },
+      { key: 'app_secret', label: 'bKash App Secret', placeholder: 'Enter bKash App Secret', type: 'password', required: true },
       { key: 'username', label: 'Merchant API Username', placeholder: 'merchant_username', type: 'text', required: true },
-      { key: 'password', label: 'Merchant API Password', placeholder: '••••••••••••••••', type: 'password', required: true },
+      { key: 'password', label: 'Merchant API Password', placeholder: 'Enter bKash Merchant Password', type: 'password', required: true },
     ],
     configFields: [
       { key: 'base_url', label: 'bKash Endpoint (Leave empty for default)', placeholder: 'https://tokenized.sandbox.bka.sh/v1.2.0-beta', type: 'text', required: false },
@@ -372,7 +372,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     defaultEnv: 'sandbox',
     credentialFields: [
       { key: 'store_id', label: 'Store ID', placeholder: 'printerp_live', type: 'text', required: true },
-      { key: 'store_password', label: 'Store Password', placeholder: '••••••••••••••••', type: 'password', required: true },
+      { key: 'store_password', label: 'Store Password', placeholder: 'Enter Store Password', type: 'password', required: true },
     ],
     configFields: [
       { key: 'base_url', label: 'Gateway URL (Leave empty for sandbox/live auto)', placeholder: 'https://sandbox.sslcommerz.com', type: 'text', required: false },
@@ -389,7 +389,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     defaultEnv: 'sandbox',
     credentialFields: [
       { key: 'merchant_id', label: 'Nagad Merchant ID', placeholder: '683020000000000', type: 'text', required: true },
-      { key: 'merchant_private_key', label: 'Merchant Private Key', placeholder: '••••••••••••••••••••••••••••••••', type: 'password', required: true },
+      { key: 'merchant_private_key', label: 'Merchant Private Key', placeholder: 'Enter Nagad Merchant Private Key', type: 'password', required: true },
       { key: 'nagad_public_key', label: 'Nagad Public Key (Certificate)', placeholder: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...', type: 'text', required: false },
     ],
     configFields: [
@@ -407,7 +407,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     webhookPath: '/api/webhooks/uddoktapay',
     defaultEnv: 'sandbox',
     credentialFields: [
-      { key: 'api_key', label: 'UddoktaPay API Key', placeholder: '••••••••••••••••••••••••', type: 'password', required: true },
+      { key: 'api_key', label: 'UddoktaPay API Key', placeholder: 'Enter UddoktaPay API Key', type: 'password', required: true },
     ],
     configFields: [
       { key: 'base_url', label: 'Base URL', placeholder: 'https://sandbox.uddoktapay.com', type: 'text', required: false, defaultValue: 'https://sandbox.uddoktapay.com' },
@@ -424,9 +424,9 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     webhookPath: '/api/webhooks/stripe',
     defaultEnv: 'sandbox',
     credentialFields: [
-      { key: 'secret_key', label: 'Stripe Secret Key', placeholder: 'sk_test_••••••••••••••••••••••••', type: 'password', required: true },
-      { key: 'publishable_key', label: 'Stripe Publishable Key', placeholder: 'pk_test_••••••••••••••••••••••••', type: 'text', required: false },
-      { key: 'webhook_secret', label: 'Stripe Webhook Signing Secret', placeholder: 'whsec_••••••••••••••••••••••••', type: 'password', required: false },
+      { key: 'secret_key', label: 'Stripe Secret Key', placeholder: 'sk_test_... or sk_live_...', type: 'password', required: true },
+      { key: 'publishable_key', label: 'Stripe Publishable Key', placeholder: 'pk_test_... or pk_live_...', type: 'text', required: false },
+      { key: 'webhook_secret', label: 'Stripe Webhook Signing Secret', placeholder: 'whsec_...', type: 'password', required: false },
     ],
     configFields: [],
   },
@@ -444,7 +444,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     popular: true,
     defaultEnv: 'live',
     credentialFields: [
-      { key: 'access_token', label: 'System User Permanent Access Token', placeholder: 'EAAQ...••••••••••••••••••••', type: 'password', required: true, description: 'System user token with whatsapp_business_messaging' },
+      { key: 'access_token', label: 'System User Permanent Access Token', placeholder: 'EAAQ... (System User Access Token)', type: 'password', required: true, description: 'System user token with whatsapp_business_messaging' },
       { key: 'phone_number_id', label: 'Phone Number ID', placeholder: '109876543210987', type: 'text', required: true, description: 'From Meta WhatsApp App Dashboard -> API Setup' },
     ],
     configFields: [
@@ -464,8 +464,8 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     webhookPath: '/api/webhooks/whatsapp',
     defaultEnv: 'live',
     credentialFields: [
-      { key: 'api_key', label: 'OpenWA API Key / Secret', placeholder: '••••••••••••••••', type: 'password', required: true },
-      { key: 'webhook_secret', label: 'Webhook Signing Secret', placeholder: '••••••••••••••••', type: 'password', required: false },
+      { key: 'api_key', label: 'OpenWA API Key / Secret', placeholder: 'Enter OpenWA API Key (or leave blank if unauthenticated)', type: 'password', required: false, description: 'API Key / Bearer token configured on your OpenWA server' },
+      { key: 'webhook_secret', label: 'Webhook Signing Secret', placeholder: 'Enter Webhook Secret (optional)', type: 'password', required: false, description: 'Secret used to verify incoming webhook payloads' },
     ],
     configFields: [
       { key: 'base_url', label: 'OpenWA Server URL', placeholder: 'https://wa.yourdomain.com', type: 'text', required: true },
@@ -722,23 +722,40 @@ export default function PlatformIntegrationsPage() {
   // Open "Add Integration" Modal
   const handleOpenAddModal = (defaultCategory?: GatewayCategory) => {
     setEditingGateway(null)
-    setSelectedChannelCategory(defaultCategory || 'email')
-    const firstProvider = Object.values(PROVIDERS_METADATA).find(
-      (p) => p.category === (defaultCategory || 'email')
-    )
-    setSelectedMeta(firstProvider || Object.values(PROVIDERS_METADATA)[0])
+    const targetCategory = defaultCategory || 'email'
+    setSelectedChannelCategory(targetCategory)
+    const firstProvider =
+      Object.values(PROVIDERS_METADATA).find((p) => p.category === targetCategory) ||
+      Object.values(PROVIDERS_METADATA)[0]
+    setSelectedMeta(firstProvider)
     setModalStep(1)
+
+    const initialCreds: Record<string, string> = {}
+    const replacing: Record<string, boolean> = {}
+    if (firstProvider) {
+      firstProvider.credentialFields.forEach((f) => {
+        initialCreds[f.key] = ''
+        replacing[f.key] = true
+      })
+    }
+
+    const initialConfig: Record<string, any> = {}
+    if (firstProvider) {
+      firstProvider.configFields.forEach((f) => {
+        initialConfig[f.key] = f.defaultValue ?? ''
+      })
+    }
 
     setFormData({
       name: firstProvider ? firstProvider.name : '',
       environment: firstProvider?.defaultEnv || 'sandbox',
       is_enabled: true,
       is_default: false,
-      credentials: {},
-      public_config: {},
+      credentials: initialCreds,
+      public_config: initialConfig,
     })
 
-    setReplacingFields({})
+    setReplacingFields(replacing)
     setShowPasswordFields({})
     setModalTestResult(null)
     setIsConfigModalOpen(true)
@@ -813,6 +830,8 @@ export default function PlatformIntegrationsPage() {
     })
 
     setReplacingFields(replacing)
+    setShowPasswordFields({})
+    setModalTestResult(null)
     setModalStep(2)
   }
 
@@ -825,7 +844,8 @@ export default function PlatformIntegrationsPage() {
     try {
       const cleanCreds: Record<string, string> = {}
       for (const [k, v] of Object.entries(formData.credentials)) {
-        if (replacingFields[k] && v && !v.includes('••••')) {
+        const shouldInclude = !editingGateway || replacingFields[k]
+        if (shouldInclude && v && !v.includes('••••')) {
           cleanCreds[k] = v.trim()
         }
       }
@@ -2399,9 +2419,11 @@ export default function PlatformIntegrationsPage() {
 
                   <div className="space-y-3">
                     {selectedMeta.credentialFields.map((field) => {
-                      const isReplacing = replacingFields[field.key] ?? false
+                      const isNew = !editingGateway
+                      const isReplacing = isNew || (replacingFields[field.key] ?? false)
                       const showPassword = showPasswordFields[field.key] ?? false
                       const currentValue = formData.credentials[field.key] || ''
+                      const isMaskedExisting = !isNew && !isReplacing
 
                       return (
                         <div key={field.key} className="space-y-1">
@@ -2421,7 +2443,7 @@ export default function PlatformIntegrationsPage() {
                                 }}
                                 className="text-[11px] text-blue-600 hover:underline font-medium"
                               >
-                                Replace
+                                Replace Secret
                               </button>
                             )}
                           </div>
@@ -2429,9 +2451,9 @@ export default function PlatformIntegrationsPage() {
                           <div className="relative">
                             <Input
                               type={field.type === 'password' && !showPassword ? 'password' : 'text'}
-                              disabled={editingGateway !== null && !isReplacing}
-                              value={currentValue}
-                              placeholder={isReplacing ? field.placeholder : '••••••••••••••••'}
+                              disabled={isMaskedExisting}
+                              value={isMaskedExisting ? '••••••••••••••••' : currentValue}
+                              placeholder={isMaskedExisting ? '••••••••••••••••' : (field.placeholder || 'Enter secret...')}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
@@ -2439,10 +2461,12 @@ export default function PlatformIntegrationsPage() {
                                 })
                               }
                               className={`h-9 text-xs border-slate-200 pr-10 font-mono ${
-                                editingGateway && !isReplacing ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white'
+                                isMaskedExisting
+                                  ? 'bg-slate-100 text-slate-500 cursor-not-allowed select-none'
+                                  : 'bg-white text-slate-900'
                               }`}
                             />
-                            {field.type === 'password' && (
+                            {field.type === 'password' && !isMaskedExisting && (
                               <button
                                 type="button"
                                 onClick={() =>
@@ -2452,6 +2476,7 @@ export default function PlatformIntegrationsPage() {
                                   })
                                 }
                                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                                title={showPassword ? 'Hide secret' : 'Show secret'}
                               >
                                 {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                               </button>

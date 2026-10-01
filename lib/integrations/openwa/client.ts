@@ -108,8 +108,14 @@ export class OpenWAClient {
     if (!rawBaseUrl || !rawBaseUrl.trim()) {
       this.baseUrl = ''
     } else {
+      let trimmed = rawBaseUrl.trim()
+      if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        trimmed = trimmed.includes('localhost') || trimmed.startsWith('127.0.0.1')
+          ? `http://${trimmed}`
+          : `https://${trimmed}`
+      }
       // Normalize: strip trailing slash and ensure /api path
-      let normalized = rawBaseUrl.trim().replace(/\/+$/, '')
+      let normalized = trimmed.replace(/\/+$/, '')
       if (!normalized.endsWith('/api') && !normalized.includes('/api/')) {
         normalized = `${normalized}/api`
       }
@@ -123,18 +129,16 @@ export class OpenWAClient {
   }
 
   get configured(): boolean {
-    return Boolean(this.baseUrl && this.apiKey)
+    return Boolean(this.baseUrl)
   }
 
   validateCredentials(): { valid: boolean; error?: string } {
     if (!this.baseUrl) {
       return { valid: false, error: 'OpenWA Base URL is required.' }
     }
-    if (!this.apiKey) {
-      return { valid: false, error: 'OpenWA API Key is required.' }
-    }
     return { valid: true }
   }
+
 
   getWebhookSecret(): string {
     return this.webhookSecret
@@ -165,6 +169,10 @@ export class OpenWAClient {
 
     if (this.apiKey) {
       requestHeaders['X-API-Key'] = this.apiKey
+      requestHeaders['api-key'] = this.apiKey
+      requestHeaders['Authorization'] = this.apiKey.startsWith('Bearer ')
+        ? this.apiKey
+        : `Bearer ${this.apiKey}`
     }
 
     if (body && typeof body === 'object') {
@@ -559,12 +567,42 @@ export class OpenWAClient {
 
   /**
    * Get overall gateway statistics
-   * GET /api/stats/overview
+   * GET /api/stats/overview with fallback to session list
    */
-  async getStatsOverview(): Promise<any> {
-    return this.request<any>('/stats/overview', {
-      method: 'GET',
-    })
+  async getStatsOverview(): Promise<{ activeSessions: number; totalSessions: number; version?: string; [key: string]: any }> {
+    try {
+      const res = await this.request<any>('/stats/overview', {
+        method: 'GET',
+      })
+      if (res && typeof res === 'object') {
+        const active =
+          res.activeSessions ??
+          (Array.isArray(res.sessions) ? res.sessions.filter((s: any) => s.status === 'ready').length : 0)
+        const total =
+          res.totalSessions ??
+          (Array.isArray(res.sessions) ? res.sessions.length : 0)
+
+        return {
+          activeSessions: active,
+          totalSessions: total,
+          version: res.version,
+          ...res,
+        }
+      }
+    } catch {
+      // Fallback: reachability via listSessions()
+      try {
+        const sessions = await this.listSessions()
+        const total = Array.isArray(sessions) ? sessions.length : 0
+        const active = Array.isArray(sessions)
+          ? sessions.filter((s) => s.status === 'ready').length
+          : 0
+        return { activeSessions: active, totalSessions: total }
+      } catch (listErr) {
+        throw listErr
+      }
+    }
+    return { activeSessions: 0, totalSessions: 0 }
   }
 
   /**

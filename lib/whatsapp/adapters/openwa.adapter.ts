@@ -81,30 +81,43 @@ export class OpenWAAdapter implements IWhatsAppProvider {
       return {
         success: false,
         latency_ms: 0,
-        message: 'OpenWA Gateway is not configured. Missing OPENWA_BASE_URL or OPENWA_API_KEY.',
-        error: 'Missing credentials',
+        message: 'OpenWA Gateway is not configured. Missing OPENWA_BASE_URL.',
+        error: 'Missing base URL',
       }
     }
 
     try {
       if (targetSession) {
-        const session = await this.client.getSession(targetSession)
-        const latency_ms = Date.now() - start
-        const isReady = session.status === 'ready'
+        try {
+          const session = await this.client.getSession(targetSession)
+          const latency_ms = Date.now() - start
+          const isReady = session.status === 'ready'
 
-        return {
-          success: isReady,
-          latency_ms,
-          sessionId: session.id,
-          status: session.status,
-          phone: session.phone,
-          pushName: session.pushName,
-          displayPhoneNumber: session.phone || undefined,
-          verifiedName: session.pushName || undefined,
-          message: isReady
-            ? `WhatsApp connected: ${session.phone || targetSession} (${session.pushName || 'Active Session'})`
-            : `WhatsApp session is in '${session.status}' state.`,
-          error: session.lastError || (isReady ? undefined : `Status: ${session.status}`),
+          return {
+            success: isReady,
+            latency_ms,
+            sessionId: session.id,
+            status: session.status,
+            phone: session.phone,
+            pushName: session.pushName,
+            displayPhoneNumber: session.phone || undefined,
+            verifiedName: session.pushName || undefined,
+            message: isReady
+              ? `WhatsApp connected: ${session.phone || targetSession} (${session.pushName || 'Active Session'})`
+              : `WhatsApp session '${targetSession}' is currently in '${session.status}' state.`,
+            error: session.lastError || (isReady ? undefined : `Status: ${session.status}`),
+          }
+        } catch {
+          // If the specific session doesn't exist yet, verify if the OpenWA server is reachable
+          const overview = await this.client.getStatsOverview()
+          const latency_ms = Date.now() - start
+          return {
+            success: true,
+            latency_ms,
+            sessionId: targetSession,
+            status: 'uninitialized',
+            message: `OpenWA server is online and verified (${latency_ms} ms). Session '${targetSession}' is not yet initialized or logged in.`,
+          }
         }
       }
 
