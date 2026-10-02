@@ -212,18 +212,33 @@ export async function POST(
         .select('id, is_verified, status')
         .eq('provider', provider)
         .eq('provider_event_id', candidateEventId)
-        .eq('status', 'processed')
         .maybeSingle()
 
       if (existingWebhook) {
-        return NextResponse.json({
-          received: true,
-          provider,
-          is_verified: true,
-          status: 'already_processed',
-          message: 'Idempotency check: Event already processed.',
-          timestamp: now,
-        })
+        if (existingWebhook.status === 'processed' || existingWebhook.status === 'processing') {
+          return NextResponse.json({
+            received: true,
+            provider,
+            is_verified: true,
+            status: 'already_processed',
+            message: 'Idempotency check: Event already registered or processed.',
+            timestamp: now,
+          })
+        }
+      } else {
+        // Reserve event entry atomically to block concurrent replay requests
+        await (admin as any)
+          .from('gateway_webhooks')
+          .insert({
+            provider,
+            event_type: eventType,
+            provider_event_id: candidateEventId,
+            signature,
+            is_verified: false,
+            payload,
+            status: 'processing',
+            created_at: now,
+          })
       }
     } catch {}
   }
@@ -329,6 +344,12 @@ export async function POST(
 
     const stripeSecret = process.env.STRIPE_WEBHOOK_SECRET
     const stripeSig = request.headers.get('stripe-signature')
+    const isProd = process.env.NODE_ENV === 'production'
+
+    if (isProd && (!stripeSecret || !stripeSig)) {
+      return NextResponse.json({ error: 'Stripe webhook signature and secret required in production' }, { status: 401 })
+    }
+
     if (stripeSecret && !stripeSig) {
       return NextResponse.json({ error: 'Missing stripe signature' }, { status: 400 })
     }
@@ -362,9 +383,20 @@ export async function POST(
 
     const telegramSecret = process.env.TELEGRAM_BOT_WEBHOOK_SECRET
     const telegramHeader = request.headers.get('x-telegram-bot-api-secret-token')
+    const isProd = process.env.NODE_ENV === 'production'
+
+    if (isProd && !telegramSecret) {
+      return NextResponse.json({ error: 'Telegram webhook secret not configured in production' }, { status: 500 })
+    }
+
     if (telegramSecret && telegramHeader !== telegramSecret) {
       return NextResponse.json({ error: 'Unauthorized Telegram webhook token' }, { status: 401 })
     }
+
+    if (!telegramSecret && !isTestEnvironment()) {
+      return NextResponse.json({ error: 'Webhook secret required' }, { status: 401 })
+    }
+
     isVerified = true
   }
 
@@ -386,21 +418,38 @@ export async function POST(
     } catch {}
   }
 
-  // Record into General Webhook Events Ledger
+  // Record or update General Webhook Events Ledger
   try {
-    await (admin as any).from('gateway_webhooks').insert({
-      provider,
-      event_type: eventType,
-      provider_event_id: providerEventId,
-      signature,
-      is_verified: isVerified,
-      payload,
-      status: isVerified ? 'processed' : 'received',
-      processed_at: now,
-      created_at: now,
-    })
+    const finalEventId = candidateEventId || providerEventId
+    if (finalEventId) {
+      await (admin as any)
+        .from('gateway_webhooks')
+        .upsert({
+          provider,
+          event_type: eventType,
+          provider_event_id: finalEventId,
+          signature,
+          is_verified: isVerified,
+          payload,
+          status: isVerified ? 'processed' : 'received',
+          processed_at: now,
+          created_at: now,
+        }, { onConflict: 'provider,provider_event_id' })
+    } else {
+      await (admin as any).from('gateway_webhooks').insert({
+        provider,
+        event_type: eventType,
+        provider_event_id: null,
+        signature,
+        is_verified: isVerified,
+        payload,
+        status: isVerified ? 'processed' : 'received',
+        processed_at: now,
+        created_at: now,
+      })
+    }
   } catch (err: any) {
-    console.warn('[Webhook Ledger] Insertion fallback:', err.message)
+    console.warn('[Webhook Ledger] Upsert/Insert fallback:', err.message)
   }
 
   return NextResponse.json({

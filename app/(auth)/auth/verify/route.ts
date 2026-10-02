@@ -5,6 +5,7 @@ import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
 import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
+import { establishResponseSession } from '@/lib/supabase/server'
 
 export async function GET(request: Request) {
   const urlObj = new URL(request.url)
@@ -51,7 +52,12 @@ export async function GET(request: Request) {
           sameSite: cookieOpts.sameSite,
           secure: cookieOpts.secure,
           domain: cookieOpts.domain,
+          httpOnly: cookieOpts.httpOnly ?? false,
         })
+
+        // Mint Supabase SSR session tokens directly on the redirect response
+        await establishResponseSession(redirectResponse, resolvedEmail, requestHost)
+
         return redirectResponse
       }
 

@@ -70,6 +70,11 @@ export class OrderRepository {
 
           return orders
         } catch (err: any) {
+          const mode = getFinancialPersistenceMode()
+          if (mode === 'production') {
+            console.error('[OrderRepository.getOrders] Database error in production mode:', err)
+            throw new Error(`Database orders fetch failed: ${err?.message || 'Supabase query error'}`)
+          }
           const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
           return all.filter((o: SalesOrderRecord) => o.company_id === companyId)
         }

@@ -58,20 +58,21 @@ export async function getPlatformEmailGatewayAction(): Promise<{
     }
 
     // Check environment SMTP fallback
-    if (process.env.SMTP_HOST) {
+    const smtpHost = process.env.PLATFORM_SMTP_HOST || process.env.SMTP_HOST
+    if (smtpHost) {
       const envSmtp: EmailGatewayRecord = {
         id: 'gw-platform-env-smtp',
         tenant_id: null,
         scope_type: 'PLATFORM',
         provider: 'smtp',
         type: 'transactional',
-        smtp_host: process.env.SMTP_HOST,
-        smtp_port: Number(process.env.SMTP_PORT) || 587,
-        smtp_username: process.env.SMTP_USER || process.env.SMTP_USERNAME || null,
+        smtp_host: smtpHost,
+        smtp_port: Number(process.env.PLATFORM_SMTP_PORT || process.env.SMTP_PORT) || 587,
+        smtp_username: process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || process.env.SMTP_USERNAME || null,
         encrypted_credentials: null,
-        encryption_type: (process.env.SMTP_SECURE === 'true' ? 'ssl' : 'tls') as any,
+        encryption_type: ((process.env.PLATFORM_SMTP_SECURE || process.env.SMTP_SECURE) === 'true' ? 'ssl' : 'tls') as any,
         sender_name: process.env.PLATFORM_SENDER_NAME || process.env.SMTP_FROM_NAME || 'InkFlow Platform',
-        sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'inkflow.erp@gmail.com',
+        sender_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER || 'inkflow.erp@gmail.com',
         reply_to_email: process.env.PLATFORM_SENDER_EMAIL || process.env.SMTP_REPLY_TO || 'inkflow.erp@gmail.com',
         status: 'active',
         is_default: true,

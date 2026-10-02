@@ -166,8 +166,9 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       }
     } catch {}
 
-    // Fallback: If user is not yet in Supabase SSR token context (e.g. freshly onboarded session), check verified tenant session cookie
-    if (!user?.id) {
+    // Fallback: In development or test environments, if user is not yet in Supabase SSR token context, check tenant session cookie.
+    // Strictly gated to non-production to prevent unsigned cookie impersonation bypass in production.
+    if (!user?.id && process.env.NODE_ENV !== 'production') {
       try {
         const sessionCookie = cookieStore.get(TENANT_SESSION_COOKIE)?.value
         if (sessionCookie) {

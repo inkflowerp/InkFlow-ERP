@@ -4,7 +4,7 @@
 // PrintERP SaaS - Platform Owner & Tenant Gateway Server Actions
 // ==============================================================================
 
-import { getCurrentPlatformUser } from '@/lib/auth/platform-auth'
+import { getCurrentPlatformUser, hasPlatformPermission } from '@/lib/auth/platform-auth'
 import { GatewayService } from '@/services/gateway.service'
 import {
   GatewayCategory,
@@ -51,6 +51,9 @@ export async function savePlatformGatewayAction(
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform admin session required.' }
     }
+    if (!hasPlatformPermission(user, 'system.integrations')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to manage gateway integrations.' }
+    }
 
     // Force platform-level (tenant_id is null)
     formData.tenant_id = null
@@ -79,6 +82,9 @@ export async function testPlatformGatewayConnectionAction(
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform admin session required.' }
     }
+    if (!hasPlatformPermission(user, 'system.integrations')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to test gateway integrations.' }
+    }
 
     const res = await GatewayService.testConnection(gatewayId, formDataOverride)
     return { success: res.success, data: res, error: res.error }
@@ -100,6 +106,9 @@ export async function sendPlatformGatewayTestAction(
     const user = await getCurrentPlatformUser()
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform admin session required.' }
+    }
+    if (!hasPlatformPermission(user, 'system.integrations')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to dispatch test communications.' }
     }
 
     const res = await GatewayService.sendTestMessage(payload, user.id)
@@ -125,6 +134,9 @@ export async function togglePlatformGatewayAction(
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform admin session required.' }
     }
+    if (!hasPlatformPermission(user, 'system.integrations')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to toggle gateway status.' }
+    }
 
     const res = await GatewayService.toggleStatus(gatewayId, isEnabled, user.id)
     if (!res.success || !res.data) {
@@ -148,6 +160,9 @@ export async function setDefaultPlatformGatewayAction(
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform admin session required.' }
     }
+    if (!hasPlatformPermission(user, 'system.integrations')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to change default gateway.' }
+    }
 
     const res = await GatewayService.setDefaultGateway(gatewayId, user.id)
     if (!res.success) {
@@ -170,6 +185,9 @@ export async function deletePlatformGatewayAction(
     const user = await getCurrentPlatformUser()
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform admin session required.' }
+    }
+    if (!hasPlatformPermission(user, 'system.integrations')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to delete gateway integrations.' }
     }
 
     const res = await GatewayService.deleteGateway(gatewayId, user.id)

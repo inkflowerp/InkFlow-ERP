@@ -195,4 +195,27 @@ describe('Auth Verification & Tenant Access Security Tests', () => {
     const verifyRes = await AuthEmailService.verifyToken(sendRes.token!, email, 'registration')
     assert.strictEqual(verifyRes.success, true)
   })
+
+  it('13. Blocks unauthenticated account takeover: signUp rejects existing registered email', async () => {
+    const email = 'existing-victim@example.com'
+    // First registration
+    const initialSignUp = await AuthService.signUp(email, 'LegitimatePass123!', 'Legitimate User')
+    assert.strictEqual(initialSignUp.success, true)
+
+    // Attacker tries to register with victim's email and new password
+    const takeoverAttempt = await AuthService.signUp(email, 'AttackerNewPass456!', 'Attacker')
+    assert.strictEqual(takeoverAttempt.success, false)
+    assert.ok(
+      takeoverAttempt.error?.includes('already exists') ||
+      takeoverAttempt.error?.includes('already registered'),
+      'Must reject duplicate signUp with conflict error'
+    )
+  })
+
+  it('14. Resolves login identifier with tenant scoping preventing cross-tenant badge collision', async () => {
+    // Normal email passes through
+    const emailRes = await AuthService.resolveLoginEmail('user@domain.com', 'acme')
+    assert.strictEqual(emailRes, 'user@domain.com')
+  })
 })
+

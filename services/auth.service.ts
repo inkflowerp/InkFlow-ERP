@@ -61,8 +61,9 @@ export class AuthService {
   /**
    * Resolves any login identifier (email, username, mobile, employee ID badge)
    * to the authoritative registered Supabase Auth email.
+   * Scopes employee badge and username lookups to target company when provided.
    */
-  static async resolveLoginEmail(identifier: string): Promise<string> {
+  static async resolveLoginEmail(identifier: string, companyIdOrSlug?: string): Promise<string> {
     const classification = classifyLoginIdentifier(identifier)
 
     // Direct email match
@@ -71,6 +72,19 @@ export class AuthService {
     }
 
     const admin = createAdminClient()
+
+    let targetCompanyId: string | null = null
+    if (companyIdOrSlug) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(companyIdOrSlug)
+      if (isUuid) {
+        targetCompanyId = companyIdOrSlug
+      } else {
+        try {
+          const comp = await TenantRepository.getCompanyBySlug(companyIdOrSlug)
+          if (comp?.id) targetCompanyId = comp.id
+        } catch {}
+      }
+    }
 
     // 1. Phone number resolution
     if (classification.type === 'phone' && classification.phoneVariants) {
@@ -89,12 +103,14 @@ export class AuthService {
 
       // Check employees
       try {
-        const { data: emp } = await (admin as any)
+        let empPhoneQuery = (admin as any)
           .from('employees')
-          .select('id, email, mobile, user_id, portal_credentials')
+          .select('id, email, mobile, user_id, portal_credentials, company_id')
           .in('mobile', candidates)
-          .limit(1)
-          .maybeSingle()
+        if (targetCompanyId) {
+          empPhoneQuery = empPhoneQuery.eq('company_id', targetCompanyId)
+        }
+        const { data: emp } = await empPhoneQuery.limit(1).maybeSingle()
 
         if (emp) {
           const creds = emp.portal_credentials as any
@@ -142,12 +158,14 @@ export class AuthService {
 
       // Check employees (employee_id_number or portal_credentials.username)
       try {
-        const { data: empBadge } = await (admin as any)
+        let empBadgeQuery = (admin as any)
           .from('employees')
-          .select('id, email, mobile, user_id, portal_credentials')
+          .select('id, email, mobile, user_id, portal_credentials, company_id')
           .ilike('employee_id_number', norm)
-          .limit(1)
-          .maybeSingle()
+        if (targetCompanyId) {
+          empBadgeQuery = empBadgeQuery.eq('company_id', targetCompanyId)
+        }
+        const { data: empBadge } = await empBadgeQuery.limit(1).maybeSingle()
 
         if (empBadge) {
           const creds = empBadge.portal_credentials as any
@@ -186,12 +204,14 @@ export class AuthService {
           }
         }
 
-        const { data: empUser } = await (admin as any)
+        let empUserQuery = (admin as any)
           .from('employees')
-          .select('id, email, mobile, user_id, portal_credentials')
+          .select('id, email, mobile, user_id, portal_credentials, company_id')
           .filter('portal_credentials->>username', 'ilike', norm)
-          .limit(1)
-          .maybeSingle()
+        if (targetCompanyId) {
+          empUserQuery = empUserQuery.eq('company_id', targetCompanyId)
+        }
+        const { data: empUser } = await empUserQuery.limit(1).maybeSingle()
 
         if (empUser) {
           const creds = empUser.portal_credentials as any
@@ -540,7 +560,7 @@ export class AuthService {
       }
 
       // Resolve identifier (email, username, phone, or badge) to registered auth email
-      const resolvedEmail = await this.resolveLoginEmail(normalizedInput)
+      const resolvedEmail = await this.resolveLoginEmail(normalizedInput, targetCompanySlug)
       const normalizedEmail = resolvedEmail.toLowerCase()
 
       const supabase = await getSupabaseAuthClient()
@@ -779,48 +799,27 @@ export class AuthService {
         if (prof) existingProfile = prof
       } catch {}
 
-      if (existingProfile?.id) {
-        // Check if user belongs to an active company
-        let hasActiveCompany = false
-        try {
-          const { data: memberships } = await (admin as any)
-            .from('company_users')
-            .select('id, status, company_id')
-            .eq('user_id', existingProfile.id)
-            .eq('status', 'active')
-            .limit(1)
-          if (memberships && memberships.length > 0) {
-            hasActiveCompany = true
-          }
-        } catch {}
-
-        if (hasActiveCompany) {
+      try {
+        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const userConflict = users.find((u) => u.email?.toLowerCase() === normalizedEmail)
+        if (userConflict) {
           return {
             success: false,
-            error: 'An account with this email address has already been registered with an active organization. Please sign in.',
+            error: 'An account with this email address already exists. Please sign in or reset your password if you forgot it.',
           }
         }
+      } catch {}
 
-        // User exists in auth but has no active company (e.g. previous company was deleted or onboarding incomplete)
-        // Allow them to reuse their account: update password & profile, and re-dispatch verification
-        userId = existingProfile.id
-        if (userId) {
-          try {
-            await admin.auth.admin.updateUserById(userId, {
-              password,
-              user_metadata: {
-                full_name: fullName,
-                phone: phone || null,
-                preferred_locale: 'bn',
-              },
-            })
-          } catch (updateErr) {
-            console.warn('[AuthService] updateUserById error:', updateErr)
-          }
+      if (existingProfile?.id) {
+        return {
+          success: false,
+          error: 'An account with this email address already exists. Please sign in or reset your password if you forgot it.',
         }
-      } else {
-        // 2. Create user in Supabase Auth via Admin client (email_confirm: false until verified)
-        const { data: newAuthData, error: createAuthErr } = await admin.auth.admin.createUser({
+      }
+
+      // 2. Create user in Supabase Auth via Admin client (email_confirm: false until verified)
+      const { data: newAuthData, error: createAuthErr } = await admin.auth.admin.createUser({
           email: normalizedEmail,
           password,
           email_confirm: false, // Must verify email before activation
@@ -851,7 +850,6 @@ export class AuthService {
         } else {
           userId = newAuthData.user.id
         }
-      }
 
       // 2. Persist initial user_profiles record in pending state (is_active: false until verified)
       if (userId) {
@@ -868,6 +866,21 @@ export class AuthService {
         } catch {
           // Non-blocking fallback
         }
+
+        try {
+          const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+          const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+          if (!users.some((u) => u.email?.toLowerCase() === normalizedEmail)) {
+            users.push({
+              id: userId,
+              email: normalizedEmail,
+              full_name: fullName,
+              phone: phone || null,
+              created_at: new Date().toISOString(),
+            })
+            PrintERPDataStore.set(STORAGE_KEYS.REGISTERED_USERS, users)
+          }
+        } catch {}
       }
 
       // 3. Dispatch Registration Verification Email with 6-digit OTP & Secure Link

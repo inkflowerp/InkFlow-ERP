@@ -201,10 +201,11 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
       }
 
       // Verify authentic RFC 6238 TOTP token against admin secret
+      const defaultSecretDev = process.env.NODE_ENV !== 'production' ? process.env.PLATFORM_MFA_DEFAULT_SECRET : undefined
       const configuredSecret =
         (adminRecord as any).totp_secret ||
         (adminRecord as any).preferences?.totp_secret ||
-        process.env.PLATFORM_MFA_DEFAULT_SECRET
+        defaultSecretDev
       const isTest = isTestEnvironment()
       const totpSecret = configuredSecret || (isTest ? 'JBSWY3DPEHPK3PXP' : null)
 

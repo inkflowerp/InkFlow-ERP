@@ -42,7 +42,7 @@ import {
   IncompleteRegistrationsOverview,
 } from '@/types/platform.types'
 import { SubscriptionPlanRecord } from '@/types/subscription.types'
-import { getCurrentPlatformUser } from '@/lib/auth/platform-auth'
+import { getCurrentPlatformUser, hasPlatformPermission } from '@/lib/auth/platform-auth'
 
 /**
  * Server Action: Get Platform Subscriptions with Live Usage & Timeline Intelligence
@@ -528,6 +528,9 @@ export async function broadcastPlatformNotificationAction(payload: {
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform session required.' }
     }
+    if (!hasPlatformPermission(user, 'platform.manage')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to broadcast platform alerts.' }
+    }
     if (!payload.title || !payload.message) {
       return { success: false, error: 'Title and message are required.' }
     }
@@ -549,6 +552,9 @@ export async function deletePlatformNotificationAction(id: string): Promise<ApiR
     const user = await getCurrentPlatformUser()
     if (!user) {
       return { success: false, error: 'Unauthorized: Platform session required.' }
+    }
+    if (!hasPlatformPermission(user, 'platform.manage')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to delete platform alerts.' }
     }
     await PlatformService.deleteNotification(id, user.id)
     return { success: true, data: { success: true } }

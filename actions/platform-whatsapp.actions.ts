@@ -5,7 +5,7 @@
 // Authoritative global telemetry and infrastructure control across all tenant sessions.
 // ==============================================================================
 
-import { getCurrentPlatformUser } from '../lib/auth/platform-auth.ts'
+import { getCurrentPlatformUser, hasPlatformPermission } from '../lib/auth/platform-auth.ts'
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import { openWAClient } from '../lib/integrations/openwa/client.ts'
 
@@ -139,6 +139,9 @@ export async function platformRestartTenantSessionAction(
     if (!user || !user.is_active) {
       return { success: false, error: 'Unauthorized: Platform administrator required.' }
     }
+    if (!hasPlatformPermission(user, 'system.manage')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to restart WhatsApp sessions.' }
+    }
 
     await openWAClient.restartSession(sessionId)
     return { success: true, message: `Session ${sessionId} restarted successfully.` }
@@ -157,6 +160,9 @@ export async function platformTerminateTenantSessionAction(
     const user = await getCurrentPlatformUser()
     if (!user || !user.is_active) {
       return { success: false, error: 'Unauthorized: Platform administrator required.' }
+    }
+    if (!hasPlatformPermission(user, 'system.manage')) {
+      return { success: false, error: 'Forbidden: Insufficient permissions to terminate WhatsApp sessions.' }
     }
 
     await openWAClient.deleteSession(sessionId)

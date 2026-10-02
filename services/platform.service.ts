@@ -4552,24 +4552,8 @@ export class PlatformService {
         created_at: s.created_at || new Date().toISOString(),
       }))
 
-      if (sessions.length === 0 && targetAdminRecord) {
-        sessions = [
-          {
-            id: 'sess_curr_' + String(targetAdminRecord.id).slice(0, 8),
-            platform_admin_id: targetAdminRecord.id,
-            user_email: targetAdminRecord.email,
-            user_name: targetAdminRecord.full_name,
-            ip_address: '103.145.118.42',
-            user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-            device_name: 'Current Admin Workstation',
-            location: 'Dhaka, Bangladesh',
-            is_current: true,
-            is_revoked: false,
-            last_seen_at: new Date().toISOString(),
-            created_at: targetAdminRecord.created_at || new Date().toISOString(),
-          },
-        ]
-      }
+      // Sessions are populated directly from authoritative database records
+
 
       // Audit Logs & Login Telemetry
       const { data: auditLogs } = await (admin as any)
@@ -4587,7 +4571,7 @@ export class PlatformService {
         .map((l: any) => ({
           id: l.id,
           platform_admin_id: l.platform_admin_id,
-          actor_email: l.actor_email || targetAdminRecord?.email || 'admin@printerp.com',
+          actor_email: l.actor_email || targetAdminRecord?.email || 'Unknown',
           action: l.action,
           entity_type: l.entity_type,
           details: l.details || {},
@@ -4607,22 +4591,11 @@ export class PlatformService {
       const loginHistory: PlatformLoginHistoryItem[] = loginAuditLogs.map((l: any) => ({
         id: l.id,
         timestamp: l.created_at,
-        device_browser: l.details?.user_agent || l.details?.device || 'Chrome 128 (Windows NT 10.0)',
-        location: l.details?.location || 'Dhaka, Bangladesh',
-        ip_address: l.details?.ip_address || l.ip_address || '103.145.118.42',
+        device_browser: l.details?.user_agent || l.details?.device || 'Unknown',
+        location: l.details?.location || 'Unknown',
+        ip_address: l.details?.ip_address || l.ip_address || '—',
         status: l.action?.includes('failed') || l.details?.status === 'failed' ? 'failed' : 'successful',
       }))
-
-      if (loginHistory.length === 0) {
-        loginHistory.push({
-          id: 'log_recent_1',
-          timestamp: targetAdminRecord?.last_login_at || new Date().toISOString(),
-          device_browser: 'Chrome 128 (Windows NT 10.0)',
-          location: 'Dhaka, Bangladesh',
-          ip_address: '103.145.118.42',
-          status: 'successful',
-        })
-      }
 
       return {
         success: true,
@@ -4633,7 +4606,7 @@ export class PlatformService {
           active_sessions_count: sessions.length,
           tenant_isolation_status: 'healthy',
           current_user_mfa_enabled: Boolean(targetAdminRecord?.mfa_enabled),
-          current_user_email: targetAdminRecord?.email || 'admin@printerp.com',
+          current_user_email: targetAdminRecord?.email || '',
           recent_privileged_actions: recentPrivileged,
           active_sessions: sessions,
           login_history: loginHistory,
@@ -4864,11 +4837,12 @@ export class PlatformService {
         }
         const { verifyTotpCode } = await import('../lib/auth/totp')
         const isTest = isTestEnvironment()
+        const defaultSecretDev = process.env.NODE_ENV !== 'production' ? process.env.PLATFORM_MFA_DEFAULT_SECRET : undefined
         const candidateSecret =
           secret ||
           existingAdmin.totp_secret ||
           (existingAdmin.preferences as any)?.totp_secret ||
-          process.env.PLATFORM_MFA_DEFAULT_SECRET ||
+          defaultSecretDev ||
           (isTest ? 'JBSWY3DPEHPK3PXP' : null)
 
         if (!candidateSecret) {
@@ -5405,6 +5379,11 @@ export class PlatformService {
         categories,
       }
 
+      // Synchronize in-memory DataStore so EntitlementService kill-switch is immediately aware
+      try {
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, items)
+      } catch {}
+
       return { success: true, data: overview }
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to fetch feature flags' }
@@ -5821,34 +5800,36 @@ export class PlatformService {
         .eq('id', 'default')
         .maybeSingle()
 
-      const lastBackup = data?.last_backup_at ? new Date(data.last_backup_at) : new Date(Date.now() - 3600000)
-      const ageHours = Number(((Date.now() - lastBackup.getTime()) / 3600000).toFixed(1))
+      const lastBackupIso = data?.last_backup_at || ''
+      const ageHours = lastBackupIso ? Number(((Date.now() - new Date(lastBackupIso).getTime()) / 3600000).toFixed(1)) : 0
 
       return {
         success: true,
         data: {
-          last_backup_time: lastBackup.toISOString(),
-          backup_age_hours: Math.max(0.1, ageHours),
+          last_backup_time: lastBackupIso,
+          backup_age_hours: ageHours,
           retention_days: data?.backup_retention_days || 90,
-          storage_location: 'GCS Private Coldline Bucket (asia-south1 / Dhaka Mirror) + AWS S3 Encrypted Vault',
-          last_restore_test_date: data?.last_restore_test_at || new Date(Date.now() - 7 * 86400000).toISOString(),
-          last_restore_status: (data?.last_restore_status as any) || 'passed',
-          status: ageHours > 24 ? 'degraded' : 'healthy',
-          notes: 'Daily point-in-time PostgreSQL basebackups + continuous WAL archiving enabled with AES-256 GCM encryption.',
+          storage_location: 'Managed Cloud Backup Vault (AES-256 Encrypted)',
+          last_restore_test_date: data?.last_restore_test_at || '',
+          last_restore_status: (data?.last_restore_status as any) || (lastBackupIso ? 'passed' : 'overdue'),
+          status: !lastBackupIso ? 'degraded' : ageHours > 24 ? 'degraded' : 'healthy',
+          notes: lastBackupIso
+            ? 'Continuous WAL archiving and automated point-in-time recovery active.'
+            : 'No automated or manual backups recorded yet.',
         },
       }
     } catch {
       return {
         success: true,
         data: {
-          last_backup_time: new Date(Date.now() - 3600000).toISOString(),
-          backup_age_hours: 1,
+          last_backup_time: '',
+          backup_age_hours: 0,
           retention_days: 90,
-          storage_location: 'GCS Private Coldline Bucket (asia-south1 / Dhaka Mirror)',
-          last_restore_test_date: new Date(Date.now() - 7 * 86400000).toISOString(),
-          last_restore_status: 'passed',
-          status: 'healthy',
-          notes: 'Daily point-in-time PostgreSQL basebackups + continuous WAL archiving enabled.',
+          storage_location: 'Managed Cloud Backup Vault (AES-256 Encrypted)',
+          last_restore_test_date: '',
+          last_restore_status: 'overdue',
+          status: 'degraded',
+          notes: 'Backup status unavailable from infrastructure monitoring.',
         },
       }
     }
@@ -6238,6 +6219,18 @@ export class PlatformService {
 
       if (error) return { success: false, error: error.message }
 
+      // Sync into PrintERPDataStore
+      try {
+        const storedFlags = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
+        storedFlags.push({
+          id: data.id,
+          key: cleanKey,
+          name: input.name,
+          is_enabled: data.is_enabled,
+        })
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, storedFlags)
+      } catch {}
+
       await this.recordAuditLog('feature_flag.create', 'platform_feature_flag', data.id, undefined, undefined, {
         key: cleanKey,
         name: input.name,
@@ -6283,6 +6276,18 @@ export class PlatformService {
 
       if (error) return { success: false, error: error.message }
 
+      // Sync into PrintERPDataStore so EntitlementService kill-switch evaluates immediately
+      try {
+        const storedFlags = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
+        const existingIdx = storedFlags.findIndex((f: any) => f.id === resolved.id || f.key === resolved.key)
+        if (existingIdx >= 0) {
+          storedFlags[existingIdx] = { ...storedFlags[existingIdx], ...payload }
+        } else {
+          storedFlags.push({ id: resolved.id, key: resolved.key, ...payload })
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, storedFlags)
+      } catch {}
+
       await this.recordAuditLog('feature_flag.update', 'platform_feature_flag', resolved.id, undefined, undefined, input)
       return { success: true }
     } catch (err: any) {
@@ -6300,6 +6305,13 @@ export class PlatformService {
       const { error } = await (admin as any).from('platform_feature_flags').delete().eq('id', resolved.id)
 
       if (error) return { success: false, error: error.message }
+
+      // Sync into PrintERPDataStore
+      try {
+        const storedFlags = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
+        const updated = storedFlags.filter((f: any) => f.id !== resolved.id && f.key !== resolved.key)
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, updated)
+      } catch {}
 
       await this.recordAuditLog('feature_flag.delete', 'platform_feature_flag', resolved.id, undefined, undefined, { key: resolved.key })
       return { success: true }
@@ -6320,6 +6332,18 @@ export class PlatformService {
         .eq('id', resolved.id)
 
       if (error) return { success: false, error: error.message }
+
+      // Sync into PrintERPDataStore so EntitlementService kill-switch evaluates immediately
+      try {
+        const storedFlags = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS) || []
+        const existingIdx = storedFlags.findIndex((f: any) => f.id === resolved.id || f.key === resolved.key)
+        if (existingIdx >= 0) {
+          storedFlags[existingIdx] = { ...storedFlags[existingIdx], is_enabled: isEnabled }
+        } else {
+          storedFlags.push({ id: resolved.id, key: resolved.key, is_enabled: isEnabled })
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_FEATURE_FLAGS, storedFlags)
+      } catch {}
 
       await this.recordAuditLog('feature_flag.toggle', 'platform_feature_flag', resolved.id, undefined, undefined, {
         key: resolved.key,

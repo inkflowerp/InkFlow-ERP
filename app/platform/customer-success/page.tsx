@@ -32,12 +32,16 @@ export default function CustomerSuccessPage() {
   const { tBilingual } = useI18n()
  const [data, setData] = useState<CustomerSuccessData | null>(null)
  const [loading, setLoading] = useState(true)
+ const [error, setError] = useState<string | null>(null)
 
  const loadData = async () => {
  setLoading(true)
+ setError(null)
  const res = await getPlatformCustomerSuccessMetricsAction()
  if (res.success && res.data) {
  setData(res.data)
+ } else {
+ setError(res.error || 'Failed to load customer success metrics.')
  }
  setLoading(false)
  }
@@ -46,7 +50,7 @@ export default function CustomerSuccessPage() {
  loadData()
  }, [])
 
- if (loading || !data) {
+ if (loading) {
  return (
  <div className="space-y-6 animate-pulse">
  <div className="h-10 w-72 bg-muted rounded-xl" />
@@ -54,6 +58,35 @@ export default function CustomerSuccessPage() {
  {[1, 2, 3].map((i) => (
  <div key={i} className="h-32 bg-card border border-border rounded-2xl" />
  ))}
+ </div>
+ </div>
+ )
+ }
+
+ if (error || !data) {
+ return (
+ <div className="space-y-6">
+ <div className="p-8 border border-border bg-card rounded-2xl text-center space-y-4 max-w-lg mx-auto my-12">
+ <div className="h-12 w-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+ <AlertTriangle className="h-6 w-6" />
+ </div>
+ <div>
+ <h3 className="text-base font-semibold text-foreground">
+ {tBilingual('Unable to load customer success metrics', 'কাস্টমার সাকসেস মেট্রিক্স লোড করা যায়নি')}
+ </h3>
+ <p className="text-xs text-muted-foreground mt-1">
+ {error || tBilingual('An unexpected error occurred while fetching company adoption data.', 'কোম্পানি ডেটা লোড করার সময় একটি ত্রুটি হয়েছে।')}
+ </p>
+ </div>
+ <div className="pt-2">
+ <Button
+ onClick={() => loadData()}
+ className="inline-flex items-center gap-2 text-xs"
+ >
+ <RefreshCw className="h-3.5 w-3.5" />
+ {tBilingual('Retry', 'পুনরায় চেষ্টা করুন')}
+ </Button>
+ </div>
  </div>
  </div>
  )

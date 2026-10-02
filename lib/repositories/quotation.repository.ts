@@ -821,6 +821,17 @@ export class QuotationRepository {
       throw new Error(`Quotation #${quote.quotation_number} has already been converted to a Job Order.`)
     }
 
+    // Deduplication check: If an order already exists for this quotation (e.g. from network retry or prior run where status update failed mid-flight), self-heal and return it
+    const localOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    const existingLocalOrder = localOrders.find((o: any) => o.quotation_id === quote.id)
+    if (existingLocalOrder) {
+      await this.updateQuotation(quote.id, {
+        status: 'converted',
+        converted_order_id: existingLocalOrder.order_number,
+      }, effectiveCompanyId)
+      return existingLocalOrder
+    }
+
     const orderNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'order')
     const orderId = `ord-${Date.now()}`
 
@@ -899,6 +910,22 @@ export class QuotationRepository {
         const isCustUuid = quote.customer_id && uuidRegex.test(quote.customer_id)
         const isQuoteUuid = quote.id && uuidRegex.test(quote.id)
 
+        if (isQuoteUuid) {
+          const { data: existingDbOrder } = await (supabase as any)
+            .from('sales_orders')
+            .select('*')
+            .eq('quotation_id', quote.id)
+            .maybeSingle()
+
+          if (existingDbOrder) {
+            await this.updateQuotation(quote.id, {
+              status: 'converted',
+              converted_order_id: existingDbOrder.order_number,
+            }, effectiveCompanyId)
+            return existingDbOrder
+          }
+        }
+
         const { data: dbOrder, error: orderErr } = await (supabase as any)
           .from('sales_orders')
           .insert({
@@ -946,23 +973,29 @@ export class QuotationRepository {
             await (supabase as any).from('sales_order_items').insert(itemsPayload)
           }
 
-          // Insert job order in Supabase
-          const jobNum = `JOB-${orderNumber.replace('ORD-', '')}-A`
-          await (supabase as any).from('job_orders').insert({
-            company_id: effectiveCompanyId,
-            job_number: jobNum,
-            order_id: dbOrder.id,
-            product_name: salesOrder.items[0]?.item_name || 'Print Order Job',
-            customer_name: salesOrder.customer_name,
-            quantity: salesOrder.items[0]?.quantity || 1,
-            size_spec: salesOrder.items[0]?.dimensions_spec || 'Standard',
-            material_spec: salesOrder.items[0]?.media_type || 'Standard Media',
-            artwork_status: 'approved',
-            deadline: `${salesOrder.delivery_date}T18:00:00Z`,
-            assigned_department: 'wide_format_print',
-            production_instructions: salesOrder.notes || '',
-            status: 'queued',
+          // Insert job order(s) in Supabase for all items
+          const itemsToJob = salesOrder.items && salesOrder.items.length > 0 ? salesOrder.items : [{ item_name: 'Print Order Job', quantity: 1 }]
+          const charCodes = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+          const jobPayloads = itemsToJob.map((it: any, idx: number) => {
+            const suffix = itemsToJob.length === 1 ? 'A' : (charCodes[idx] || `${idx + 1}`)
+            const jobNum = `JOB-${orderNumber.replace('ORD-', '')}-${suffix}`
+            return {
+              company_id: effectiveCompanyId,
+              job_number: jobNum,
+              order_id: dbOrder.id,
+              product_name: it.item_name || 'Print Order Job',
+              customer_name: salesOrder.customer_name,
+              quantity: it.quantity || 1,
+              size_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : 'Standard'),
+              material_spec: it.media_type || it.material_spec || 'Standard Media',
+              artwork_status: 'approved',
+              deadline: `${salesOrder.delivery_date}T18:00:00Z`,
+              assigned_department: 'wide_format_print',
+              production_instructions: salesOrder.notes || '',
+              status: 'queued',
+            }
           })
+          await (supabase as any).from('job_orders').insert(jobPayloads)
 
           // Insert order timeline event
           await (supabase as any).from('order_timeline_events').insert({
@@ -1253,10 +1286,12 @@ export class QuotationRepository {
       if (id && !String(id).startsWith('temp-')) {
         await (admin as any).from('quotation_items').delete().eq('quotation_id', id)
         await (admin as any).from('quotation_activities').delete().eq('quotation_id', id)
-        await (admin as any).from('quotations').delete().eq('id', id)
+        let query = (admin as any).from('quotations').delete().eq('id', id)
+        if (companyId) query = query.eq('company_id', companyId)
+        await query
       }
-      if (quotationNumber) {
-        await (admin as any).from('quotations').delete().eq('quotation_number', quotationNumber)
+      if (quotationNumber && companyId) {
+        await (admin as any).from('quotations').delete().eq('quotation_number', quotationNumber).eq('company_id', companyId)
       }
     } catch (dbErr) {
       console.warn('[QuotationRepository.deleteQuotation] Supabase deletion error:', dbErr)
@@ -1265,10 +1300,11 @@ export class QuotationRepository {
     try {
       const supabase = await createClient()
       if (id && !String(id).startsWith('temp-')) {
-        await (supabase as any).from('quotations').delete().eq('id', id)
-      }
-      if (quotationNumber) {
-        await (supabase as any).from('quotations').delete().eq('quotation_number', quotationNumber)
+        let query = (supabase as any).from('quotations').delete().eq('id', id)
+        if (companyId) query = query.eq('company_id', companyId)
+        await query
+      } else if (quotationNumber && companyId) {
+        await (supabase as any).from('quotations').delete().eq('quotation_number', quotationNumber).eq('company_id', companyId)
       }
     } catch {}
 

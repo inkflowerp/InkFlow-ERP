@@ -597,6 +597,7 @@ export function getAuthCookieOptions(customDomain?: string) {
     sameSite: 'lax' as const,
     secure: isProd && !isLocalhost,
     domain,
+    httpOnly: false, // Fast UI context cache; authoritative security strictly requires verified Supabase SSR session
   }
 }
 

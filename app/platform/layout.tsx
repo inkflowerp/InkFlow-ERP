@@ -24,28 +24,17 @@ export default function PlatformLayout({
     pathname === '/platform/forgot-password' ||
     pathname === '/platform/reset-password'
 
-  const [isAuthorized, setIsAuthorized] = useState(() => {
-    if (typeof window === 'undefined') return true
-    if (isAuthPage) return true
-    return document.cookie.includes('printerp_platform_session=')
-  })
-  const [isChecking, setIsChecking] = useState(() => {
-    if (typeof window === 'undefined') return false
-    if (isAuthPage) return false
-    return !document.cookie.includes('printerp_platform_session=')
-  })
+  const [isAuthorized, setIsAuthorized] = useState(true)
   const hasVerifiedRef = useRef(false)
 
   useEffect(() => {
     if (isAuthPage) {
-      setIsChecking(false)
       setIsAuthorized(true)
       return
     }
 
     // If already verified for this session, don't trigger loading state on route transitions
     if (hasVerifiedRef.current && isAuthorized) {
-      setIsChecking(false)
       return
     }
 
@@ -57,18 +46,15 @@ export default function PlatformLayout({
         hasVerifiedRef.current = true
         if (!user || !user.is_active) {
           setIsAuthorized(false)
-          setIsChecking(false)
           router.replace(`/platform/login?error=unauthorized&redirectTo=${encodeURIComponent(pathname)}`)
         } else {
           setIsAuthorized(true)
-          setIsChecking(false)
         }
       })
       .catch(() => {
         if (!isMounted) return
         hasVerifiedRef.current = true
         setIsAuthorized(false)
-        setIsChecking(false)
         router.replace('/platform/login?error=unauthorized')
       })
 
@@ -81,13 +67,13 @@ export default function PlatformLayout({
     return <>{children}</>
   }
 
-  if (isChecking && !isAuthorized) {
+  if (!isAuthorized) {
     return (
       <div className="h-screen max-h-screen bg-background text-foreground flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
           <div className="h-6 w-6 rounded-full border border-primary border-t-transparent animate-spin" />
           <span className="text-xs tabular-nums uppercase tracking-wider text-muted-foreground">
-            {tBilingual('Checking access...', 'অনুমতি পরীক্ষা হচ্ছে...')}
+            {tBilingual('Redirecting to platform login...', 'প্ল্যাটফর্ম লগইনে পুনঃনির্দেশ করা হচ্ছে...')}
           </span>
         </div>
       </div>

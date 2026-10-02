@@ -158,10 +158,6 @@ function OnboardingWizard() {
             if (!getValues('phone')) setValue('phone', draft.phone)
             pulledFromDraft = true
           }
-          if (draft.password) {
-            setValue('owner_password', draft.password, { shouldValidate: true })
-            pulledFromDraft = true
-          }
         }
       }
     } catch {}

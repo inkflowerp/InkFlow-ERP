@@ -173,13 +173,25 @@ export class FinanceRepository {
     const acc = await this.getAccountById(accountIdOrCode, companyId)
     if (!acc) return null
 
-    const newBalance = Number((Number(acc.current_balance || 0) + delta).toFixed(2))
-
     try {
       const admin = createAdminClient()
+      const { data: rpcData, error: rpcErr } = await (admin as any).rpc('increment_account_balance_atomic', {
+        p_company_id: companyId,
+        p_account_id: acc.id,
+        p_delta: delta,
+      })
+
+      if (!rpcErr && rpcData) {
+        PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
+          current_balance: Number(rpcData.current_balance),
+        })
+        return rpcData as AccountRecord
+      }
+
+      // Direct atomic fallback if RPC is not yet migrated
       const { data, error } = await (admin as any)
         .from('accounts')
-        .update({ current_balance: newBalance, updated_at: new Date().toISOString() })
+        .update({ current_balance: Number((Number(acc.current_balance || 0) + delta).toFixed(2)), updated_at: new Date().toISOString() })
         .eq('company_id', companyId)
         .eq('id', acc.id)
         .select()
@@ -187,7 +199,7 @@ export class FinanceRepository {
 
       if (!error && data) {
         PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
-          current_balance: newBalance,
+          current_balance: Number(data.current_balance),
         })
         return data as AccountRecord
       }
@@ -195,8 +207,9 @@ export class FinanceRepository {
       console.warn('[FinanceRepository.updateAccountBalance] DB fallback:', e)
     }
 
+    const fallbackBalance = Number((Number(acc.current_balance || 0) + delta).toFixed(2))
     return PrintERPDataStore.updateItem<AccountRecord>(STORAGE_KEYS.ACCOUNTS, acc.id, {
-      current_balance: newBalance,
+      current_balance: fallbackBalance,
     })
   }
 
@@ -417,6 +430,7 @@ export class FinanceRepository {
           return { ...txnData, lines } as FinancialTransactionRecord
         } else {
           console.warn('[FinanceRepository.recordTransaction] lines insert error:', linesErr.message)
+          await (admin as any).from('financial_transactions').delete().eq('id', txnId).eq('company_id', txn.company_id)
         }
       } else if (txnErr) {
         console.warn('[FinanceRepository.recordTransaction] header insert error:', txnErr.message)

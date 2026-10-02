@@ -913,14 +913,24 @@ export class BillingRepository {
           } catch {}
         }
 
-        // Update customer total due balance in PostgreSQL if customer is linked
+        // Update customer total due balance in PostgreSQL atomically if customer is linked
         if (validCustomerId) {
           try {
-            await (supabase as any).rpc('increment_customer_balance', {
+            const client = createAdminClient() || supabase
+            const { error: rpcErr } = await (client as any).rpc('increment_customer_balance_atomic', {
+              p_company_id: effectiveCompanyId,
               p_customer_id: validCustomerId,
               p_due_delta: dueAmount,
               p_invoiced_delta: grandTotal,
+              p_paid_delta: paidAmount,
             })
+            if (rpcErr) {
+              await (supabase as any).rpc('increment_customer_balance', {
+                p_customer_id: validCustomerId,
+                p_due_delta: dueAmount,
+                p_invoiced_delta: grandTotal,
+              })
+            }
           } catch {
             const { data: cust } = await (supabase as any)
               .from('customers')
@@ -2342,24 +2352,96 @@ export class BillingRepository {
 
         if (params.customerId) {
           try {
-            const { data: cust } = await (client as any)
-              .from('customers')
-              .select('total_paid_amount, total_due_balance')
-              .eq('id', params.customerId)
-              .maybeSingle()
-            if (cust) {
-              await (client as any)
+            const { error: rpcErr } = await (client as any).rpc('increment_customer_balance_atomic', {
+              p_company_id: params.companyId,
+              p_customer_id: params.customerId,
+              p_due_delta: -totalAllocated,
+              p_invoiced_delta: 0,
+              p_paid_delta: Number(params.amount),
+              p_last_payment_date: params.paymentDate || getTodayDateString(),
+              p_last_payment_amount: Number(params.amount),
+            })
+            if (rpcErr) {
+              const { data: cust } = await (client as any)
                 .from('customers')
-                .update({
-                  total_paid_amount: (Number(cust.total_paid_amount) || 0) + Number(params.amount),
-                  total_due_balance: Math.max(0, (Number(cust.total_due_balance) || 0) - totalAllocated),
-                  last_payment_date: params.paymentDate || getTodayDateString(),
-                  last_payment_amount: Number(params.amount),
-                  updated_at: new Date().toISOString(),
-                })
+                .select('total_paid_amount, total_due_balance')
                 .eq('id', params.customerId)
+                .maybeSingle()
+              if (cust) {
+                await (client as any)
+                  .from('customers')
+                  .update({
+                    total_paid_amount: (Number(cust.total_paid_amount) || 0) + Number(params.amount),
+                    total_due_balance: Math.max(0, (Number(cust.total_due_balance) || 0) - totalAllocated),
+                    last_payment_date: params.paymentDate || getTodayDateString(),
+                    last_payment_amount: Number(params.amount),
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq('id', params.customerId)
+              }
             }
           } catch (_) {}
+
+          // Post double-entry General Ledger transaction for payment receipt
+          try {
+            const { FinanceRepository } = await import('./finance.repository.ts')
+            const accounts = await FinanceRepository.getAccounts(params.companyId)
+            const methodStr = String(params.paymentMethod || '').toLowerCase()
+            const debitAcc = accounts.find((a: any) => {
+              if (methodStr.includes('bank') || methodStr.includes('cheque')) return a.account_subtype === 'BANK'
+              if (methodStr.includes('bkash') || methodStr.includes('nagad') || methodStr.includes('rocket') || methodStr.includes('mfs')) return a.account_subtype === 'MFS'
+              return a.account_subtype === 'CASH'
+            }) || accounts.find((a: any) => a.account_subtype === 'CASH' || a.account_subtype === 'BANK')
+
+            const creditAcc = accounts.find((a: any) => a.account_subtype === 'RECEIVABLE')
+
+            if (debitAcc && creditAcc) {
+              const payNum = newPaymentRow.receipt_number || `PAY-${Date.now()}`
+              const nowISO = new Date().toISOString()
+              const txnId = generateUUID()
+              FinanceRepository.recordTransaction({
+                id: txnId,
+                company_id: params.companyId,
+                branch_id: newPaymentRow.branch_id,
+                transaction_number: `TXN-${payNum}`,
+                transaction_date: params.paymentDate || getTodayDateString(),
+                transaction_type: 'CUSTOMER_PAYMENT',
+                status: 'POSTED',
+                total_amount: Number(params.amount),
+                reference_type: 'PAYMENT',
+                reference_id: newPaymentRow.id,
+                narration: `Customer receipt for ${params.customerName || 'Customer'} via ${params.paymentMethod}`,
+                posted_by_name: params.receivedByName || 'System',
+                posted_at: nowISO,
+                created_at: nowISO,
+                updated_at: nowISO,
+                metadata: { payment_id: newPaymentRow.id, customer_id: params.customerId },
+              }, [
+                {
+                  id: generateUUID(),
+                  transaction_id: txnId,
+                  company_id: params.companyId,
+                  account_id: debitAcc.id,
+                  debit: Number(params.amount),
+                  credit: 0,
+                  memo: `Payment collected via ${params.paymentMethod}`,
+                  created_at: nowISO,
+                },
+                {
+                  id: generateUUID(),
+                  transaction_id: txnId,
+                  company_id: params.companyId,
+                  account_id: creditAcc.id,
+                  debit: 0,
+                  credit: Number(params.amount),
+                  memo: `Accounts receivable cleared`,
+                  created_at: nowISO,
+                }
+              ]).catch((err) => console.warn('[BillingRepository.recordPayment] GL sync deferred:', err))
+            }
+          } catch (glErr) {
+            console.warn('[BillingRepository.recordPayment] GL integration deferred:', glErr)
+          }
         }
 
         // Also update local datastore for invoices, customer, and payments
@@ -2865,13 +2947,24 @@ export class BillingRepository {
             }).eq('id', targetDbId)
 
             if (inv.customer_id && releasedDue > 0) {
-              const { data: cust } = await (client as any).from('customers').select('total_due_balance').eq('id', inv.customer_id).maybeSingle()
-              if (cust) {
-                await (client as any).from('customers').update({
-                  total_due_balance: Math.max(0, (Number(cust.total_due_balance) || 0) - releasedDue),
-                  updated_at: new Date().toISOString(),
-                }).eq('id', inv.customer_id)
-              }
+              try {
+                const { error: rpcErr } = await (client as any).rpc('increment_customer_balance_atomic', {
+                  p_company_id: companyId,
+                  p_customer_id: inv.customer_id,
+                  p_due_delta: -releasedDue,
+                  p_invoiced_delta: -releasedDue,
+                  p_paid_delta: 0,
+                })
+                if (rpcErr) {
+                  const { data: cust } = await (client as any).from('customers').select('total_due_balance').eq('id', inv.customer_id).maybeSingle()
+                  if (cust) {
+                    await (client as any).from('customers').update({
+                      total_due_balance: Math.max(0, (Number(cust.total_due_balance) || 0) - releasedDue),
+                      updated_at: new Date().toISOString(),
+                    }).eq('id', inv.customer_id)
+                  }
+                }
+              } catch (_) {}
             }
             this.syncDataStoreInvoiceCancelled(invoiceId, targetDbId, reason, actorName)
             invalidateQueryCache(`invoices:${companyId}`)

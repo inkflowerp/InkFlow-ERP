@@ -267,9 +267,13 @@ export class CustomerRepository {
         query = query.not('id', 'in', `(${ids.join(',')})`)
       }
 
-      // Sort order
+      // Sort order pushed to database
       if (options.sortBy === 'name') {
         query = query.order('name', { ascending: options.sortOrder === 'asc' })
+      } else if (options.sortBy === 'due') {
+        query = query.order('total_due_balance', { ascending: options.sortOrder === 'asc' })
+      } else if (options.sortBy === 'billed') {
+        query = query.order('total_invoiced_amount', { ascending: options.sortOrder === 'asc' })
       } else {
         query = query.order('created_at', { ascending: false })
       }
@@ -487,6 +491,15 @@ export class CustomerRepository {
     if (isSupabaseConfigured()) {
       try {
         const admin = createAdminClient()
+        // 1. Try atomic PostgreSQL RPC with FOR UPDATE row locking
+        const { data: num, error: rpcErr } = await (admin as any).rpc('get_next_document_number', {
+          p_company_id: companyId,
+          p_doc_type: 'customer',
+        })
+        if (!rpcErr && num) {
+          return num as string
+        }
+
         const { data: seq } = await (admin as any)
           .from('document_sequences')
           .select('*')

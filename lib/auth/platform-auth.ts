@@ -232,72 +232,10 @@ export const getAuthenticatedPlatformContext = cache(async function getAuthentic
       } = await supabase.auth.getUser()
 
       if (authError || !user?.id) {
-        if (process.env.NODE_ENV !== 'production') {
-          const { cookies } = await import('next/headers')
-          const cookieStore = await cookies()
-          const sessCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
-          if (sessCookie) {
-            let parsed: any = null
-            try {
-              parsed = JSON.parse(decodeURIComponent(sessCookie))
-            } catch {
-              parsed = JSON.parse(sessCookie)
-            }
-            if (parsed && (parsed.role === 'platform_owner' || parsed.userId === 'test-platform-owner-id')) {
-              return {
-                adminId: parsed.adminId || 'test-admin-id',
-                userId: parsed.userId || 'test-platform-owner-id',
-                id: parsed.adminId || 'test-admin-id',
-                user_id: parsed.userId || 'test-platform-owner-id',
-                email: parsed.email || 'owner@printerp.com',
-                fullName: parsed.fullName || 'Platform Superadmin',
-                platformRole: 'platform_owner',
-                role: 'platform_owner',
-                responsibilities: [],
-                permissions: [...ALL_PLATFORM_PERMISSIONS],
-                isActive: true,
-                mfaEnabled: false,
-                createdAt: new Date().toISOString(),
-              }
-            }
-          }
-        }
         return null // FAIL CLOSED: Unauthenticated in Supabase
       }
       authenticatedUser = user
     } catch {
-      if (process.env.NODE_ENV !== 'production') {
-        try {
-          const { cookies } = await import('next/headers')
-          const cookieStore = await cookies()
-          const sessCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
-          if (sessCookie) {
-            let parsed: any = null
-            try {
-              parsed = JSON.parse(decodeURIComponent(sessCookie))
-            } catch {
-              parsed = JSON.parse(sessCookie)
-            }
-            if (parsed && (parsed.role === 'platform_owner' || parsed.userId === 'test-platform-owner-id')) {
-              return {
-                adminId: parsed.adminId || 'test-admin-id',
-                userId: parsed.userId || 'test-platform-owner-id',
-                id: parsed.adminId || 'test-admin-id',
-                user_id: parsed.userId || 'test-platform-owner-id',
-                email: parsed.email || 'owner@printerp.com',
-                fullName: parsed.fullName || 'Platform Superadmin',
-                platformRole: 'platform_owner',
-                role: 'platform_owner',
-                responsibilities: [],
-                permissions: [...ALL_PLATFORM_PERMISSIONS],
-                isActive: true,
-                mfaEnabled: false,
-                createdAt: new Date().toISOString(),
-              }
-            }
-          }
-        } catch {}
-      }
       return null // FAIL CLOSED: Supabase client unavailable
     }
 
@@ -314,24 +252,24 @@ export const getAuthenticatedPlatformContext = cache(async function getAuthentic
       .eq('is_active', true)
       .maybeSingle()
 
-    if (!adminRecord && authenticatedUser.email) {
+    // Secure initial provision binding: ONLY if user email is confirmed and record's user_id is unassigned
+    if (!adminRecord && authenticatedUser.email && authenticatedUser.email_confirmed_at) {
       const { data: recordByEmail } = await (adminClient as any)
         .from('platform_admins')
         .select('*')
         .ilike('email', authenticatedUser.email)
         .eq('is_active', true)
+        .is('user_id', null)
         .maybeSingle()
 
       if (recordByEmail) {
         adminRecord = recordByEmail
-        if (recordByEmail.user_id !== authenticatedUser.id) {
-          try {
-            await (adminClient as any)
-              .from('platform_admins')
-              .update({ user_id: authenticatedUser.id, updated_at: new Date().toISOString() })
-              .eq('id', recordByEmail.id)
-          } catch {}
-        }
+        try {
+          await (adminClient as any)
+            .from('platform_admins')
+            .update({ user_id: authenticatedUser.id, updated_at: new Date().toISOString() })
+            .eq('id', recordByEmail.id)
+        } catch {}
       }
     }
 
@@ -362,6 +300,12 @@ export const getAuthenticatedPlatformContext = cache(async function getAuthentic
       // Non-blocking: auxiliary cookie read failure does not invalidate DB verification
     }
 
+    // Sanitize secrets from preferences before exposing
+    let sanitizedPreferences = auxiliaryPreferences ? { ...auxiliaryPreferences } : undefined
+    if (sanitizedPreferences && 'totp_secret' in sanitizedPreferences) {
+      delete sanitizedPreferences.totp_secret
+    }
+
     const role = (adminRecord.role as PlatformRole) || 'platform_readonly'
     const responsibilities = Array.isArray(adminRecord.responsibilities)
       ? adminRecord.responsibilities
@@ -383,7 +327,7 @@ export const getAuthenticatedPlatformContext = cache(async function getAuthentic
       mfaEnabled: Boolean(adminRecord.mfa_enabled),
       phone: adminRecord.phone || undefined,
       avatarUrl: adminRecord.avatar_url || undefined,
-      preferences: auxiliaryPreferences || undefined,
+      preferences: sanitizedPreferences,
       createdAt: String(adminRecord.created_at),
       lastLoginAt: adminRecord.last_login_at ? String(adminRecord.last_login_at) : undefined,
     }

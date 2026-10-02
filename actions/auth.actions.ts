@@ -11,7 +11,7 @@ import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import { getAuthCookieOptions, resolveHostname, isReservedSlug } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, establishServerSession } from '@/lib/supabase/server'
 
 async function getRequestBaseUrl(): Promise<string> {
   try {
@@ -228,8 +228,12 @@ export async function signUpAction(data: {
   userId?: string
   message?: string
 }> {
-  if (!data.email || !data.fullName) {
-    return { success: false, error: 'Full name and email address are required.' }
+  if (!data.email || !data.fullName || !data.password) {
+    return { success: false, error: 'Full name, email address, and password are required.' }
+  }
+
+  if (data.password.length < 8) {
+    return { success: false, error: 'Password must be at least 8 characters long.' }
   }
 
   const rateLimit = checkRateLimit(data.email.toLowerCase(), 'auth')
@@ -243,7 +247,7 @@ export async function signUpAction(data: {
   const appUrl = await getRequestBaseUrl()
   const result = await AuthService.signUp(
     data.email,
-    data.password || 'TemporaryPass123!',
+    data.password,
     data.fullName,
     data.phone,
     appUrl
@@ -288,8 +292,12 @@ export async function verifyRegistrationOtpAction(email: string, otp: string) {
   }
 
   const session = result.data.session
+  const cookieOpts = await getCookieOptions()
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOpts)
+
+  // Establish Supabase SSR auth token cookies on server
+  await establishServerSession(email, cookieOpts.domain)
 
   revalidatePath('/', 'layout')
   return result
@@ -306,8 +314,14 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
   }
 
   const session = result.data.session
+  const cookieOpts = await getCookieOptions()
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOpts)
+
+  // Establish Supabase SSR auth token cookies on server
+  if (session.userEmail) {
+    await establishServerSession(session.userEmail, cookieOpts.domain)
+  }
 
   revalidatePath('/', 'layout')
   return result
@@ -321,8 +335,12 @@ export async function checkEmailVerificationStatusAction(email: string) {
   const result = await AuthService.checkRegistrationVerificationStatus(email)
   if (result.success && result.data?.isVerified && result.data.session) {
     const session = result.data.session
+    const cookieOpts = await getCookieOptions()
     const cookieStore = await cookies()
-    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
+    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), cookieOpts)
+
+    // Establish Supabase SSR auth token cookies on server
+    await establishServerSession(email, cookieOpts.domain)
     revalidatePath('/', 'layout')
   }
 

@@ -42,13 +42,12 @@ function RegisterForm() {
     setIsLoading(true)
     setError(null)
 
-    // Save registration draft for seamless transfer to /onboarding Step 7
+    // Save safe registration draft (excluding sensitive credentials) for transfer to /onboarding
     if (typeof window !== 'undefined') {
       const regDraft = {
         fullName: data.fullName.trim(),
         email: data.email.trim().toLowerCase(),
         phone: data.phone.trim(),
-        password: data.password,
         savedAt: Date.now(),
       }
       try {

@@ -36,7 +36,48 @@ export async function GET(request: Request) {
   }
 
   try {
-    const supabase = await createClient()
+    const requestHost = request.headers.get('x-forwarded-host') || request.headers.get('host') || undefined
+    const cookieOpts = getAuthCookieOptions(requestHost)
+    const emittedCookies: Array<{ name: string; value: string; options: any }> = []
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || ''
+    const supabaseAnonKey =
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.SUPABASE_PUBLISHABLE_KEY ||
+      process.env.SUPABASE_ANON_KEY ||
+      ''
+
+    const { createServerClient } = await import('@supabase/ssr')
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookieOptions: cookieOpts.domain ? { domain: cookieOpts.domain } : undefined,
+      cookies: {
+        getAll() {
+          const cookieHeader = request.headers.get('cookie') || ''
+          return cookieHeader
+            .split(';')
+            .map((c) => c.trim())
+            .filter(Boolean)
+            .map((c) => {
+              const [name, ...val] = c.split('=')
+              return { name, value: val.join('=') }
+            })
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            emittedCookies.push({
+              name,
+              value,
+              options: {
+                ...options,
+                domain: cookieOpts.domain || undefined,
+              },
+            })
+          })
+        },
+      },
+    })
+
     const { data: authData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
     if (exchangeError || !authData?.user) {
@@ -210,14 +251,17 @@ export async function GET(request: Request) {
         destination = getTenantLink(company.slug, cleanNext)
       }
 
-      const cookieOpts = getAuthCookieOptions(request.headers.get('x-forwarded-host') || request.headers.get('host') || origin)
       const redirectResponse = NextResponse.redirect(destination)
+      for (const ec of emittedCookies) {
+        redirectResponse.cookies.set(ec.name, ec.value, ec.options)
+      }
       redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(sessionData)), {
         path: '/',
         maxAge: 60 * 60 * 24 * 7,
         sameSite: 'lax',
         secure: cookieOpts.secure,
         domain: cookieOpts.domain,
+        httpOnly: cookieOpts.httpOnly ?? false,
       })
 
       return redirectResponse
@@ -250,14 +294,17 @@ export async function GET(request: Request) {
       token: `sess_${user.id}_${Date.now()}`,
     }
 
-    const cookieOpts = getAuthCookieOptions(request.headers.get('x-forwarded-host') || request.headers.get('host') || origin)
     const redirectResponse = NextResponse.redirect(`${origin}/onboarding`)
+    for (const ec of emittedCookies) {
+      redirectResponse.cookies.set(ec.name, ec.value, ec.options)
+    }
     redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(initialSession)), {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
       sameSite: 'lax',
       secure: cookieOpts.secure,
       domain: cookieOpts.domain,
+      httpOnly: cookieOpts.httpOnly ?? false,
     })
 
     return redirectResponse

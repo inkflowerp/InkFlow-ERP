@@ -223,16 +223,10 @@ export async function updateSession(request: NextRequest) {
     // A. PLATFORM PORTAL GUARDS
     // --------------------------------------------------------------------------
     if (isPlatformProtectedPage) {
-      if (!user && !hasValidPlatformCookie) {
+      if (!user || !hasValidPlatformCookie) {
         const url = request.nextUrl.clone()
         url.pathname = '/platform/login'
         url.searchParams.set('redirectTo', pathname)
-        return applyNoCacheHeaders(NextResponse.redirect(url))
-      }
-      if (!hasValidPlatformCookie && !user) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/platform/login'
-        url.searchParams.set('error', 'unauthorized')
         return applyNoCacheHeaders(NextResponse.redirect(url))
       }
     }

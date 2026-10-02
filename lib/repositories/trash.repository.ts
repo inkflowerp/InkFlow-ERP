@@ -190,8 +190,8 @@ export class TrashRepository {
         STORAGE_KEYS.CUSTOMERS,
         list.filter((c) => c.id !== originalId)
       )
+      const compList = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS, companyId) || []) : []
       if (companyId) {
-        const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS, companyId) || []
         PrintERPDataStore.set(
           STORAGE_KEYS.CUSTOMERS,
           compList.filter((c) => c.id !== originalId),
@@ -203,9 +203,19 @@ export class TrashRepository {
         const { createAdminClient } = await import('../supabase/admin.ts')
         const admin = createAdminClient()
         if (originalId && !String(originalId).startsWith('temp-')) {
-          await (admin as any).from('customers').delete().eq('id', originalId)
+          let q = (admin as any).from('customers').delete().eq('id', originalId)
+          if (companyId) q = q.eq('company_id', companyId)
+          const { error: dbErr } = await q
+          if (dbErr && dbErr.code === '23503') {
+            console.warn('[TrashRepository] Foreign key prevents customer deletion:', dbErr)
+            PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [item, ...compList.filter((c) => c.id !== originalId)], true, companyId)
+            throw new Error(`Cannot trash customer: ${dbErr.message || 'Record has dependent transactions'}`)
+          }
         }
-      } catch (dbErr) {
+      } catch (dbErr: any) {
+        if (dbErr?.message?.includes('Cannot trash customer')) {
+          throw dbErr
+        }
         console.warn('[TrashRepository] Failed to delete customer from Supabase:', dbErr)
       }
     } else if (category === 'products') {
@@ -357,17 +367,22 @@ export class TrashRepository {
       trashList.filter((t) => t.id !== trashId)
     )
 
-    // Remove from audit_logs
+    // Record RESTORE_ITEM in audit_logs (preserving immutable forensic compliance history)
     try {
       const { createAdminClient } = await import('../supabase/admin.ts')
       const admin = createAdminClient()
-      await (admin as any)
-        .from('audit_logs')
-        .delete()
-        .eq('action', 'TRASH_ITEM')
-        .eq('entity_id', trashItem.original_id)
+      const effectiveComp = (!companyId || companyId === 'default' || companyId === 'c-01') ? null : companyId
+      const nowISO = new Date().toISOString()
+      await (admin as any).from('audit_logs').insert({
+        company_id: effectiveComp,
+        action: 'RESTORE_ITEM',
+        entity_type: trashItem.category,
+        entity_id: trashItem.original_id,
+        new_values: { restored_at: nowISO, restored_from_trash_id: trashId },
+        created_at: nowISO,
+      })
     } catch (e) {
-      console.warn('[TrashRepository] Failed to delete restored item from audit_logs:', e)
+      console.warn('[TrashRepository] Failed to record restore in audit_logs:', e)
     }
 
     if (typeof window !== 'undefined') {

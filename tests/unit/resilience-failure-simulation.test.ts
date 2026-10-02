@@ -363,5 +363,82 @@ describe('Real-World Resilience & Failure Simulation Suite', () => {
       assert.ok(typeof res.processed === 'number')
       assert.ok(typeof res.succeeded === 'number')
     })
+
+    it('OrderRepository.getOrders throws in production mode when database is unreachable', async () => {
+      const originalMode = process.env.FINANCIAL_PERSISTENCE_MODE
+      const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      try {
+        process.env.FINANCIAL_PERSISTENCE_MODE = 'production'
+        process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:59999'
+
+        await assert.rejects(
+          async () => {
+            await OrderRepository.getOrders('comp-test-unreachable')
+          },
+          (err: any) => {
+            assert.ok(
+              err.message.includes('Database orders fetch failed'),
+              `Expected fail-closed error, got: ${err.message}`
+            )
+            return true
+          }
+        )
+      } finally {
+        if (originalMode) {
+          process.env.FINANCIAL_PERSISTENCE_MODE = originalMode
+        } else {
+          delete process.env.FINANCIAL_PERSISTENCE_MODE
+        }
+        if (originalUrl) {
+          process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl
+        }
+      }
+    })
+
+    it('coalesceQuery bounds memory usage and prunes cache when entries exceed capacity', async () => {
+      const { coalesceQuery } = await import('../../lib/performance/query-coalesce.ts')
+      // Populate 2,050 entries with TTL to trigger pruneCache
+      for (let i = 0; i < 2050; i++) {
+        await coalesceQuery(`test-key-${i}`, async () => ({ value: i }), 60000)
+      }
+      const result = await coalesceQuery('test-key-latest', async () => ({ value: 9999 }), 60000)
+      assert.strictEqual(result.value, 9999)
+    })
+
+    it('Quotation conversion self-heals and deduplicates if order already exists in store', async () => {
+      const { QuotationRepository } = await import('../../lib/repositories/quotation.repository.ts')
+      const { PrintERPDataStore, STORAGE_KEYS } = await import('../../lib/db/data-store.ts')
+      const companyId = `comp-dedup-${Date.now()}`
+      const quoteId = `quo-dedup-${Date.now()}`
+
+      PrintERPDataStore.addItem(STORAGE_KEYS.QUOTATIONS, {
+        id: quoteId,
+        company_id: companyId,
+        quotation_number: 'QUO-DEDUP-001',
+        customer_name: 'Dedup Corp',
+        customer_phone: '+8801700112233',
+        grand_total: 8000,
+        subtotal: 8000,
+        items: [{ description: 'Banner Print', quantity: 2, unit_rate: 4000, item_total: 8000 }],
+      })
+
+      // First conversion creates order
+      const order1 = await QuotationRepository.convertQuotationToJobOrder(quoteId, companyId)
+      assert.ok(order1.id)
+      assert.ok(order1.order_number)
+
+      // Simulate network disconnect right before status update:
+      // Status in quote remains 'sent' or un-updated
+      await QuotationRepository.updateQuotation(quoteId, { status: 'sent', converted_order_id: undefined }, companyId)
+
+      // Second conversion call (simulating retry): Must return the existing order and self-heal quote status
+      const order2 = await QuotationRepository.convertQuotationToJobOrder(quoteId, companyId)
+      assert.strictEqual(order2.order_number, order1.order_number)
+
+      const updatedQuote = await QuotationRepository.getQuotationById(quoteId, companyId)
+      assert.strictEqual(updatedQuote?.status, 'converted')
+      assert.strictEqual(updatedQuote?.converted_order_id, order1.order_number)
+    })
   })
 })
+

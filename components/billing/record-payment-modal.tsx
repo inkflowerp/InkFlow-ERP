@@ -126,6 +126,11 @@ export function RecordPaymentModal({
   // Submission State
  const [isSubmitting, setIsSubmitting] = useState(false)
  const [submitError, setSubmitError] = useState<string | null>(null)
+ const [idempotencyKey, setIdempotencyKey] = useState<string>(() =>
+   typeof crypto !== 'undefined' && crypto.randomUUID
+     ? crypto.randomUUID()
+     : `pay-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+ )
 
   // Success & Receipt State
  const [savedPayment, setSavedPayment] = useState<PaymentRecord | null>(null)
@@ -175,6 +180,11 @@ export function RecordPaymentModal({
  useEffect(() => {
  if (open) {
  setSubmitError(null)
+ setIdempotencyKey(
+   typeof crypto !== 'undefined' && crypto.randomUUID
+     ? crypto.randomUUID()
+     : `pay-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+ )
  loadInvoices()
     }
   }, [open, loadInvoices])
@@ -297,7 +307,7 @@ export function RecordPaymentModal({
               : null,
  notes: notes || `Payment for Invoice #${selectedInvoice.invoice_number} via ${paymentMethod.toUpperCase()}`,
  receivedByName,
- idempotencyKey: `pay-${selectedInvoice.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+ idempotencyKey: idempotencyKey || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `pay-${selectedInvoice.id}-${Date.now()}`),
         },
  company?.id
       )

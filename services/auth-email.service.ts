@@ -624,8 +624,8 @@ export class AuthEmailService {
         return { success: false, error: 'This verification link has expired. Please request a new one.' }
       }
 
-      // Atomically consume token
-      await (admin as any)
+      // Atomically consume token using optimistic concurrency lock
+      const { data: updatedRecords, error: updateErr } = await (admin as any)
         .from('auth_verifications')
         .update({
           is_used: true,
@@ -633,6 +633,12 @@ export class AuthEmailService {
           updated_at: new Date().toISOString(),
         })
         .eq('id', record.id)
+        .eq('is_used', false)
+        .select('id')
+
+      if (updateErr || !updatedRecords || updatedRecords.length === 0) {
+        return { success: false, error: 'This verification link has already been used.' }
+      }
 
       let resetToken: string | undefined = undefined
       if (record.purpose === 'password_reset') {

@@ -58,6 +58,7 @@ export default function Company360Page() {
  'overview' | 'users' | 'branches' | 'usage' | 'subscription' | 'features' | 'activity' | 'security' | 'integrations' | 'support'
  >('overview')
  const [loading, setLoading] = useState(true)
+ const [error, setError] = useState<string | null>(null)
  const [showHealthWhy, setShowHealthWhy] = useState(false)
 
  // Support Mode Modal State
@@ -81,10 +82,13 @@ export default function Company360Page() {
 
  const loadData = async () => {
  setLoading(true)
+ setError(null)
  const res = await getPlatformCompany360Action(companyId)
  if (res.success && res.data) {
  setData(res.data)
  setTargetPlan(res.data.company.plan)
+ } else {
+ setError(res.error || 'Failed to load company details.')
  }
  setLoading(false)
  }
@@ -123,7 +127,7 @@ export default function Company360Page() {
  setIsUpdatingPlan(false)
  }
 
- if (loading || !data) {
+ if (loading) {
  return (
  <div className="space-y-6 animate-pulse">
  <div className="h-6 w-48 bg-muted rounded-md" />
@@ -132,6 +136,47 @@ export default function Company360Page() {
  {[1, 2, 3, 4].map((i) => (
  <div key={i} className="h-28 bg-card border border-border rounded-2xl" />
  ))}
+ </div>
+ </div>
+ )
+ }
+
+ if (error || !data) {
+ return (
+ <div className="space-y-6">
+ <Link
+ href="/platform/tenants"
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+ >
+ <ArrowLeft className="h-3.5 w-3.5" />
+ <span>{tBilingual('Back to Clients', 'ক্লায়েন্টে ফিরে যান')}</span>
+ </Link>
+ <div className="p-8 border border-border bg-card rounded-2xl text-center space-y-4 max-w-lg mx-auto my-12">
+ <div className="h-12 w-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+ <AlertTriangle className="h-6 w-6" />
+ </div>
+ <div>
+ <h3 className="text-base font-semibold text-foreground">
+ {tBilingual('Unable to load company details', 'কোম্পানির বিবরণ লোড করা যায়নি')}
+ </h3>
+ <p className="text-xs text-muted-foreground mt-1">
+ {error || tBilingual('The requested company record was not found or an error occurred.', 'অনুরোধকৃত কোম্পানির রেকর্ড পাওয়া যায়নি অথবা কোনো ত্রুটি হয়েছে।')}
+ </p>
+ </div>
+ <div className="flex items-center justify-center gap-3 pt-2">
+ <button
+ onClick={() => loadData()}
+ className="px-4 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-primary/90 transition-colors"
+ >
+ {tBilingual('Retry', 'পুনরায় চেষ্টা করুন')}
+ </button>
+ <Link
+ href="/platform/tenants"
+ className="px-4 py-2 border border-border bg-muted/50 text-foreground text-xs font-medium rounded-lg hover:bg-muted transition-colors"
+ >
+ {tBilingual('Return to Company Directory', 'কোম্পানি তালিকায় ফিরুন')}
+ </Link>
+ </div>
  </div>
  </div>
  )

@@ -109,21 +109,41 @@ export class CostingService {
     const costing = await this.getCostingById(costingId, companyId)
     if (!costing) return null
 
-    // 1. Calculate actual material cost from V3 stock ledger consumption entries
+    // 1. Calculate actual material cost from authoritative PostgreSQL stock ledger
     let actualMaterialCost = 0
     try {
-      const ledger = PrintERPDataStore.get<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER) || []
-      const relevantTransactions = ledger.filter(
-        (tx) =>
-          tx.company_id === companyId &&
-          (tx.transaction_type === 'CONSUMPTION' || tx.transaction_type === 'consumption') &&
-          ((costing.job_order_id && tx.reference_id === costing.job_order_id) ||
-            (costing.job_number && tx.notes?.includes(costing.job_number)))
-      )
+      const { createAdminClient } = await import('../lib/supabase/admin.ts')
+      const admin = createAdminClient()
+      let ledgerQuery = (admin as any)
+        .from('stock_ledger')
+        .select('*')
+        .eq('company_id', companyId)
+        .in('transaction_type', ['CONSUMPTION', 'consumption'])
 
-      if (relevantTransactions.length > 0) {
-        // Average/normalized unit cost calculation
-        actualMaterialCost = relevantTransactions.reduce((acc, tx) => acc + (Math.abs(tx.quantity_change) * (tx.unit_cost || 25)), 0)
+      if (costing.job_order_id) {
+        ledgerQuery = ledgerQuery.eq('reference_id', costing.job_order_id)
+      }
+      const { data: dbLedger } = await ledgerQuery
+      if (Array.isArray(dbLedger) && dbLedger.length > 0) {
+        actualMaterialCost = dbLedger.reduce(
+          (acc: number, tx: any) => acc + Math.abs(Number(tx.quantity_change || 0)) * (Number(tx.unit_cost) || 25),
+          0
+        )
+      } else {
+        const ledger = PrintERPDataStore.get<StockLedgerRecord[]>(STORAGE_KEYS.STOCK_LEDGER) || []
+        const relevantTransactions = ledger.filter(
+          (tx) =>
+            tx.company_id === companyId &&
+            (tx.transaction_type === 'CONSUMPTION' || tx.transaction_type === 'consumption') &&
+            ((costing.job_order_id && tx.reference_id === costing.job_order_id) ||
+              (costing.job_number && tx.notes?.includes(costing.job_number)))
+        )
+        if (relevantTransactions.length > 0) {
+          actualMaterialCost = relevantTransactions.reduce(
+            (acc, tx) => acc + Math.abs(tx.quantity_change) * (tx.unit_cost || 25),
+            0
+          )
+        }
       }
     } catch {}
 
@@ -131,10 +151,22 @@ export class CostingService {
     let actualMachineCost = 0
     let actualLaborCost = 0
     try {
-      const tasks = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-      const jobTasks = tasks.filter((t) => t.company_id === companyId && t.job_order_id === costing.job_order_id)
-      for (const t of jobTasks) {
-        const mins = t.estimated_duration_minutes || 30
+      const { createAdminClient } = await import('../lib/supabase/admin.ts')
+      const admin = createAdminClient()
+      const { data: dbTasks } = await (admin as any)
+        .from('production_tasks')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('job_order_id', costing.job_order_id)
+
+      const tasksToUse = Array.isArray(dbTasks) && dbTasks.length > 0
+        ? dbTasks
+        : (PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []).filter(
+            (t) => t.company_id === companyId && t.job_order_id === costing.job_order_id
+          )
+
+      for (const t of tasksToUse) {
+        const mins = Number(t.actual_duration_minutes || t.estimated_duration_minutes || 30)
         if (t.assigned_machine_id) {
           actualMachineCost += (mins / 60) * 1200 // ৳1200/hr machine rate
         }
@@ -144,8 +176,8 @@ export class CostingService {
       }
     } catch {}
 
-    // Fallback if production tasks didn't log discrete minutes
-    if (actualMaterialCost === 0) actualMaterialCost = Math.round(costing.est.material_cost * 1.02)
+    // Deterministic fallback to estimates if tasks/ledger have not posted actuals yet
+    if (actualMaterialCost === 0) actualMaterialCost = costing.est.material_cost
     if (actualMachineCost === 0) actualMachineCost = costing.est.machine_cost
     if (actualLaborCost === 0) actualLaborCost = costing.est.labor_cost
 

@@ -13,6 +13,26 @@ type InFlightPromise<T> = {
 
 const inFlightMap = new Map<string, InFlightPromise<any>>()
 const cacheMap = new Map<string, { data: any; expiresAt: number }>()
+const MAX_CACHE_ENTRIES = 2000
+
+function pruneCache(now: number) {
+  if (cacheMap.size <= MAX_CACHE_ENTRIES) return
+
+  // Prune expired entries
+  for (const [k, v] of cacheMap.entries()) {
+    if (v.expiresAt <= now) {
+      cacheMap.delete(k)
+    }
+  }
+
+  // If still above capacity, evict the oldest 20% entries
+  if (cacheMap.size > MAX_CACHE_ENTRIES) {
+    const keysToDelete = Array.from(cacheMap.keys()).slice(0, Math.floor(MAX_CACHE_ENTRIES * 0.2))
+    for (const k of keysToDelete) {
+      cacheMap.delete(k)
+    }
+  }
+}
 
 /**
  * Coalesces identical concurrent asynchronous requests into a single in-flight execution.
@@ -49,6 +69,7 @@ export async function coalesceQuery<T>(
     try {
       const result = await queryFn()
       if (ttlMs > 0) {
+        pruneCache(Date.now())
         cacheMap.set(key, {
           data: result,
           expiresAt: Date.now() + ttlMs,
