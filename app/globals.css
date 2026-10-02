@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -137,9 +138,9 @@
   --color-cmyk-yellow: hsl(var(--cmyk-yellow));
   --color-cmyk-key: hsl(var(--cmyk-key));
 
-  --font-sans: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-bangla: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-sans);
+  --font-sans: var(--font-inter), "Inter", var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-bangla: var(--font-hind-siliguri), "Hind Siliguri", var(--font-inter), "Inter", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-inter), "Inter", monospace;
 
   /* Responsive Breakpoints */
   --breakpoint-xs: 480px;
@@ -237,7 +238,7 @@ h6 {
 /* Bengali Typography - Crisp, legible line-height ensuring no diacritic clipping */
 .bangla-text,
 [lang="bn"] {
-  font-family: var(--font-sans);
+  font-family: var(--font-bangla);
   word-break: normal;
   overflow-wrap: break-word;
   line-height: 1.55;
