@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
  CreditCard,
  Wallet,
@@ -44,15 +44,24 @@ export function SalaryPaymentDialog({
  onOpenChange,
  onRecordPayment,
 }: SalaryPaymentDialogProps) {
- if (!item) return null
+  const currentDue = Number(
+    item ? item.due_amount || (Number(item.net_salary || 0) - Number(item.paid_amount || 0)) : 0
+  )
+  const [amount, setAmount] = useState<number>(currentDue)
+  const [method, setMethod] = useState<PaymentMethod>('cash')
+  const [refNum, setRefNum] = useState('')
+  const [notes, setNotes] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
- const currentDue = Number(item.due_amount || (Number(item.net_salary || 0) - Number(item.paid_amount || 0)))
- const [amount, setAmount] = useState<number>(currentDue)
- const [method, setMethod] = useState<PaymentMethod>('cash')
- const [refNum, setRefNum] = useState('')
- const [notes, setNotes] = useState('')
- const [isSubmitting, setIsSubmitting] = useState(false)
- const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  useEffect(() => {
+    if (item) {
+      const due = Number(item.due_amount || (Number(item.net_salary || 0) - Number(item.paid_amount || 0)))
+      setAmount(due)
+    }
+  }, [item])
+
+  if (!item) return null
 
  const handleSubmit = async (e: React.FormEvent) => {
  e.preventDefault()
