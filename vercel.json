@@ -9,7 +9,7 @@
     },
     {
       "path": "/api/cron/communication-worker",
-      "schedule": "* * * * *"
+      "schedule": "0 4 * * *"
     }
   ],
   "headers": [
