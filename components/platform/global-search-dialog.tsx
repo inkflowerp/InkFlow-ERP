@@ -89,11 +89,11 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0 duration-200 cursor-pointer"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in-0 duration-200 cursor-pointer"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-foreground border border-border rounded-2xl shadow-2xl shadow-black/90 ring-1 ring-slate-700/60 overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 cursor-default"
+        className="w-full max-w-2xl bg-slate-900 border border-border rounded-2xl shadow-2xl shadow-black/90 ring-1 ring-slate-700/60 overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
@@ -126,7 +126,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
           <button
             type="button"
             onClick={onClose}
-            className="hidden sm:inline-flex items-center px-2 py-0.5 text-2xs tabular-nums text-foreground hover:text-white bg-secondary hover:bg-slate-700 border border-slate-600 rounded-md cursor-pointer transition-colors font-semibold"
+            className="hidden sm:inline-flex items-center px-2 py-0.5 text-2xs tabular-nums text-foreground hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-md cursor-pointer transition-colors font-semibold"
             title="Press ESC or click to close"
             aria-label="Close search (ESC)"
           >
@@ -135,7 +135,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-muted-foreground hover:text-white hover:bg-secondary rounded-md cursor-pointer transition-colors shrink-0"
+            className="p-1 text-muted-foreground hover:text-white hover:bg-slate-800 rounded-md cursor-pointer transition-colors shrink-0"
             title="Close Search"
             aria-label="Close search dialog"
           >
@@ -156,7 +156,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
             <div className="py-8 text-center text-muted-foreground space-y-2">
               <Sparkles className="h-6 w-6 text-indigo-400 mx-auto opacity-80" />
               <p className="text-xs text-foreground font-medium">Type a company name, owner phone, email, plan, or audit action.</p>
-              <p className="text-2xs text-muted-foreground">Quick shortcut: press <kbd className="px-1.5 py-0.5 bg-secondary border border-slate-600 rounded text-foreground font-bold tabular-nums">/</kbd> anywhere to open search.</p>
+              <p className="text-2xs text-muted-foreground">Quick shortcut: press <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-foreground font-bold tabular-nums">/</kbd> anywhere to open search.</p>
             </div>
           )}
 
@@ -179,7 +179,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                   <button
                     key={comp.id}
                     onClick={() => handleSelect(`/platform/companies/${comp.id}`)}
-                    className="w-full text-left p-2.5 rounded-xl bg-foreground hover:bg-secondary border border-border hover:border-indigo-500/70 transition-all flex items-center justify-between group cursor-pointer shadow-xs"
+                    className="w-full text-left p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-border hover:border-indigo-500/70 transition-all flex items-center justify-between group cursor-pointer shadow-xs"
                   >
                     <div>
                       <div className="font-bold text-white group-hover:text-indigo-300 transition-colors">
@@ -218,7 +218,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                   <button
                     key={sub.id}
                     onClick={() => handleSelect('/platform/subscriptions')}
-                    className="w-full text-left p-2.5 rounded-xl bg-foreground hover:bg-secondary border border-border hover:border-emerald-500/70 transition-all flex items-center justify-between group cursor-pointer shadow-xs"
+                    className="w-full text-left p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-border hover:border-emerald-500/70 transition-all flex items-center justify-between group cursor-pointer shadow-xs"
                   >
                     <div>
                       <div className="font-semibold text-white group-hover:text-emerald-300 transition-colors">
@@ -249,7 +249,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                   <button
                     key={a.id}
                     onClick={() => handleSelect('/platform/audit')}
-                    className="w-full text-left p-2.5 rounded-xl bg-foreground hover:bg-secondary border border-border hover:border-cyan-500/70 transition-all flex items-center justify-between group cursor-pointer shadow-xs"
+                    className="w-full text-left p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-border hover:border-cyan-500/70 transition-all flex items-center justify-between group cursor-pointer shadow-xs"
                   >
                     <div>
                       <div className="font-semibold text-slate-100 group-hover:text-cyan-300 transition-colors tabular-nums">
@@ -278,7 +278,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                   <button
                     key={f.id}
                     onClick={() => handleSelect('/platform/features')}
-                    className="w-full text-left p-2.5 rounded-xl bg-foreground hover:bg-secondary border border-border hover:border-purple-500/70 transition-all flex items-center justify-between group cursor-pointer shadow-xs"
+                    className="w-full text-left p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-border hover:border-purple-500/70 transition-all flex items-center justify-between group cursor-pointer shadow-xs"
                   >
                     <div>
                       <div className="font-semibold text-white group-hover:text-purple-300 transition-colors">
@@ -286,7 +286,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
                       </div>
                       <div className="text-2xs text-muted-foreground tabular-nums font-mono">{f.key}</div>
                     </div>
-                    <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-secondary text-muted-foreground border border-slate-600'}`}>
+                    <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-slate-800 text-muted-foreground border border-slate-600'}`}>
                       {f.is_enabled ? 'ENABLED' : 'DISABLED'}
                     </span>
                   </button>
@@ -297,7 +297,7 @@ export function GlobalSearchDialog({ open, onClose }: GlobalSearchDialogProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-2.5 bg-foreground border-t border-border flex items-center justify-between text-2xs text-muted-foreground">
+        <div className="px-4 py-2.5 bg-slate-900 border-t border-border flex items-center justify-between text-2xs text-muted-foreground">
           <span>Navigate with mouse or arrow keys</span>
           <button
             type="button"

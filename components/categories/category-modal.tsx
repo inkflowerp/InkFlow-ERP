@@ -180,9 +180,9 @@ export function CategoryModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md rounded-2xl border border-slate-700/80 bg-foreground shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="relative w-full max-w-md rounded-2xl border border-slate-700/80 bg-slate-900 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-5 py-4 bg-foreground">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4 bg-slate-900">
           <div className="flex items-center space-x-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
               <FolderPlus className="h-5 w-5" />
@@ -199,7 +199,7 @@ export function CategoryModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-white transition-colors"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-slate-800 hover:text-white transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -377,7 +377,7 @@ export function CategoryModal({
                     min="0"
                     value={displayOrder}
                     onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)}
-                    className="w-full rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full rounded-lg border border-border bg-slate-800 px-3 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
                   />
                 </div>
 
@@ -388,7 +388,7 @@ export function CategoryModal({
                   <select
                     value={appliesTo[0] || 'all'}
                     onChange={(e) => setAppliesTo([e.target.value])}
-                    className="w-full rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full rounded-lg border border-border bg-slate-800 px-3 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
                   >
                     {GRANULAR_TYPES.map((opt) => (
                       <option key={opt.value} value={opt.value}>

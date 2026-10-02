@@ -100,10 +100,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           }
 
           const styleMap = {
-            success: 'bg-foreground border-emerald-500/40 text-emerald-200 shadow-emerald-950/30',
-            error: 'bg-foreground border-rose-500/40 text-rose-200 shadow-rose-950/30',
-            warning: 'bg-foreground border-amber-500/40 text-amber-200 shadow-amber-950/30',
-            info: 'bg-foreground border-indigo-500/40 text-indigo-200 shadow-indigo-950/30',
+            success: 'bg-slate-900 border-emerald-500/40 text-emerald-200 shadow-emerald-950/30',
+            error: 'bg-slate-900 border-rose-500/40 text-rose-200 shadow-rose-950/30',
+            warning: 'bg-slate-900 border-amber-500/40 text-amber-200 shadow-amber-950/30',
+            info: 'bg-slate-900 border-indigo-500/40 text-indigo-200 shadow-indigo-950/30',
           }
 
           return (

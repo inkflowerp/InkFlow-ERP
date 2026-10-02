@@ -353,7 +353,7 @@ export default function BusinessReportsPage() {
         <div className="space-y-6 pb-20">
         {/* Toast Notification */}
         {notification && (
-          <div className="fixed top-20 right-6 z-50 p-4 bg-foreground text-white text-xs font-semibold rounded-2xl shadow-xl border border-border flex items-center gap-2">
+          <div className="fixed top-20 right-6 z-50 p-4 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl border border-border flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>{notification}</span>
           </div>

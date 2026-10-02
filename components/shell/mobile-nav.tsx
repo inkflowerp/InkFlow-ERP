@@ -349,10 +349,10 @@ export function MobileNav() {
                 <img
                   src={appLogoUrl}
                   alt={appName}
-                  className="h-8 w-8 rounded-lg object-contain bg-foreground border border-slate-700/60 p-0.5 shadow-xs shrink-0"
+                  className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-0.5 shadow-xs shrink-0"
                 />
               ) : (
-                <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-foreground shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform shrink-0">
+                <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-slate-900 shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform shrink-0">
                   <span className="h-2 w-2 rounded-full bg-cyan-400" />
                   <span className="h-2 w-2 rounded-full bg-pink-500" />
                   <span className="h-2 w-2 rounded-full bg-yellow-400" />

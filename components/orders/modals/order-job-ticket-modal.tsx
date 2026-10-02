@@ -80,7 +80,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                 {companyName}
               </h2>
               <p className="text-muted-foreground text-2xs">{companyAddress} | Ph: {companyPhone}</p>
-              <span className="inline-block mt-1 bg-foreground text-white text-2xs font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+              <span className="inline-block mt-1 bg-slate-900 text-white text-2xs font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                 {tBilingual('JOB ORDER TICKET', 'জব অর্ডার টিকেট')}
               </span>
             </div>
@@ -282,7 +282,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
           <Button type="button" variant="outline" size="sm" onClick={onClose} className="text-xs">
             {tBilingual('Close', 'বন্ধ করুন')}
           </Button>
-          <Button type="button" size="sm" onClick={handlePrint} className="bg-foreground hover:bg-secondary text-white text-xs font-bold">
+          <Button type="button" size="sm" onClick={handlePrint} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold">
             <Printer className="h-3.5 w-3.5 mr-1" />
             <span>{tBilingual('Print Ticket', 'প্রিন্ট টিকেট')}</span>
           </Button>

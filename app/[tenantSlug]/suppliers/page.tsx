@@ -797,7 +797,7 @@ export default function SuppliersPage() {
                             </Button>
 
                             <Link href={getTenantNavHref(`/suppliers/${supplier.id}`, pathname, slug)}>
-                              <Button size="sm" className="h-8 px-2.5 text-2xs bg-foreground hover:bg-secondary text-white dark:hover:bg-slate-700 font-bold">
+                              <Button size="sm" className="h-8 px-2.5 text-2xs bg-slate-900 hover:bg-slate-800 text-white dark:hover:bg-slate-700 font-bold">
                                 {tBilingual('Profile & Rates', 'রেটশিট ও লেজার')}
                               </Button>
                             </Link>

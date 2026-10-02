@@ -56,7 +56,7 @@ export function PlatformMobileBottomNav() {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-foreground backdrop-blur-md border-t border-border px-2 py-1 shadow-2xl safe-area-inset-bottom"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900 backdrop-blur-md border-t border-border px-2 py-1 shadow-2xl safe-area-inset-bottom"
       aria-label="Platform Mobile Navigation"
     >
       <div className="flex items-center justify-around max-w-lg mx-auto">

@@ -141,7 +141,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
               onClick={() => setFilter(f)}
               className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
                 filter === f
-                  ? 'bg-foreground text-white shadow-xs'
+                  ? 'bg-slate-900 text-white shadow-xs'
                   : 'bg-muted text-muted-foreground hover:bg-muted dark:text-muted-foreground'
               }`}
             >

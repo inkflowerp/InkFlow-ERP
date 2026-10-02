@@ -378,7 +378,7 @@ export default function PlatformAuditPage() {
       }
     }
     return {
-      bg: 'bg-secondary text-muted-foreground border-border',
+      bg: 'bg-slate-800 text-muted-foreground border-border',
       dot: 'bg-slate-400',
     }
   }
@@ -412,7 +412,7 @@ export default function PlatformAuditPage() {
             variant="outline"
             onClick={handleExportCSV}
             disabled={logs.length === 0}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white transition-colors"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 hover:text-white transition-colors"
           >
             <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5 text-emerald-400" />
             Export CSV
@@ -423,7 +423,7 @@ export default function PlatformAuditPage() {
             variant="outline"
             onClick={handleExportJSON}
             disabled={logs.length === 0}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white transition-colors"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 hover:text-white transition-colors"
           >
             <FileCode className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
             Export JSON
@@ -437,7 +437,7 @@ export default function PlatformAuditPage() {
               loadMetrics()
             }}
             disabled={loading}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white transition-colors"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
             Refresh
@@ -448,7 +448,7 @@ export default function PlatformAuditPage() {
       {/* 2. Telemetry KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {/* Total Trail */}
-        <Card className="bg-foreground border-border rounded-xl shadow-md relative overflow-hidden">
+        <Card className="bg-slate-900 border-border rounded-xl shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 h-14 w-14 bg-indigo-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
@@ -474,7 +474,7 @@ export default function PlatformAuditPage() {
         </Card>
 
         {/* Security & Auth */}
-        <Card className="bg-foreground border-border rounded-xl shadow-md relative overflow-hidden">
+        <Card className="bg-slate-900 border-border rounded-xl shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 h-14 w-14 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
@@ -500,7 +500,7 @@ export default function PlatformAuditPage() {
         </Card>
 
         {/* Tenant Governance */}
-        <Card className="bg-foreground border-border rounded-xl shadow-md relative overflow-hidden">
+        <Card className="bg-slate-900 border-border rounded-xl shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 h-14 w-14 bg-purple-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
@@ -526,7 +526,7 @@ export default function PlatformAuditPage() {
         </Card>
 
         {/* Active Superadmins */}
-        <Card className="bg-foreground border-border rounded-xl shadow-md relative overflow-hidden">
+        <Card className="bg-slate-900 border-border rounded-xl shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 h-14 w-14 bg-cyan-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="py-2.5 px-3.5 sm:px-4 flex items-center justify-between">
             <div>
@@ -553,7 +553,7 @@ export default function PlatformAuditPage() {
       </div>
 
       {/* 3. Filter & Search Panel */}
-      <Card className="bg-foreground border-border rounded-2xl shadow-xl">
+      <Card className="bg-slate-900 border-border rounded-2xl shadow-xl">
         <CardContent className="p-4 space-y-3.5">
           {/* Top Row: Search & Preset Selectors */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
@@ -564,7 +564,7 @@ export default function PlatformAuditPage() {
                 placeholder="Search action, actor name/email, entity ID, or keyword..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-8 h-9 text-xs bg-foreground border-border text-slate-100 placeholder:text-muted-foreground rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-ring"
+                className="pl-9 pr-8 h-9 text-xs bg-slate-900 border-border text-slate-100 placeholder:text-muted-foreground rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-ring"
               />
               {search && (
                 <button
@@ -584,7 +584,7 @@ export default function PlatformAuditPage() {
                   setActionCategory(e.target.value)
                   setPage(1)
                 }}
-                className="w-full bg-foreground border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
+                className="w-full bg-slate-900 border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
               >
                 <option value="all">All Action Domains</option>
                 <option value="login">🔐 Logins & Access</option>
@@ -607,7 +607,7 @@ export default function PlatformAuditPage() {
                   setEntityTypeFilter(e.target.value)
                   setPage(1)
                 }}
-                className="w-full bg-foreground border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
+                className="w-full bg-slate-900 border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
               >
                 <option value="all">All Entity Types</option>
                 <option value="company">Company / Tenant</option>
@@ -630,7 +630,7 @@ export default function PlatformAuditPage() {
                   setTargetCompanyFilter(e.target.value)
                   setPage(1)
                 }}
-                className="w-full bg-foreground border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
+                className="w-full bg-slate-900 border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
               >
                 <option value="all">All Target Tenants</option>
                 {companies.map((c) => (
@@ -649,7 +649,7 @@ export default function PlatformAuditPage() {
                   setTimeRangePreset(e.target.value as any)
                   setPage(1)
                 }}
-                className="w-full bg-foreground border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
+                className="w-full bg-slate-900 border border-border text-foreground rounded-xl px-3 py-2 text-xs font-medium focus:outline-hidden focus:border-indigo-500"
               >
                 <option value="all">All Time Range</option>
                 <option value="today">Today (24 Hours)</option>
@@ -672,7 +672,7 @@ export default function PlatformAuditPage() {
                     setCustomStartDate(e.target.value)
                     setPage(1)
                   }}
-                  className="h-8 text-xs bg-foreground border-border text-foreground rounded-lg w-36"
+                  className="h-8 text-xs bg-slate-900 border-border text-foreground rounded-lg w-36"
                 />
               </div>
 
@@ -685,7 +685,7 @@ export default function PlatformAuditPage() {
                     setCustomEndDate(e.target.value)
                     setPage(1)
                   }}
-                  className="h-8 text-xs bg-foreground border-border text-foreground rounded-lg w-36"
+                  className="h-8 text-xs bg-slate-900 border-border text-foreground rounded-lg w-36"
                 />
               </div>
 
@@ -711,7 +711,7 @@ export default function PlatformAuditPage() {
               <div className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
                 <span className="font-semibold text-muted-foreground">Active Filters:</span>
                 {debouncedSearch && (
-                  <span className="px-2 py-0.5 rounded-full bg-secondary text-foreground border border-border flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-full bg-slate-800 text-foreground border border-border flex items-center gap-1">
                     Search: &quot;{debouncedSearch}&quot;
                     <button onClick={() => setSearch('')} className="hover:text-red-400">
                       <X className="h-3 w-3" />
@@ -786,13 +786,13 @@ export default function PlatformAuditPage() {
       )}
 
       {/* 5. Audit Logs Table & Stream */}
-      <Card className="bg-foreground border-border rounded-2xl shadow-xl overflow-hidden">
-        <CardHeader className="border-b border-border pb-3.5 bg-foreground">
+      <Card className="bg-slate-900 border-border rounded-2xl shadow-xl overflow-hidden">
+        <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <span>Compliance Log Stream</span>
-                <span className="text-xs tabular-nums px-2.5 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
+                <span className="text-xs tabular-nums px-2.5 py-0.5 rounded-full bg-slate-800 text-muted-foreground border border-border">
                   {totalCount.toLocaleString()} {totalCount === 1 ? 'Record' : 'Records'} Total
                 </span>
                 {isFiltered && (
@@ -815,7 +815,7 @@ export default function PlatformAuditPage() {
                   setPageSize(Number(e.target.value))
                   setPage(1)
                 }}
-                className="bg-foreground border border-border text-foreground rounded-lg px-2 py-1 text-xs focus:outline-hidden"
+                className="bg-slate-900 border border-border text-foreground rounded-lg px-2 py-1 text-xs focus:outline-hidden"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -828,7 +828,7 @@ export default function PlatformAuditPage() {
 
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-foreground text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
+            <thead className="bg-slate-900 text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
               <tr>
                 <th className="py-3.5 px-4 min-w-[210px]">Timestamp & Origin</th>
                 <th className="py-3.5 px-4 min-w-[230px]">Superadmin Actor</th>
@@ -864,7 +864,7 @@ export default function PlatformAuditPage() {
                           size="sm"
                           variant="outline"
                           onClick={handleResetFilters}
-                          className="text-xs border-border bg-secondary text-foreground hover:bg-slate-700"
+                          className="text-xs border-border bg-slate-800 text-foreground hover:bg-slate-700"
                         >
                           Clear All Filters
                         </Button>
@@ -886,12 +886,12 @@ export default function PlatformAuditPage() {
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-1.5 flex-nowrap">
-                          <span className="text-2xs tabular-nums text-muted-foreground bg-foreground px-2 py-0.5 rounded-md border border-border flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs">
+                          <span className="text-2xs tabular-nums text-muted-foreground bg-slate-900 px-2 py-0.5 rounded-md border border-border flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs">
                             <Clock className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
                             <span>{formatRelativeTime(log.created_at)}</span>
                           </span>
                           <span
-                            className="text-2xs tabular-nums text-muted-foreground bg-foreground px-2 py-0.5 rounded-md border border-border flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs"
+                            className="text-2xs tabular-nums text-muted-foreground bg-slate-900 px-2 py-0.5 rounded-md border border-border flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs"
                             title={`Origin IP: ${log.ip_address || '127.0.0.1'}`}
                           >
                             <Globe className="h-2.5 w-2.5 text-indigo-400 shrink-0" />
@@ -977,14 +977,14 @@ export default function PlatformAuditPage() {
                       <td className="py-3.5 px-4 align-top min-w-[200px] max-w-[240px]">
                         {log.reason ? (
                           <div
-                            className="text-muted-foreground text-xs italic line-clamp-2 bg-foreground px-2 py-1 rounded-md border border-border"
+                            className="text-muted-foreground text-xs italic line-clamp-2 bg-slate-900 px-2 py-1 rounded-md border border-border"
                             title={log.reason}
                           >
                             &quot;{log.reason}&quot;
                           </div>
                         ) : log.details?.reason ? (
                           <div
-                            className="text-muted-foreground text-xs italic line-clamp-2 bg-foreground px-2 py-1 rounded-md border border-border"
+                            className="text-muted-foreground text-xs italic line-clamp-2 bg-slate-900 px-2 py-1 rounded-md border border-border"
                             title={log.details.reason}
                           >
                             &quot;{log.details.reason}&quot;
@@ -1016,7 +1016,7 @@ export default function PlatformAuditPage() {
 
         {/* Table Footer with Pagination Controls */}
         {!loading && logs.length > 0 && (
-          <div className="border-t border-border px-4 py-3 bg-foreground flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <div className="border-t border-border px-4 py-3 bg-slate-900 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
             <div>
               Showing <span className="font-bold text-white">{(page - 1) * pageSize + 1}</span> to{' '}
               <span className="font-bold text-white">{Math.min(page * pageSize, totalCount)}</span> of{' '}
@@ -1029,7 +1029,7 @@ export default function PlatformAuditPage() {
                 variant="outline"
                 onClick={() => setPage(1)}
                 disabled={page === 1}
-                className="h-8 w-8 p-0 border-border bg-foreground text-muted-foreground disabled:opacity-40"
+                className="h-8 w-8 p-0 border-border bg-slate-900 text-muted-foreground disabled:opacity-40"
                 title="First Page"
               >
                 <ChevronsLeft className="h-3.5 w-3.5" />
@@ -1039,13 +1039,13 @@ export default function PlatformAuditPage() {
                 variant="outline"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="h-8 w-8 p-0 border-border bg-foreground text-muted-foreground disabled:opacity-40"
+                className="h-8 w-8 p-0 border-border bg-slate-900 text-muted-foreground disabled:opacity-40"
                 title="Previous Page"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
 
-              <span className="px-3 py-1 bg-foreground border border-border rounded-lg tabular-nums text-xs text-foreground">
+              <span className="px-3 py-1 bg-slate-900 border border-border rounded-lg tabular-nums text-xs text-foreground">
                 Page {page} of {totalPages}
               </span>
 
@@ -1054,7 +1054,7 @@ export default function PlatformAuditPage() {
                 variant="outline"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="h-8 w-8 p-0 border-border bg-foreground text-muted-foreground disabled:opacity-40"
+                className="h-8 w-8 p-0 border-border bg-slate-900 text-muted-foreground disabled:opacity-40"
                 title="Next Page"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -1064,7 +1064,7 @@ export default function PlatformAuditPage() {
                 variant="outline"
                 onClick={() => setPage(totalPages)}
                 disabled={page === totalPages}
-                className="h-8 w-8 p-0 border-border bg-foreground text-muted-foreground disabled:opacity-40"
+                className="h-8 w-8 p-0 border-border bg-slate-900 text-muted-foreground disabled:opacity-40"
                 title="Last Page"
               >
                 <ChevronsRight className="h-3.5 w-3.5" />
@@ -1077,11 +1077,11 @@ export default function PlatformAuditPage() {
       {/* 7. DETAIL MODAL: AUDIT EVENT INSPECTOR */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in-0">
-          <div className="bg-foreground border border-border rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] flex flex-col">
+          <div className="bg-slate-900 border border-border rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] flex flex-col">
             {/* Close Button */}
             <button
               onClick={() => setSelectedLog(null)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-slate-800"
             >
               <X className="h-4 w-4" />
             </button>
@@ -1124,7 +1124,7 @@ export default function PlatformAuditPage() {
             {/* Scrollable Modal Body */}
             <div className="space-y-4 overflow-y-auto flex-1 pr-1">
               {/* Event Metadata Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs bg-foreground p-3.5 rounded-xl border border-border">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs bg-slate-900 p-3.5 rounded-xl border border-border">
                 <div>
                   <span className="text-muted-foreground font-medium">Superadmin Actor:</span>
                   <div className="font-bold text-white mt-0.5 truncate" title={selectedLog.actor_name || selectedLog.actor_email}>
@@ -1244,7 +1244,7 @@ export default function PlatformAuditPage() {
                     )}
                   </button>
                 </div>
-                <div className="p-3.5 rounded-xl bg-foreground border border-border tabular-nums text-xs text-cyan-300 max-h-52 overflow-y-auto shadow-inner">
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-border tabular-nums text-xs text-cyan-300 max-h-52 overflow-y-auto shadow-inner">
                   <pre>{JSON.stringify(selectedLog.details, null, 2)}</pre>
                 </div>
               </div>
@@ -1267,7 +1267,7 @@ export default function PlatformAuditPage() {
               <Button
                 size="sm"
                 onClick={() => setSelectedLog(null)}
-                className="bg-secondary hover:bg-slate-700 text-xs text-white"
+                className="bg-slate-800 hover:bg-slate-700 text-xs text-white"
               >
                 Close Inspector
               </Button>

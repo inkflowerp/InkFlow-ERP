@@ -37,7 +37,7 @@ export default function PlatformForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-foreground text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 font-sans selection:bg-indigo-500 selection:text-white">
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
@@ -56,7 +56,7 @@ export default function PlatformForgotPasswordPage() {
           <p className="text-xs text-muted-foreground">Platform administrator security recovery.</p>
         </div>
 
-        <Card className="bg-foreground border-border shadow-2xl backdrop-blur-xl text-slate-100">
+        <Card className="bg-slate-900 border-border shadow-2xl backdrop-blur-xl text-slate-100">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <KeyRound className="h-4 w-4 text-indigo-400" />
@@ -78,7 +78,7 @@ export default function PlatformForgotPasswordPage() {
                   </div>
                 </div>
               </div>
-              <Button asChild variant="outline" className="w-full text-xs font-semibold border-border hover:bg-secondary min-h-[44px]">
+              <Button asChild variant="outline" className="w-full text-xs font-semibold border-border hover:bg-slate-800 min-h-[44px]">
                 <Link href="/platform/login" className="flex items-center justify-center gap-2">
                   <ArrowLeft className="h-4 w-4" />
                   <span>Back to Sign In</span>
@@ -106,11 +106,11 @@ export default function PlatformForgotPasswordPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     icon={<Mail className="h-4 w-4 text-muted-foreground" />}
                     placeholder="admin@printerp.com.bd"
-                    className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
+                    className="bg-slate-900 border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
                   />
                 </div>
 
-                <div className="p-3 rounded-xl bg-foreground border border-border text-2xs text-muted-foreground">
+                <div className="p-3 rounded-xl bg-slate-900 border border-border text-2xs text-muted-foreground">
                   Password reset tokens are single-use, expire after 15 minutes, and invalidate all existing active sessions upon completion.
                 </div>
 

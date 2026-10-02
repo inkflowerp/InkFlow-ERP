@@ -693,7 +693,7 @@ export function DesignerDashboard({ tasks, onRefresh }: DesignerDashboardProps) 
                         onClick={() => handleOpenReleaseModal(job)}
                         className={`text-xs font-bold text-white shadow-xs h-9 ${
                           isApproved
-                            ? 'bg-slate-700 hover:bg-secondary'
+                            ? 'bg-slate-700 hover:bg-slate-800'
                             : 'bg-purple-700 hover:bg-purple-800'
                         }`}
                       >

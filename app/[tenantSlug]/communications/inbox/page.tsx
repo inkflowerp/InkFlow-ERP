@@ -216,7 +216,7 @@ export default function TenantWhatsAppInboxPage() {
                 onClick={() => setFilterType(ft)}
                 className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize transition-colors ${
                   filterType === ft
-                    ? 'bg-foreground text-background'
+                    ? 'bg-slate-900 text-background'
                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
               >

@@ -2030,7 +2030,7 @@ export default function ProductsCatalogPage() {
               className={cn(
                 'px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 border',
                 isActive
-                  ? 'bg-foreground text-white border-slate-900 dark:border-white shadow-xs'
+                  ? 'bg-slate-900 text-white border-slate-900 dark:border-white shadow-xs'
                   : 'bg-card text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted'
               )}
             >

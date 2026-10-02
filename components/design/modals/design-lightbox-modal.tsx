@@ -35,7 +35,7 @@ export const DesignLightboxModal = React.memo(function DesignLightboxModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl bg-foreground border border-border text-slate-100 p-4 shadow-2xl">
+      <DialogContent className="max-w-4xl bg-slate-900 border border-border text-slate-100 p-4 shadow-2xl">
         <DialogHeader className="border-b border-border pb-3">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-base font-bold flex items-center gap-2 text-indigo-300">
@@ -55,7 +55,7 @@ export const DesignLightboxModal = React.memo(function DesignLightboxModal({
         </DialogHeader>
 
         {/* Image Container with Zoom */}
-        <div className="relative h-[65vh] w-full bg-foreground rounded-lg overflow-hidden flex items-center justify-center border border-border my-2">
+        <div className="relative h-[65vh] w-full bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center border border-border my-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={previewUrl}
@@ -73,7 +73,7 @@ export const DesignLightboxModal = React.memo(function DesignLightboxModal({
               variant="outline"
               size="sm"
               onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 3))}
-              className="text-xs bg-foreground border-border text-foreground hover:bg-secondary"
+              className="text-xs bg-slate-900 border-border text-foreground hover:bg-slate-800"
             >
               <ZoomIn className="h-3.5 w-3.5 mr-1" />
               <span>Zoom In</span>
@@ -83,7 +83,7 @@ export const DesignLightboxModal = React.memo(function DesignLightboxModal({
               variant="outline"
               size="sm"
               onClick={() => setZoomLevel((z) => Math.max(z - 0.25, 0.5))}
-              className="text-xs bg-foreground border-border text-foreground hover:bg-secondary"
+              className="text-xs bg-slate-900 border-border text-foreground hover:bg-slate-800"
             >
               <ZoomOut className="h-3.5 w-3.5 mr-1" />
               <span>Zoom Out</span>
@@ -93,7 +93,7 @@ export const DesignLightboxModal = React.memo(function DesignLightboxModal({
               variant="outline"
               size="sm"
               onClick={() => setZoomLevel(1)}
-              className="text-xs bg-foreground border-border text-foreground hover:bg-secondary"
+              className="text-xs bg-slate-900 border-border text-foreground hover:bg-slate-800"
             >
               <RotateCcw className="h-3.5 w-3.5 mr-1" />
               <span>Reset (100%)</span>
@@ -106,7 +106,7 @@ export const DesignLightboxModal = React.memo(function DesignLightboxModal({
               target="_blank"
               rel="noopener noreferrer"
               download
-              className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold bg-secondary hover:bg-slate-700 text-foreground border border-border transition-colors"
+              className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-foreground border border-border transition-colors"
             >
               <Download className="h-3.5 w-3.5 mr-1.5" />
               <span>ডাউনলোড (Download)</span>

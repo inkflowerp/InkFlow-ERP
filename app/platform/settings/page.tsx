@@ -260,7 +260,7 @@ export default function PlatformSettingsPage() {
             variant="outline"
             onClick={loadData}
             disabled={loading || saving}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary cursor-pointer font-semibold"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 cursor-pointer font-semibold"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -271,7 +271,7 @@ export default function PlatformSettingsPage() {
             variant="outline"
             disabled={exporting || loading}
             onClick={handleExportConfig}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary cursor-pointer font-semibold"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 cursor-pointer font-semibold"
           >
             <Download className="h-3.5 w-3.5 mr-1.5 text-cyan-400" />
             {exporting ? 'Exporting...' : 'Export Config'}
@@ -433,8 +433,8 @@ export default function PlatformSettingsPage() {
       </div>
 
       {/* Backup & Disaster Recovery Card */}
-      <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
-        <CardHeader className="border-b border-border pb-3.5 bg-foreground">
+      <Card className="bg-slate-900 border-border rounded-2xl overflow-hidden shadow-xl">
+        <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
@@ -458,7 +458,7 @@ export default function PlatformSettingsPage() {
                 variant="outline"
                 disabled={drilling}
                 onClick={handleTriggerDrill}
-                className="h-8 text-xs bg-foreground border-border text-cyan-300 hover:bg-secondary font-medium cursor-pointer"
+                className="h-8 text-xs bg-slate-900 border-border text-cyan-300 hover:bg-slate-800 font-medium cursor-pointer"
               >
                 <FileCheck2 className="h-3.5 w-3.5 mr-1 text-cyan-400" />
                 {drilling ? 'Testing Drill...' : 'Execute Recovery Drill'}
@@ -469,7 +469,7 @@ export default function PlatformSettingsPage() {
                 variant="outline"
                 disabled={backingUp}
                 onClick={handleTriggerBackup}
-                className="h-8 text-xs bg-foreground border-border text-emerald-300 hover:bg-secondary font-medium cursor-pointer"
+                className="h-8 text-xs bg-slate-900 border-border text-emerald-300 hover:bg-slate-800 font-medium cursor-pointer"
               >
                 <Zap className="h-3.5 w-3.5 mr-1 text-emerald-400" />
                 {backingUp ? 'Snapshotting...' : 'Trigger Snapshot'}
@@ -479,7 +479,7 @@ export default function PlatformSettingsPage() {
         </CardHeader>
         <CardContent className="p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-3.5 rounded-xl bg-foreground border border-border">
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-border">
               <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Last Continuous Snapshot
               </span>
@@ -492,7 +492,7 @@ export default function PlatformSettingsPage() {
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-foreground border border-border">
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-border">
               <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Retention Window
               </span>
@@ -505,7 +505,7 @@ export default function PlatformSettingsPage() {
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-foreground border border-border">
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-border">
               <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Last Restore Drill
               </span>
@@ -518,7 +518,7 @@ export default function PlatformSettingsPage() {
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-foreground border border-border">
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-border">
               <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
                 Storage Target
               </span>
@@ -532,7 +532,7 @@ export default function PlatformSettingsPage() {
           </div>
 
           {backup?.notes && (
-            <div className="mt-4 p-3 rounded-xl bg-foreground border border-border text-xs text-muted-foreground flex items-center gap-2">
+            <div className="mt-4 p-3 rounded-xl bg-slate-900 border border-border text-xs text-muted-foreground flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
               <span>{backup.notes}</span>
             </div>
@@ -544,8 +544,8 @@ export default function PlatformSettingsPage() {
       {settings && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Application Identity & Branding */}
-          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
-            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
+          <Card className="bg-slate-900 border-border rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">
                   <Palette className="h-4 w-4" />
@@ -567,7 +567,7 @@ export default function PlatformSettingsPage() {
                   value={settings.app_name || ''}
                   onChange={(e) => setSettings({ ...settings, app_name: e.target.value })}
                   placeholder="e.g. InkFlow ERP or PrintERP"
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl"
                 />
                 <span className="text-2xs text-muted-foreground mt-1 block">
                   Reflected across marketing headers, tenant sidebars, emails, and platform console.
@@ -582,7 +582,7 @@ export default function PlatformSettingsPage() {
                   value={settings.app_tagline || ''}
                   onChange={(e) => setSettings({ ...settings, app_tagline: e.target.value })}
                   placeholder="e.g. The Complete Printing &amp; Signage Operating System"
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl"
                 />
                 <span className="text-2xs text-muted-foreground mt-1 block">
                   Displayed on auth showcase, public landing page, and documentation headers.
@@ -598,10 +598,10 @@ export default function PlatformSettingsPage() {
                     value={settings.app_logo_url || ''}
                     onChange={(e) => setSettings({ ...settings, app_logo_url: e.target.value })}
                     placeholder="https://example.com/logo.png (or leave empty for SVG mark)"
-                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl flex-1 tabular-nums"
+                    className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl flex-1 tabular-nums"
                   />
                   {settings.app_logo_url ? (
-                    <div className="relative h-9 w-9 rounded-xl bg-foreground border border-border p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="relative h-9 w-9 rounded-xl bg-slate-900 border border-border p-1 flex items-center justify-center shrink-0 overflow-hidden">
                       <img
                         src={settings.app_logo_url}
                         alt="Logo preview"
@@ -631,9 +631,9 @@ export default function PlatformSettingsPage() {
                     value={settings.favicon_url || ''}
                     onChange={(e) => setSettings({ ...settings, favicon_url: e.target.value })}
                     placeholder="/favicon.ico or https://example.com/favicon.png"
-                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl flex-1 tabular-nums"
+                    className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl flex-1 tabular-nums"
                   />
-                  <div className="h-9 w-9 rounded-xl bg-foreground border border-border p-1.5 flex items-center justify-center shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-slate-900 border border-border p-1.5 flex items-center justify-center shrink-0">
                     <img
                       src={settings.favicon_url || '/favicon.ico'}
                       alt="Favicon"
@@ -652,8 +652,8 @@ export default function PlatformSettingsPage() {
           </Card>
 
           {/* SEO & Root Domain Configuration */}
-          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
-            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
+          <Card className="bg-slate-900 border-border rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                   <Globe2 className="h-4 w-4" />
@@ -675,7 +675,7 @@ export default function PlatformSettingsPage() {
                   value={settings.app_domain || ''}
                   onChange={(e) => setSettings({ ...settings, app_domain: e.target.value })}
                   placeholder="e.g. inkflow.com.bd or localhost:3000"
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-muted-foreground mt-1 block">
                   Root domain for tenant subdomains (e.g. customer.domain.com), OAuth redirects, and link generation.
@@ -690,7 +690,7 @@ export default function PlatformSettingsPage() {
                   value={settings.app_title || ''}
                   onChange={(e) => setSettings({ ...settings, app_title: e.target.value })}
                   placeholder="e.g. PrintERP SaaS - Operating System for Printing &amp; Signage in Bangladesh"
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl"
                 />
                 <span className="text-2xs text-muted-foreground mt-1 block">
                   Title tag rendered across browser tabs and search engine results.
@@ -706,7 +706,7 @@ export default function PlatformSettingsPage() {
                   onChange={(e) => setSettings({ ...settings, app_description: e.target.value })}
                   placeholder="Production-ready SaaS for digital printing, offset press..."
                   rows={3}
-                  className="w-full p-2.5 text-xs bg-foreground border border-border text-slate-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground resize-none"
+                  className="w-full p-2.5 text-xs bg-slate-900 border border-border text-slate-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground resize-none"
                 />
                 <span className="text-2xs text-muted-foreground mt-0.5 block">
                   Used in HTML meta description tags and social link previews.
@@ -716,8 +716,8 @@ export default function PlatformSettingsPage() {
           </Card>
 
           {/* Customer Support, Helpline & Official Contact Directory */}
-          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl md:col-span-2">
-            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
+          <Card className="bg-slate-900 border-border rounded-2xl overflow-hidden shadow-xl md:col-span-2">
+            <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   <Headphones className="h-4 w-4" />
@@ -740,7 +740,7 @@ export default function PlatformSettingsPage() {
                     value={settings.support_helpline || ''}
                     onChange={(e) => setSettings({ ...settings, support_helpline: e.target.value })}
                     placeholder="e.g. +880 1819-876543 / +880 1711-234567"
-                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                   />
                   <span className="text-2xs text-muted-foreground mt-1 block">
                     Shown in customer support &amp; inquiries.
@@ -754,7 +754,7 @@ export default function PlatformSettingsPage() {
                     value={settings.contact_email || ''}
                     onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })}
                     placeholder="support@printerp.com.bd"
-                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                   />
                   <span className="text-2xs text-muted-foreground mt-1 block">
                     Official email address for correspondence.
@@ -767,7 +767,7 @@ export default function PlatformSettingsPage() {
                     value={settings.contact_phone || ''}
                     onChange={(e) => setSettings({ ...settings, contact_phone: e.target.value })}
                     placeholder="+880 1819-876543"
-                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                   />
                   <span className="text-2xs text-muted-foreground mt-1 block">
                     Telephone for direct caller desk.
@@ -783,7 +783,7 @@ export default function PlatformSettingsPage() {
                   value={settings.contact_address || ''}
                   onChange={(e) => setSettings({ ...settings, contact_address: e.target.value })}
                   placeholder="e.g. Arambagh Press Cluster, Motijheel, Dhaka-1000, Bangladesh"
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl"
                 />
                 <span className="text-2xs text-muted-foreground mt-1 block">
                   Displayed in public website footer, contact page, and platform disclosures.
@@ -793,8 +793,8 @@ export default function PlatformSettingsPage() {
           </Card>
 
           {/* Security & Access Policies */}
-          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
-            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
+          <Card className="bg-slate-900 border-border rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                   <Lock className="h-4 w-4" />
@@ -820,7 +820,7 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, session_timeout_minutes: parseInt(e.target.value) || 60 })
                   }
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-muted-foreground mt-1 block">Valid range: 5 to 1,440 minutes (24 hours).</span>
               </div>
@@ -840,7 +840,7 @@ export default function PlatformSettingsPage() {
                       rate_limit_requests_per_minute: parseInt(e.target.value) || 120,
                     })
                   }
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-muted-foreground mt-1 block">Valid range: 10 to 10,000 req/min.</span>
               </div>
@@ -857,12 +857,12 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, max_export_records: parseInt(e.target.value) || 10000 })
                   }
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-muted-foreground mt-1 block">Cap per single tenant export JSON archive.</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-foreground border border-border">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-border">
                 <div>
                   <span className="text-xs font-semibold text-muted-foreground block">Enforce 2FA for Platform Admins</span>
                   <span className="text-2xs text-muted-foreground">Require TOTP authentication on all admin logins</span>
@@ -873,11 +873,11 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, mfa_required_for_admins: e.target.checked })
                   }
-                  className="h-4 w-4 rounded accent-indigo-600 bg-foreground border-border cursor-pointer"
+                  className="h-4 w-4 rounded accent-indigo-600 bg-slate-900 border-border cursor-pointer"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-foreground border border-border">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-border">
                 <div>
                   <span className="text-xs font-semibold text-muted-foreground block">Automated Daily Backups</span>
                   <span className="text-2xs text-muted-foreground">Enable scheduled daily database exports &amp; WAL archives</span>
@@ -888,15 +888,15 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, auto_backup_enabled: e.target.checked })
                   }
-                  className="h-4 w-4 rounded accent-indigo-600 bg-foreground border-border cursor-pointer"
+                  className="h-4 w-4 rounded accent-indigo-600 bg-slate-900 border-border cursor-pointer"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Localization, Fiscal & Webhook Alerts */}
-          <Card className="bg-foreground border-border rounded-2xl overflow-hidden shadow-xl">
-            <CardHeader className="border-b border-border pb-3.5 bg-foreground">
+          <Card className="bg-slate-900 border-border rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
                   <Globe className="h-4 w-4" />
@@ -916,7 +916,7 @@ export default function PlatformSettingsPage() {
                   <Input
                     value={settings.default_currency}
                     onChange={(e) => setSettings({ ...settings, default_currency: e.target.value })}
-                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl uppercase tabular-nums"
+                    className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl uppercase tabular-nums"
                   />
                 </div>
                 <div>
@@ -930,7 +930,7 @@ export default function PlatformSettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, default_vat_rate_pct: parseFloat(e.target.value) || 15 })
                     }
-                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                   />
                 </div>
               </div>
@@ -948,7 +948,7 @@ export default function PlatformSettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, default_trial_days: parseInt(e.target.value) || 14 })
                     }
-                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                   />
                 </div>
                 <div>
@@ -963,7 +963,7 @@ export default function PlatformSettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, backup_retention_days: parseInt(e.target.value) || 90 })
                     }
-                    className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                    className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                   />
                 </div>
               </div>
@@ -992,7 +992,7 @@ export default function PlatformSettingsPage() {
                     setSettings({ ...settings, incident_alert_webhook: e.target.value })
                   }
                   placeholder="https://hooks.slack.com/services/..."
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl tabular-nums"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl tabular-nums"
                 />
                 <span className="text-2xs text-muted-foreground mt-1 block">
                   Dispatches automated JSON notifications upon critical service outage or failover event.
@@ -1021,7 +1021,7 @@ export default function PlatformSettingsPage() {
                   onChange={(e) =>
                     setSettings({ ...settings, maintenance_message: e.target.value })
                   }
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl"
                 />
               </div>
             </CardContent>
@@ -1030,7 +1030,7 @@ export default function PlatformSettingsPage() {
       )}
 
       {/* Audit Justification & Save Card */}
-      <Card className="bg-foreground border-border rounded-2xl p-5 shadow-xl">
+      <Card className="bg-slate-900 border-border rounded-2xl p-5 shadow-xl">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div className="flex-1">
             <label className="text-xs font-semibold text-muted-foreground block mb-1">
@@ -1040,7 +1040,7 @@ export default function PlatformSettingsPage() {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g. Updated standard VAT rate to 15% per FY2026-27 NBR circular..."
-              className="h-9 text-xs bg-foreground border-border text-slate-100 rounded-xl placeholder:text-muted-foreground"
+              className="h-9 text-xs bg-slate-900 border-border text-slate-100 rounded-xl placeholder:text-muted-foreground"
             />
           </div>
           <div className="flex items-center gap-2 self-end sm:self-center">
@@ -1049,7 +1049,7 @@ export default function PlatformSettingsPage() {
                 variant="outline"
                 onClick={handleResetChanges}
                 disabled={saving}
-                className="h-9 px-4 text-xs border-border bg-foreground text-muted-foreground hover:text-white hover:bg-secondary rounded-xl font-semibold cursor-pointer"
+                className="h-9 px-4 text-xs border-border bg-slate-900 text-muted-foreground hover:text-white hover:bg-slate-800 rounded-xl font-semibold cursor-pointer"
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1.5 text-amber-400" />
                 Discard

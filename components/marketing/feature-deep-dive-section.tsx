@@ -174,7 +174,7 @@ export function FeatureDeepDiveSection() {
   }
 
   return (
-    <section className="py-16 sm:py-20 md:py-28 bg-foreground relative overflow-hidden border-t border-slate-900">
+    <section className="py-16 sm:py-20 md:py-28 bg-slate-900 relative overflow-hidden border-t border-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 sm:space-y-24 md:space-y-32">
         {/* ============================================================== */}
         {/* SECTION A: CREATE QUOTATIONS IN MINUTES (SFT PRICING ENGINE)   */}
@@ -219,7 +219,7 @@ export function FeatureDeepDiveSection() {
 
           {/* Right Interactive SFT Widget Mockup (7 Cols) */}
           <div className="lg:col-span-7">
-            <div className="p-4 sm:p-6 md:p-8 rounded-2xl border border-cyan-500/30 bg-foreground shadow-2xl shadow-cyan-950/30 space-y-4 sm:space-y-5">
+            <div className="p-4 sm:p-6 md:p-8 rounded-2xl border border-cyan-500/30 bg-slate-900 shadow-2xl shadow-cyan-950/30 space-y-4 sm:space-y-5">
               <div className="flex items-center justify-between border-b border-border pb-3 sm:pb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="h-8 w-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs shrink-0">
@@ -248,7 +248,7 @@ export function FeatureDeepDiveSection() {
                         setCalcHeight(sz.h)
                         setCalcQty(sz.q)
                       }}
-                      className="px-2.5 py-1 rounded-md bg-foreground hover:bg-secondary border border-border text-2xs font-semibold text-muted-foreground hover:text-white transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-border text-2xs font-semibold text-muted-foreground hover:text-white transition-colors cursor-pointer"
                     >
                       {sz.label}
                     </button>
@@ -268,7 +268,7 @@ export function FeatureDeepDiveSection() {
                       className={`px-2.5 py-1 rounded-md text-2xs font-semibold transition-colors cursor-pointer ${
                         calcRate === m.rate
                           ? 'bg-cyan-500 text-foreground font-bold shadow-xs'
-                          : 'bg-foreground text-muted-foreground border border-border hover:bg-secondary hover:text-white'
+                          : 'bg-slate-900 text-muted-foreground border border-border hover:bg-slate-800 hover:text-white'
                       }`}
                     >
                       {locale === 'bn' ? m.nameBn : m.label} (৳{m.rate})
@@ -279,7 +279,7 @@ export function FeatureDeepDiveSection() {
 
               {/* Input Adjusters */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
-                <div className="p-2 sm:p-2.5 rounded-lg bg-foreground border border-border">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-900 border border-border">
                   <label className="text-muted-foreground block text-2xs tabular-nums">Width (ft)</label>
                   <input
                     type="number"
@@ -288,7 +288,7 @@ export function FeatureDeepDiveSection() {
                     className="w-full bg-transparent font-bold text-white text-sm sm:text-base focus:outline-none"
                   />
                 </div>
-                <div className="p-2 sm:p-2.5 rounded-lg bg-foreground border border-border">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-900 border border-border">
                   <label className="text-muted-foreground block text-2xs tabular-nums">Height (ft)</label>
                   <input
                     type="number"
@@ -297,7 +297,7 @@ export function FeatureDeepDiveSection() {
                     className="w-full bg-transparent font-bold text-white text-sm sm:text-base focus:outline-none"
                   />
                 </div>
-                <div className="p-2 sm:p-2.5 rounded-lg bg-foreground border border-border">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-900 border border-border">
                   <label className="text-muted-foreground block text-2xs tabular-nums">Rate (৳/sft)</label>
                   <input
                     type="number"
@@ -306,7 +306,7 @@ export function FeatureDeepDiveSection() {
                     className="w-full bg-transparent font-bold text-cyan-400 text-sm sm:text-base focus:outline-none"
                   />
                 </div>
-                <div className="p-2 sm:p-2.5 rounded-lg bg-foreground border border-border">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-900 border border-border">
                   <label className="text-muted-foreground block text-2xs tabular-nums">Quantity</label>
                   <input
                     type="number"
@@ -318,7 +318,7 @@ export function FeatureDeepDiveSection() {
               </div>
 
               {/* Live Calculation Display Box */}
-              <div className="p-3.5 sm:p-4 rounded-xl bg-foreground border border-border space-y-2 text-xs">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-border space-y-2 text-xs">
                 <div className="flex justify-between text-muted-foreground">
                   <span className="truncate pr-2">
                     Total Square Footage ({calcWidth}ft × {calcHeight}ft × {calcQty} pcs):
@@ -350,7 +350,7 @@ export function FeatureDeepDiveSection() {
                     size="sm"
                     variant="outline"
                     onClick={handleCopyQuote}
-                    className="border-border bg-foreground text-foreground hover:text-white text-xs h-8 cursor-pointer"
+                    className="border-border bg-slate-900 text-foreground hover:text-white text-xs h-8 cursor-pointer"
                   >
                     {copiedQuote ? (
                       <>
@@ -376,7 +376,7 @@ export function FeatureDeepDiveSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-14 items-center">
           {/* Left Kanban Mockup (7 Cols) */}
           <div className="lg:col-span-7 order-2 lg:order-1">
-            <div className="p-4 sm:p-6 rounded-2xl border border-blue-500/30 bg-foreground shadow-2xl shadow-blue-950/30 space-y-4">
+            <div className="p-4 sm:p-6 rounded-2xl border border-blue-500/30 bg-slate-900 shadow-2xl shadow-blue-950/30 space-y-4">
               <div className="flex items-center justify-between border-b border-border pb-3">
                 <div className="flex items-center gap-2">
                   <Printer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
@@ -388,19 +388,19 @@ export function FeatureDeepDiveSection() {
               {/* 5 Department Status Stages */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 text-2xs">
                 {/* 1. Design */}
-                <div className="p-2 sm:p-2.5 rounded-lg bg-foreground border border-border space-y-1.5 sm:space-y-2">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-900 border border-border space-y-1.5 sm:space-y-2">
                   <div className="flex justify-between font-bold text-muted-foreground">
                     <span>Design</span>
                     <span className="text-blue-400">3</span>
                   </div>
-                  <div className="p-1.5 sm:p-2 rounded bg-foreground text-2xs border border-border">
+                  <div className="p-1.5 sm:p-2 rounded bg-slate-900 text-2xs border border-border">
                     <div className="font-semibold text-white truncate">ORD-289 Walton</div>
                     <span className="text-amber-400 font-medium">Waiting Proof</span>
                   </div>
                 </div>
 
                 {/* 2. Printing */}
-                <div className="p-2 sm:p-2.5 rounded-lg bg-foreground border border-cyan-500/30 space-y-1.5 sm:space-y-2">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-900 border border-cyan-500/30 space-y-1.5 sm:space-y-2">
                   <div className="flex justify-between font-bold text-cyan-300">
                     <span>Printing</span>
                     <span className="text-cyan-400">6</span>
@@ -412,31 +412,31 @@ export function FeatureDeepDiveSection() {
                 </div>
 
                 {/* 3. Finishing */}
-                <div className="p-2 sm:p-2.5 rounded-lg bg-foreground border border-border space-y-1.5 sm:space-y-2">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-900 border border-border space-y-1.5 sm:space-y-2">
                   <div className="flex justify-between font-bold text-muted-foreground">
                     <span>Finishing</span>
                     <span className="text-fuchsia-400">4</span>
                   </div>
-                  <div className="p-1.5 sm:p-2 rounded bg-foreground text-2xs border border-border">
+                  <div className="p-1.5 sm:p-2 rounded bg-slate-900 text-2xs border border-border">
                     <div className="font-semibold text-white truncate">ORD-285 Beximco</div>
                     <span className="text-fuchsia-400 font-medium">Lamination</span>
                   </div>
                 </div>
 
                 {/* 4. Fabrication */}
-                <div className="p-2 sm:p-2.5 rounded-lg bg-foreground border border-border space-y-1.5 sm:space-y-2">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-900 border border-border space-y-1.5 sm:space-y-2">
                   <div className="flex justify-between font-bold text-muted-foreground">
                     <span>Fab</span>
                     <span className="text-amber-400">2</span>
                   </div>
-                  <div className="p-1.5 sm:p-2 rounded bg-foreground text-2xs border border-border">
+                  <div className="p-1.5 sm:p-2 rounded bg-slate-900 text-2xs border border-border">
                     <div className="font-semibold text-white truncate">ORD-286 Acrylic</div>
                     <span className="text-amber-400 font-medium">LED Wiring</span>
                   </div>
                 </div>
 
                 {/* 5. Dispatch */}
-                <div className="col-span-2 sm:col-span-1 p-2 sm:p-2.5 rounded-lg bg-foreground border border-emerald-500/30 space-y-1.5 sm:space-y-2">
+                <div className="col-span-2 sm:col-span-1 p-2 sm:p-2.5 rounded-lg bg-slate-900 border border-emerald-500/30 space-y-1.5 sm:space-y-2">
                   <div className="flex justify-between font-bold text-emerald-300">
                     <span>Delivery</span>
                     <span className="text-emerald-400">5</span>
@@ -450,7 +450,7 @@ export function FeatureDeepDiveSection() {
 
               {/* Job Status Badges Row */}
               <div className="pt-2 border-t border-border flex flex-wrap items-center gap-1.5 sm:gap-2 text-2xs">
-                <span className="px-2 py-0.5 rounded bg-secondary text-muted-foreground font-semibold">Queued</span>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-muted-foreground font-semibold">Queued</span>
                 <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/40">In Progress</span>
                 <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/40">Completed</span>
                 <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/40">Delayed Flag</span>
@@ -532,7 +532,7 @@ export function FeatureDeepDiveSection() {
 
           {/* Right Profit Breakdown Mockup (7 Cols) */}
           <div className="lg:col-span-7">
-            <div className="p-4 sm:p-6 md:p-8 rounded-2xl border border-emerald-500/30 bg-foreground shadow-2xl shadow-emerald-950/30 space-y-4 sm:space-y-5">
+            <div className="p-4 sm:p-6 md:p-8 rounded-2xl border border-emerald-500/30 bg-slate-900 shadow-2xl shadow-emerald-950/30 space-y-4 sm:space-y-5">
               <div className="flex items-center justify-between border-b border-border pb-3 sm:pb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
@@ -558,7 +558,7 @@ export function FeatureDeepDiveSection() {
                     className={`px-2.5 py-1 rounded-md text-2xs sm:text-xs font-semibold transition-colors cursor-pointer ${
                       selectedCostPreset === p.id
                         ? 'bg-emerald-500 text-foreground font-bold shadow-xs'
-                        : 'bg-foreground text-muted-foreground border border-border hover:bg-secondary hover:text-white'
+                        : 'bg-slate-900 text-muted-foreground border border-border hover:bg-slate-800 hover:text-white'
                     }`}
                   >
                     {tBilingual(p.title, p.titleBn)}
@@ -568,14 +568,14 @@ export function FeatureDeepDiveSection() {
 
               {/* Breakdown Rows */}
               <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between p-2 rounded-lg bg-foreground border border-border">
+                <div className="flex justify-between p-2 rounded-lg bg-slate-900 border border-border">
                   <span className="font-bold text-white">Client Selling Price:</span>
                   <span className="font-black text-cyan-300 tabular-nums text-xs sm:text-sm">
                     ৳ {costData.price.toLocaleString()} BDT
                   </span>
                 </div>
 
-                <div className="p-3 rounded-lg bg-foreground border border-border space-y-2">
+                <div className="p-3 rounded-lg bg-slate-900 border border-border space-y-2">
                   <div className="text-2xs sm:text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                     Cost of Goods & Operational Expenses:
                   </div>
@@ -630,7 +630,7 @@ export function FeatureDeepDiveSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-14 items-center">
           {/* Left Mockup (7 Cols) */}
           <div className="lg:col-span-7 order-2 lg:order-1">
-            <div className="p-4 sm:p-6 md:p-8 rounded-2xl border border-amber-500/30 bg-foreground shadow-2xl shadow-amber-950/30 space-y-4 sm:space-y-5">
+            <div className="p-4 sm:p-6 md:p-8 rounded-2xl border border-amber-500/30 bg-slate-900 shadow-2xl shadow-amber-950/30 space-y-4 sm:space-y-5">
               <div className="flex items-center justify-between border-b border-border pb-3">
                 <div className="flex items-center gap-2.5">
                   <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 shrink-0" />
@@ -659,7 +659,7 @@ export function FeatureDeepDiveSection() {
                     className={`px-2.5 py-1 rounded-md text-2xs font-semibold transition-colors cursor-pointer ${
                       selectedInvoice === inv.id
                         ? 'bg-amber-500 text-foreground font-bold shadow-xs'
-                        : 'bg-foreground text-muted-foreground border border-border hover:bg-secondary hover:text-white'
+                        : 'bg-slate-900 text-muted-foreground border border-border hover:bg-slate-800 hover:text-white'
                     }`}
                   >
                     {inv.id} (৳{inv.due.toLocaleString()} Due)
@@ -669,13 +669,13 @@ export function FeatureDeepDiveSection() {
 
               {/* Outstanding Amounts Breakdown */}
               <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 text-center">
-                <div className="p-2 sm:p-3 rounded-lg bg-foreground border border-border">
+                <div className="p-2 sm:p-3 rounded-lg bg-slate-900 border border-border">
                   <span className="text-2xs sm:text-2xs text-muted-foreground uppercase tabular-nums truncate block">Total Invoice</span>
                   <div className="text-xs xs:text-sm sm:text-base font-black text-white tabular-nums mt-0.5 sm:mt-1">
                     ৳ {invoiceData.total.toLocaleString()}
                   </div>
                 </div>
-                <div className="p-2 sm:p-3 rounded-lg bg-foreground border border-border">
+                <div className="p-2 sm:p-3 rounded-lg bg-slate-900 border border-border">
                   <span className="text-2xs sm:text-2xs text-emerald-400 uppercase tabular-nums truncate block">Advance Paid</span>
                   <div className="text-xs xs:text-sm sm:text-base font-black text-emerald-400 tabular-nums mt-0.5 sm:mt-1">
                     ৳ {invoiceData.advance.toLocaleString()}
@@ -690,7 +690,7 @@ export function FeatureDeepDiveSection() {
               </div>
 
               {/* WhatsApp Reminder Dispatch Simulation */}
-              <div className="p-3.5 sm:p-4 rounded-xl bg-foreground border border-border space-y-3">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900 border border-border space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground font-semibold flex items-center gap-1.5 text-2xs sm:text-xs">
                     <MessageSquare className="h-3.5 w-3.5 text-emerald-400 shrink-0" /> WhatsApp Payment Reminder
@@ -698,7 +698,7 @@ export function FeatureDeepDiveSection() {
                   <span className="text-2xs text-muted-foreground tabular-nums">{invoiceData.phone}</span>
                 </div>
 
-                <div className="p-2.5 sm:p-3 rounded-lg bg-foreground border border-border text-2xs sm:text-xs text-muted-foreground italic leading-relaxed">
+                <div className="p-2.5 sm:p-3 rounded-lg bg-slate-900 border border-border text-2xs sm:text-xs text-muted-foreground italic leading-relaxed">
                   &ldquo;{locale === 'bn' ? invoiceData.msgBn : invoiceData.msgEn}&rdquo;
                 </div>
 

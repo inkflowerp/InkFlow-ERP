@@ -136,7 +136,7 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
               onClick={() => onFilterChange({ quickFilter: chip.id })}
               className={`px-3.5 py-1 rounded-full text-xs font-semibold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
                 isActive
-                  ? 'bg-foreground text-white font-bold shadow-xs'
+                  ? 'bg-slate-900 text-white font-bold shadow-xs'
                   : 'bg-card border border-border dark:border-border/80 text-muted-foreground hover:bg-muted dark:hover:bg-muted/80'
               }`}
             >

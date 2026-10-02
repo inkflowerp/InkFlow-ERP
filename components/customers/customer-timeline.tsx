@@ -187,7 +187,7 @@ export function CustomerTimeline({
   }
 
   return (
-    <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-muted dark:before:bg-secondary">
+    <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-muted dark:before:bg-slate-800">
       {events.map((evt) => (
         <div key={evt.id} className="relative group">
           {/* Node Icon */}

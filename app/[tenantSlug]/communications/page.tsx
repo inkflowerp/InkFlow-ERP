@@ -308,7 +308,7 @@ export default function CommunicationsHubPage() {
             variant={activeTab === 'gateways' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('gateways')}
             className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
-              activeTab === 'gateways' ? 'bg-secondary text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
+              activeTab === 'gateways' ? 'bg-slate-800 text-white shadow-xs' : 'text-muted-foreground dark:text-muted-foreground'
             }`}
           >
             <Settings className="h-3.5 w-3.5 mr-1.5" />

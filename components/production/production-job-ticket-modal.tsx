@@ -74,7 +74,7 @@ export function JobTicketPrintModal({
           <Button
             size="sm"
             onClick={handlePrint}
-            className="bg-foreground hover:bg-secondary text-white font-bold text-xs h-8 gap-1.5 shadow-xs"
+            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-8 gap-1.5 shadow-xs"
           >
             <Printer className="h-3.5 w-3.5" />
             <span>{isBn ? 'জব কার্ড প্রিন্ট' : 'Print Job Card'}</span>
@@ -96,7 +96,7 @@ export function JobTicketPrintModal({
             {company?.address && (
               <p className="text-muted-foreground text-2xs">{company.address}</p>
             )}
-            <div className="inline-block mt-1 px-4 py-0.5 rounded-full bg-foreground text-white font-black text-xs tracking-wider uppercase">
+            <div className="inline-block mt-1 px-4 py-0.5 rounded-full bg-slate-900 text-white font-black text-xs tracking-wider uppercase">
               PRODUCTION JOB TICKET • কারখানা কাজের নির্দেশিকা
             </div>
           </div>

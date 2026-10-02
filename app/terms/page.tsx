@@ -12,7 +12,7 @@ export default function TermsOfServicePage() {
   const { tBilingual } = useI18n()
 
   return (
-    <div className="min-h-screen bg-foreground text-slate-100 selection:bg-cyan-500 selection:text-white font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-slate-900 text-slate-100 selection:bg-cyan-500 selection:text-white font-sans antialiased overflow-x-hidden">
       <MarketingNavbar onOpenDemo={() => setDemoOpen(true)} />
 
       <main className="pt-20">

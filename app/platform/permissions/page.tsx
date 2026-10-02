@@ -396,7 +396,7 @@ export default function PlatformPermissionsPage() {
             variant="outline"
             onClick={loadTemplates}
             disabled={loading || saving}
-            className="border-border bg-foreground text-muted-foreground hover:text-white hover:bg-secondary text-xs font-semibold"
+            className="border-border bg-slate-900 text-muted-foreground hover:text-white hover:bg-slate-800 text-xs font-semibold"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -440,7 +440,7 @@ export default function PlatformPermissionsPage() {
 
       {/* Metrics Ribbon */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="bg-foreground border-border p-4 rounded-2xl">
+        <Card className="bg-slate-900 border-border p-4 rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">System Role Presets</span>
             <Users className="h-4 w-4 text-indigo-400" />
@@ -449,7 +449,7 @@ export default function PlatformPermissionsPage() {
           <p className="text-2xs text-muted-foreground mt-0.5">Seeded across all organizations</p>
         </Card>
 
-        <Card className="bg-foreground border-border p-4 rounded-2xl">
+        <Card className="bg-slate-900 border-border p-4 rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Governed Modules</span>
             <Layers className="h-4 w-4 text-emerald-400" />
@@ -458,7 +458,7 @@ export default function PlatformPermissionsPage() {
           <p className="text-2xs text-muted-foreground mt-0.5">Commercial, press, stock, &amp; HR</p>
         </Card>
 
-        <Card className="bg-foreground border-border p-4 rounded-2xl">
+        <Card className="bg-slate-900 border-border p-4 rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Action Dimensions</span>
             <Sliders className="h-4 w-4 text-amber-400" />
@@ -467,7 +467,7 @@ export default function PlatformPermissionsPage() {
           <p className="text-2xs text-muted-foreground mt-0.5">View, Create, Edit, Del, Appr, Full</p>
         </Card>
 
-        <Card className="bg-foreground border-border p-4 rounded-2xl">
+        <Card className="bg-slate-900 border-border p-4 rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Security Model</span>
             <ShieldCheck className="h-4 w-4 text-violet-400" />
@@ -509,7 +509,7 @@ export default function PlatformPermissionsPage() {
                 className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
                   isSelected
                     ? 'bg-gradient-to-br from-indigo-900/40 via-slate-900 to-violet-900/30 border-indigo-500 text-white shadow-xl shadow-indigo-600/20 ring-2 ring-indigo-500/50'
-                    : 'bg-foreground border-border text-muted-foreground hover:text-white hover:border-border hover:bg-slate-850'
+                    : 'bg-slate-900 border-border text-muted-foreground hover:text-white hover:border-border hover:bg-slate-850'
                 }`}
               >
                 <div>
@@ -527,7 +527,7 @@ export default function PlatformPermissionsPage() {
                     <span>{count} perms</span>
                     <span className={pct > 50 ? 'text-emerald-400 font-bold' : 'text-muted-foreground'}>{pct}%</span>
                   </div>
-                  <div className="w-full h-1 bg-secondary rounded-full overflow-hidden">
+                  <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
                         pct >= 80 ? 'bg-indigo-400' : pct >= 40 ? 'bg-amber-400' : 'bg-slate-600'
@@ -544,8 +544,8 @@ export default function PlatformPermissionsPage() {
 
       {/* Current Template Header & Quick Batch Toolbar */}
       {currentTemplate && (
-        <Card className="bg-foreground border-border rounded-2xl shadow-xl overflow-hidden">
-          <CardHeader className="border-b border-border pb-4 bg-foreground">
+        <Card className="bg-slate-900 border-border rounded-2xl shadow-xl overflow-hidden">
+          <CardHeader className="border-b border-border pb-4 bg-slate-900">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2.5">
@@ -573,7 +573,7 @@ export default function PlatformPermissionsPage() {
                   variant="outline"
                   onClick={() => handleBatchRoleAction('grant_view')}
                   disabled={saving}
-                  className="h-8 text-2xs font-semibold border-border bg-foreground text-sky-400 hover:bg-sky-950/40 hover:border-sky-800"
+                  className="h-8 text-2xs font-semibold border-border bg-slate-900 text-sky-400 hover:bg-sky-950/40 hover:border-sky-800"
                 >
                   <CheckSquare className="h-3.5 w-3.5 mr-1" />
                   Grant View-Only
@@ -584,7 +584,7 @@ export default function PlatformPermissionsPage() {
                   variant="outline"
                   onClick={() => handleBatchRoleAction('grant_all')}
                   disabled={saving}
-                  className="h-8 text-2xs font-semibold border-border bg-foreground text-emerald-400 hover:bg-emerald-950/40 hover:border-emerald-800"
+                  className="h-8 text-2xs font-semibold border-border bg-slate-900 text-emerald-400 hover:bg-emerald-950/40 hover:border-emerald-800"
                 >
                   <Sparkles className="h-3.5 w-3.5 mr-1" />
                   Grant Full Access
@@ -595,7 +595,7 @@ export default function PlatformPermissionsPage() {
                   variant="outline"
                   onClick={() => handleBatchRoleAction('revoke_all')}
                   disabled={saving}
-                  className="h-8 text-2xs font-semibold border-border bg-foreground text-rose-400 hover:bg-rose-950/40 hover:border-rose-800"
+                  className="h-8 text-2xs font-semibold border-border bg-slate-900 text-rose-400 hover:bg-rose-950/40 hover:border-rose-800"
                 >
                   <Square className="h-3.5 w-3.5 mr-1" />
                   Zero-Trust Clear
@@ -611,7 +611,7 @@ export default function PlatformPermissionsPage() {
                   placeholder="Search modules, bills, challans, or specs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 text-xs bg-foreground border-border text-foreground"
+                  className="h-9 text-xs bg-slate-900 border-border text-foreground"
                 />
               </div>
 
@@ -627,7 +627,7 @@ export default function PlatformPermissionsPage() {
                       className={`px-2.5 py-1 rounded-lg text-2xs font-semibold whitespace-nowrap transition-all border ${
                         isActive
                           ? 'bg-indigo-600/90 text-white border-indigo-500 shadow-xs'
-                          : 'bg-foreground text-muted-foreground border-border hover:text-white hover:border-border'
+                          : 'bg-slate-900 text-muted-foreground border-border hover:text-white hover:border-border'
                       }`}
                     >
                       {catLabel}
@@ -641,7 +641,7 @@ export default function PlatformPermissionsPage() {
           {/* Matrix Table */}
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-foreground text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
+              <thead className="bg-slate-900 text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
                 <tr>
                   <th className="py-3.5 px-4 w-80">Resource Domain &amp; Bengali Label</th>
                   {ACTIONS.map((a) => (
@@ -723,7 +723,7 @@ export default function PlatformPermissionsPage() {
                                 className={`h-8 w-8 rounded-xl inline-flex items-center justify-center transition-all ${
                                   isAllowed
                                     ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 shadow-xs shadow-emerald-500/20'
-                                    : 'bg-foreground text-muted-foreground border border-border hover:text-muted-foreground hover:border-border'
+                                    : 'bg-slate-900 text-muted-foreground border border-border hover:text-muted-foreground hover:border-border'
                                 }`}
                                 title={`${isAllowed ? 'Revoke' : 'Grant'} ${actionItem.label} on ${meta.label}`}
                               >
@@ -745,7 +745,7 @@ export default function PlatformPermissionsPage() {
                             className={`h-7 text-2xs px-2.5 font-semibold transition-all ${
                               allGranted
                                 ? 'text-rose-400 hover:text-rose-300 hover:bg-rose-950/40'
-                                : 'text-muted-foreground hover:text-white hover:bg-secondary'
+                                : 'text-muted-foreground hover:text-white hover:bg-slate-800'
                             }`}
                           >
                             {allGranted ? 'Revoke All' : activeCount === 0 ? 'Grant All' : 'Grant All'}
@@ -762,7 +762,7 @@ export default function PlatformPermissionsPage() {
       )}
 
       {/* Governance & Inheritance Architecture Info */}
-      <Card className="bg-foreground border-border rounded-2xl p-5">
+      <Card className="bg-slate-900 border-border rounded-2xl p-5">
         <div className="flex items-start gap-3.5">
           <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shrink-0">
             <Info className="h-5 w-5" />

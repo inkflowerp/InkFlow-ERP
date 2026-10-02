@@ -46,10 +46,10 @@ export default function CustomerSuccessPage() {
   if (loading || !data) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-10 w-72 bg-secondary rounded-xl" />
+        <div className="h-10 w-72 bg-slate-800 rounded-xl" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-foreground border border-border rounded-2xl" />
+            <div key={i} className="h-32 bg-slate-900 border border-border rounded-2xl" />
           ))}
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function CustomerSuccessPage() {
           size="sm"
           variant="outline"
           onClick={loadData}
-          className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
+          className="border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 text-xs h-9"
         >
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
           Refresh
@@ -87,7 +87,7 @@ export default function CustomerSuccessPage() {
 
       {/* Summary KPI Highlights */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-foreground border-border p-4">
+        <Card className="bg-slate-900 border-border p-4">
           <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Active Trials</span>
             <Clock className="h-4 w-4 text-cyan-400" />
@@ -96,7 +96,7 @@ export default function CustomerSuccessPage() {
           <div className="text-2xs text-cyan-400 mt-1">In trial evaluation window</div>
         </Card>
 
-        <Card className="bg-foreground border-border p-4">
+        <Card className="bg-slate-900 border-border p-4">
           <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>Inactive (&gt;7 Days)</span>
             <UserX className="h-4 w-4 text-amber-400" />
@@ -105,7 +105,7 @@ export default function CustomerSuccessPage() {
           <div className="text-2xs text-amber-400 mt-1">No orders or invoices logged</div>
         </Card>
 
-        <Card className="bg-foreground border-border p-4">
+        <Card className="bg-slate-900 border-border p-4">
           <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>At-Risk Accounts</span>
             <AlertTriangle className="h-4 w-4 text-red-400" />
@@ -114,7 +114,7 @@ export default function CustomerSuccessPage() {
           <div className="text-2xs text-red-400 mt-1">Billing or storage alerts</div>
         </Card>
 
-        <Card className="bg-foreground border-border p-4">
+        <Card className="bg-slate-900 border-border p-4">
           <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
             <span>High-Growth Accounts</span>
             <TrendingUp className="h-4 w-4 text-emerald-400" />
@@ -125,7 +125,7 @@ export default function CustomerSuccessPage() {
       </div>
 
       {/* 1. Trial Ending Soon Section */}
-      <Card className="bg-foreground border-border">
+      <Card className="bg-slate-900 border-border">
         <CardHeader className="pb-3 border-b border-border">
           <CardTitle className="text-base text-white font-bold flex items-center gap-2">
             <Clock className="h-4 w-4 text-cyan-400" />
@@ -162,7 +162,7 @@ export default function CustomerSuccessPage() {
                 <div className="flex items-center gap-1.5 text-2xs pt-1">
                   <span className="text-muted-foreground">Features Adopted:</span>
                   {features_used.map((f) => (
-                    <span key={f} className="px-1.5 py-0.2 rounded bg-secondary text-muted-foreground font-medium">
+                    <span key={f} className="px-1.5 py-0.2 rounded bg-slate-800 text-muted-foreground font-medium">
                       ✓ {f}
                     </span>
                   ))}
@@ -188,7 +188,7 @@ export default function CustomerSuccessPage() {
       </Card>
 
       {/* 2. Inactive Tenants Section */}
-      <Card className="bg-foreground border-border">
+      <Card className="bg-slate-900 border-border">
         <CardHeader className="pb-3 border-b border-border">
           <CardTitle className="text-base text-white font-bold flex items-center gap-2">
             <UserX className="h-4 w-4 text-amber-400" />
@@ -207,7 +207,7 @@ export default function CustomerSuccessPage() {
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white text-sm hover:text-indigo-400">
                     {company.name}
                   </Link>
-                  <span className="capitalize px-2 py-0.5 rounded bg-secondary text-muted-foreground tabular-nums text-2xs">
+                  <span className="capitalize px-2 py-0.5 rounded bg-slate-800 text-muted-foreground tabular-nums text-2xs">
                     {company.plan}
                   </span>
                 </div>
@@ -227,7 +227,7 @@ export default function CustomerSuccessPage() {
 
                 <Link
                   href={`/platform/companies/${company.id}`}
-                  className="px-3 py-1.5 rounded-xl bg-secondary hover:bg-slate-700 text-foreground font-semibold text-xs border border-border"
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-foreground font-semibold text-xs border border-border"
                 >
                   Inspect →
                 </Link>
@@ -240,7 +240,7 @@ export default function CustomerSuccessPage() {
       {/* 3. At Risk & High Growth Split */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* At Risk Accounts */}
-        <Card className="bg-foreground border-border">
+        <Card className="bg-slate-900 border-border">
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm text-white font-bold flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-400" />
@@ -269,7 +269,7 @@ export default function CustomerSuccessPage() {
         </Card>
 
         {/* High Growth Accounts */}
-        <Card className="bg-foreground border-border">
+        <Card className="bg-slate-900 border-border">
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm text-white font-bold flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-emerald-400" />

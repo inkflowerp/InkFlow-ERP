@@ -79,7 +79,7 @@ export default function PlatformJobsPage() {
           size="sm"
           variant="outline"
           onClick={loadJobs}
-          className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
+          className="border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 text-xs h-9"
         >
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
           Refresh
@@ -95,7 +95,7 @@ export default function PlatformJobsPage() {
       )}
 
       {/* Jobs Table */}
-      <Card className="bg-foreground border-border overflow-hidden">
+      <Card className="bg-slate-900 border-border overflow-hidden">
         <CardHeader className="pb-3 border-b border-border">
           <CardTitle className="text-base text-white font-bold">
             Worker Execution Queue ({jobs.length})
@@ -107,7 +107,7 @@ export default function PlatformJobsPage() {
 
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-foreground text-muted-foreground font-semibold uppercase text-2xs border-b border-border">
+            <thead className="bg-slate-900 text-muted-foreground font-semibold uppercase text-2xs border-b border-border">
               <tr>
                 <th className="py-3 px-4">Job ID &amp; Type</th>
                 <th className="py-3 px-4">Tenant Scope</th>
@@ -144,7 +144,7 @@ export default function PlatformJobsPage() {
                             ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                             : isFailed
                             ? 'bg-red-500/10 text-red-400 border-red-500/30'
-                            : 'bg-secondary text-muted-foreground border-border'
+                            : 'bg-slate-800 text-muted-foreground border-border'
                         }`}
                       >
                         {j.status}
@@ -168,7 +168,7 @@ export default function PlatformJobsPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setInspectJob(j)}
-                        className="h-7 text-xs border-border text-muted-foreground hover:bg-secondary"
+                        className="h-7 text-xs border-border text-muted-foreground hover:bg-slate-800"
                       >
                         Inspect
                       </Button>
@@ -195,8 +195,8 @@ export default function PlatformJobsPage() {
 
       {/* Inspect Modal */}
       {inspectJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-slate-900 border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm">
                 Job Details: {inspectJob.id}
@@ -217,7 +217,7 @@ export default function PlatformJobsPage() {
               {inspectJob.error_log && (
                 <div className="space-y-1">
                   <div className="font-bold text-red-400">Error Log Output:</div>
-                  <pre className="p-3 rounded-xl bg-foreground border border-border tabular-nums text-2xs text-red-300 overflow-x-auto whitespace-pre-wrap">
+                  <pre className="p-3 rounded-xl bg-slate-900 border border-border tabular-nums text-2xs text-red-300 overflow-x-auto whitespace-pre-wrap">
                     {inspectJob.error_log}
                   </pre>
                 </div>

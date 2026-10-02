@@ -78,7 +78,7 @@ export function PlatformSettingsNav() {
               'flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border shrink-0',
               isActive
                 ? 'bg-gradient-to-r from-indigo-600/90 to-violet-600/90 text-white border-indigo-500/60 shadow-md shadow-indigo-600/25 font-bold'
-                : 'bg-foreground border-border text-foreground hover:text-white hover:bg-secondary hover:border-slate-600 shadow-xs'
+                : 'bg-slate-900 border-border text-foreground hover:text-white hover:bg-slate-800 hover:border-slate-600 shadow-xs'
             )}
           >
             <Icon

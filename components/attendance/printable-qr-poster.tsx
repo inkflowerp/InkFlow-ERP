@@ -60,7 +60,7 @@ export function PrintableQrPoster({
   return (
     <div className="space-y-4">
       {/* Top Action Bar (hidden when printing) */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-foreground border border-border rounded-xl print:hidden">
+      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-900 border border-border rounded-xl print:hidden">
         <div className="flex items-center gap-2 text-muted-foreground text-xs">
           <QrCode className="h-4 w-4 text-indigo-400" />
           <span>{tBilingual('Printable QR Poster for Location Entrance', 'লোকেশন প্রবেশদ্বারের জন্য প্রিন্ট উপযোগী পোস্টার')}</span>
@@ -75,7 +75,7 @@ export function PrintableQrPoster({
             type="button"
             variant="outline"
             onClick={handleDownloadSvg}
-            className="h-8 text-xs border-indigo-500/40 bg-secondary hover:bg-slate-700 text-indigo-300 font-bold flex items-center gap-1.5 cursor-pointer"
+            className="h-8 text-xs border-indigo-500/40 bg-slate-800 hover:bg-slate-700 text-indigo-300 font-bold flex items-center gap-1.5 cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
             <span>Download SVG</span>

@@ -134,7 +134,7 @@ export function FollowUpModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {/* Quotation Summary Card */}
-        <div className="p-3 rounded-xl bg-foreground text-white space-y-1.5 text-xs shadow-inner">
+        <div className="p-3 rounded-xl bg-slate-900 text-white space-y-1.5 text-xs shadow-inner">
           <div className="flex items-center justify-between">
             <span className="tabular-nums font-bold text-cyan-300">
               #{quotation.quotation_number}

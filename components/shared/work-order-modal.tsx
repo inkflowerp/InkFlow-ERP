@@ -1714,7 +1714,7 @@ export function WorkOrderModal({
             />
             {referenceProofUrl ? (
               <div className="space-y-1.5">
-                <div className="relative max-h-36 overflow-hidden rounded-lg border border-border bg-foreground flex items-center justify-center p-1">
+                <div className="relative max-h-36 overflow-hidden rounded-lg border border-border bg-slate-900 flex items-center justify-center p-1">
                   <img
                     src={referenceProofUrl}
                     alt="Reference Artwork"

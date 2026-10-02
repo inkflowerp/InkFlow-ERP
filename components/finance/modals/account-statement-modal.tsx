@@ -294,7 +294,7 @@ export function AccountStatementModal({
               type="button"
               size="sm"
               onClick={onClose}
-              className="bg-foreground text-white text-xs h-8 rounded-xl font-semibold"
+              className="bg-slate-900 text-white text-xs h-8 rounded-xl font-semibold"
             >
               {tBilingual('Close', 'বন্ধ করুন')}
             </Button>

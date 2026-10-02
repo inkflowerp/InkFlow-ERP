@@ -150,14 +150,14 @@ export default function TenantAuditLogsPage() {
       </div>
 
       {/* Filter and Search Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-foreground p-3.5 rounded-2xl border border-border">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900 p-3.5 rounded-2xl border border-border">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search action, actor email, entity ID, or details..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 sm:h-9 text-xs bg-foreground border-border text-slate-100 placeholder:text-muted-foreground rounded-xl"
+            className="pl-9 h-10 sm:h-9 text-xs bg-slate-900 border-border text-slate-100 placeholder:text-muted-foreground rounded-xl"
           />
         </div>
 
@@ -167,7 +167,7 @@ export default function TenantAuditLogsPage() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="bg-foreground border border-border text-foreground rounded-xl px-3 py-2 sm:py-1.5 text-xs font-semibold focus:outline-hidden w-full sm:w-auto"
+            className="bg-slate-900 border border-border text-foreground rounded-xl px-3 py-2 sm:py-1.5 text-xs font-semibold focus:outline-hidden w-full sm:w-auto"
           >
             {Object.entries(CATEGORY_GROUPS).map(([key, item]) => (
               <option key={key} value={key}>
@@ -179,13 +179,13 @@ export default function TenantAuditLogsPage() {
       </div>
 
       {/* Audit Logs Table & Mobile Cards */}
-      <Card className="bg-foreground border-border rounded-2xl shadow-xl overflow-hidden">
-        <CardHeader className="border-b border-border pb-3.5 bg-foreground">
+      <Card className="bg-slate-900 border-border rounded-2xl shadow-xl overflow-hidden">
+        <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <span>Company Audit Stream</span>
-                <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-slate-800 text-muted-foreground">
                   {logs.length} Records
                 </span>
               </CardTitle>
@@ -200,7 +200,7 @@ export default function TenantAuditLogsPage() {
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-foreground text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
+              <thead className="bg-slate-900 text-muted-foreground border-b border-border font-semibold uppercase tracking-wider text-2xs">
                 <tr>
                   <th className="py-3.5 px-4">Timestamp & Device</th>
                   <th className="py-3.5 px-4">Operator / Actor</th>
@@ -339,7 +339,7 @@ export default function TenantAuditLogsPage() {
                     {log.description || `Action performed on ${log.entity}`}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-2xs bg-foreground p-2.5 rounded-xl border border-border">
+                  <div className="grid grid-cols-2 gap-2 text-2xs bg-slate-900 p-2.5 rounded-xl border border-border">
                     <div>
                       <span className="text-muted-foreground block text-2xs">Actor:</span>
                       <span className="text-muted-foreground font-bold truncate block">{log.user_email}</span>
@@ -381,10 +381,10 @@ export default function TenantAuditLogsPage() {
       {/* DETAIL MODAL: BEFORE / AFTER VALUE DIFF INSPECTOR */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in-0">
-          <div className="bg-foreground border border-border rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-slate-900 border border-border rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedLog(null)}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-slate-800"
             >
               <X className="h-5 w-5" />
             </button>
@@ -402,7 +402,7 @@ export default function TenantAuditLogsPage() {
             </div>
 
             {/* Metadata Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-foreground p-3 rounded-xl border border-border">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-slate-900 p-3 rounded-xl border border-border">
               <div>
                 <span className="text-muted-foreground text-2xs block">Operator:</span>
                 <div className="font-bold text-white mt-0.5 truncate">{selectedLog.user_email}</div>
@@ -435,7 +435,7 @@ export default function TenantAuditLogsPage() {
                   <span className="h-2 w-2 rounded-full bg-red-400" />
                   <span>Previous State (Before)</span>
                 </div>
-                <div className="p-3 rounded-xl bg-foreground border border-border tabular-nums text-2xs text-red-300/90 max-h-48 sm:h-52 overflow-y-auto">
+                <div className="p-3 rounded-xl bg-slate-900 border border-border tabular-nums text-2xs text-red-300/90 max-h-48 sm:h-52 overflow-y-auto">
                   {selectedLog.previous_value ? (
                     <pre className="whitespace-pre-wrap break-all">{JSON.stringify(selectedLog.previous_value, null, 2)}</pre>
                   ) : (
@@ -450,7 +450,7 @@ export default function TenantAuditLogsPage() {
                   <span className="h-2 w-2 rounded-full bg-emerald-400" />
                   <span>Modified State (After)</span>
                 </div>
-                <div className="p-3 rounded-xl bg-foreground border border-border tabular-nums text-2xs text-emerald-300/90 max-h-48 sm:h-52 overflow-y-auto">
+                <div className="p-3 rounded-xl bg-slate-900 border border-border tabular-nums text-2xs text-emerald-300/90 max-h-48 sm:h-52 overflow-y-auto">
                   {selectedLog.new_value ? (
                     <pre className="whitespace-pre-wrap break-all">{JSON.stringify(selectedLog.new_value, null, 2)}</pre>
                   ) : (
@@ -462,7 +462,7 @@ export default function TenantAuditLogsPage() {
 
             {/* Device Metadata */}
             {selectedLog.device_metadata && (
-              <div className="p-2.5 rounded-xl bg-foreground border border-border text-2xs text-muted-foreground tabular-nums flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+              <div className="p-2.5 rounded-xl bg-slate-900 border border-border text-2xs text-muted-foreground tabular-nums flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
                 <span>Device: {selectedLog.device_metadata.browser || 'Browser'} on {selectedLog.device_metadata.os || 'OS'}</span>
                 <span>{selectedLog.device_metadata.geo_city || 'Dhaka'}, {selectedLog.device_metadata.geo_country || 'BD'}</span>
               </div>
@@ -472,7 +472,7 @@ export default function TenantAuditLogsPage() {
               <Button
                 size="sm"
                 onClick={() => setSelectedLog(null)}
-                className="w-full sm:w-auto h-10 sm:h-9 bg-secondary hover:bg-slate-700 text-xs text-white"
+                className="w-full sm:w-auto h-10 sm:h-9 bg-slate-800 hover:bg-slate-700 text-xs text-white"
               >
                 Close Inspector
               </Button>

@@ -1534,7 +1534,7 @@ export default function PlatformIntegrationsPage() {
                   onClick={() => setChannelFilter(c.id as any)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap min-h-[38px] ${
                     channelFilter === c.id
-                      ? 'bg-foreground text-white'
+                      ? 'bg-slate-900 text-white'
                       : 'bg-card border border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
@@ -2393,7 +2393,7 @@ export default function PlatformIntegrationsPage() {
                         onClick={() => setFormData({ ...formData, environment: env })}
                         className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium border transition-colors ${
                           formData.environment === env
-                            ? 'bg-foreground text-white border-slate-900'
+                            ? 'bg-slate-900 text-white border-slate-900'
                             : 'bg-card border-border text-muted-foreground hover:bg-muted'
                         }`}
                       >
@@ -2848,7 +2848,7 @@ export default function PlatformIntegrationsPage() {
             <span>{selectedWebhook && formatDateTime(selectedWebhook.created_at)}</span>
           </div>
 
-          <div className="p-3 bg-foreground rounded-lg text-emerald-400 font-mono text-xs overflow-x-auto max-h-80">
+          <div className="p-3 bg-slate-900 rounded-lg text-emerald-400 font-mono text-xs overflow-x-auto max-h-80">
             <pre>{JSON.stringify(selectedWebhook?.payload, null, 2)}</pre>
           </div>
 

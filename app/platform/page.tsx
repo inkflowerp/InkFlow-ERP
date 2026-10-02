@@ -83,7 +83,7 @@ export default function PlatformDashboardPage() {
           <Button
             asChild
             variant="outline"
-            className="h-9 px-4 border-border bg-foreground text-foreground hover:bg-secondary text-xs min-h-[38px]"
+            className="h-9 px-4 border-border bg-slate-900 text-foreground hover:bg-slate-800 text-xs min-h-[38px]"
           >
             <Link href="/platform/tenants">
               <Building2 className="h-3.5 w-3.5 mr-1.5" />
@@ -101,12 +101,12 @@ export default function PlatformDashboardPage() {
         <div className="h-10 w-72 bg-slate-800/80 rounded-xl" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 bg-foreground border border-border rounded-2xl" />
+            <div key={i} className="h-28 bg-slate-900 border border-border rounded-2xl" />
           ))}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-24 bg-foreground border border-border rounded-2xl" />
+            <div key={i} className="h-24 bg-slate-900 border border-border rounded-2xl" />
           ))}
         </div>
       </div>
@@ -133,7 +133,7 @@ export default function PlatformDashboardPage() {
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none w-full md:w-auto">
           {/* Date Range Selector */}
-          <div className="flex items-center rounded-xl bg-foreground border border-border p-0.5 text-xs shrink-0">
+          <div className="flex items-center rounded-xl bg-slate-900 border border-border p-0.5 text-xs shrink-0">
             {(['today', '7d', '30d', '90d'] as const).map((r) => (
               <button
                 key={r}
@@ -152,7 +152,7 @@ export default function PlatformDashboardPage() {
             size="sm"
             variant="outline"
             onClick={loadData}
-            className="border-border bg-foreground text-foreground hover:bg-secondary hover:text-white text-xs h-8 shrink-0 min-h-[36px]"
+            className="border-border bg-slate-900 text-foreground hover:bg-slate-800 hover:text-white text-xs h-8 shrink-0 min-h-[36px]"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh
@@ -293,7 +293,7 @@ export default function PlatformDashboardPage() {
           Core Platform Metrics
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-          <Card className="bg-foreground border-border p-4 shadow-sm">
+          <Card className="bg-slate-900 border-border p-4 shadow-sm">
             <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Active Companies</span>
               <Building2 className="h-3.5 w-3.5 text-indigo-400" />
@@ -304,7 +304,7 @@ export default function PlatformDashboardPage() {
             </div>
           </Card>
 
-          <Card className="bg-foreground border-border p-4 shadow-sm">
+          <Card className="bg-slate-900 border-border p-4 shadow-sm">
             <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Monthly Recurring</span>
               <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
@@ -317,7 +317,7 @@ export default function PlatformDashboardPage() {
             </div>
           </Card>
 
-          <Card className="bg-foreground border-border p-4 shadow-sm">
+          <Card className="bg-slate-900 border-border p-4 shadow-sm">
             <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Free Trials</span>
               <Clock className="h-3.5 w-3.5 text-cyan-400" />
@@ -326,7 +326,7 @@ export default function PlatformDashboardPage() {
             <div className="text-2xs text-cyan-400 mt-1 font-semibold">Active trials</div>
           </Card>
 
-          <Card className="bg-foreground border-border p-4 shadow-sm">
+          <Card className="bg-slate-900 border-border p-4 shadow-sm">
             <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Past Due / Risk</span>
               <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
@@ -335,7 +335,7 @@ export default function PlatformDashboardPage() {
             <div className="text-2xs text-amber-400 mt-1 font-medium">Renewal failed</div>
           </Card>
 
-          <Card className="bg-foreground border-border p-4 shadow-sm">
+          <Card className="bg-slate-900 border-border p-4 shadow-sm">
             <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Orders Processed</span>
               <Layers className="h-3.5 w-3.5 text-purple-400" />
@@ -344,7 +344,7 @@ export default function PlatformDashboardPage() {
             <div className="text-2xs text-purple-400 mt-1 font-semibold">Live this month</div>
           </Card>
 
-          <Card className="bg-foreground border-border p-4 shadow-sm">
+          <Card className="bg-slate-900 border-border p-4 shadow-sm">
             <div className="text-2xs font-semibold text-muted-foreground flex items-center justify-between">
               <span>Cloud Storage</span>
               <HardDrive className="h-3.5 w-3.5 text-pink-400" />
@@ -370,7 +370,7 @@ export default function PlatformDashboardPage() {
       {/* 5.4 COMPANY HEALTH & 5.5 SUBSCRIPTION SUMMARY */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Company Health Breakdown */}
-        <Card className="bg-foreground border-border shadow-sm">
+        <Card className="bg-slate-900 border-border shadow-sm">
           <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white font-bold flex items-center gap-2">
@@ -426,7 +426,7 @@ export default function PlatformDashboardPage() {
 
               <Link
                 href="/platform/tenants?status=suspended"
-                className="p-3 rounded-xl bg-foreground border border-border hover:bg-slate-800/60 transition-colors"
+                className="p-3 rounded-xl bg-slate-900 border border-border hover:bg-slate-800/60 transition-colors"
               >
                 <div className="text-xs font-bold text-muted-foreground uppercase">Suspended</div>
                 <div className="text-2xl font-black text-white mt-1">
@@ -436,7 +436,7 @@ export default function PlatformDashboardPage() {
               </Link>
             </div>
 
-            <div className="p-3 rounded-xl bg-foreground border border-border text-2xs text-muted-foreground flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-slate-900 border border-border text-2xs text-muted-foreground flex items-center justify-between">
               <span>Platform Health Engine evaluates subscription, storage %, recent errors, and meaningful activity.</span>
               <Link href="/platform/customer-success" className="text-indigo-300 hover:underline font-semibold shrink-0 ml-2">
                 Customer Success →
@@ -446,7 +446,7 @@ export default function PlatformDashboardPage() {
         </Card>
 
         {/* Subscription Summary */}
-        <Card className="bg-foreground border-border shadow-sm">
+        <Card className="bg-slate-900 border-border shadow-sm">
           <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base text-white font-bold flex items-center gap-2">
@@ -471,7 +471,7 @@ export default function PlatformDashboardPage() {
                 data.subscription_metrics.map((tier) => (
                   <div
                     key={tier.plan_code}
-                    className="p-2.5 rounded-xl bg-foreground border border-border flex items-center justify-between text-xs"
+                    className="p-2.5 rounded-xl bg-slate-900 border border-border flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-2.5">
                       <span className="font-bold text-white">{tier.plan_name}</span>
@@ -489,7 +489,7 @@ export default function PlatformDashboardPage() {
                   </div>
                 ))
               ) : (
-                <div className="p-4 rounded-xl bg-foreground border border-border text-center text-xs text-muted-foreground space-y-1">
+                <div className="p-4 rounded-xl bg-slate-900 border border-border text-center text-xs text-muted-foreground space-y-1">
                   <CreditCard className="h-6 w-6 mx-auto text-muted-foreground" />
                   <p className="font-semibold text-foreground">No active subscriptions yet</p>
                   <p className="text-2xs text-muted-foreground">Tier revenue analytics will calculate automatically as tenants subscribe.</p>
@@ -565,7 +565,7 @@ export default function PlatformDashboardPage() {
             return (
               <div
                 key={svc.name}
-                className="p-2.5 rounded-xl bg-foreground border border-border text-center space-y-1 hover:border-slate-600 transition-colors shadow-xs"
+                className="p-2.5 rounded-xl bg-slate-900 border border-border text-center space-y-1 hover:border-slate-600 transition-colors shadow-xs"
                 title={svc.notes || `${svc.name}: ${label}`}
               >
                 <div className="text-2xs font-bold text-foreground truncate" title={svc.name}>{svc.name}</div>
@@ -580,7 +580,7 @@ export default function PlatformDashboardPage() {
       </div>
 
       {/* 5.7 RECENT PLATFORM ACTIVITY */}
-      <Card className="bg-foreground border-border shadow-sm">
+      <Card className="bg-slate-900 border-border shadow-sm">
         <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base text-white font-bold flex items-center gap-2">

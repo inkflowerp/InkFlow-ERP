@@ -691,7 +691,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                         className={cn(
                           'px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer',
                           isSelected
-                            ? 'bg-foreground text-white dark:text-white border border-slate-900 shadow-xs'
+                            ? 'bg-slate-900 text-white dark:text-white border border-slate-900 shadow-xs'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
                         )}
                       >

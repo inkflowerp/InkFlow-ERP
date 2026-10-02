@@ -331,7 +331,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             />
             {/* Format & Version Overlay */}
             <div className="absolute top-2 left-2 flex items-center gap-1">
-              <span className="bg-foreground backdrop-blur-sm text-white text-2xs font-bold uppercase px-1.5 py-0.5 rounded">
+              <span className="bg-slate-900 backdrop-blur-sm text-white text-2xs font-bold uppercase px-1.5 py-0.5 rounded">
                 {currentVer?.file_format || 'PNG'}
               </span>
               <span className="bg-indigo-600/90 text-white text-2xs font-bold px-1.5 py-0.5 rounded tabular-nums">
@@ -340,7 +340,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             </div>
 
             {/* Hover Actions */}
-            <div className="absolute inset-0 bg-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="absolute inset-0 bg-slate-900 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button
                 type="button"
                 size="sm"

@@ -1788,7 +1788,7 @@ function DesignDetailContent() {
                     }
                   }}
                   className={cn(
-                    'rounded-2xl overflow-hidden border border-border bg-foreground flex items-center justify-center min-h-[380px] relative group transition-all',
+                    'rounded-2xl overflow-hidden border border-border bg-slate-900 flex items-center justify-center min-h-[380px] relative group transition-all',
                     isDraggingOver && 'ring-4 ring-indigo-500 ring-offset-2'
                   )}
                 >
@@ -2504,13 +2504,13 @@ function DesignDetailContent() {
         className="max-w-4xl"
       >
         <div className="space-y-4 pt-1">
-          <div className="flex items-center justify-between gap-2 p-2 bg-foreground text-white rounded-lg text-xs">
+          <div className="flex items-center justify-between gap-2 p-2 bg-slate-900 text-white rounded-lg text-xs">
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => setLightboxZoom((z) => Math.max(0.5, z - 0.25))}
-                className="h-7 text-xs text-white hover:bg-secondary"
+                className="h-7 text-xs text-white hover:bg-slate-800"
               >
                 <ZoomOut className="h-3.5 w-3.5 mr-1" /> Zoom Out
               </Button>
@@ -2519,7 +2519,7 @@ function DesignDetailContent() {
                 size="sm"
                 variant="ghost"
                 onClick={() => setLightboxZoom((z) => Math.min(3, z + 0.25))}
-                className="h-7 text-xs text-white hover:bg-secondary"
+                className="h-7 text-xs text-white hover:bg-slate-800"
               >
                 <ZoomIn className="h-3.5 w-3.5 mr-1" /> Zoom In
               </Button>
@@ -2527,7 +2527,7 @@ function DesignDetailContent() {
                 size="sm"
                 variant="ghost"
                 onClick={() => setLightboxZoom(1)}
-                className="h-7 text-xs text-white hover:bg-secondary"
+                className="h-7 text-xs text-white hover:bg-slate-800"
               >
                 Reset
               </Button>
@@ -2538,7 +2538,7 @@ function DesignDetailContent() {
             </div>
           </div>
 
-          <div className="overflow-auto max-h-[65vh] rounded-xl bg-foreground flex items-center justify-center p-4 border border-border">
+          <div className="overflow-auto max-h-[65vh] rounded-xl bg-slate-900 flex items-center justify-center p-4 border border-border">
             <img
               src={activeVersion.proof_file_url}
               alt="Lightbox Proof"

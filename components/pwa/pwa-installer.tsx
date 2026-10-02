@@ -67,7 +67,7 @@ export function PWAInstaller() {
 
   return (
     <div className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-50 animate-in slide-in-from-bottom-5">
-      <div className="bg-foreground border border-border text-white p-3.5 rounded-2xl shadow-2xl flex items-center justify-between gap-3">
+      <div className="bg-slate-900 border border-border text-white p-3.5 rounded-2xl shadow-2xl flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-md">
             <Smartphone className="h-5 w-5 text-white" />

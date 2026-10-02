@@ -113,7 +113,7 @@ export function MonthlySalesProfitChart({
                   >
                     {/* Hover Tooltip */}
                     {isHovered && (
-                      <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-30 bg-foreground text-white text-2xs py-2 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none border border-border">
+                      <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-30 bg-slate-900 text-white text-2xs py-2 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none border border-border">
                         <div className="font-bold text-foreground mb-0.5 flex items-center justify-between gap-2">
                           <span>{item.monthLabel}</span>
                           <span className="text-2xs text-blue-300 tabular-nums">

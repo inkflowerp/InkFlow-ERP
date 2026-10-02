@@ -94,7 +94,7 @@ export function DeliveryFilterToolbar({
             className={cn(
               'text-xs h-8 px-3.5 rounded-xl font-bold transition-all shrink-0',
               viewMode === 'calendar'
-                ? 'bg-secondary hover:bg-foreground text-white shadow-xs dark:bg-muted'
+                ? 'bg-slate-800 hover:bg-slate-900 text-white shadow-xs dark:bg-muted'
                 : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
             )}
           >

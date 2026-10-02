@@ -93,7 +93,7 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto cursor-pointer"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto cursor-pointer"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

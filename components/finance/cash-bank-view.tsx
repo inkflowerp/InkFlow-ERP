@@ -196,7 +196,7 @@ export function CashBankView({
           <Button
             onClick={() => onOpenTransferModal()}
             variant="outline"
-            className="border-border bg-secondary text-foreground hover:bg-slate-700 text-xs h-9 px-3.5 rounded-xl font-semibold cursor-pointer flex items-center gap-1.5"
+            className="border-border bg-slate-800 text-foreground hover:bg-slate-700 text-xs h-9 px-3.5 rounded-xl font-semibold cursor-pointer flex items-center gap-1.5"
           >
             <ArrowLeftRight className="w-4 h-4" />
             <span>{tBilingual('Transfer', 'ট্রান্সফার')}</span>

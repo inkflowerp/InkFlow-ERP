@@ -342,7 +342,7 @@ export default function PlatformNotificationsPage() {
             variant="outline"
             disabled={actionInProgress !== null || notifications.every((n) => !n.is_read)}
             onClick={handleClearAllRead}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:text-rose-300 hover:bg-rose-950/40 hover:border-rose-900/50"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:text-rose-300 hover:bg-rose-950/40 hover:border-rose-900/50"
             title="Clear all read notifications"
           >
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
@@ -353,7 +353,7 @@ export default function PlatformNotificationsPage() {
             size="sm"
             variant="outline"
             onClick={handleExportCSV}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 hover:text-white"
             title="Export notifications as CSV"
           >
             <Download className="h-3.5 w-3.5 mr-1.5" />
@@ -364,7 +364,7 @@ export default function PlatformNotificationsPage() {
             size="sm"
             variant="outline"
             onClick={() => refetch()}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary hover:text-white"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 hover:text-white"
             title="Refresh Feed"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
@@ -422,7 +422,7 @@ export default function PlatformNotificationsPage() {
 
       {/* Executive Metric Cards (4 KPIs from Database State) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="border-border bg-foreground p-4 rounded-2xl relative overflow-hidden">
+        <Card className="border-border bg-slate-900 p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Alerts</span>
             <div className="h-8 w-8 rounded-xl bg-slate-800/80 flex items-center justify-center text-muted-foreground border border-slate-700/60">
@@ -433,7 +433,7 @@ export default function PlatformNotificationsPage() {
           <div className="text-2xs text-muted-foreground mt-1">Authoritative database records</div>
         </Card>
 
-        <Card className="border-border bg-foreground p-4 rounded-2xl relative overflow-hidden">
+        <Card className="border-border bg-slate-900 p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-rose-400">Unread Alerts</span>
             <div className="h-8 w-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 border border-rose-500/20">
@@ -444,7 +444,7 @@ export default function PlatformNotificationsPage() {
           <div className="text-2xs text-muted-foreground mt-1">Require operator acknowledgment</div>
         </Card>
 
-        <Card className="border-border bg-foreground p-4 rounded-2xl relative overflow-hidden">
+        <Card className="border-border bg-slate-900 p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Warnings &amp; Quotas</span>
             <div className="h-8 w-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20">
@@ -455,7 +455,7 @@ export default function PlatformNotificationsPage() {
           <div className="text-2xs text-muted-foreground mt-1">Storage, job retry &amp; billing notices</div>
         </Card>
 
-        <Card className="border-border bg-foreground p-4 rounded-2xl relative overflow-hidden">
+        <Card className="border-border bg-slate-900 p-4 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Broadcasts</span>
             <div className="h-8 w-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
@@ -468,7 +468,7 @@ export default function PlatformNotificationsPage() {
       </div>
 
       {/* Filter Chips & Search Bar */}
-      <div className="bg-foreground p-4 rounded-2xl border border-border space-y-3">
+      <div className="bg-slate-900 p-4 rounded-2xl border border-border space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Category Filter Chips */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
@@ -489,7 +489,7 @@ export default function PlatformNotificationsPage() {
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer ${
                   filterType === tab.key
                     ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
-                    : 'bg-foreground border-border text-muted-foreground hover:text-white hover:bg-secondary'
+                    : 'bg-slate-900 border-border text-muted-foreground hover:text-white hover:bg-slate-800'
                 }`}
               >
                 {tab.label}
@@ -502,7 +502,7 @@ export default function PlatformNotificationsPage() {
             <select
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
-              className="bg-foreground border border-border text-muted-foreground text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
+              className="bg-slate-900 border border-border text-muted-foreground text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
             >
               <option value="all">All Severities</option>
               <option value="critical">Critical Only</option>
@@ -510,12 +510,12 @@ export default function PlatformNotificationsPage() {
               <option value="info">Info Only</option>
             </select>
 
-            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer bg-foreground px-3 py-1.5 rounded-xl border border-border hover:border-border">
+            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer bg-slate-900 px-3 py-1.5 rounded-xl border border-border hover:border-border">
               <input
                 type="checkbox"
                 checked={showUnreadOnly}
                 onChange={(e) => setShowUnreadOnly(e.target.checked)}
-                className="rounded border-border bg-foreground text-indigo-600 focus:ring-0 cursor-pointer"
+                className="rounded border-border bg-slate-900 text-indigo-600 focus:ring-0 cursor-pointer"
               />
               <span>Unread only</span>
             </label>
@@ -529,7 +529,7 @@ export default function PlatformNotificationsPage() {
             placeholder="Search notifications by title, details, tenant company, or service..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 text-xs bg-foreground border-border focus:border-indigo-500 text-foreground"
+            className="pl-9 h-9 text-xs bg-slate-900 border-border focus:border-indigo-500 text-foreground"
           />
           {searchQuery && (
             <button
@@ -546,12 +546,12 @@ export default function PlatformNotificationsPage() {
       {/* Notification Stream Feed */}
       <div className="space-y-3">
         {loading && notifications.length === 0 ? (
-          <div className="py-16 text-center text-muted-foreground text-xs bg-foreground rounded-2xl border border-border">
+          <div className="py-16 text-center text-muted-foreground text-xs bg-slate-900 rounded-2xl border border-border">
             <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
             Loading live platform notifications...
           </div>
         ) : filteredNotifications.length === 0 ? (
-          <Card className="border-border bg-foreground p-12 text-center rounded-2xl">
+          <Card className="border-border bg-slate-900 p-12 text-center rounded-2xl">
             <Bell className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-60" />
             <p className="font-bold text-foreground text-sm">No notifications yet.</p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -591,8 +591,8 @@ export default function PlatformNotificationsPage() {
                   key={item.id}
                   className={`border p-4 sm:p-5 rounded-2xl transition-all ${
                     !item.is_read
-                      ? 'bg-foreground border-indigo-500/40 ring-1 ring-indigo-500/30 shadow-lg shadow-indigo-950/20'
-                      : 'bg-foreground border-border opacity-85 hover:opacity-100 hover:border-border'
+                      ? 'bg-slate-900 border-indigo-500/40 ring-1 ring-indigo-500/30 shadow-lg shadow-indigo-950/20'
+                      : 'bg-slate-900 border-border opacity-85 hover:opacity-100 hover:border-border'
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -614,7 +614,7 @@ export default function PlatformNotificationsPage() {
                             ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                             : isHealth
                             ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
-                            : 'bg-secondary text-muted-foreground border-border'
+                            : 'bg-slate-800 text-muted-foreground border-border'
                         }`}
                       >
                         {isCritical ? (
@@ -653,7 +653,7 @@ export default function PlatformNotificationsPage() {
                                 ? 'bg-rose-950/60 text-rose-300 border-rose-800'
                                 : isWarning
                                 ? 'bg-amber-950/60 text-amber-300 border-amber-800'
-                                : 'bg-secondary text-muted-foreground border-border'
+                                : 'bg-slate-800 text-muted-foreground border-border'
                             }`}
                           >
                             {item.severity}
@@ -751,7 +751,7 @@ export default function PlatformNotificationsPage() {
                   variant="outline"
                   onClick={fetchMore}
                   disabled={loadingMore}
-                  className="bg-foreground border-border hover:bg-secondary text-muted-foreground text-xs px-6 py-2 rounded-xl cursor-pointer"
+                  className="bg-slate-900 border-border hover:bg-slate-800 text-muted-foreground text-xs px-6 py-2 rounded-xl cursor-pointer"
                 >
                   {loadingMore ? (
                     <>
@@ -773,8 +773,8 @@ export default function PlatformNotificationsPage() {
 
       {/* Broadcast Modal */}
       {broadcastModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-lg bg-foreground border border-border rounded-3xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-lg bg-slate-900 border border-border rounded-3xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
@@ -788,7 +788,7 @@ export default function PlatformNotificationsPage() {
               <button
                 type="button"
                 onClick={() => setBroadcastModalOpen(false)}
-                className="p-1.5 text-muted-foreground hover:text-white rounded-lg hover:bg-secondary cursor-pointer"
+                className="p-1.5 text-muted-foreground hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -804,7 +804,7 @@ export default function PlatformNotificationsPage() {
                   placeholder="e.g., Scheduled Maintenance / System Upgrade Notice"
                   value={broadcastForm.title}
                   onChange={(e) => setBroadcastForm({ ...broadcastForm, title: e.target.value })}
-                  className="bg-foreground border-border text-xs text-white"
+                  className="bg-slate-900 border-border text-xs text-white"
                 />
               </div>
 
@@ -819,7 +819,7 @@ export default function PlatformNotificationsPage() {
                         severity: e.target.value as 'info' | 'warning' | 'critical',
                       })
                     }
-                    className="w-full bg-foreground border border-border text-foreground text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-900 border border-border text-foreground text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500"
                   >
                     <option value="info">Info (Blue/General)</option>
                     <option value="warning">Warning (Amber/Advisory)</option>
@@ -837,7 +837,7 @@ export default function PlatformNotificationsPage() {
                         target_audience: e.target.value as 'all_tenants' | 'all_admins' | 'specific_tenant',
                       })
                     }
-                    className="w-full bg-foreground border border-border text-foreground text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-900 border border-border text-foreground text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500"
                   >
                     <option value="all_tenants">All Tenant Environments</option>
                     <option value="all_admins">Platform Administrators Only</option>
@@ -853,7 +853,7 @@ export default function PlatformNotificationsPage() {
                     placeholder="Enter UUID of target company"
                     value={broadcastForm.company_id}
                     onChange={(e) => setBroadcastForm({ ...broadcastForm, company_id: e.target.value })}
-                    className="bg-foreground border-border text-xs text-white tabular-nums"
+                    className="bg-slate-900 border-border text-xs text-white tabular-nums"
                   />
                 </div>
               )}
@@ -868,7 +868,7 @@ export default function PlatformNotificationsPage() {
                   placeholder="Enter detailed notice message, instructions, or maintenance window..."
                   value={broadcastForm.message}
                   onChange={(e) => setBroadcastForm({ ...broadcastForm, message: e.target.value })}
-                  className="w-full bg-foreground border border-border text-foreground text-xs rounded-xl p-3 focus:outline-none focus:border-indigo-500 leading-relaxed"
+                  className="w-full bg-slate-900 border border-border text-foreground text-xs rounded-xl p-3 focus:outline-none focus:border-indigo-500 leading-relaxed"
                 />
               </div>
 
@@ -880,7 +880,7 @@ export default function PlatformNotificationsPage() {
                   placeholder="e.g., /platform/health or https://status.inkflow.io"
                   value={broadcastForm.action_url}
                   onChange={(e) => setBroadcastForm({ ...broadcastForm, action_url: e.target.value })}
-                  className="bg-foreground border-border text-xs text-white"
+                  className="bg-slate-900 border-border text-xs text-white"
                 />
               </div>
 
@@ -889,7 +889,7 @@ export default function PlatformNotificationsPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setBroadcastModalOpen(false)}
-                  className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
+                  className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
                 >
                   Cancel
                 </Button>

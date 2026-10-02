@@ -189,7 +189,7 @@ export default function PlatformTenantUsersPage() {
       )
     }
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold bg-secondary border border-border text-muted-foreground capitalize">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold bg-slate-800 border border-border text-muted-foreground capitalize">
         {role.replace(/_/g, ' ')}
       </span>
     )
@@ -228,7 +228,7 @@ export default function PlatformTenantUsersPage() {
             size="sm"
             variant="outline"
             onClick={() => loadData()}
-            className="h-9 text-xs border-border bg-foreground text-foreground hover:bg-secondary hover:text-white cursor-pointer"
+            className="h-9 text-xs border-border bg-slate-900 text-foreground hover:bg-slate-800 hover:text-white cursor-pointer"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -246,7 +246,7 @@ export default function PlatformTenantUsersPage() {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-border bg-foreground p-4 shadow-sm">
+        <Card className="border-border bg-slate-900 p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Registered Users</span>
             <Users className="h-4 w-4 text-indigo-400" />
@@ -255,7 +255,7 @@ export default function PlatformTenantUsersPage() {
           <p className="text-2xs text-muted-foreground mt-1 font-medium">Across all onboarded tenants</p>
         </Card>
 
-        <Card className="border-border bg-foreground p-4 shadow-sm">
+        <Card className="border-border bg-slate-900 p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Active Organizations</span>
             <Building2 className="h-4 w-4 text-emerald-400" />
@@ -264,7 +264,7 @@ export default function PlatformTenantUsersPage() {
           <p className="text-2xs text-muted-foreground mt-1 font-medium">Tenant companies provisioned</p>
         </Card>
 
-        <Card className="border-border bg-foreground p-4 shadow-sm">
+        <Card className="border-border bg-slate-900 p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Isolation Policy</span>
             <ShieldCheck className="h-4 w-4 text-cyan-400" />
@@ -275,7 +275,7 @@ export default function PlatformTenantUsersPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <Card className="border-border bg-foreground p-4 shadow-sm">
+      <Card className="border-border bg-slate-900 p-4 shadow-sm">
         <form onSubmit={handleSearchSubmit} className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -283,7 +283,7 @@ export default function PlatformTenantUsersPage() {
               placeholder="Search user name, email, phone, role, or company..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-foreground border-border text-sm text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500/50"
+              className="pl-9 bg-slate-900 border-border text-sm text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500/50"
             />
           </div>
 
@@ -296,7 +296,7 @@ export default function PlatformTenantUsersPage() {
                   setCompanyFilter(e.target.value)
                   setPage(1)
                 }}
-                className="bg-foreground border border-border text-xs text-foreground rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500/50"
+                className="bg-slate-900 border border-border text-xs text-foreground rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500/50"
               >
                 <option value="all">All Tenant Companies</option>
                 {companies.map((c) => (
@@ -315,7 +315,7 @@ export default function PlatformTenantUsersPage() {
                   setStatusFilter(e.target.value as any)
                   setPage(1)
                 }}
-                className="bg-foreground border border-border text-xs text-foreground rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500/50"
+                className="bg-slate-900 border border-border text-xs text-foreground rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500/50"
               >
                 <option value="all">All Statuses</option>
                 <option value="active">Active Only</option>
@@ -336,10 +336,10 @@ export default function PlatformTenantUsersPage() {
       </Card>
 
       {/* Users Table */}
-      <Card className="border-border bg-foreground overflow-hidden shadow-sm">
+      <Card className="border-border bg-slate-900 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-foreground text-foreground font-bold border-b border-border">
+            <thead className="bg-slate-900 text-foreground font-bold border-b border-border">
               <tr>
                 <th className="py-3.5 px-4 font-bold text-slate-100">User</th>
                 <th className="py-3.5 px-4 font-bold text-slate-100">Organization / Tenant</th>
@@ -371,7 +371,7 @@ export default function PlatformTenantUsersPage() {
                     {/* User */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-secondary border border-border flex items-center justify-center text-indigo-400 font-bold shrink-0">
+                        <div className="h-8 w-8 rounded-full bg-slate-800 border border-border flex items-center justify-center text-indigo-400 font-bold shrink-0">
                           {u.full_name ? u.full_name[0].toUpperCase() : u.email[0].toUpperCase()}
                         </div>
                         <div>
@@ -474,7 +474,7 @@ export default function PlatformTenantUsersPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleOpenStatusModal(u)}
-                          className="h-7 text-2xs border-border bg-foreground hover:bg-secondary text-foreground px-2 cursor-pointer font-medium"
+                          className="h-7 text-2xs border-border bg-slate-900 hover:bg-slate-800 text-foreground px-2 cursor-pointer font-medium"
                         >
                           {u.status === 'active' ? 'Disable' : 'Enable'}
                         </Button>
@@ -512,7 +512,7 @@ export default function PlatformTenantUsersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-foreground text-xs text-muted-foreground font-medium">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-900 text-xs text-muted-foreground font-medium">
             <div>
               Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} users
             </div>
@@ -522,7 +522,7 @@ export default function PlatformTenantUsersPage() {
                 variant="outline"
                 disabled={page <= 1 || loading}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="h-8 w-8 p-0 border-border bg-foreground text-foreground disabled:opacity-40 cursor-pointer"
+                className="h-8 w-8 p-0 border-border bg-slate-900 text-foreground disabled:opacity-40 cursor-pointer"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -534,7 +534,7 @@ export default function PlatformTenantUsersPage() {
                 variant="outline"
                 disabled={page >= totalPages || loading}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="h-8 w-8 p-0 border-border bg-foreground text-foreground disabled:opacity-40 cursor-pointer"
+                className="h-8 w-8 p-0 border-border bg-slate-900 text-foreground disabled:opacity-40 cursor-pointer"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -546,7 +546,7 @@ export default function PlatformTenantUsersPage() {
       {/* Status Toggle Modal */}
       {statusModalUser && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-foreground border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl shadow-black/90 ring-1 ring-slate-700/60 relative animate-in fade-in-0 zoom-in-95">
+          <div className="bg-slate-900 border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl shadow-black/90 ring-1 ring-slate-700/60 relative animate-in fade-in-0 zoom-in-95">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <AlertTriangle className={`h-5 w-5 ${targetStatus === 'disabled' ? 'text-rose-400' : 'text-emerald-400'}`} />
@@ -574,7 +574,7 @@ export default function PlatformTenantUsersPage() {
                 <select
                   value={targetStatus}
                   onChange={(e) => setTargetStatus(e.target.value as any)}
-                  className="w-full bg-foreground border border-border rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-slate-900 border border-border rounded-xl px-3 py-2 text-xs text-white"
                 >
                   <option value="active">Active (Full Tenant Access)</option>
                   <option value="disabled">Disabled (Block Tenant Access)</option>
@@ -587,7 +587,7 @@ export default function PlatformTenantUsersPage() {
                   value={statusReason}
                   onChange={(e) => setStatusReason(e.target.value)}
                   placeholder="e.g. Account locked by admin or requested by tenant owner"
-                  className="bg-foreground border-border text-xs text-white placeholder:text-muted-foreground"
+                  className="bg-slate-900 border-border text-xs text-white placeholder:text-muted-foreground"
                 />
               </div>
             </div>

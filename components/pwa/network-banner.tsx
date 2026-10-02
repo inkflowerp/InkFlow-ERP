@@ -18,7 +18,7 @@ export function NetworkBanner({ onOpenSyncDrawer }: NetworkBannerProps) {
   }
 
   return (
-    <div className="w-full bg-foreground border-b border-border text-white px-4 py-2 text-xs flex items-center justify-between transition-all">
+    <div className="w-full bg-slate-900 border-b border-border text-white px-4 py-2 text-xs flex items-center justify-between transition-all">
       <div className="flex items-center gap-2 max-w-xl">
         {!isOnline ? (
           <span className="flex items-center gap-1.5 text-amber-400 font-semibold">

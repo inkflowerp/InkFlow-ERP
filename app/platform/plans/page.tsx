@@ -556,7 +556,7 @@ export default function PlatformPlansPage() {
             variant="outline"
             onClick={loadData}
             disabled={loading}
-            className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
+            className="border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 text-xs h-9"
           >
             <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
             Refresh
@@ -616,7 +616,7 @@ export default function PlatformPlansPage() {
       {loading && plans.length === 0 ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 animate-pulse">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="p-4 rounded-xl bg-foreground border border-border h-24" />
+            <div key={i} className="p-4 rounded-xl bg-slate-900 border border-border h-24" />
           ))}
         </div>
       ) : error && plans.length === 0 ? (
@@ -631,7 +631,7 @@ export default function PlatformPlansPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-          <div className="p-4 rounded-xl bg-foreground border border-border flex items-center justify-between shadow-md">
+          <div className="p-4 rounded-xl bg-slate-900 border border-border flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
               <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Active SaaS Tiers</div>
               <div className="text-2xl font-black text-white">{telemetry.activePlansCount} Plans</div>
@@ -642,7 +642,7 @@ export default function PlatformPlansPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-foreground border border-border flex items-center justify-between shadow-md">
+          <div className="p-4 rounded-xl bg-slate-900 border border-border flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
               <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Free Trial Window</div>
               <div className="text-2xl font-black text-amber-400">{telemetry.trialDays} Days</div>
@@ -653,7 +653,7 @@ export default function PlatformPlansPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-foreground border border-border flex items-center justify-between shadow-md">
+          <div className="p-4 rounded-xl bg-slate-900 border border-border flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
               <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Commercial Pricing Range</div>
               <div className="text-xl font-black text-emerald-400">
@@ -666,7 +666,7 @@ export default function PlatformPlansPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-foreground border border-border flex items-center justify-between shadow-md">
+          <div className="p-4 rounded-xl bg-slate-900 border border-border flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
               <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Tenant Distribution</div>
               <div className="text-2xl font-black text-white">{telemetry.totalTenants} Tenants</div>
@@ -737,7 +737,7 @@ export default function PlatformPlansPage() {
                 placeholder="Search plans..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 pl-8 text-xs bg-foreground border-border text-white placeholder:text-muted-foreground"
+                className="h-8 pl-8 text-xs bg-slate-900 border-border text-white placeholder:text-muted-foreground"
               />
             </div>
           )}
@@ -748,10 +748,10 @@ export default function PlatformPlansPage() {
       {loading && plans.length === 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-96 rounded-2xl bg-foreground border border-border p-6 space-y-4">
-              <div className="h-6 w-1/2 bg-secondary rounded" />
+            <div key={i} className="h-96 rounded-2xl bg-slate-900 border border-border p-6 space-y-4">
+              <div className="h-6 w-1/2 bg-slate-800 rounded" />
               <div className="h-10 w-3/4 bg-slate-800/60 rounded" />
-              <div className="h-40 bg-foreground rounded-xl" />
+              <div className="h-40 bg-slate-900 rounded-xl" />
             </div>
           ))}
         </div>
@@ -769,7 +769,7 @@ export default function PlatformPlansPage() {
                   <Clock className="h-3.5 w-3.5" />
                   Free Evaluation Tier
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold bg-secondary text-amber-200 border border-amber-500/20">
+                <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold bg-slate-800 text-amber-200 border border-amber-500/20">
                   {trialPlan.trial_days ?? 30} Days Duration
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
@@ -802,67 +802,67 @@ export default function PlatformPlansPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-5">
             {/* Limit summary: Users & Branches */}
-            <div className="rounded-xl bg-foreground p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
+            <div className="rounded-xl bg-slate-900 p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
               <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <Users className="h-4 w-4 text-amber-400" />
                 User &amp; Branch Quota
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Max User Seats:</span>
-                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-border">
                   {trialPlan.max_users} seats
                 </strong>
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Max Branches:</span>
-                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-border">
                   {trialPlan.max_branches} branch
                 </strong>
               </div>
             </div>
 
             {/* Limit summary: Storage & Orders */}
-            <div className="rounded-xl bg-foreground p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
+            <div className="rounded-xl bg-slate-900 p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
               <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <HardDrive className="h-4 w-4 text-amber-400" />
                 Volume &amp; Storage
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Cloud Storage:</span>
-                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-border">
                   {trialPlan.storage_gb} GB
                 </strong>
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Monthly Orders:</span>
-                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-border">
                   {trialPlan.monthly_orders.toLocaleString()} orders
                 </strong>
               </div>
             </div>
 
             {/* Limit summary: Customers & Products */}
-            <div className="rounded-xl bg-foreground p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
+            <div className="rounded-xl bg-slate-900 p-4 border border-amber-900/40 space-y-2.5 shadow-inner">
               <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 <Building2 className="h-4 w-4 text-amber-400" />
                 Directory Limits
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Max Customers:</span>
-                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-border">
                   {trialPlan.max_customers.toLocaleString()}
                 </strong>
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Max Products:</span>
-                <strong className="text-white tabular-nums bg-foreground px-2 py-0.5 rounded border border-border">
+                <strong className="text-white tabular-nums bg-slate-900 px-2 py-0.5 rounded border border-border">
                   {trialPlan.max_products.toLocaleString()}
                 </strong>
               </div>
             </div>
 
             {/* Feature Access Summary */}
-            <div className="rounded-xl bg-foreground p-4 border border-amber-900/40 space-y-2.5 shadow-inner flex flex-col justify-between">
+            <div className="rounded-xl bg-slate-900 p-4 border border-amber-900/40 space-y-2.5 shadow-inner flex flex-col justify-between">
               <div>
                 <div className="text-xs font-bold text-amber-300 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
@@ -917,7 +917,7 @@ export default function PlatformPlansPage() {
               return (
                 <Card
                   key={plan.id}
-                  className={`bg-foreground border-border flex flex-col justify-between shadow-xl transition-all duration-200 ${
+                  className={`bg-slate-900 border-border flex flex-col justify-between shadow-xl transition-all duration-200 ${
                     isArchived ? 'opacity-65 border-dashed border-border' : 'hover:border-border'
                   }`}
                 >
@@ -937,7 +937,7 @@ export default function PlatformPlansPage() {
                           {plan.code}
                         </span>
                         {isArchived ? (
-                          <Badge variant="outline" className="text-2xs bg-secondary text-muted-foreground border-border">
+                          <Badge variant="outline" className="text-2xs bg-slate-800 text-muted-foreground border-border">
                             Archived
                           </Badge>
                         ) : (
@@ -971,7 +971,7 @@ export default function PlatformPlansPage() {
 
                   <CardContent className="space-y-4 pt-4 flex-1">
                     {/* 6 Configurable Limits Grid */}
-                    <div className="rounded-xl bg-foreground p-3.5 border border-border space-y-2.5">
+                    <div className="rounded-xl bg-slate-900 p-3.5 border border-border space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
                           <Sliders className="h-3.5 w-3.5 text-indigo-400" />
@@ -987,27 +987,27 @@ export default function PlatformPlansPage() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                        <div className="flex items-center justify-between bg-slate-900 px-2 py-1 rounded border border-border">
                           <span className="flex items-center gap-1"><Users className="h-3 w-3 text-muted-foreground" /> Users:</span>
                           <strong className="text-white tabular-nums">{plan.max_users}</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                        <div className="flex items-center justify-between bg-slate-900 px-2 py-1 rounded border border-border">
                           <span className="flex items-center gap-1"><Building2 className="h-3 w-3 text-muted-foreground" /> Branches:</span>
                           <strong className="text-white tabular-nums">{plan.max_branches}</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                        <div className="flex items-center justify-between bg-slate-900 px-2 py-1 rounded border border-border">
                           <span className="flex items-center gap-1"><HardDrive className="h-3 w-3 text-muted-foreground" /> Storage:</span>
                           <strong className="text-white tabular-nums">{plan.storage_gb} GB</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                        <div className="flex items-center justify-between bg-slate-900 px-2 py-1 rounded border border-border">
                           <span className="flex items-center gap-1"><Briefcase className="h-3 w-3 text-muted-foreground" /> Orders:</span>
                           <strong className="text-white tabular-nums">{plan.monthly_orders.toLocaleString()}</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                        <div className="flex items-center justify-between bg-slate-900 px-2 py-1 rounded border border-border">
                           <span>Customers:</span>
                           <strong className="text-white tabular-nums">{plan.max_customers.toLocaleString()}</strong>
                         </div>
-                        <div className="flex items-center justify-between bg-foreground px-2 py-1 rounded border border-border">
+                        <div className="flex items-center justify-between bg-slate-900 px-2 py-1 rounded border border-border">
                           <span>Products:</span>
                           <strong className="text-white tabular-nums">{plan.max_products.toLocaleString()}</strong>
                         </div>
@@ -1026,7 +1026,7 @@ export default function PlatformPlansPage() {
                         {plan.features.slice(0, 6).map((f) => (
                           <span
                             key={f}
-                            className="px-1.5 py-0.5 rounded text-2xs bg-secondary text-muted-foreground border border-slate-700/60"
+                            className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 text-muted-foreground border border-slate-700/60"
                           >
                             {FEATURE_METADATA[f]?.name || f}
                           </span>
@@ -1073,7 +1073,7 @@ export default function PlatformPlansPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setConfirmAction({ type: 'archive', plan })}
-                        className="border-border text-muted-foreground hover:text-amber-400 hover:bg-secondary text-xs h-8"
+                        className="border-border text-muted-foreground hover:text-amber-400 hover:bg-slate-800 text-xs h-8"
                         title="Archive Plan"
                       >
                         <Archive className="h-3.5 w-3.5" />
@@ -1085,7 +1085,7 @@ export default function PlatformPlansPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setConfirmAction({ type: 'delete', plan })}
-                        className="border-border text-muted-foreground hover:text-rose-400 hover:bg-secondary text-xs h-8"
+                        className="border-border text-muted-foreground hover:text-rose-400 hover:bg-slate-800 text-xs h-8"
                         title="Delete Custom Plan"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -1110,11 +1110,11 @@ export default function PlatformPlansPage() {
             <span className="text-xs text-muted-foreground">Click any checkmark to toggle module access for that plan.</span>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-border bg-foreground shadow-2xl">
+          <div className="overflow-x-auto rounded-2xl border border-border bg-slate-900 shadow-2xl">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-foreground">
-                  <th className="p-4 font-bold text-muted-foreground min-w-[240px] sticky left-0 bg-foreground z-10">
+                <tr className="border-b border-border bg-slate-900">
+                  <th className="p-4 font-bold text-muted-foreground min-w-[240px] sticky left-0 bg-slate-900 z-10">
                     Feature / Quota / Module
                   </th>
                   {plans.map((p) => (
@@ -1143,13 +1143,13 @@ export default function PlatformPlansPage() {
               </thead>
               <tbody className="divide-y divide-border/60">
                 {/* 1. RESOURCE LIMITS SECTION */}
-                <tr className="bg-foreground font-bold text-muted-foreground">
+                <tr className="bg-slate-900 font-bold text-muted-foreground">
                   <td colSpan={plans.length + 1} className="p-3 pl-4 text-xs uppercase tracking-wider text-indigo-400">
                     1. Configurable Resource Limits
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
                     <Users className="h-3.5 w-3.5 text-indigo-400" /> Max User Accounts
                   </td>
                   {plans.map((p) => (
@@ -1159,7 +1159,7 @@ export default function PlatformPlansPage() {
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
                     <Building2 className="h-3.5 w-3.5 text-indigo-400" /> Max Branches &amp; Hubs
                   </td>
                   {plans.map((p) => (
@@ -1169,7 +1169,7 @@ export default function PlatformPlansPage() {
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
                     <HardDrive className="h-3.5 w-3.5 text-indigo-400" /> Cloud Media Storage
                   </td>
                   {plans.map((p) => (
@@ -1179,7 +1179,7 @@ export default function PlatformPlansPage() {
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
                     <Briefcase className="h-3.5 w-3.5 text-indigo-400" /> Monthly Orders Quota
                   </td>
                   {plans.map((p) => (
@@ -1189,7 +1189,7 @@ export default function PlatformPlansPage() {
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
                     Directory: Max Customers
                   </td>
                   {plans.map((p) => (
@@ -1199,7 +1199,7 @@ export default function PlatformPlansPage() {
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-foreground z-10 flex items-center gap-2">
+                  <td className="p-3 pl-4 font-medium text-muted-foreground sticky left-0 bg-slate-900 z-10 flex items-center gap-2">
                     Directory: Max Products
                   </td>
                   {plans.map((p) => (
@@ -1212,7 +1212,7 @@ export default function PlatformPlansPage() {
                 {/* 2. CATEGORIZED FEATURES */}
                 {FEATURE_CATEGORIES.map((cat) => (
                   <React.Fragment key={cat.id}>
-                    <tr className="bg-foreground font-bold text-muted-foreground">
+                    <tr className="bg-slate-900 font-bold text-muted-foreground">
                       <td colSpan={plans.length + 1} className="p-3 pl-4 text-xs uppercase tracking-wider text-indigo-400">
                         2.{cat.id} {cat.label} ({cat.label_bn})
                       </td>
@@ -1221,7 +1221,7 @@ export default function PlatformPlansPage() {
                       const meta = FEATURE_METADATA[feat]
                       return (
                         <tr key={feat} className="hover:bg-slate-800/40 transition-colors">
-                          <td className="p-3 pl-4 sticky left-0 bg-foreground z-10">
+                          <td className="p-3 pl-4 sticky left-0 bg-slate-900 z-10">
                             <div className="font-semibold text-foreground">{meta?.name || feat}</div>
                             <div className="text-2xs text-muted-foreground">{meta?.description}</div>
                           </td>
@@ -1235,7 +1235,7 @@ export default function PlatformPlansPage() {
                                   className={`p-1.5 rounded-lg inline-flex items-center justify-center transition-all ${
                                     isIncluded
                                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
-                                      : 'bg-slate-800/40 text-muted-foreground hover:text-muted-foreground hover:bg-secondary'
+                                      : 'bg-slate-800/40 text-muted-foreground hover:text-muted-foreground hover:bg-slate-800'
                                   }`}
                                   title={`Click to ${isIncluded ? 'remove from' : 'enable in'} ${p.name}`}
                                 >
@@ -1261,8 +1261,8 @@ export default function PlatformPlansPage() {
 
       {/* 7. EDIT TRIAL PLAN MODAL */}
       {editingTrialModalOpen && editingTrialPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-3xl bg-foreground border border-amber-500/40 rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-3xl bg-slate-900 border border-amber-500/40 rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
@@ -1277,7 +1277,7 @@ export default function PlatformPlansPage() {
               </div>
               <button
                 onClick={() => setEditingTrialModalOpen(false)}
-                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
+                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-slate-800"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1292,7 +1292,7 @@ export default function PlatformPlansPage() {
                     required
                     value={editingTrialPlan.name}
                     onChange={(e) => setEditingTrialPlan((prev) => prev ? ({ ...prev, name: e.target.value }) : null)}
-                    className="bg-foreground border-border text-white mt-1 h-9"
+                    className="bg-slate-900 border-border text-white mt-1 h-9"
                   />
                 </div>
                 <div>
@@ -1300,7 +1300,7 @@ export default function PlatformPlansPage() {
                   <Input
                     value={editingTrialPlan.name_bn || ''}
                     onChange={(e) => setEditingTrialPlan((prev) => prev ? ({ ...prev, name_bn: e.target.value }) : null)}
-                    className="bg-foreground border-border text-white mt-1 h-9"
+                    className="bg-slate-900 border-border text-white mt-1 h-9"
                   />
                 </div>
                 <div>
@@ -1320,7 +1320,7 @@ export default function PlatformPlansPage() {
                         trial_days: Math.max(1, Number(e.target.value)),
                       }) : null)
                     }
-                    className="bg-foreground border-amber-500/50 text-amber-200 mt-1 h-9 tabular-nums font-bold"
+                    className="bg-slate-900 border-amber-500/50 text-amber-200 mt-1 h-9 tabular-nums font-bold"
                   />
                 </div>
               </div>
@@ -1331,12 +1331,12 @@ export default function PlatformPlansPage() {
                 <Input
                   value={editingTrialPlan.description || ''}
                   onChange={(e) => setEditingTrialPlan((prev) => prev ? ({ ...prev, description: e.target.value }) : null)}
-                  className="bg-foreground border-border text-white mt-1 h-9"
+                  className="bg-slate-900 border-border text-white mt-1 h-9"
                 />
               </div>
 
               {/* 6 Configurable Resource Limits */}
-              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
+              <div className="p-4 rounded-xl bg-slate-900 border border-border space-y-3">
                 <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Sliders className="h-3.5 w-3.5 text-indigo-400" />
                   Trial Resource Limits &amp; Quotas
@@ -1355,7 +1355,7 @@ export default function PlatformPlansPage() {
                           max_users: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1370,7 +1370,7 @@ export default function PlatformPlansPage() {
                           max_branches: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1385,7 +1385,7 @@ export default function PlatformPlansPage() {
                           storage_gb: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1400,7 +1400,7 @@ export default function PlatformPlansPage() {
                           monthly_orders: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1415,7 +1415,7 @@ export default function PlatformPlansPage() {
                           max_customers: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1430,7 +1430,7 @@ export default function PlatformPlansPage() {
                           max_products: Number(e.target.value),
                         }) : null)
                       }
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1467,7 +1467,7 @@ export default function PlatformPlansPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1 bg-foreground rounded-xl border border-border">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1 bg-slate-900 rounded-xl border border-border">
                   {ALL_FEATURES.map((feat) => {
                     const meta = FEATURE_METADATA[feat]
                     const isEnabled = editingTrialPlan?.features?.includes(feat) || false
@@ -1477,7 +1477,7 @@ export default function PlatformPlansPage() {
                         className={`flex items-center justify-between p-2 rounded-lg text-2xs cursor-pointer transition-colors ${
                           isEnabled
                             ? 'bg-amber-950/30 text-amber-200 border border-amber-900/40'
-                            : 'text-muted-foreground hover:bg-foreground'
+                            : 'text-muted-foreground hover:bg-slate-900'
                         }`}
                       >
                         <div className="truncate mr-2">
@@ -1497,7 +1497,7 @@ export default function PlatformPlansPage() {
                               return { ...prev, features: updated as FeatureCode[] }
                             })
                           }}
-                          className="h-4 w-4 rounded border-border text-amber-500 focus:ring-amber-500 bg-foreground shrink-0"
+                          className="h-4 w-4 rounded border-border text-amber-500 focus:ring-amber-500 bg-slate-900 shrink-0"
                         />
                       </label>
                     )
@@ -1539,8 +1539,8 @@ export default function PlatformPlansPage() {
 
       {/* 8. EDIT PAID / CUSTOM PLAN MODAL */}
       {editingPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-3xl bg-foreground border border-border rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-3xl bg-slate-900 border border-border rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-500/30">
@@ -1555,7 +1555,7 @@ export default function PlatformPlansPage() {
               </div>
               <button
                 onClick={() => setEditingPlan(null)}
-                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
+                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-slate-800"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1570,7 +1570,7 @@ export default function PlatformPlansPage() {
                     required
                     value={editingPlan.name}
                     onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })}
-                    className="bg-foreground border-border text-white mt-1 h-9"
+                    className="bg-slate-900 border-border text-white mt-1 h-9"
                   />
                 </div>
                 <div>
@@ -1578,7 +1578,7 @@ export default function PlatformPlansPage() {
                   <Input
                     value={editingPlan.name_bn || ''}
                     onChange={(e) => setEditingPlan({ ...editingPlan, name_bn: e.target.value })}
-                    className="bg-foreground border-border text-white mt-1 h-9"
+                    className="bg-slate-900 border-border text-white mt-1 h-9"
                   />
                 </div>
                 <div>
@@ -1586,7 +1586,7 @@ export default function PlatformPlansPage() {
                   <Input
                     disabled
                     value={editingPlan.code}
-                    className="bg-foreground border-border text-muted-foreground mt-1 h-9 tabular-nums"
+                    className="bg-slate-900 border-border text-muted-foreground mt-1 h-9 tabular-nums"
                   />
                 </div>
               </div>
@@ -1597,12 +1597,12 @@ export default function PlatformPlansPage() {
                 <Input
                   value={editingPlan.description || ''}
                   onChange={(e) => setEditingPlan({ ...editingPlan, description: e.target.value })}
-                  className="bg-foreground border-border text-white mt-1 h-9"
+                  className="bg-slate-900 border-border text-white mt-1 h-9"
                 />
               </div>
 
               {/* Pricing in BDT */}
-              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
+              <div className="p-4 rounded-xl bg-slate-900 border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Tag className="h-3.5 w-3.5 text-indigo-400" />
@@ -1631,7 +1631,7 @@ export default function PlatformPlansPage() {
                       min={0}
                       value={editingPlan.price_monthly}
                       onChange={(e) => setEditingPlan({ ...editingPlan, price_monthly: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-9 tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                   <div>
@@ -1642,14 +1642,14 @@ export default function PlatformPlansPage() {
                       min={0}
                       value={editingPlan.price_yearly}
                       onChange={(e) => setEditingPlan({ ...editingPlan, price_yearly: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-9 tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                 </div>
               </div>
 
               {/* 6 Configurable Resource Limits */}
-              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
+              <div className="p-4 rounded-xl bg-slate-900 border border-border space-y-3">
                 <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Sliders className="h-3.5 w-3.5 text-indigo-400" />
                   Resource Limits &amp; Quotas
@@ -1663,7 +1663,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.max_users}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_users: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1673,7 +1673,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.max_branches}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_branches: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1683,7 +1683,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.storage_gb}
                       onChange={(e) => setEditingPlan({ ...editingPlan, storage_gb: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1693,7 +1693,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.monthly_orders}
                       onChange={(e) => setEditingPlan({ ...editingPlan, monthly_orders: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1703,7 +1703,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.max_customers}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_customers: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -1713,7 +1713,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={editingPlan.max_products}
                       onChange={(e) => setEditingPlan({ ...editingPlan, max_products: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -1761,7 +1761,7 @@ export default function PlatformPlansPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1 bg-foreground rounded-xl border border-border">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1 bg-slate-900 rounded-xl border border-border">
                   {ALL_FEATURES.map((feat) => {
                     const meta = FEATURE_METADATA[feat]
                     const isEnabled = editingPlan.features.includes(feat)
@@ -1771,7 +1771,7 @@ export default function PlatformPlansPage() {
                         className={`flex items-center justify-between p-2 rounded-lg text-2xs cursor-pointer transition-colors ${
                           isEnabled
                             ? 'bg-indigo-950/40 text-indigo-200 border border-indigo-900/40'
-                            : 'text-muted-foreground hover:bg-foreground'
+                            : 'text-muted-foreground hover:bg-slate-900'
                         }`}
                       >
                         <div className="truncate mr-2">
@@ -1787,7 +1787,7 @@ export default function PlatformPlansPage() {
                               : [...editingPlan.features, feat]
                             setEditingPlan({ ...editingPlan, features: updated })
                           }}
-                          className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-ring bg-foreground shrink-0"
+                          className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-ring bg-slate-900 shrink-0"
                         />
                       </label>
                     )
@@ -1796,14 +1796,14 @@ export default function PlatformPlansPage() {
               </div>
 
               {/* Status & Sort Order */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-foreground border border-border">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-border">
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="plan-active-check"
                     checked={editingPlan.is_active}
                     onChange={(e) => setEditingPlan({ ...editingPlan, is_active: e.target.checked })}
-                    className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-ring bg-foreground"
+                    className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-ring bg-slate-900"
                   />
                   <Label htmlFor="plan-active-check" className="text-muted-foreground font-semibold cursor-pointer">
                     Active Plan (Available for tenant subscriptions)
@@ -1816,7 +1816,7 @@ export default function PlatformPlansPage() {
                     type="number"
                     value={editingPlan.sort_order}
                     onChange={(e) => setEditingPlan({ ...editingPlan, sort_order: Number(e.target.value) })}
-                    className="w-16 h-8 text-xs bg-foreground border-border text-white tabular-nums"
+                    className="w-16 h-8 text-xs bg-slate-900 border-border text-white tabular-nums"
                   />
                 </div>
               </div>
@@ -1848,8 +1848,8 @@ export default function PlatformPlansPage() {
 
       {/* 9. QUICK EDIT LIMITS MODAL */}
       {editingLimitsPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-md bg-slate-900 border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <Sliders className="h-4 w-4 text-indigo-400" />
@@ -1869,7 +1869,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.max_users}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_users: Number(e.target.value) })}
-                    className="bg-foreground border-border text-white mt-1 tabular-nums"
+                    className="bg-slate-900 border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1879,7 +1879,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.max_branches}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_branches: Number(e.target.value) })}
-                    className="bg-foreground border-border text-white mt-1 tabular-nums"
+                    className="bg-slate-900 border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1889,7 +1889,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.storage_gb}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, storage_gb: Number(e.target.value) })}
-                    className="bg-foreground border-border text-white mt-1 tabular-nums"
+                    className="bg-slate-900 border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1899,7 +1899,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.monthly_orders}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, monthly_orders: Number(e.target.value) })}
-                    className="bg-foreground border-border text-white mt-1 tabular-nums"
+                    className="bg-slate-900 border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1909,7 +1909,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.max_customers}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_customers: Number(e.target.value) })}
-                    className="bg-foreground border-border text-white mt-1 tabular-nums"
+                    className="bg-slate-900 border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1919,7 +1919,7 @@ export default function PlatformPlansPage() {
                     min={1}
                     value={editingLimitsPlan.max_products}
                     onChange={(e) => setEditingLimitsPlan({ ...editingLimitsPlan, max_products: Number(e.target.value) })}
-                    className="bg-foreground border-border text-white mt-1 tabular-nums"
+                    className="bg-slate-900 border-border text-white mt-1 tabular-nums"
                   />
                 </div>
               </div>
@@ -1951,8 +1951,8 @@ export default function PlatformPlansPage() {
 
       {/* 10. CREATE NEW PLAN MODAL */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-3xl bg-foreground border border-border rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-3xl bg-slate-900 border border-border rounded-2xl shadow-2xl p-6 space-y-5 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-500/30">
@@ -1967,7 +1967,7 @@ export default function PlatformPlansPage() {
               </div>
               <button
                 onClick={() => setIsCreateOpen(false)}
-                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
+                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-slate-800"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1983,7 +1983,7 @@ export default function PlatformPlansPage() {
                     value={newPlan.code}
                     onChange={(e) => setNewPlan({ ...newPlan, code: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') as PlanCode })}
                     placeholder="e.g. agency, pro"
-                    className="bg-foreground border-border text-white mt-1 tabular-nums"
+                    className="bg-slate-900 border-border text-white mt-1 tabular-nums"
                   />
                 </div>
                 <div>
@@ -1993,7 +1993,7 @@ export default function PlatformPlansPage() {
                     value={newPlan.name}
                     onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
                     placeholder="Agency Plan"
-                    className="bg-foreground border-border text-white mt-1"
+                    className="bg-slate-900 border-border text-white mt-1"
                   />
                 </div>
                 <div>
@@ -2002,7 +2002,7 @@ export default function PlatformPlansPage() {
                     value={newPlan.name_bn || ''}
                     onChange={(e) => setNewPlan({ ...newPlan, name_bn: e.target.value })}
                     placeholder="এজেন্সি প্ল্যান"
-                    className="bg-foreground border-border text-white mt-1"
+                    className="bg-slate-900 border-border text-white mt-1"
                   />
                 </div>
               </div>
@@ -2014,12 +2014,12 @@ export default function PlatformPlansPage() {
                   value={newPlan.description}
                   onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
                   placeholder="Tailored for printing agencies and production hubs."
-                  className="bg-foreground border-border text-white mt-1"
+                  className="bg-slate-900 border-border text-white mt-1"
                 />
               </div>
 
               {/* Pricing in BDT */}
-              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
+              <div className="p-4 rounded-xl bg-slate-900 border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Tag className="h-3.5 w-3.5 text-indigo-400" />
@@ -2051,7 +2051,7 @@ export default function PlatformPlansPage() {
                         const m = Number(e.target.value)
                         setNewPlan({ ...newPlan, price_monthly: m, price_yearly: m * 10 })
                       }}
-                      className="bg-foreground border-border text-white mt-1 h-9 tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                   <div>
@@ -2062,14 +2062,14 @@ export default function PlatformPlansPage() {
                       min={0}
                       value={newPlan.price_yearly}
                       onChange={(e) => setNewPlan({ ...newPlan, price_yearly: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-9 tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-9 tabular-nums"
                     />
                   </div>
                 </div>
               </div>
 
               {/* 6 Configurable Resource Limits */}
-              <div className="p-4 rounded-xl bg-foreground border border-border space-y-3">
+              <div className="p-4 rounded-xl bg-slate-900 border border-border space-y-3">
                 <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Sliders className="h-3.5 w-3.5 text-indigo-400" />
                   Resource Limits &amp; Quotas
@@ -2083,7 +2083,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.max_users}
                       onChange={(e) => setNewPlan({ ...newPlan, max_users: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2093,7 +2093,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.max_branches}
                       onChange={(e) => setNewPlan({ ...newPlan, max_branches: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2103,7 +2103,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.storage_gb}
                       onChange={(e) => setNewPlan({ ...newPlan, storage_gb: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2113,7 +2113,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.monthly_orders}
                       onChange={(e) => setNewPlan({ ...newPlan, monthly_orders: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2123,7 +2123,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.max_customers}
                       onChange={(e) => setNewPlan({ ...newPlan, max_customers: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                   <div>
@@ -2133,7 +2133,7 @@ export default function PlatformPlansPage() {
                       min={1}
                       value={newPlan.max_products}
                       onChange={(e) => setNewPlan({ ...newPlan, max_products: Number(e.target.value) })}
-                      className="bg-foreground border-border text-white mt-1 h-8 text-xs tabular-nums"
+                      className="bg-slate-900 border-border text-white mt-1 h-8 text-xs tabular-nums"
                     />
                   </div>
                 </div>
@@ -2181,7 +2181,7 @@ export default function PlatformPlansPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto p-1 bg-foreground rounded-xl border border-border">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto p-1 bg-slate-900 rounded-xl border border-border">
                   {ALL_FEATURES.map((feat) => {
                     const meta = FEATURE_METADATA[feat]
                     const isEnabled = newPlan.features.includes(feat)
@@ -2191,7 +2191,7 @@ export default function PlatformPlansPage() {
                         className={`flex items-center justify-between p-2 rounded-lg text-2xs cursor-pointer transition-colors ${
                           isEnabled
                             ? 'bg-indigo-950/40 text-indigo-200 border border-indigo-900/40'
-                            : 'text-muted-foreground hover:bg-foreground'
+                            : 'text-muted-foreground hover:bg-slate-900'
                         }`}
                       >
                         <div className="truncate mr-2">
@@ -2207,7 +2207,7 @@ export default function PlatformPlansPage() {
                               : [...newPlan.features, feat]
                             setNewPlan({ ...newPlan, features: updated })
                           }}
-                          className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-ring bg-foreground shrink-0"
+                          className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-ring bg-slate-900 shrink-0"
                         />
                       </label>
                     )
@@ -2242,8 +2242,8 @@ export default function PlatformPlansPage() {
 
       {/* 11. CONFIRMATION DIALOG (ARCHIVE / REACTIVATE / DELETE) */}
       {confirmAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in-0">
+          <div className="w-full max-w-md bg-slate-900 border border-border rounded-2xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95">
             <div className="flex items-center gap-3">
               <div
                 className={`p-2.5 rounded-xl border ${

@@ -184,7 +184,7 @@ export function ReportProblemModal({
           </Label>
 
           {photoPreview ? (
-            <div className="relative rounded-xl border-2 border-border overflow-hidden max-h-36 flex items-center justify-center bg-foreground">
+            <div className="relative rounded-xl border-2 border-border overflow-hidden max-h-36 flex items-center justify-center bg-slate-900">
               <img src={photoPreview} alt="Problem preview" className="max-h-36 object-contain" />
               <button
                 type="button"

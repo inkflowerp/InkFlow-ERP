@@ -153,7 +153,7 @@ export function NegotiationModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {/* Margin Simulation Metrics Box */}
-        <div className="p-4 rounded-xl bg-foreground text-white space-y-2.5 text-xs shadow-md border border-border">
+        <div className="p-4 rounded-xl bg-slate-900 text-white space-y-2.5 text-xs shadow-md border border-border">
           <div className="flex justify-between items-center text-muted-foreground">
             <span>List Quoted Subtotal:</span>
             <span className="tabular-nums font-bold text-foreground">{formatBDT(subtotal)}</span>

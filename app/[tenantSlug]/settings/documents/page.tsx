@@ -281,7 +281,7 @@ export default function DocumentDesignerPage() {
             <Button
               size="sm"
               onClick={() => window.print()}
-              className="bg-foreground hover:bg-secondary text-xs text-white"
+              className="bg-slate-900 hover:bg-slate-800 text-xs text-white"
             >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('Print Preview', 'প্রিন্ট প্রিভিউ')}
@@ -340,7 +340,7 @@ export default function DocumentDesignerPage() {
                   variant={langMode === lang.id ? 'default' : 'ghost'}
                   onClick={() => setLangMode(lang.id as DocumentLanguageMode)}
                   className={`text-xs h-8 sm:h-6 px-3 sm:px-2.5 font-bold ${
-                    langMode === lang.id ? 'bg-secondary text-white shadow-xs' : 'text-muted-foreground'
+                    langMode === lang.id ? 'bg-slate-800 text-white shadow-xs' : 'text-muted-foreground'
                   }`}
                 >
                   {lang.label}
@@ -709,7 +709,7 @@ export default function DocumentDesignerPage() {
                 size="sm"
                 variant={previewMode === 'pdf' ? 'default' : 'ghost'}
                 onClick={() => setPreviewMode('pdf')}
-                className={`text-xs h-7 px-3 ${previewMode === 'pdf' ? 'bg-secondary text-white font-bold' : 'text-muted-foreground'}`}
+                className={`text-xs h-7 px-3 ${previewMode === 'pdf' ? 'bg-slate-800 text-white font-bold' : 'text-muted-foreground'}`}
               >
                 <FileText className="h-3 w-3 mr-1" />
                 PDF Document

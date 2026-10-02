@@ -83,7 +83,7 @@ export default function PlatformIncidentsPage() {
           size="sm"
           variant="outline"
           onClick={loadIncidents}
-          className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
+          className="border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 text-xs h-9"
         >
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
           Refresh
@@ -105,7 +105,7 @@ export default function PlatformIncidentsPage() {
           const isMajor = inc.severity === 'major' || inc.severity === 'critical'
 
           return (
-            <Card key={inc.id} className="bg-foreground border-border p-5 space-y-4">
+            <Card key={inc.id} className="bg-slate-900 border-border p-5 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2.5 flex-wrap">
@@ -153,7 +153,7 @@ export default function PlatformIncidentsPage() {
                 <p>{inc.description}</p>
 
                 {inc.root_cause && (
-                  <div className="p-3 rounded-xl bg-foreground border border-border">
+                  <div className="p-3 rounded-xl bg-slate-900 border border-border">
                     <span className="text-muted-foreground font-bold">Root Cause: </span>
                     <span className="text-foreground">{inc.root_cause}</span>
                   </div>
@@ -179,8 +179,8 @@ export default function PlatformIncidentsPage() {
 
       {/* Resolve / Update Incident Modal */}
       {selectedIncident && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm">
-          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-slate-900 border border-border rounded-2xl shadow-2xl p-5 space-y-4 animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm">
                 Update Incident: {selectedIncident.title}
@@ -196,7 +196,7 @@ export default function PlatformIncidentsPage() {
                 <select
                   value={targetStatus}
                   onChange={(e) => setTargetStatus(e.target.value as any)}
-                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white font-semibold capitalize"
+                  className="w-full bg-slate-900 border border-border rounded-xl p-2.5 text-white font-semibold capitalize"
                 >
                   <option value="investigating">Investigating</option>
                   <option value="identified">Identified</option>
@@ -212,7 +212,7 @@ export default function PlatformIncidentsPage() {
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
                   placeholder="Describe root cause and remediation steps taken..."
-                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white text-xs"
+                  className="w-full bg-slate-900 border border-border rounded-xl p-2.5 text-white text-xs"
                 />
               </div>
             </div>

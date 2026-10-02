@@ -152,7 +152,7 @@ export function TenantSupportInbox({
               className={cn(
                 'px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors flex items-center gap-1.5',
                 activeTab === tab.key
-                  ? 'bg-foreground text-white dark:text-foreground'
+                  ? 'bg-slate-900 text-white dark:text-foreground'
                   : 'text-muted-foreground hover:bg-muted dark:hover:bg-muted'
               )}
             >

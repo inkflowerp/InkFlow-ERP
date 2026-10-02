@@ -85,7 +85,7 @@ export function PlatformNotificationsPopover() {
           setOpen(!open)
           if (!open) refetch()
         }}
-        className="relative p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-secondary transition-colors cursor-pointer"
+        className="relative p-2 rounded-xl text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
         title="Platform Notifications"
       >
         <Bell className="h-4 w-4" />
@@ -97,9 +97,9 @@ export function PlatformNotificationsPopover() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-foreground border border-border rounded-2xl shadow-2xl shadow-black/90 ring-1 ring-slate-700/60 z-50 overflow-hidden text-xs animate-in fade-in-0 zoom-in-95 duration-150 font-sans">
+          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-border rounded-2xl shadow-2xl shadow-black/90 ring-1 ring-slate-700/60 z-50 overflow-hidden text-xs animate-in fade-in-0 zoom-in-95 duration-150 font-sans">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-foreground">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-slate-900">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-white text-sm">Platform Notifications</span>
                 {unreadCount > 0 ? (
@@ -107,7 +107,7 @@ export function PlatformNotificationsPopover() {
                     {unreadCount} new
                   </span>
                 ) : (
-                  <span className="px-1.5 py-0.2 rounded-full bg-secondary text-muted-foreground text-2xs font-medium border border-border">
+                  <span className="px-1.5 py-0.2 rounded-full bg-slate-800 text-muted-foreground text-2xs font-medium border border-border">
                     {totalCount} total
                   </span>
                 )}
@@ -116,7 +116,7 @@ export function PlatformNotificationsPopover() {
                 <button
                   type="button"
                   onClick={() => refetch()}
-                  className="p-1 rounded-lg text-muted-foreground hover:text-white hover:bg-secondary transition-colors cursor-pointer"
+                  className="p-1 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
                   title="Refresh Notifications"
                 >
                   <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
@@ -134,7 +134,7 @@ export function PlatformNotificationsPopover() {
             </div>
 
             {/* Category Filter Sub-Tabs */}
-            <div className="flex items-center gap-1 p-1.5 bg-foreground border-b border-border overflow-x-auto scrollbar-none text-2xs">
+            <div className="flex items-center gap-1 p-1.5 bg-slate-900 border-b border-border overflow-x-auto scrollbar-none text-2xs">
               {[
                 { id: 'all', label: 'All' },
                 { id: 'support', label: 'Support' },
@@ -149,7 +149,7 @@ export function PlatformNotificationsPopover() {
                     'px-2.5 py-1 rounded-lg font-medium transition-colors whitespace-nowrap cursor-pointer',
                     activeTab === tab.id
                       ? 'bg-indigo-600 text-white font-semibold shadow-xs'
-                      : 'text-muted-foreground hover:bg-secondary hover:text-white'
+                      : 'text-muted-foreground hover:bg-slate-800 hover:text-white'
                   )}
                 >
                   {tab.label}
@@ -172,7 +172,7 @@ export function PlatformNotificationsPopover() {
                   <button
                     type="button"
                     onClick={() => refetch()}
-                    className="mt-2 px-3 py-1 bg-secondary hover:bg-slate-700 text-slate-100 text-2xs rounded-lg cursor-pointer border border-slate-600 font-medium"
+                    className="mt-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-100 text-2xs rounded-lg cursor-pointer border border-slate-600 font-medium"
                   >
                     Retry
                   </button>
@@ -206,7 +206,7 @@ export function PlatformNotificationsPopover() {
                       )}
                     >
                       <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                        <div className="mt-0.5 shrink-0 p-1 rounded-lg bg-foreground border border-border">
+                        <div className="mt-0.5 shrink-0 p-1 rounded-lg bg-slate-900 border border-border">
                           {getTypeIcon(notif.type, notif.severity)}
                         </div>
                         <div className="space-y-0.5 min-w-0 flex-1">
@@ -229,7 +229,7 @@ export function PlatformNotificationsPopover() {
                                 {notif.company_name}
                               </span>
                             )}
-                            <span className="uppercase text-2xs font-bold text-foreground px-1 py-0.2 rounded bg-secondary border border-slate-600">
+                            <span className="uppercase text-2xs font-bold text-foreground px-1 py-0.2 rounded bg-slate-800 border border-slate-600">
                               {notif.type}
                             </span>
                           </div>
@@ -253,7 +253,7 @@ export function PlatformNotificationsPopover() {
             </div>
 
             {/* Footer */}
-            <div className="p-2.5 bg-foreground border-t border-border flex items-center justify-between px-4">
+            <div className="p-2.5 bg-slate-900 border-t border-border flex items-center justify-between px-4">
               <Link
                 href="/platform/notifications"
                 onClick={() => setOpen(false)}

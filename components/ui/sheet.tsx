@@ -37,7 +37,7 @@ export function Sheet({ open, onOpenChange, children, side = 'left', className }
     <div className="fixed inset-0 z-[100] flex">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-foreground transition-opacity animate-in fade-in-0 duration-150"
+        className="fixed inset-0 bg-slate-900 transition-opacity animate-in fade-in-0 duration-150"
         onClick={() => onOpenChange(false)}
         aria-hidden="true"
       />

@@ -152,7 +152,7 @@ export function PlatformSupportConsole({
             'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
             activeQueueTab === 'all' && priorityFilter === 'all'
               ? 'bg-slate-800/90 border-indigo-500/80 shadow-md shadow-indigo-500/10'
-              : 'bg-foreground border-border hover:border-border'
+              : 'bg-slate-900 border-border hover:border-border'
           )}
         >
           <div>
@@ -161,7 +161,7 @@ export function PlatformSupportConsole({
             </div>
             <div className="text-lg sm:text-xl font-black text-slate-100 mt-0.5">{stats?.totalCount || 0}</div>
           </div>
-          <div className="w-7 h-7 rounded-xl bg-secondary text-muted-foreground flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-xl bg-slate-800 text-muted-foreground flex items-center justify-center shrink-0">
             <Inbox className="w-3.5 h-3.5" />
           </div>
         </button>
@@ -177,7 +177,7 @@ export function PlatformSupportConsole({
             'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
             activeQueueTab === 'unassigned'
               ? 'bg-emerald-950/40 border-emerald-500/80 shadow-md shadow-emerald-500/10'
-              : 'bg-foreground border-border hover:border-emerald-800/60'
+              : 'bg-slate-900 border-border hover:border-emerald-800/60'
           )}
         >
           <div>
@@ -202,7 +202,7 @@ export function PlatformSupportConsole({
             'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
             activeQueueTab === 'mine'
               ? 'bg-indigo-950/40 border-indigo-500/80 shadow-md shadow-indigo-500/10'
-              : 'bg-foreground border-border hover:border-indigo-800/60'
+              : 'bg-slate-900 border-border hover:border-indigo-800/60'
           )}
         >
           <div>
@@ -227,7 +227,7 @@ export function PlatformSupportConsole({
             'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
             activeQueueTab === 'waiting_customer'
               ? 'bg-amber-950/40 border-amber-500/80 shadow-md shadow-amber-500/10'
-              : 'bg-foreground border-border hover:border-amber-800/60'
+              : 'bg-slate-900 border-border hover:border-amber-800/60'
           )}
         >
           <div>
@@ -252,7 +252,7 @@ export function PlatformSupportConsole({
             'p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between',
             activeQueueTab === 'urgent'
               ? 'bg-rose-950/40 border-rose-500/80 shadow-md shadow-rose-500/10'
-              : 'bg-foreground border-border hover:border-rose-800/60'
+              : 'bg-slate-900 border-border hover:border-rose-800/60'
           )}
         >
           <div>
@@ -267,7 +267,7 @@ export function PlatformSupportConsole({
         </button>
 
         {/* Avg First Response */}
-        <div className="p-3 rounded-2xl bg-foreground border border-border flex items-center justify-between">
+        <div className="p-3 rounded-2xl bg-slate-900 border border-border flex items-center justify-between">
           <div>
             <div className="text-2xs sm:text-2xs text-purple-400 font-semibold uppercase tracking-wider">
               Avg SLA
@@ -283,11 +283,11 @@ export function PlatformSupportConsole({
       </div>
 
       {/* 2. Main 3-Pane Workstation Container */}
-      <div className="flex-1 min-h-0 bg-foreground rounded-2xl border border-border overflow-hidden flex shadow-2xl relative">
+      <div className="flex-1 min-h-0 bg-slate-900 rounded-2xl border border-border overflow-hidden flex shadow-2xl relative">
         {/* Left Pane: Conversation Queue */}
         <div
           className={cn(
-            'w-full lg:w-80 shrink-0 h-full flex flex-col border-r border-border bg-foreground min-w-0',
+            'w-full lg:w-80 shrink-0 h-full flex flex-col border-r border-border bg-slate-900 min-w-0',
             selectedConversationId && 'hidden lg:flex'
           )}
         >
@@ -305,7 +305,7 @@ export function PlatformSupportConsole({
                   loadConversations()
                   refreshStats()
                 }}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-800 transition-colors cursor-pointer"
                 title="Refresh Queue"
               >
                 <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
@@ -320,7 +320,7 @@ export function PlatformSupportConsole({
                 placeholder="Search ticket, company, user..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-xl bg-foreground border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+                className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-xl bg-slate-900 border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
               />
               {searchQuery && (
                 <button
@@ -350,7 +350,7 @@ export function PlatformSupportConsole({
                     'px-2.5 py-1 rounded-lg text-2xs font-semibold whitespace-nowrap transition-colors cursor-pointer',
                     activeQueueTab === tab.key
                       ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                      : 'text-muted-foreground hover:bg-slate-800 hover:text-foreground'
                   )}
                 >
                   {tab.label}
@@ -364,9 +364,9 @@ export function PlatformSupportConsole({
             {loading && conversations.length === 0 ? (
               <div className="p-4 space-y-3">
                 {[1, 2, 3].map((n) => (
-                  <div key={n} className="p-3 rounded-xl bg-foreground animate-pulse space-y-2">
-                    <div className="h-3 bg-secondary rounded w-1/3" />
-                    <div className="h-3 bg-secondary rounded w-3/4" />
+                  <div key={n} className="p-3 rounded-xl bg-slate-900 animate-pulse space-y-2">
+                    <div className="h-3 bg-slate-800 rounded w-1/3" />
+                    <div className="h-3 bg-slate-800 rounded w-3/4" />
                   </div>
                 ))}
               </div>
@@ -375,7 +375,7 @@ export function PlatformSupportConsole({
                 <p>No tickets matching current filters.</p>
                 <button
                   onClick={resetFilters}
-                  className="px-3 py-1 text-2xs font-bold text-indigo-400 hover:text-indigo-300 bg-foreground border border-border rounded-lg"
+                  className="px-3 py-1 text-2xs font-bold text-indigo-400 hover:text-indigo-300 bg-slate-900 border border-border rounded-lg"
                 >
                   Reset Filters
                 </button>
@@ -462,7 +462,7 @@ export function PlatformSupportConsole({
         {/* Slide-over Drawer for Tablet / Mobile (< xl) */}
         {selectedConversation && showDetailsPane && (
           <div className="xl:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-end">
-            <div className="h-full bg-foreground shadow-2xl animate-in slide-in-from-right duration-200">
+            <div className="h-full bg-slate-900 shadow-2xl animate-in slide-in-from-right duration-200">
               <PlatformTicketInfo
                 conversation={selectedConversation}
                 onOpenImpersonationModal={(cId, cName) => {

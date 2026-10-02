@@ -236,7 +236,7 @@ function PlatformLoginForm() {
         {/* Right Header Area: Live Status Pill & Language Dropdown */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Live Status indicator */}
-          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground border border-border text-2xs text-muted-foreground backdrop-blur-md">
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-border text-2xs text-muted-foreground backdrop-blur-md">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -249,7 +249,7 @@ function PlatformLoginForm() {
             <button
               type="button"
               onClick={() => setLangMenuOpen(!langMenuOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-foreground hover:bg-secondary border border-border text-xs font-medium text-muted-foreground hover:text-white transition-all cursor-pointer shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-border text-xs font-medium text-muted-foreground hover:text-white transition-all cursor-pointer shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500/50"
               aria-expanded={langMenuOpen}
               aria-label="Select Language"
             >
@@ -267,7 +267,7 @@ function PlatformLoginForm() {
                     setLangMenuOpen(false)
                   }}
                   className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-left transition-colors font-medium cursor-pointer ${
-                    language === 'en' ? 'bg-purple-600/20 text-purple-300' : 'text-foreground hover:bg-secondary'
+                    language === 'en' ? 'bg-purple-600/20 text-purple-300' : 'text-foreground hover:bg-slate-800'
                   }`}
                 >
                   <span>English</span>
@@ -280,7 +280,7 @@ function PlatformLoginForm() {
                     setLangMenuOpen(false)
                   }}
                   className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-left transition-colors font-medium cursor-pointer ${
-                    language === 'bn' ? 'bg-purple-600/20 text-purple-300' : 'text-foreground hover:bg-secondary'
+                    language === 'bn' ? 'bg-purple-600/20 text-purple-300' : 'text-foreground hover:bg-slate-800'
                   }`}
                 >
                   <span>বাংলা</span>
@@ -323,7 +323,7 @@ function PlatformLoginForm() {
           {/* 3 Platform Security Features */}
           <div className="space-y-2.5 pt-1">
             {/* Feature 1: Platform-level access */}
-            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-foreground border border-border">
+            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900 border border-border">
               <div className="w-8 h-8 rounded-lg bg-purple-950/70 border border-purple-800/50 flex items-center justify-center text-purple-400 shrink-0 shadow-sm mt-0.5">
                 <Shield className="w-4 h-4 text-purple-300" />
               </div>
@@ -334,7 +334,7 @@ function PlatformLoginForm() {
             </div>
 
             {/* Feature 2: Tenant-isolated administration */}
-            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-foreground border border-border">
+            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900 border border-border">
               <div className="w-8 h-8 rounded-lg bg-blue-950/70 border border-blue-800/50 flex items-center justify-center text-blue-400 shrink-0 shadow-sm mt-0.5">
                 <Database className="w-4 h-4 text-blue-300" />
               </div>
@@ -345,7 +345,7 @@ function PlatformLoginForm() {
             </div>
 
             {/* Feature 3: Secure authenticated session */}
-            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-foreground border border-border">
+            <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-900 border border-border">
               <div className="w-8 h-8 rounded-lg bg-emerald-950/70 border border-emerald-800/50 flex items-center justify-center text-emerald-400 shrink-0 shadow-sm mt-0.5">
                 <Lock className="w-4 h-4 text-emerald-300" />
               </div>

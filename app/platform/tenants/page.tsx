@@ -592,7 +592,7 @@ export default function PlatformTenantsPage() {
             size="sm"
             variant="outline"
             onClick={loadData}
-            className="border-border bg-foreground text-muted-foreground hover:bg-secondary text-xs h-9"
+            className="border-border bg-slate-900 text-muted-foreground hover:bg-slate-800 text-xs h-9"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh
@@ -602,7 +602,7 @@ export default function PlatformTenantsPage() {
 
       {/* KPI Metrics Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
+        <Card className="bg-slate-900 border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Total Tenants</span>
             <div className="h-7 w-7 rounded-lg bg-indigo-600/15 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
@@ -621,7 +621,7 @@ export default function PlatformTenantsPage() {
           </div>
         </Card>
 
-        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
+        <Card className="bg-slate-900 border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Active Tenants</span>
             <div className="h-7 w-7 rounded-lg bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
@@ -639,7 +639,7 @@ export default function PlatformTenantsPage() {
           <div className="text-2xs text-muted-foreground mt-0.5 truncate">Operational workspaces</div>
         </Card>
 
-        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
+        <Card className="bg-slate-900 border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Free Trials</span>
             <div className="h-7 w-7 rounded-lg bg-blue-600/15 border border-blue-500/20 text-blue-400 flex items-center justify-center">
@@ -656,7 +656,7 @@ export default function PlatformTenantsPage() {
         {/* Incomplete / Started-but-not-finished Registrations KPI Card */}
         <Card
           onClick={() => setStatusFilter('incomplete')}
-          className={`bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group cursor-pointer transition-all shadow-lg hover:border-amber-500/40 ${
+          className={`bg-slate-900 border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group cursor-pointer transition-all shadow-lg hover:border-amber-500/40 ${
             statusFilter === 'incomplete' ? 'ring-2 ring-amber-500/50 bg-amber-950/20' : ''
           }`}
         >
@@ -675,7 +675,7 @@ export default function PlatformTenantsPage() {
           </div>
         </Card>
 
-        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
+        <Card className="bg-slate-900 border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Suspended</span>
             <div className="h-7 w-7 rounded-lg bg-red-600/15 border border-red-500/20 text-red-400 flex items-center justify-center">
@@ -689,7 +689,7 @@ export default function PlatformTenantsPage() {
           <div className="text-2xs text-muted-foreground mt-0.5 truncate">Restricted by policy</div>
         </Card>
 
-        <Card className="bg-foreground border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg col-span-2 sm:col-span-1">
+        <Card className="bg-slate-900 border-border py-2.5 px-3.5 rounded-xl relative overflow-hidden group hover:border-border transition-all shadow-lg col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-semibold text-muted-foreground">Portfolio MRR</span>
             <div className="h-7 w-7 rounded-lg bg-emerald-600/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
@@ -704,7 +704,7 @@ export default function PlatformTenantsPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-foreground p-3.5 rounded-2xl border border-border">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-900 p-3.5 rounded-2xl border border-border">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
           {[
             { key: 'all', label: 'All Tenants', count: companies.length },
@@ -726,7 +726,7 @@ export default function PlatformTenantsPage() {
                       : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                     : tab.isSpecial
                     ? 'bg-amber-950/40 text-amber-300 hover:text-amber-100 hover:bg-amber-900/50 border border-amber-800/60'
-                    : 'bg-foreground text-muted-foreground hover:text-foreground hover:bg-secondary border border-border'
+                    : 'bg-slate-900 text-muted-foreground hover:text-foreground hover:bg-slate-800 border border-border'
                 }`}
               >
                 {tab.isSpecial && <Hourglass className="h-3.5 w-3.5 text-amber-300 shrink-0" />}
@@ -737,7 +737,7 @@ export default function PlatformTenantsPage() {
                       ? 'bg-card/20 text-white'
                       : tab.isSpecial
                       ? 'bg-amber-900/70 text-amber-200'
-                      : 'bg-secondary text-muted-foreground'
+                      : 'bg-slate-800 text-muted-foreground'
                   }`}
                 >
                   {tab.count}
@@ -758,7 +758,7 @@ export default function PlatformTenantsPage() {
               }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-foreground border-border text-xs text-white placeholder:text-muted-foreground h-9 rounded-xl focus-visible:ring-indigo-500"
+              className="pl-9 bg-slate-900 border-border text-xs text-white placeholder:text-muted-foreground h-9 rounded-xl focus-visible:ring-indigo-500"
             />
             {search && (
               <button
@@ -775,7 +775,7 @@ export default function PlatformTenantsPage() {
           <select
             value={planFilter}
             onChange={(e) => setPlanFilter(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-muted-foreground font-medium focus:outline-none focus:border-indigo-500 shrink-0"
+            className="h-9 px-3 rounded-xl bg-slate-900 border border-border text-xs text-muted-foreground font-medium focus:outline-none focus:border-indigo-500 shrink-0"
           >
             <option value="all">All Plans</option>
             <option value="trial">Trial Tier</option>
@@ -810,14 +810,14 @@ export default function PlatformTenantsPage() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-20 bg-foreground border border-border rounded-2xl animate-pulse" />
+            <div key={i} className="h-20 bg-slate-900 border border-border rounded-2xl animate-pulse" />
           ))}
         </div>
       ) : statusFilter === 'incomplete' ? (
         /* INCOMPLETE REGISTRATIONS TABLE VIEW */
         <div className="space-y-4">
           {/* Incomplete Sub-stage Filter Chips */}
-          <div className="flex items-center justify-between gap-3 flex-wrap bg-foreground p-2.5 rounded-xl border border-border">
+          <div className="flex items-center justify-between gap-3 flex-wrap bg-slate-900 p-2.5 rounded-xl border border-border">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider px-2">Stage:</span>
               {[
@@ -835,11 +835,11 @@ export default function PlatformTenantsPage() {
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                       isSubActive
                         ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                        : 'bg-foreground text-muted-foreground hover:text-foreground border border-border'
+                        : 'bg-slate-900 text-muted-foreground hover:text-foreground border border-border'
                     }`}
                   >
                     <span>{sub.label}</span>
-                    <span className={`px-1.5 py-0.2 rounded-full text-2xs tabular-nums ${isSubActive ? 'bg-amber-500/30 text-amber-200' : 'bg-secondary text-muted-foreground'}`}>
+                    <span className={`px-1.5 py-0.2 rounded-full text-2xs tabular-nums ${isSubActive ? 'bg-amber-500/30 text-amber-200' : 'bg-slate-800 text-muted-foreground'}`}>
                       {sub.count}
                     </span>
                   </button>
@@ -854,7 +854,7 @@ export default function PlatformTenantsPage() {
 
           {/* Incomplete Registrations Table / Empty State */}
           {filteredIncomplete.length === 0 ? (
-            <Card className="bg-foreground border-border text-center py-16">
+            <Card className="bg-slate-900 border-border text-center py-16">
               <CardContent className="space-y-3">
                 <UserCheck className="h-12 w-12 text-muted-foreground mx-auto" />
                 <div className="text-base font-bold text-white">No Incomplete Registrations Found</div>
@@ -866,10 +866,10 @@ export default function PlatformTenantsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-border bg-foreground">
+            <div className="overflow-hidden rounded-2xl border border-border bg-slate-900">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-foreground text-2xs uppercase tracking-wider text-muted-foreground border-b border-border">
+                  <thead className="bg-slate-900 text-2xs uppercase tracking-wider text-muted-foreground border-b border-border">
                     <tr>
                       <th className="py-3.5 px-4 font-bold">Prospective Owner</th>
                       <th className="py-3.5 px-3 font-bold">Contact Details</th>
@@ -1041,7 +1041,7 @@ export default function PlatformTenantsPage() {
           )}
         </div>
       ) : filteredCompanies.length === 0 ? (
-        <Card className="bg-foreground border-border text-center py-16">
+        <Card className="bg-slate-900 border-border text-center py-16">
           <CardContent className="space-y-3">
             <Building2 className="h-12 w-12 text-muted-foreground mx-auto" />
             <div className="text-base font-bold text-white">No tenants found</div>
@@ -1061,10 +1061,10 @@ export default function PlatformTenantsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-foreground">
+        <div className="overflow-hidden rounded-2xl border border-border bg-slate-900">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-foreground text-2xs uppercase tracking-wider text-muted-foreground border-b border-border">
+              <thead className="bg-slate-900 text-2xs uppercase tracking-wider text-muted-foreground border-b border-border">
                 <tr>
                   <th className="py-3.5 px-4 font-bold">Business</th>
                   <th className="py-3.5 px-3 font-bold">Plan &amp; Pricing</th>
@@ -1163,7 +1163,7 @@ export default function PlatformTenantsPage() {
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/platform/tenants/${c.id}`}
-                            className="px-2.5 py-1 rounded-lg bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white font-medium text-xs transition-colors"
+                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-muted-foreground hover:text-white font-medium text-xs transition-colors"
                           >
                             360° View
                           </Link>
@@ -1254,7 +1254,7 @@ export default function PlatformTenantsPage() {
       {/* 1. CREATE BUSINESS MODAL */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto">
-          <Card className="w-full max-w-2xl bg-foreground border-border text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
+          <Card className="w-full max-w-2xl bg-slate-900 border-border text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
             <CardHeader className="border-b border-border pb-4 shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -1273,7 +1273,7 @@ export default function PlatformTenantsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="text-muted-foreground hover:text-white p-1.5 rounded-xl hover:bg-secondary transition-colors"
+                  className="text-muted-foreground hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1320,7 +1320,7 @@ export default function PlatformTenantsPage() {
                         placeholder="e.g. Dhaka Offset Printers"
                         value={provisionName}
                         onChange={(e) => handleNameChange(e.target.value)}
-                        className="bg-foreground border-border text-white text-xs h-9"
+                        className="bg-slate-900 border-border text-white text-xs h-9"
                       />
                     </div>
 
@@ -1350,7 +1350,7 @@ export default function PlatformTenantsPage() {
                           setSlugManuallyEdited(true)
                           setProvisionSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
                         }}
-                        className="bg-foreground border-border text-white text-xs h-9 tabular-nums"
+                        className="bg-slate-900 border-border text-white text-xs h-9 tabular-nums"
                       />
                     </div>
                   </div>
@@ -1362,7 +1362,7 @@ export default function PlatformTenantsPage() {
                         placeholder="যেমন: ঢাকা অফসেট প্রিন্টার্স"
                         value={provisionNameBn}
                         onChange={(e) => setProvisionNameBn(e.target.value)}
-                        className="bg-foreground border-border text-white text-xs h-9"
+                        className="bg-slate-900 border-border text-white text-xs h-9"
                       />
                     </div>
 
@@ -1371,7 +1371,7 @@ export default function PlatformTenantsPage() {
                       <select
                         value={provisionBusinessType}
                         onChange={(e) => setProvisionBusinessType(e.target.value)}
-                        className="w-full h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-white"
+                        className="w-full h-9 px-3 rounded-xl bg-slate-900 border border-border text-xs text-white"
                       >
                         <option value="commercial_printing">Commercial Printing &amp; Offset</option>
                         <option value="signage_flex">Outdoor Signage &amp; Flex Banner</option>
@@ -1399,7 +1399,7 @@ export default function PlatformTenantsPage() {
                         placeholder="e.g. Al-Haj Rafiqul Islam"
                         value={provisionOwnerName}
                         onChange={(e) => setProvisionOwnerName(e.target.value)}
-                        className="bg-foreground border-border text-white text-xs h-9"
+                        className="bg-slate-900 border-border text-white text-xs h-9"
                       />
                     </div>
 
@@ -1410,7 +1410,7 @@ export default function PlatformTenantsPage() {
                         placeholder="owner@dhakapress.com.bd"
                         value={provisionOwnerEmail}
                         onChange={(e) => setProvisionOwnerEmail(e.target.value)}
-                        className="bg-foreground border-border text-white text-xs h-9"
+                        className="bg-slate-900 border-border text-white text-xs h-9"
                       />
                     </div>
                   </div>
@@ -1422,7 +1422,7 @@ export default function PlatformTenantsPage() {
                         placeholder="01711-000000"
                         value={provisionOwnerPhone}
                         onChange={(e) => setProvisionOwnerPhone(e.target.value)}
-                        className="bg-foreground border-border text-white text-xs h-9 tabular-nums"
+                        className="bg-slate-900 border-border text-white text-xs h-9 tabular-nums"
                       />
                     </div>
 
@@ -1444,7 +1444,7 @@ export default function PlatformTenantsPage() {
                           value={provisionPassword}
                           onChange={(e) => setProvisionPassword(e.target.value)}
                           placeholder="Password"
-                          className="bg-foreground border-border text-white text-xs h-9 pr-8 tabular-nums"
+                          className="bg-slate-900 border-border text-white text-xs h-9 pr-8 tabular-nums"
                         />
                         <button
                           type="button"
@@ -1472,7 +1472,7 @@ export default function PlatformTenantsPage() {
                         placeholder="e.g. 14 Arambagh, Motijheel, Dhaka-1000"
                         value={provisionAddress}
                         onChange={(e) => setProvisionAddress(e.target.value)}
-                        className="bg-foreground border-border text-white text-xs h-9"
+                        className="bg-slate-900 border-border text-white text-xs h-9"
                       />
                     </div>
 
@@ -1481,7 +1481,7 @@ export default function PlatformTenantsPage() {
                       <select
                         value={provisionCurrency}
                         onChange={(e) => setProvisionCurrency(e.target.value)}
-                        className="w-full h-9 px-3 rounded-xl bg-foreground border border-border text-xs text-white"
+                        className="w-full h-9 px-3 rounded-xl bg-slate-900 border border-border text-xs text-white"
                       >
                         <option value="BDT">BDT (৳ Bangladesh Taka)</option>
                         <option value="USD">USD ($ US Dollar)</option>
@@ -1508,7 +1508,7 @@ export default function PlatformTenantsPage() {
                           className={`p-3 rounded-xl border cursor-pointer transition-all ${
                             provisionPlan === 'trial'
                               ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                              : 'bg-foreground border-border hover:border-border'
+                              : 'bg-slate-900 border-border hover:border-border'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
@@ -1527,7 +1527,7 @@ export default function PlatformTenantsPage() {
                       className={`p-3 rounded-xl border cursor-pointer transition-all ${
                         provisionPlan === 'starter'
                           ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                          : 'bg-foreground border-border hover:border-border'
+                          : 'bg-slate-900 border-border hover:border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -1544,7 +1544,7 @@ export default function PlatformTenantsPage() {
                       className={`p-3 rounded-xl border cursor-pointer transition-all ${
                         provisionPlan === 'business'
                           ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                          : 'bg-foreground border-border hover:border-border'
+                          : 'bg-slate-900 border-border hover:border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -1561,7 +1561,7 @@ export default function PlatformTenantsPage() {
                       className={`p-3 rounded-xl border cursor-pointer transition-all ${
                         provisionPlan === 'enterprise'
                           ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                          : 'bg-foreground border-border hover:border-border'
+                          : 'bg-slate-900 border-border hover:border-border'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -1576,13 +1576,13 @@ export default function PlatformTenantsPage() {
                 </div>
               </CardContent>
 
-              <div className="p-4 border-t border-border flex items-center justify-end gap-2.5 bg-foreground shrink-0">
+              <div className="p-4 border-t border-border flex items-center justify-end gap-2.5 bg-slate-900 shrink-0">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCreateModal(false)}
-                  className="text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
+                  className="text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
                 >
                   Cancel
                 </Button>
@@ -1613,7 +1613,7 @@ export default function PlatformTenantsPage() {
       {/* 1.1 POST-PROVISIONING CREDENTIALS SUMMARY MODAL */}
       {provisionedResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-lg bg-foreground border-emerald-500/30 text-slate-100 shadow-2xl overflow-hidden">
+          <Card className="w-full max-w-lg bg-slate-900 border-emerald-500/30 text-slate-100 shadow-2xl overflow-hidden">
             <div className="bg-emerald-950/40 border-b border-emerald-500/20 p-5 flex items-start gap-3">
               <div className="h-10 w-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
                 <CheckCircle2 className="h-6 w-6" />
@@ -1630,7 +1630,7 @@ export default function PlatformTenantsPage() {
 
             <CardContent className="p-5 space-y-4 text-xs">
               {/* Org Details Card */}
-              <div className="p-3 rounded-xl bg-foreground border border-border space-y-2">
+              <div className="p-3 rounded-xl bg-slate-900 border border-border space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Organization:</span>
                   <span className="font-bold text-white text-sm">{provisionedResult.credentials.businessName}</span>
@@ -1644,7 +1644,7 @@ export default function PlatformTenantsPage() {
               </div>
 
               {/* Login Credentials Box */}
-              <div className="p-3.5 rounded-xl bg-foreground border border-border space-y-3">
+              <div className="p-3.5 rounded-xl bg-slate-900 border border-border space-y-3">
                 <div className="font-bold text-muted-foreground text-xs flex items-center gap-1.5 border-b border-border pb-2">
                   <Key className="h-3.5 w-3.5 text-indigo-400" />
                   Owner Access &amp; Login Credentials
@@ -1653,7 +1653,7 @@ export default function PlatformTenantsPage() {
                 <div className="space-y-2">
                   <div>
                     <div className="text-2xs text-muted-foreground mb-0.5">Direct Workspace URL</div>
-                    <div className="flex items-center justify-between bg-foreground border border-border rounded-lg px-2.5 py-1.5">
+                    <div className="flex items-center justify-between bg-slate-900 border border-border rounded-lg px-2.5 py-1.5">
                       <span className="tabular-nums text-white text-xs truncate">
                         {provisionedResult.credentials.loginUrl}
                       </span>
@@ -1679,7 +1679,7 @@ export default function PlatformTenantsPage() {
 
                   <div>
                     <div className="text-2xs text-muted-foreground mb-0.5">Owner Email</div>
-                    <div className="flex items-center justify-between bg-foreground border border-border rounded-lg px-2.5 py-1.5">
+                    <div className="flex items-center justify-between bg-slate-900 border border-border rounded-lg px-2.5 py-1.5">
                       <span className="tabular-nums text-white text-xs truncate">
                         {provisionedResult.credentials.email}
                       </span>
@@ -1700,7 +1700,7 @@ export default function PlatformTenantsPage() {
 
                   <div>
                     <div className="text-2xs text-muted-foreground mb-0.5">Temporary Access Password</div>
-                    <div className="flex items-center justify-between bg-foreground border border-border rounded-lg px-2.5 py-1.5">
+                    <div className="flex items-center justify-between bg-slate-900 border border-border rounded-lg px-2.5 py-1.5">
                       <span className="tabular-nums text-emerald-400 font-bold text-xs">
                         {provisionedResult.credentials.password}
                       </span>
@@ -1728,7 +1728,7 @@ export default function PlatformTenantsPage() {
                   const payload = `🚀 Welcome to InkFlow ERP!\n\nYour organization workspace is ready:\n🏢 Organization: ${provisionedResult.credentials.businessName}\n🌐 Login URL: ${window.location.origin}${provisionedResult.credentials.loginUrl}\n👤 Owner Email: ${provisionedResult.credentials.email}\n🔑 Password: ${provisionedResult.credentials.password}\n📦 Plan: ${provisionedResult.credentials.plan.toUpperCase()}\n\nPlease log in and update your password from your profile settings.`
                   handleCopyText(payload, 'all')
                 }}
-                className="w-full bg-secondary hover:bg-slate-700 text-foreground hover:text-white font-medium text-xs h-9 border border-border rounded-xl"
+                className="w-full bg-slate-800 hover:bg-slate-700 text-foreground hover:text-white font-medium text-xs h-9 border border-border rounded-xl"
               >
                 {copiedField === 'all' ? (
                   <>
@@ -1744,11 +1744,11 @@ export default function PlatformTenantsPage() {
               </Button>
             </CardContent>
 
-            <div className="p-4 border-t border-border flex items-center justify-between gap-2 bg-foreground">
+            <div className="p-4 border-t border-border flex items-center justify-between gap-2 bg-slate-900">
               <div className="flex items-center gap-2">
                 <Link
                   href={`/platform/tenants/${provisionedResult.company.id}`}
-                  className="px-3 py-1.5 rounded-xl bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white font-medium text-xs transition-colors"
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-muted-foreground hover:text-white font-medium text-xs transition-colors"
                 >
                   View 360° Profile
                 </Link>
@@ -1778,7 +1778,7 @@ export default function PlatformTenantsPage() {
       {/* 2. CHANGE PLAN MODAL */}
       {planModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-xl bg-foreground border-border text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
+          <Card className="w-full max-w-xl bg-slate-900 border-border text-slate-100 shadow-2xl my-8 max-h-[90vh] flex flex-col">
             <CardHeader className="border-b border-border pb-4 shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -1798,7 +1798,7 @@ export default function PlatformTenantsPage() {
                 <button
                   type="button"
                   onClick={() => setPlanModalCompany(null)}
-                  className="text-muted-foreground hover:text-white p-1.5 rounded-xl hover:bg-secondary transition-colors"
+                  className="text-muted-foreground hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1850,14 +1850,14 @@ export default function PlatformTenantsPage() {
                         className={`p-3 rounded-xl border cursor-pointer transition-all ${
                           isSelected
                             ? 'bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500'
-                            : 'bg-foreground border-border hover:border-border'
+                            : 'bg-slate-900 border-border hover:border-border'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-bold text-white text-xs flex items-center gap-1.5">
                             {p.title}
                             {isCurrent && (
-                              <span className="text-2xs bg-secondary text-muted-foreground px-1.5 py-0.2 rounded font-normal">
+                              <span className="text-2xs bg-slate-800 text-muted-foreground px-1.5 py-0.2 rounded font-normal">
                                 Current
                               </span>
                             )}
@@ -1882,18 +1882,18 @@ export default function PlatformTenantsPage() {
                   placeholder="e.g. Upgraded to Business tier following verified payment confirmation..."
                   value={planReason}
                   onChange={(e) => setPlanReason(e.target.value)}
-                  className="bg-foreground border-border text-white text-xs h-9"
+                  className="bg-slate-900 border-border text-white text-xs h-9"
                 />
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-border flex items-center justify-end gap-2.5 bg-foreground shrink-0">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2.5 bg-slate-900 shrink-0">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setPlanModalCompany(null)}
-                className="text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
+                className="text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
               >
                 Cancel
               </Button>
@@ -1921,7 +1921,7 @@ export default function PlatformTenantsPage() {
       {/* 3. SUSPEND / REACTIVATE MODAL */}
       {statusModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <Card className="w-full max-w-md bg-foreground border-border text-slate-100 shadow-2xl">
+          <Card className="w-full max-w-md bg-slate-900 border-border text-slate-100 shadow-2xl">
             <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <Ban className="h-5 w-5 text-red-400" />
@@ -1946,17 +1946,17 @@ export default function PlatformTenantsPage() {
                   placeholder="e.g. Non-payment, Terms violation, Owner request..."
                   value={statusReason}
                   onChange={(e) => setStatusReason(e.target.value)}
-                  className="bg-foreground border-border text-white text-xs h-9"
+                  className="bg-slate-900 border-border text-white text-xs h-9"
                 />
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-slate-900">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setStatusModalCompany(null)}
-                className="text-xs border-border bg-foreground text-muted-foreground"
+                className="text-xs border-border bg-slate-900 text-muted-foreground"
               >
                 Cancel
               </Button>
@@ -1980,7 +1980,7 @@ export default function PlatformTenantsPage() {
       {/* 3. SUPPORT ACCESS MODAL */}
       {supportModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <Card className="w-full max-w-md bg-foreground border-border text-slate-100 shadow-2xl">
+          <Card className="w-full max-w-md bg-slate-900 border-border text-slate-100 shadow-2xl">
             <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <ShieldAlert className="h-5 w-5 text-amber-400" />
@@ -1992,7 +1992,7 @@ export default function PlatformTenantsPage() {
             </CardHeader>
 
             <CardContent className="space-y-3 pt-4 text-xs">
-              <div className="p-3 rounded-xl bg-foreground border border-border text-muted-foreground space-y-1">
+              <div className="p-3 rounded-xl bg-slate-900 border border-border text-muted-foreground space-y-1">
                 <div className="font-semibold text-white">Zero Trust Protocol:</div>
                 <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
                   <li>Session expires automatically in 2 hours (TTL)</li>
@@ -2008,17 +2008,17 @@ export default function PlatformTenantsPage() {
                   placeholder="e.g. Investigating GST invoice printing layout issue #402"
                   value={supportReason}
                   onChange={(e) => setSupportReason(e.target.value)}
-                  className="bg-foreground border-border text-white text-xs h-9"
+                  className="bg-slate-900 border-border text-white text-xs h-9"
                 />
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-slate-900">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSupportModalCompany(null)}
-                className="text-xs border-border bg-foreground text-muted-foreground"
+                className="text-xs border-border bg-slate-900 text-muted-foreground"
               >
                 Cancel
               </Button>
@@ -2038,7 +2038,7 @@ export default function PlatformTenantsPage() {
       {/* 4. DELETE SINGLE TENANT MODAL */}
       {deleteModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-y-auto">
-          <Card className="w-full max-w-md bg-foreground border-red-800/60 text-slate-100 shadow-2xl shadow-red-950/40 my-8">
+          <Card className="w-full max-w-md bg-slate-900 border-red-800/60 text-slate-100 shadow-2xl shadow-red-950/40 my-8">
             <CardHeader className="border-b border-border pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold text-red-400 flex items-center gap-2">
@@ -2120,7 +2120,7 @@ export default function PlatformTenantsPage() {
                       setDeleteReason(e.target.value)
                       if (deleteError) setDeleteError(null)
                     }}
-                    className="bg-foreground border-border text-white text-xs h-9 focus-visible:ring-red-500"
+                    className="bg-slate-900 border-border text-white text-xs h-9 focus-visible:ring-red-500"
                   />
                   <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                     <span className="text-2xs text-muted-foreground">Quick fill:</span>
@@ -2130,7 +2130,7 @@ export default function PlatformTenantsPage() {
                         setDeleteReason('Testing cleanup')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-1.5 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors"
+                      className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors"
                     >
                       Testing cleanup
                     </button>
@@ -2140,7 +2140,7 @@ export default function PlatformTenantsPage() {
                         setDeleteReason('Account closed at owner request')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-1.5 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors"
+                      className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors"
                     >
                       Owner request
                     </button>
@@ -2150,7 +2150,7 @@ export default function PlatformTenantsPage() {
                         setDeleteReason('Duplicate / abandoned registration')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-1.5 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors"
+                      className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors"
                     >
                       Duplicate
                     </button>
@@ -2170,7 +2170,7 @@ export default function PlatformTenantsPage() {
                       setDeleteConfirmName(e.target.value)
                       if (deleteError) setDeleteError(null)
                     }}
-                    className="bg-foreground border-border text-white text-xs h-9 focus-visible:ring-red-500 font-medium"
+                    className="bg-slate-900 border-border text-white text-xs h-9 focus-visible:ring-red-500 font-medium"
                   />
                   <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                     <span className="text-2xs text-muted-foreground">Quick fill:</span>
@@ -2190,7 +2190,7 @@ export default function PlatformTenantsPage() {
                         setDeleteConfirmName(deleteModalCompany.name)
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-2 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors truncate max-w-[140px]"
+                      className="px-2 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-muted-foreground hover:text-white border border-border transition-colors truncate max-w-[140px]"
                       title={deleteModalCompany.name}
                     >
                       {deleteModalCompany.name}
@@ -2202,7 +2202,7 @@ export default function PlatformTenantsPage() {
                           setDeleteConfirmName(deleteModalCompany.slug)
                           if (deleteError) setDeleteError(null)
                         }}
-                        className="px-2 py-0.5 rounded text-2xs bg-secondary hover:bg-slate-700 text-muted-foreground hover:text-white border border-border tabular-nums transition-colors truncate max-w-[120px]"
+                        className="px-2 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-muted-foreground hover:text-white border border-border tabular-nums transition-colors truncate max-w-[120px]"
                         title={deleteModalCompany.slug}
                       >
                         {deleteModalCompany.slug}
@@ -2212,7 +2212,7 @@ export default function PlatformTenantsPage() {
                 </div>
               </CardContent>
 
-              <div className="p-4 border-t border-border flex items-center justify-between gap-2 bg-foreground">
+              <div className="p-4 border-t border-border flex items-center justify-between gap-2 bg-slate-900">
                 <div className="text-2xs">
                   {Boolean(
                     deleteReason.trim() &&
@@ -2244,7 +2244,7 @@ export default function PlatformTenantsPage() {
                       setDeleteConfirmName('')
                       setDeleteError(null)
                     }}
-                    className="text-xs border-border bg-foreground text-muted-foreground"
+                    className="text-xs border-border bg-slate-900 text-muted-foreground"
                   >
                     Cancel
                   </Button>
@@ -2274,7 +2274,7 @@ export default function PlatformTenantsPage() {
       {/* 5. PURGE ALL TENANTS MODAL */}
       {showPurgeAllModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-lg bg-foreground border-red-800 text-slate-100 shadow-2xl shadow-red-950/60">
+          <Card className="w-full max-w-lg bg-slate-900 border-red-800 text-slate-100 shadow-2xl shadow-red-950/60">
             <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-base font-bold text-red-400 flex items-center gap-2">
                 <ShieldAlert className="h-5 w-5 text-red-500" />
@@ -2305,7 +2305,7 @@ export default function PlatformTenantsPage() {
                   placeholder="e.g. System reset, Pre-production data cleanup..."
                   value={purgeReason}
                   onChange={(e) => setPurgeReason(e.target.value)}
-                  className="bg-foreground border-border text-white text-xs h-9"
+                  className="bg-slate-900 border-border text-white text-xs h-9"
                 />
               </div>
 
@@ -2318,12 +2318,12 @@ export default function PlatformTenantsPage() {
                   placeholder="PURGE"
                   value={purgeConfirmText}
                   onChange={(e) => setPurgeConfirmText(e.target.value)}
-                  className="bg-foreground border-red-800 text-red-400 tabular-nums font-bold text-xs h-9 placeholder:text-muted-foreground"
+                  className="bg-slate-900 border-red-800 text-red-400 tabular-nums font-bold text-xs h-9 placeholder:text-muted-foreground"
                 />
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-slate-900">
               <Button
                 variant="outline"
                 size="sm"
@@ -2332,7 +2332,7 @@ export default function PlatformTenantsPage() {
                   setPurgeReason('')
                   setPurgeConfirmText('')
                 }}
-                className="text-xs border-border bg-foreground text-muted-foreground"
+                className="text-xs border-border bg-slate-900 text-muted-foreground"
               >
                 Cancel
               </Button>
@@ -2352,7 +2352,7 @@ export default function PlatformTenantsPage() {
       {/* 6. DELETE INCOMPLETE REGISTRATION MODAL */}
       {deleteIncompleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in-0 duration-200">
-          <Card className="w-full max-w-md bg-foreground border-amber-800/60 text-slate-100 shadow-2xl shadow-amber-950/40">
+          <Card className="w-full max-w-md bg-slate-900 border-amber-800/60 text-slate-100 shadow-2xl shadow-amber-950/40">
             <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-base font-bold text-amber-400 flex items-center gap-2">
                 <Trash2 className="h-5 w-5 text-amber-500" />
@@ -2377,7 +2377,7 @@ export default function PlatformTenantsPage() {
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-foreground border border-border text-muted-foreground space-y-1.5">
+              <div className="p-3 rounded-xl bg-slate-900 border border-border text-muted-foreground space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Registrant:</span>
                   <span className="font-semibold text-white">{deleteIncompleteTarget.full_name || 'Anonymous'}</span>
@@ -2393,12 +2393,12 @@ export default function PlatformTenantsPage() {
               </div>
             </CardContent>
 
-            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-foreground">
+            <div className="p-4 border-t border-border flex items-center justify-end gap-2 bg-slate-900">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setDeleteIncompleteTarget(null)}
-                className="text-xs border-border bg-foreground text-muted-foreground"
+                className="text-xs border-border bg-slate-900 text-muted-foreground"
               >
                 Cancel
               </Button>

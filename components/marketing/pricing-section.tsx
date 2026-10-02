@@ -298,7 +298,7 @@ export function PricingSection() {
                         className={`w-full h-11 font-bold text-sm cursor-pointer bangla-text ${
                           isPopular
                             ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm'
-                            : 'bg-foreground hover:bg-secondary dark:hover:bg-slate-700 text-white'
+                            : 'bg-slate-900 hover:bg-slate-800 dark:hover:bg-slate-700 text-white'
                         }`}
                       >
                         <span>{tBilingual(`Get Started with ${p.name}`, `${p.name_bn} শুরু করুন`)}</span>

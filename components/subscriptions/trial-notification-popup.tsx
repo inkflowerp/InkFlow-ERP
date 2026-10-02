@@ -98,7 +98,7 @@ export function TrialNotificationPopup() {
               ? 'bg-red-950/90 text-red-200 border-red-500/50 shadow-red-950/50'
               : isUrgent
               ? 'bg-amber-950/90 text-amber-200 border-amber-500/50 shadow-amber-950/50'
-              : 'bg-foreground text-indigo-200 border-indigo-500/50 shadow-slate-950/50'
+              : 'bg-slate-900 text-indigo-200 border-indigo-500/50 shadow-slate-950/50'
           )}
         >
           {isTrialExpired ? (
@@ -129,10 +129,10 @@ export function TrialNotificationPopup() {
         'rounded-2xl border shadow-2xl backdrop-blur-xl p-4 transition-all duration-300',
         'animate-in fade-in slide-in-from-bottom-4',
         isTrialExpired
-          ? 'bg-foreground text-slate-100 border-red-500/40 shadow-red-950/40'
+          ? 'bg-slate-900 text-slate-100 border-red-500/40 shadow-red-950/40'
           : isUrgent
-          ? 'bg-foreground text-slate-100 border-amber-500/40 shadow-amber-950/40'
-          : 'bg-foreground text-slate-100 border-indigo-500/40 shadow-indigo-950/40'
+          ? 'bg-slate-900 text-slate-100 border-amber-500/40 shadow-amber-950/40'
+          : 'bg-slate-900 text-slate-100 border-indigo-500/40 shadow-indigo-950/40'
       )}
     >
       {/* Background Accent Glow */}
@@ -185,7 +185,7 @@ export function TrialNotificationPopup() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsMinimized(true)}
-            className="p-1 text-muted-foreground hover:text-white rounded-lg hover:bg-secondary transition-colors cursor-pointer"
+            className="p-1 text-muted-foreground hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
             title={tBilingual('Minimize', 'ছোট করুন')}
             aria-label="Minimize popup"
           >
@@ -193,7 +193,7 @@ export function TrialNotificationPopup() {
           </button>
           <button
             onClick={() => handleDismiss(4)}
-            className="p-1 text-muted-foreground hover:text-white rounded-lg hover:bg-secondary transition-colors cursor-pointer"
+            className="p-1 text-muted-foreground hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
             title={tBilingual('Dismiss for 4 hours', 'বন্ধ করুন')}
             aria-label="Close popup"
           >
@@ -247,7 +247,7 @@ export function TrialNotificationPopup() {
                 {locale === 'bn' ? toBengaliDigits(trialProgressPercent) : trialProgressPercent}%
               </span>
             </div>
-            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div
                 className={cn(
                   'h-full rounded-full transition-all duration-500',

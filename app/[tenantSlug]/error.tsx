@@ -57,7 +57,7 @@ export default function TenantError({ error, reset }: ErrorProps) {
               window.location.href = '/dashboard'
             }
           }}
-          className="h-10 px-4 gap-2 bg-foreground hover:bg-secondary text-white font-semibold cursor-pointer min-h-[44px]"
+          className="h-10 px-4 gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold cursor-pointer min-h-[44px]"
         >
           <Home className="h-4 w-4" />
           <span>{tBilingual('Return to Dashboard', 'ড্যাশবোর্ডে ফিরে যান')}</span>

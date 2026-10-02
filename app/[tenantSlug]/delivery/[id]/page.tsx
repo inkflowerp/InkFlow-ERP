@@ -361,7 +361,7 @@ export default function DeliveryChallanDetailPage() {
                 <h1 className="text-xl font-black tracking-tight print:text-foreground">{company?.name || 'InkFlow Printing & Signage'}</h1>
                 {company?.address && <p className="text-muted-foreground print:text-muted-foreground text-2xs">{company.address}</p>}
                 
-                <div className="inline-block mt-2 px-6 py-1 rounded-full bg-foreground text-white print:bg-foreground print:text-white font-black text-xs tracking-wider uppercase">
+                <div className="inline-block mt-2 px-6 py-1 rounded-full bg-slate-900 text-white print:bg-slate-900 print:text-white font-black text-xs tracking-wider uppercase">
                   DELIVERY CHALLAN • ডেলিভারি চালানপত্র
                 </div>
                 <div className="text-2xs font-bold text-muted-foreground print:text-foreground">

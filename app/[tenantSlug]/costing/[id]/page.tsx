@@ -149,7 +149,7 @@ export default function JobCostingDetailPage() {
             <Button
               size="sm"
               onClick={() => window.print()}
-              className="bg-foreground hover:bg-secondary text-xs text-white h-9 px-4 rounded-xl shadow-xs font-semibold flex items-center gap-1.5"
+              className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-9 px-4 rounded-xl shadow-xs font-semibold flex items-center gap-1.5"
             >
               <Printer className="h-3.5 w-3.5" />
               <span>{tBilingual('Print Cost Traveler', 'প্রিন্ট কস্ট ট্রাভেলার')}</span>

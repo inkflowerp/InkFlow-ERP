@@ -362,7 +362,7 @@ export default function PlatformSupportPage() {
         )
       default:
         return (
-          <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-secondary text-muted-foreground">
+          <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-slate-800 text-muted-foreground">
             {level}
           </span>
         )
@@ -423,7 +423,7 @@ export default function PlatformSupportPage() {
         </div>
 
         {/* View Mode Switcher Tabs */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-foreground border border-border shrink-0">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-border shrink-0">
           <button
             type="button"
             onClick={() => setSupportView('chat')}
@@ -431,7 +431,7 @@ export default function PlatformSupportPage() {
               'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
               supportView === 'chat'
                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-slate-800'
             )}
           >
             <MessageSquare className="w-3.5 h-3.5" />
@@ -444,7 +444,7 @@ export default function PlatformSupportPage() {
               'flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
               supportView === 'sessions'
                 ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
-                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-slate-800'
             )}
           >
             <Key className="w-3.5 h-3.5" />
@@ -508,7 +508,7 @@ export default function PlatformSupportPage() {
               <Button
                 size="sm"
                 onClick={handleExportCsv}
-                className="bg-secondary hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
+                className="bg-slate-800 hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
               >
                 <Download className="h-3.5 w-3.5 mr-1.5 text-cyan-400" />
                 Export CSV
@@ -517,7 +517,7 @@ export default function PlatformSupportPage() {
               <Link href="/platform/audit">
                 <Button
                   size="sm"
-                  className="bg-secondary hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
+                  className="bg-slate-800 hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
                 >
                   <History className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
                   Audit Logs
@@ -528,7 +528,7 @@ export default function PlatformSupportPage() {
                 size="sm"
                 onClick={() => loadData()}
                 disabled={loading}
-                className="bg-secondary hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
+                className="bg-slate-800 hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
               >
                 <RefreshCw className={`h-3.5 w-3.5 mr-1.5 text-muted-foreground ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -539,7 +539,7 @@ export default function PlatformSupportPage() {
           {/* Executive Overview Metric Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
             {/* Active Support Sessions */}
-            <Card className="border-border bg-foreground backdrop-blur-md p-4 rounded-2xl relative overflow-hidden">
+            <Card className="border-border bg-slate-900 backdrop-blur-md p-4 rounded-2xl relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold text-muted-foreground">Live Active Sessions</div>
                 <div className="p-2 rounded-xl bg-amber-950/80 border border-amber-800 text-amber-400">
@@ -561,7 +561,7 @@ export default function PlatformSupportPage() {
         </Card>
 
         {/* Total Sessions Conducted */}
-        <Card className="border-border bg-foreground backdrop-blur-md p-4 rounded-2xl">
+        <Card className="border-border bg-slate-900 backdrop-blur-md p-4 rounded-2xl">
           <div className="flex items-center justify-between">
             <div className="text-xs font-semibold text-muted-foreground">Total Audited Sessions</div>
             <div className="p-2 rounded-xl bg-indigo-950/80 border border-indigo-800 text-indigo-400">
@@ -578,7 +578,7 @@ export default function PlatformSupportPage() {
         </Card>
 
         {/* Access Level Distribution */}
-        <Card className="border-border bg-foreground backdrop-blur-md p-4 rounded-2xl">
+        <Card className="border-border bg-slate-900 backdrop-blur-md p-4 rounded-2xl">
           <div className="flex items-center justify-between">
             <div className="text-xs font-semibold text-muted-foreground">Access Tier Breakdown</div>
             <div className="p-2 rounded-xl bg-cyan-950/80 border border-cyan-800 text-cyan-400">
@@ -596,7 +596,7 @@ export default function PlatformSupportPage() {
         </Card>
 
         {/* Audit Compliance Status */}
-        <Card className="border-border bg-foreground backdrop-blur-md p-4 rounded-2xl">
+        <Card className="border-border bg-slate-900 backdrop-blur-md p-4 rounded-2xl">
           <div className="flex items-center justify-between">
             <div className="text-xs font-semibold text-muted-foreground">Compliance &amp; Security</div>
             <div className="p-2 rounded-xl bg-emerald-950/80 border border-emerald-800 text-emerald-400">
@@ -646,7 +646,7 @@ export default function PlatformSupportPage() {
               return (
                 <div
                   key={sess.id}
-                  className="bg-foreground border border-amber-900/50 hover:border-amber-700/80 p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
+                  className="bg-slate-900 border border-amber-900/50 hover:border-amber-700/80 p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
                 >
                   <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2.5 flex-wrap">
@@ -707,7 +707,7 @@ export default function PlatformSupportPage() {
                     <Button
                       size="sm"
                       onClick={() => handleCopyLink(sess.company_slug || '', sess.id)}
-                      className="bg-foreground hover:bg-secondary text-muted-foreground border border-border text-xs h-8 px-2.5 rounded-lg"
+                      className="bg-slate-900 hover:bg-slate-800 text-muted-foreground border border-border text-xs h-8 px-2.5 rounded-lg"
                     >
                       <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
@@ -728,9 +728,9 @@ export default function PlatformSupportPage() {
           </div>
         </Card>
       ) : (
-        <Card className="border-border bg-foreground p-4 rounded-2xl flex items-center justify-between gap-4">
+        <Card className="border-border bg-slate-900 p-4 rounded-2xl flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-secondary border border-border text-muted-foreground">
+            <div className="p-2.5 rounded-xl bg-slate-800 border border-border text-muted-foreground">
               <Shield className="h-5 w-5" />
             </div>
             <div>
@@ -750,7 +750,7 @@ export default function PlatformSupportPage() {
               setActionError(null)
               setShowInitiateModal(true)
             }}
-            className="bg-secondary hover:bg-slate-700 text-amber-400 border border-border text-xs h-8 px-3 rounded-lg shrink-0 font-semibold"
+            className="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-border text-xs h-8 px-3 rounded-lg shrink-0 font-semibold"
           >
             <Key className="h-3 w-3 mr-1.5 text-amber-400" />
             New Session
@@ -759,7 +759,7 @@ export default function PlatformSupportPage() {
       )}
 
       {/* TENANT PORTFOLIO DIRECTORY & DIRECT SUPPORT LAUNCHER */}
-      <Card className="border-border bg-foreground backdrop-blur-sm p-5 rounded-2xl space-y-4">
+      <Card className="border-border bg-slate-900 backdrop-blur-sm p-5 rounded-2xl space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border pb-3">
           <div>
             <h3 className="font-bold text-white text-sm flex items-center gap-2">
@@ -773,7 +773,7 @@ export default function PlatformSupportPage() {
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Plan Filter Tabs */}
-            <div className="flex items-center bg-foreground p-1 rounded-xl border border-border">
+            <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-border">
               {[
                 { id: 'ALL', label: 'All Plans' },
                 { id: 'ENTERPRISE', label: 'Enterprise' },
@@ -802,7 +802,7 @@ export default function PlatformSupportPage() {
                 placeholder="Search tenant name or slug..."
                 value={tenantSearch}
                 onChange={(e) => setTenantSearch(e.target.value)}
-                className="pl-8 h-8 text-xs bg-foreground border-border text-white placeholder:text-muted-foreground rounded-xl"
+                className="pl-8 h-8 text-xs bg-slate-900 border-border text-white placeholder:text-muted-foreground rounded-xl"
               />
             </div>
           </div>
@@ -818,7 +818,7 @@ export default function PlatformSupportPage() {
                 className={`p-4 rounded-xl border transition-all flex flex-col justify-between gap-3 ${
                   hasActiveSession
                     ? 'bg-amber-950/20 border-amber-500/50 shadow-md shadow-amber-950/20'
-                    : 'bg-foreground border-border hover:border-border'
+                    : 'bg-slate-900 border-border hover:border-border'
                 }`}
               >
                 <div className="space-y-1">
@@ -827,7 +827,7 @@ export default function PlatformSupportPage() {
                       <p className="font-bold text-white text-xs truncate">{comp.name}</p>
                       <p className="text-2xs text-muted-foreground tabular-nums">/{comp.slug}</p>
                     </div>
-                    <span className="shrink-0 text-2xs font-bold px-2 py-0.5 rounded-md bg-foreground text-amber-300 border border-border uppercase">
+                    <span className="shrink-0 text-2xs font-bold px-2 py-0.5 rounded-md bg-slate-900 text-amber-300 border border-border uppercase">
                       {comp.plan || 'starter'}
                     </span>
                   </div>
@@ -855,7 +855,7 @@ export default function PlatformSupportPage() {
                     className={`h-7 text-2xs font-bold px-2.5 rounded-lg shrink-0 ${
                       hasActiveSession
                         ? 'bg-amber-500 text-foreground hover:bg-amber-400'
-                        : 'bg-foreground hover:bg-amber-950/80 text-amber-300 border border-border hover:border-amber-700'
+                        : 'bg-slate-900 hover:bg-amber-950/80 text-amber-300 border border-border hover:border-amber-700'
                     }`}
                   >
                     <Key className="h-3 w-3 mr-1 text-amber-400" />
@@ -875,7 +875,7 @@ export default function PlatformSupportPage() {
       </Card>
 
       {/* SUPPORT ACCESS AUDIT HISTORY & LEDGER TABLE */}
-      <Card className="border-border bg-foreground backdrop-blur-sm p-5 rounded-2xl space-y-4">
+      <Card className="border-border bg-slate-900 backdrop-blur-sm p-5 rounded-2xl space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border pb-3">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-indigo-400" />
@@ -890,7 +890,7 @@ export default function PlatformSupportPage() {
             <select
               value={historyStatusFilter}
               onChange={(e) => setHistoryStatusFilter(e.target.value as any)}
-              className="bg-foreground border border-border text-foreground rounded-xl px-2.5 py-1 text-xs font-semibold focus:outline-none focus:border-amber-500 h-8"
+              className="bg-slate-900 border border-border text-foreground rounded-xl px-2.5 py-1 text-xs font-semibold focus:outline-none focus:border-amber-500 h-8"
             >
               <option value="ALL">All Status</option>
               <option value="ACTIVE">Active Only</option>
@@ -902,7 +902,7 @@ export default function PlatformSupportPage() {
             <select
               value={historyLevelFilter}
               onChange={(e) => setHistoryLevelFilter(e.target.value as any)}
-              className="bg-foreground border border-border text-foreground rounded-xl px-2.5 py-1 text-xs font-semibold focus:outline-none focus:border-amber-500 h-8"
+              className="bg-slate-900 border border-border text-foreground rounded-xl px-2.5 py-1 text-xs font-semibold focus:outline-none focus:border-amber-500 h-8"
             >
               <option value="ALL">All Access Levels</option>
               <option value="read_only">Read Only</option>
@@ -917,7 +917,7 @@ export default function PlatformSupportPage() {
                 placeholder="Search audit ledger..."
                 value={historySearch}
                 onChange={(e) => setHistorySearch(e.target.value)}
-                className="pl-8 h-8 text-xs bg-foreground border-border text-white placeholder:text-muted-foreground rounded-xl"
+                className="pl-8 h-8 text-xs bg-slate-900 border-border text-white placeholder:text-muted-foreground rounded-xl"
               />
             </div>
           </div>
@@ -926,7 +926,7 @@ export default function PlatformSupportPage() {
         {/* History Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-foreground text-muted-foreground font-semibold border-b border-border">
+            <thead className="bg-slate-900 text-muted-foreground font-semibold border-b border-border">
               <tr>
                 <th className="py-3 px-3.5">Tenant Organization</th>
                 <th className="py-3 px-3.5">Authorized Administrator</th>
@@ -981,7 +981,7 @@ export default function PlatformSupportPage() {
                             Revoked
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-2xs font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full border border-border">
+                          <span className="inline-flex items-center gap-1 text-2xs font-bold text-muted-foreground bg-slate-800 px-2 py-0.5 rounded-full border border-border">
                             Expired
                           </span>
                         )}
@@ -1027,7 +1027,7 @@ export default function PlatformSupportPage() {
                                 setShowInitiateModal(true)
                               }
                             }}
-                            className="h-7 text-2xs font-semibold px-2 bg-foreground hover:bg-secondary text-muted-foreground border border-border rounded-lg"
+                            className="h-7 text-2xs font-semibold px-2 bg-slate-900 hover:bg-slate-800 text-muted-foreground border border-border rounded-lg"
                           >
                             Re-Authorize
                           </Button>
@@ -1047,7 +1047,7 @@ export default function PlatformSupportPage() {
       {/* INITIATE SUPPORT SESSION MODAL */}
       {showInitiateModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <Card className="w-full max-w-lg bg-foreground border-border shadow-2xl p-6 rounded-2xl space-y-4">
+          <Card className="w-full max-w-lg bg-slate-900 border-border shadow-2xl p-6 rounded-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="h-5 w-5 text-amber-400" />
@@ -1081,7 +1081,7 @@ export default function PlatformSupportPage() {
                     const comp = companies.find((c) => c.id === e.target.value) || null
                     setSelectedCompany(comp)
                   }}
-                  className="w-full bg-foreground border border-border text-foreground rounded-xl p-2.5 text-xs font-semibold focus:outline-none focus:border-amber-500"
+                  className="w-full bg-slate-900 border border-border text-foreground rounded-xl p-2.5 text-xs font-semibold focus:outline-none focus:border-amber-500"
                 >
                   <option value="">-- Choose Tenant Company --</option>
                   {companies.map((c) => (
@@ -1126,7 +1126,7 @@ export default function PlatformSupportPage() {
                         className={`p-3 rounded-xl border text-left transition-all ${
                           isSelected
                             ? 'bg-amber-500/10 border-amber-500 text-amber-300 ring-1 ring-amber-500/30'
-                            : 'bg-foreground border-border text-muted-foreground hover:text-foreground hover:border-border'
+                            : 'bg-slate-900 border-border text-muted-foreground hover:text-foreground hover:border-border'
                         }`}
                       >
                         <Icon className="h-4 w-4 mb-1 text-amber-400" />
@@ -1155,7 +1155,7 @@ export default function PlatformSupportPage() {
                       className={`p-2 rounded-xl border text-center font-bold text-2xs transition-all ${
                         durationMinutes === dur.minutes
                           ? 'bg-amber-500 text-foreground border-amber-400 shadow-md'
-                          : 'bg-foreground border-border text-muted-foreground hover:text-foreground'
+                          : 'bg-slate-900 border-border text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       {dur.label}
@@ -1173,7 +1173,7 @@ export default function PlatformSupportPage() {
                   value={supportReason}
                   onChange={(e) => setSupportReason(e.target.value)}
                   placeholder="e.g. Investigating Mushak 6.3 challan sequence issue per Ticket #4829"
-                  className="bg-foreground border-border text-white placeholder:text-muted-foreground rounded-xl text-xs"
+                  className="bg-slate-900 border-border text-white placeholder:text-muted-foreground rounded-xl text-xs"
                 />
                 <p className="text-2xs text-muted-foreground mt-1">
                   This reason is permanently logged to the root compliance audit trail and visible to the tenant owner.
@@ -1181,7 +1181,7 @@ export default function PlatformSupportPage() {
               </div>
 
               {/* Compliance Warning */}
-              <div className="p-3 bg-foreground border border-border rounded-xl text-2xs text-muted-foreground space-y-1">
+              <div className="p-3 bg-slate-900 border border-border rounded-xl text-2xs text-muted-foreground space-y-1">
                 <div className="flex items-center gap-1.5 font-bold text-amber-300">
                   <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
                   Zero-Trust Compliance Notice
@@ -1195,7 +1195,7 @@ export default function PlatformSupportPage() {
                 <Button
                   type="button"
                   onClick={() => setShowInitiateModal(false)}
-                  className="bg-secondary hover:bg-slate-700 text-muted-foreground text-xs h-9 px-4 rounded-xl border border-border"
+                  className="bg-slate-800 hover:bg-slate-700 text-muted-foreground text-xs h-9 px-4 rounded-xl border border-border"
                 >
                   Cancel
                 </Button>
@@ -1215,7 +1215,7 @@ export default function PlatformSupportPage() {
       {/* EXTEND ACTIVE SESSION MODAL */}
       {showExtendModal && extendingSession && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <Card className="w-full max-w-md bg-foreground border-border shadow-2xl p-6 rounded-2xl space-y-4">
+          <Card className="w-full max-w-md bg-slate-900 border-border shadow-2xl p-6 rounded-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-indigo-400" />
@@ -1250,7 +1250,7 @@ export default function PlatformSupportPage() {
                       className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all ${
                         extendMinutes === dur.minutes
                           ? 'bg-indigo-600 text-white border-indigo-500 shadow-md'
-                          : 'bg-foreground border-border text-muted-foreground hover:text-foreground'
+                          : 'bg-slate-900 border-border text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       {dur.label}
@@ -1264,7 +1264,7 @@ export default function PlatformSupportPage() {
               <Button
                 type="button"
                 onClick={() => setShowExtendModal(false)}
-                className="bg-secondary hover:bg-slate-700 text-muted-foreground text-xs h-9 px-4 rounded-xl border border-border"
+                className="bg-slate-800 hover:bg-slate-700 text-muted-foreground text-xs h-9 px-4 rounded-xl border border-border"
               >
                 Cancel
               </Button>

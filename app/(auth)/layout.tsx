@@ -25,7 +25,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-10 w-10 rounded-xl object-contain bg-foreground border border-slate-700/60 p-1 shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform shrink-0"
+                className="h-10 w-10 rounded-xl object-contain bg-slate-900 border border-slate-700/60 p-1 shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform shrink-0"
               />
             ) : (
               <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 text-white shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform shrink-0">
@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                   <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" title="Cyan" />
                   <span className="h-1.5 w-1.5 rounded-full bg-pink-500" title="Magenta" />
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-400" title="Yellow" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-foreground border border-border" title="Key" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-slate-900 border border-border" title="Key" />
                 </div>
               </div>
             )}
@@ -77,7 +77,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
           {/* Quick Value Props Chips */}
           <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
-            <div className="p-3 rounded-xl bg-foreground border border-border backdrop-blur-sm space-y-1">
+            <div className="p-3 rounded-xl bg-slate-900 border border-border backdrop-blur-sm space-y-1">
               <div className="flex items-center gap-1.5 font-bold text-foreground">
                 <CheckCircle2 className="h-4 w-4 text-cyan-400 shrink-0" />
                 <span>১২+ প্রিন্ট ইন্ডাস্ট্রি</span>
@@ -85,7 +85,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <p className="text-2xs text-muted-foreground">ডিজিটাল, অফসেট, ব্যানার, এক্রিলিক, এলইডি ও ডাই-কাটিং</p>
             </div>
 
-            <div className="p-3 rounded-xl bg-foreground border border-border backdrop-blur-sm space-y-1">
+            <div className="p-3 rounded-xl bg-slate-900 border border-border backdrop-blur-sm space-y-1">
               <div className="flex items-center gap-1.5 font-bold text-foreground">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
                 <span>৳ BDT ও বাংলা ইনভয়েস</span>
@@ -115,7 +115,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-8 w-8 rounded-lg object-contain bg-foreground border border-slate-700/60 p-1 shadow-md"
+                className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-1 shadow-md"
               />
             ) : (
               <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-md">

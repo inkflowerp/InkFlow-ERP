@@ -391,10 +391,10 @@ export function Sidebar() {
               <img
                 src={appLogoUrl}
                 alt={appName}
-                className="h-8 w-8 rounded-lg object-contain bg-foreground border border-slate-700/60 p-0.5 shadow-xs shrink-0"
+                className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-0.5 shadow-xs shrink-0"
               />
             ) : (
-              <div className="grid grid-cols-2 gap-0.5 p-1 rounded-md bg-foreground shadow-xs group-hover:scale-105 transition-transform shrink-0">
+              <div className="grid grid-cols-2 gap-0.5 p-1 rounded-md bg-slate-900 shadow-xs group-hover:scale-105 transition-transform shrink-0">
                 <span className="h-2 w-2 rounded-full bg-cyan-400" />
                 <span className="h-2 w-2 rounded-full bg-pink-500" />
                 <span className="h-2 w-2 rounded-full bg-yellow-400" />
@@ -413,7 +413,7 @@ export function Sidebar() {
         ) : (
           <Link
             href={getTenantNavHref('/dashboard', pathname, company?.slug)}
-            className="mx-auto flex items-center justify-center p-1 rounded-md bg-foreground hover:scale-105 transition-transform cursor-pointer h-8 w-8"
+            className="mx-auto flex items-center justify-center p-1 rounded-md bg-slate-900 hover:scale-105 transition-transform cursor-pointer h-8 w-8"
             title={`${appName} Dashboard`}
           >
             {appLogoUrl ? (

@@ -1157,7 +1157,7 @@ export function UserPermissionsDrawer({
                   <p className="text-muted-foreground text-2xs">{log.description}</p>
                 )}
                 {(log.previous_value || log.new_value) && (
-                  <pre className="text-2xs bg-foreground p-2 rounded border border-border overflow-x-auto text-muted-foreground tabular-nums">
+                  <pre className="text-2xs bg-slate-900 p-2 rounded border border-border overflow-x-auto text-muted-foreground tabular-nums">
                     {JSON.stringify({ previous: log.previous_value, next: log.new_value }, null, 2)}
                   </pre>
                 )}

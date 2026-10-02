@@ -33,7 +33,7 @@ export default function PlatformError({ error, reset }: PlatformErrorProps) {
         <Button
           variant="outline"
           onClick={() => reset()}
-          className="h-10 px-4 gap-2 bg-foreground border-border text-foreground hover:bg-secondary font-semibold cursor-pointer min-h-[44px]"
+          className="h-10 px-4 gap-2 bg-slate-900 border-border text-foreground hover:bg-slate-800 font-semibold cursor-pointer min-h-[44px]"
         >
           <RefreshCw className="h-4 w-4" />
           <span>Retry Operation</span>

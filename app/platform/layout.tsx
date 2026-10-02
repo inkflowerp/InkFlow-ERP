@@ -78,7 +78,7 @@ export default function PlatformLayout({
 
   if (isChecking && !isAuthorized) {
     return (
-      <div className="dark h-screen max-h-screen bg-foreground text-muted-foreground flex items-center justify-center font-sans">
+      <div className="dark h-screen max-h-screen bg-slate-900 text-muted-foreground flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
           <div className="h-6 w-6 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
           <span className="text-xs tabular-nums uppercase tracking-wider text-muted-foreground">
@@ -91,7 +91,7 @@ export default function PlatformLayout({
 
   return (
     <ToastProvider>
-      <div className="dark h-screen max-h-screen bg-foreground text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-foreground">
+      <div className="dark h-screen max-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-foreground">
         {/* Global Header */}
         <div className="print:hidden">
           <PlatformHeader />

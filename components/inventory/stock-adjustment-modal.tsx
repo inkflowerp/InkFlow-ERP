@@ -298,7 +298,7 @@ export function StockAdjustmentModal({
                 ? 'bg-emerald-600 hover:bg-emerald-700'
                 : variance < 0
                 ? 'bg-amber-600 hover:bg-amber-700'
-                : 'bg-slate-700 hover:bg-secondary'
+                : 'bg-slate-700 hover:bg-slate-800'
             )}
           >
             {loading ? (

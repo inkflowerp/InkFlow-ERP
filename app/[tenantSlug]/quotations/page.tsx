@@ -887,7 +887,7 @@ export default function QuotationsPage() {
         <div className="space-y-6 max-w-7xl mx-auto pb-20">
         {/* NOTIFICATION TOAST */}
         {notification && (
-          <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-foreground text-white backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
+          <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-slate-900 text-white backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
             <Sparkles className="h-4 w-4 text-emerald-400 dark:text-emerald-600 shrink-0" />
             <span>{notification}</span>
             <button

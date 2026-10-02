@@ -140,7 +140,7 @@ export default function PlatformEmergencyPage() {
             size="sm"
             variant="outline"
             onClick={loadControls}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
             Refresh Controls
@@ -197,7 +197,7 @@ export default function PlatformEmergencyPage() {
               className={`rounded-2xl border transition-all ${
                 control.is_active
                   ? 'bg-rose-950/20 border-rose-500/40 shadow-lg shadow-rose-950/30'
-                  : 'bg-foreground border-border'
+                  : 'bg-slate-900 border-border'
               }`}
             >
               <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
@@ -207,7 +207,7 @@ export default function PlatformEmergencyPage() {
                       className={`p-2.5 rounded-xl border ${
                         control.is_active
                           ? 'bg-rose-500/20 border-rose-500/30 text-rose-400'
-                          : 'bg-secondary border-slate-700/60 text-muted-foreground'
+                          : 'bg-slate-800 border-slate-700/60 text-muted-foreground'
                       }`}
                     >
                       <Icon className="h-5 w-5" />
@@ -229,7 +229,7 @@ export default function PlatformEmergencyPage() {
                 </div>
 
                 {control.is_active && (
-                  <div className="p-3 rounded-xl bg-foreground border border-rose-900/40 text-xs text-muted-foreground space-y-1">
+                  <div className="p-3 rounded-xl bg-slate-900 border border-rose-900/40 text-xs text-muted-foreground space-y-1">
                     <div className="flex items-center justify-between text-muted-foreground text-2xs">
                       <span>Activated by:</span>
                       <span className="tabular-nums text-foreground">{control.activated_by_email || 'Platform Owner'}</span>
@@ -276,7 +276,7 @@ export default function PlatformEmergencyPage() {
       {/* Confirmation & Audit Justification Modal */}
       {activeModalControl && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-foreground border border-border rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-slate-900 border border-border rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className={`p-5 border-b flex items-center justify-between ${targetState ? 'bg-rose-950/60 border-rose-900' : 'bg-emerald-950/60 border-emerald-900'}`}>
               <div className="flex items-center gap-2.5">
                 <AlertOctagon className={`h-5 w-5 ${targetState ? 'text-rose-400' : 'text-emerald-400'}`} />
@@ -286,14 +286,14 @@ export default function PlatformEmergencyPage() {
               </div>
               <button
                 onClick={closeConfirmationModal}
-                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-secondary"
+                className="text-muted-foreground hover:text-white p-1 rounded-lg hover:bg-slate-800"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="p-3.5 rounded-xl bg-foreground border border-border text-xs text-muted-foreground">
+              <div className="p-3.5 rounded-xl bg-slate-900 border border-border text-xs text-muted-foreground">
                 <div className="font-semibold text-white mb-1">{activeModalControl.name}</div>
                 <p className="text-muted-foreground">{activeModalControl.description}</p>
               </div>
@@ -319,7 +319,7 @@ export default function PlatformEmergencyPage() {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="E.g., Mitigating upstream SMS provider outage or patching webhook loop..."
-                  className="w-full text-xs bg-foreground border border-border rounded-xl p-3 text-foreground focus:outline-hidden focus:border-rose-500 placeholder:text-muted-foreground"
+                  className="w-full text-xs bg-slate-900 border border-border rounded-xl p-3 text-foreground focus:outline-hidden focus:border-rose-500 placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -331,7 +331,7 @@ export default function PlatformEmergencyPage() {
                   value={confirmInput}
                   onChange={(e) => setConfirmInput(e.target.value)}
                   placeholder="CONFIRM"
-                  className="h-9 text-xs bg-foreground border-border text-slate-100 tabular-nums focus:border-rose-500 rounded-xl"
+                  className="h-9 text-xs bg-slate-900 border-border text-slate-100 tabular-nums focus:border-rose-500 rounded-xl"
                 />
               </div>
 
@@ -340,7 +340,7 @@ export default function PlatformEmergencyPage() {
                   variant="outline"
                   size="sm"
                   onClick={closeConfirmationModal}
-                  className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
+                  className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
                 >
                   Cancel
                 </Button>

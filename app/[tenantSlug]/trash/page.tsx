@@ -797,7 +797,7 @@ function TrashContent() {
         hideFooter
       >
         <div className="space-y-4 pt-1 max-h-[60vh] overflow-y-auto">
-          <pre className="p-3 bg-foreground text-slate-100 rounded-lg text-2xs tabular-nums overflow-x-auto">
+          <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg text-2xs tabular-nums overflow-x-auto">
             {JSON.stringify(inspectedItem?.payload || {}, null, 2)}
           </pre>
           <div className="flex justify-end">

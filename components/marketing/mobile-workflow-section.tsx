@@ -154,7 +154,7 @@ export function MobileWorkflowSection() {
 
               {/* Operator Station Button */}
               <div className="pt-2">
-                <div className="w-full h-10 rounded-xl bg-foreground text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm">
+                <div className="w-full h-10 rounded-xl bg-slate-900 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm">
                   <UserCheck className="h-3.5 w-3.5 text-blue-400" />
                   <span>{tBilingual('Operator Floor Station Active', 'অপারেটর ফ্লোর স্টেশন সক্রিয়')}</span>
                 </div>

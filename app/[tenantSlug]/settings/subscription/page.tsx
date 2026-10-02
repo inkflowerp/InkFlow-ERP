@@ -362,7 +362,7 @@ export default function TenantSubscriptionPage() {
                       setDowngradeTargetPlan(currentPlanCode === 'enterprise' ? 'business' : 'starter')
                       setIsDowngradeConfirmOpen(true)
                     }}
-                    className="border-border text-muted-foreground hover:bg-secondary text-xs flex-1"
+                    className="border-border text-muted-foreground hover:bg-slate-800 text-xs flex-1"
                   >
                     Downgrade
                   </Button>

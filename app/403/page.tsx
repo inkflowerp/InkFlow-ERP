@@ -13,7 +13,7 @@ function ForbiddenContent() {
   const isPlatform = type === 'platform'
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 font-sans ${isPlatform ? 'bg-foreground text-slate-100' : 'bg-muted text-foreground dark:text-foreground'}`}>
+    <div className={`min-h-screen flex items-center justify-center p-4 font-sans ${isPlatform ? 'bg-slate-900 text-slate-100' : 'bg-muted text-foreground dark:text-foreground'}`}>
       <div className="max-w-md w-full text-center space-y-6">
         <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 mx-auto shadow-xl ring-1 ring-red-300 dark:ring-red-900">
           <ShieldAlert className="h-8 w-8" />

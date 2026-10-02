@@ -248,7 +248,7 @@ export function PlatformSidebar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Filter menu..."
-                className="w-full h-8 pl-8 pr-7 rounded-lg bg-foreground border border-border text-xs text-slate-100 placeholder:text-muted-foreground focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/40 transition-all"
+                className="w-full h-8 pl-8 pr-7 rounded-lg bg-slate-900 border border-border text-xs text-slate-100 placeholder:text-muted-foreground focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/40 transition-all"
               />
               {searchQuery && (
                 <button
@@ -356,10 +356,10 @@ export function PlatformSidebar() {
     const tooltipTitle = hasActiveTenant ? `Exit to Business ERP (${businessSlug})` : 'Tenant Directory'
 
     return (
-      <div className="p-2.5 border-t border-border bg-foreground space-y-2 shrink-0 select-none">
+      <div className="p-2.5 border-t border-border bg-slate-900 space-y-2 shrink-0 select-none">
         {!isCollapsed ? (
           <>
-            <div className="p-2 rounded-xl bg-foreground border border-border text-2xs text-foreground flex items-center justify-between">
+            <div className="p-2 rounded-xl bg-slate-900 border border-border text-2xs text-foreground flex items-center justify-between">
               <span className="flex items-center gap-1.5 font-medium">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 BD-Central Cluster
@@ -372,7 +372,7 @@ export function PlatformSidebar() {
               onClick={() => {
                 if (isMobile) setMobileOpen(false)
               }}
-              className="flex items-center justify-between text-xs font-semibold text-foreground hover:text-white bg-slate-800/70 hover:bg-secondary hover:border-indigo-400 px-3 py-2 rounded-xl transition-all border border-border group min-h-[38px] shadow-sm cursor-pointer"
+              className="flex items-center justify-between text-xs font-semibold text-foreground hover:text-white bg-slate-800/70 hover:bg-slate-800 hover:border-indigo-400 px-3 py-2 rounded-xl transition-all border border-border group min-h-[38px] shadow-sm cursor-pointer"
             >
               <span className="flex items-center gap-2">
                 <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform text-indigo-400" />
@@ -385,7 +385,7 @@ export function PlatformSidebar() {
           <Link
             href={businessHref}
             title={tooltipTitle}
-            className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl bg-secondary hover:bg-slate-700 text-foreground hover:text-white border border-border hover:border-indigo-400 transition-colors cursor-pointer"
+            className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl bg-slate-800 hover:bg-slate-700 text-foreground hover:text-white border border-border hover:border-indigo-400 transition-colors cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4 text-indigo-400" />
           </Link>
@@ -399,7 +399,7 @@ export function PlatformSidebar() {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          'hidden lg:flex bg-foreground border-r border-border flex-col shrink-0 shadow-xl z-20 transition-all duration-300 h-full max-h-full overflow-hidden',
+          'hidden lg:flex bg-slate-900 border-r border-border flex-col shrink-0 shadow-xl z-20 transition-all duration-300 h-full max-h-full overflow-hidden',
           collapsed ? 'w-18' : 'w-64'
         )}
       >
@@ -420,7 +420,7 @@ export function PlatformSidebar() {
           <button
             type="button"
             onClick={handleToggleCollapse}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-slate-800 hover:text-foreground transition-colors cursor-pointer"
             title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
             aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
@@ -448,7 +448,7 @@ export function PlatformSidebar() {
             </div>
           </div>
         </SheetHeader>
-        <SheetContent className="p-0 bg-foreground text-slate-100 border-border flex flex-col justify-between h-full overflow-hidden">
+        <SheetContent className="p-0 bg-slate-900 text-slate-100 border-border flex flex-col justify-between h-full overflow-hidden">
           {renderNavList(true, false)}
           {renderFooter(true, false)}
         </SheetContent>

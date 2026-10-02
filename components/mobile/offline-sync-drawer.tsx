@@ -57,11 +57,11 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-foreground border-l border-border h-full flex flex-col shadow-2xl cursor-default"
+        className="w-full max-w-md bg-slate-900 border-l border-border h-full flex flex-col shadow-2xl cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header */}
-        <div className="p-4 border-b border-border flex items-center justify-between bg-foreground">
+        <div className="p-4 border-b border-border flex items-center justify-between bg-slate-900">
           <div className="flex items-center gap-2.5">
             <div className={`p-2 rounded-xl border ${isOnline ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'}`}>
               {isOnline ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
@@ -75,14 +75,14 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-secondary"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-800"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Sync Controls */}
-        <div className="p-3 bg-foreground border-b border-border flex items-center justify-between gap-2">
+        <div className="p-3 bg-slate-900 border-b border-border flex items-center justify-between gap-2">
           <span className="text-xs text-muted-foreground font-medium">
             {pendingCount} item{pendingCount === 1 ? '' : 's'} waiting to sync
           </span>
@@ -119,7 +119,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
             </h3>
 
             {queue.length === 0 ? (
-              <div className="p-4 rounded-xl bg-foreground border border-border text-center text-muted-foreground">
+              <div className="p-4 rounded-xl bg-slate-900 border border-border text-center text-muted-foreground">
                 No pending offline mutations.
               </div>
             ) : (
@@ -127,7 +127,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                 {queue.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 rounded-xl bg-foreground border border-border space-y-2"
+                    className="p-3 rounded-xl bg-slate-900 border border-border space-y-2"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -208,7 +208,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
             </h3>
 
             {drafts.length === 0 ? (
-              <div className="p-4 rounded-xl bg-foreground border border-border text-center text-muted-foreground">
+              <div className="p-4 rounded-xl bg-slate-900 border border-border text-center text-muted-foreground">
                 No drafts saved locally.
               </div>
             ) : (
@@ -216,7 +216,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
                 {drafts.map((draft) => (
                   <div
                     key={draft.id}
-                    className="p-3 rounded-xl bg-foreground border border-border flex items-center justify-between gap-3"
+                    className="p-3 rounded-xl bg-slate-900 border border-border flex items-center justify-between gap-3"
                   >
                     <div className="space-y-0.5">
                       <div className="font-bold text-white text-xs flex items-center gap-1.5">
@@ -245,7 +245,7 @@ export function OfflineSyncDrawer({ open, onClose }: OfflineSyncDrawerProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-border bg-foreground text-2xs text-muted-foreground text-center">
+        <div className="p-3 border-t border-border bg-slate-900 text-2xs text-muted-foreground text-center">
           PrintERP Offline Storage Engine • Safe local storage on device
         </div>
       </div>

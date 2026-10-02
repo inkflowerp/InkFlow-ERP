@@ -76,7 +76,7 @@ export function PlatformTicketInfo({
   return (
     <div
       className={cn(
-        'w-80 shrink-0 h-full overflow-y-auto bg-foreground p-4 border-l border-border space-y-4 text-xs select-text font-sans scrollbar-thin scrollbar-thumb-slate-800',
+        'w-80 shrink-0 h-full overflow-y-auto bg-slate-900 p-4 border-l border-border space-y-4 text-xs select-text font-sans scrollbar-thin scrollbar-thumb-slate-800',
         isDrawer && 'w-full max-w-md shadow-2xl z-50'
       )}
     >
@@ -90,7 +90,7 @@ export function PlatformTicketInfo({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+            className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-800 transition-colors cursor-pointer"
             title="Close Details"
           >
             <X className="w-4 h-4" />
@@ -99,7 +99,7 @@ export function PlatformTicketInfo({
       </div>
 
       {/* 2. Ticket Core Attributes Card */}
-      <div className="p-3.5 rounded-2xl bg-foreground border border-border space-y-2.5 shadow-xs">
+      <div className="p-3.5 rounded-2xl bg-slate-900 border border-border space-y-2.5 shadow-xs">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground font-medium">Ticket #</span>
           <span className="tabular-nums font-bold text-indigo-400 text-xs">{conversation.ticket_number}</span>
@@ -134,13 +134,13 @@ export function PlatformTicketInfo({
       </div>
 
       {/* 3. Tenant Context Card */}
-      <div className="p-3.5 rounded-2xl bg-foreground border border-border space-y-3 shadow-xs">
+      <div className="p-3.5 rounded-2xl bg-slate-900 border border-border space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             <Building2 className="w-3.5 h-3.5 text-blue-400" />
             <span>Tenant Workspace</span>
           </div>
-          <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded-md bg-foreground border border-border text-muted-foreground">
+          <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded-md bg-slate-900 border border-border text-muted-foreground">
             /{conversation.company_slug || 'tenant'}
           </span>
         </div>
@@ -194,7 +194,7 @@ export function PlatformTicketInfo({
       </div>
 
       {/* 4. SLA & Timestamps */}
-      <div className="p-3.5 rounded-2xl bg-foreground border border-border space-y-2.5 shadow-xs">
+      <div className="p-3.5 rounded-2xl bg-slate-900 border border-border space-y-2.5 shadow-xs">
         <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground uppercase tracking-wider">
           <Timer className="w-3.5 h-3.5 text-purple-400" />
           <span>SLA &amp; Timestamps</span>
@@ -231,13 +231,13 @@ export function PlatformTicketInfo({
 
       {/* 5. Attached Context Metadata (if any) */}
       {conversation.context_metadata && Object.keys(conversation.context_metadata).length > 0 && (
-        <div className="p-3.5 rounded-2xl bg-foreground border border-border space-y-2.5 shadow-xs">
+        <div className="p-3.5 rounded-2xl bg-slate-900 border border-border space-y-2.5 shadow-xs">
           <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             <FileText className="w-3.5 h-3.5 text-cyan-400" />
             <span>Attached Context</span>
           </div>
 
-          <div className="space-y-1.5 text-muted-foreground tabular-nums text-2xs bg-foreground p-2.5 rounded-xl border border-border">
+          <div className="space-y-1.5 text-muted-foreground tabular-nums text-2xs bg-slate-900 p-2.5 rounded-xl border border-border">
             {Object.entries(conversation.context_metadata).map(([key, val]) => (
               <div key={key} className="flex justify-between gap-2">
                 <span className="text-muted-foreground shrink-0">{key}:</span>

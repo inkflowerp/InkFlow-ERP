@@ -53,7 +53,7 @@ export function PdfActionButtons({
           size="sm"
           disabled={isDownloading}
           onClick={handleDownload}
-          className="bg-foreground hover:bg-secondary text-xs text-white h-9 font-bold shadow-sm"
+          className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-9 font-bold shadow-sm"
           title="Directly download high-resolution vector PDF"
         >
           {isDownloading ? (

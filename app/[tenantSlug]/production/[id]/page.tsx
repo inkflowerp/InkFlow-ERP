@@ -160,7 +160,7 @@ export default function ProductionJobDetailPage() {
             <Button
               size="sm"
               onClick={() => window.print()}
-              className="bg-foreground hover:bg-secondary text-xs text-white"
+              className="bg-slate-900 hover:bg-slate-800 text-xs text-white"
             >
               <Printer className="h-3.5 w-3.5 mr-1" />
               Print Traveler Bag

@@ -256,7 +256,7 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-foreground backdrop-blur-md flex items-start justify-center p-3 sm:p-6 sm:pt-20 animate-in fade-in duration-150 cursor-pointer"
+      className="fixed inset-0 z-50 bg-slate-900 backdrop-blur-md flex items-start justify-center p-3 sm:p-6 sm:pt-20 animate-in fade-in duration-150 cursor-pointer"
       onClick={onClose}
     >
       <div

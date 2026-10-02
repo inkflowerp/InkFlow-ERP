@@ -275,7 +275,7 @@ export function CameraQrScanner({
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-foreground border border-border ${className}`}>
+    <div className={`relative overflow-hidden rounded-2xl bg-slate-900 border border-border ${className}`}>
       {/* Viewport Area */}
       {!manualMode && (
         <div className="relative aspect-square sm:aspect-[4/3] w-full bg-black flex items-center justify-center overflow-hidden">
@@ -290,7 +290,7 @@ export function CameraQrScanner({
 
           {/* Camera Loading Spinner State */}
           {cameraStatus === 'requesting' && (
-            <div className="absolute inset-0 bg-foreground backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-muted-foreground z-10">
+            <div className="absolute inset-0 bg-slate-900 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-muted-foreground z-10">
               <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
               <span className="text-xs font-medium tracking-wide">Starting camera feed...</span>
             </div>
@@ -364,7 +364,7 @@ export function CameraQrScanner({
 
           {/* Camera Permission Denied / Error State */}
           {(cameraStatus === 'denied' || cameraStatus === 'unsupported') && (
-            <div className="absolute inset-0 bg-foreground backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-30">
+            <div className="absolute inset-0 bg-slate-900 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-30">
               <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
                 <ShieldAlert className="h-8 w-8" />
               </div>
@@ -387,7 +387,7 @@ export function CameraQrScanner({
                   type="button"
                   variant="outline"
                   onClick={() => setManualMode(true)}
-                  className="border-border bg-secondary text-muted-foreground text-xs h-10 rounded-xl cursor-pointer"
+                  className="border-border bg-slate-800 text-muted-foreground text-xs h-10 rounded-xl cursor-pointer"
                 >
                   Manual Code
                 </Button>
@@ -410,7 +410,7 @@ export function CameraQrScanner({
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
                 placeholder="e.g. INKFLOW:ATT:v1:... or Terminal Code"
-                className="bg-foreground border-border text-white tabular-nums text-xs h-11"
+                className="bg-slate-900 border-border text-white tabular-nums text-xs h-11"
                 autoFocus
               />
             </div>
@@ -419,7 +419,7 @@ export function CameraQrScanner({
                 type="button"
                 variant="outline"
                 onClick={() => setManualMode(false)}
-                className="border-border bg-foreground text-muted-foreground text-xs h-10 rounded-xl flex-1 cursor-pointer flex items-center justify-center gap-1.5"
+                className="border-border bg-slate-900 text-muted-foreground text-xs h-10 rounded-xl flex-1 cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Camera className="h-3.5 w-3.5" />
                 <span>Back to Camera</span>
@@ -437,7 +437,7 @@ export function CameraQrScanner({
       )}
 
       {/* Bottom Option Bar */}
-      <div className="p-3 bg-foreground border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+      <div className="p-3 bg-slate-900 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
         <label className="flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 cursor-pointer font-medium">
           <Upload className="h-3.5 w-3.5" />
           <span>Upload QR Image</span>

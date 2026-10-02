@@ -163,7 +163,7 @@ export function PaySupplierModal({
               placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="pl-8 text-xl font-bold h-12 rounded-xl bg-muted border-input focus:bg-card dark:focus:bg-foreground"
+              className="pl-8 text-xl font-bold h-12 rounded-xl bg-muted border-input focus:bg-card dark:focus:bg-slate-900"
             />
           </div>
         </div>

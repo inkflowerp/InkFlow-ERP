@@ -516,7 +516,7 @@ function QuotationDetailContent() {
           </div>
 
           {/* Cockpit Command Center Card */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-foreground text-white shadow-xl space-y-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 text-white shadow-xl space-y-4">
             {/* Top Row: Identification & Badges */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
               <div className="space-y-1">
@@ -868,7 +868,7 @@ function QuotationDetailContent() {
           <div className="my-6">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-foreground text-white print:bg-foreground">
+                <tr className="bg-slate-900 text-white print:bg-slate-900">
                   <th className="py-2.5 px-3 font-bold w-12 text-center">#</th>
                   <th className="py-2.5 px-3 font-bold">
                     {languageMode === 'bn' ? 'পণ্যের বিবরণ ও স্পেসিফিকেশন' : 'Item Description & Specifications'}

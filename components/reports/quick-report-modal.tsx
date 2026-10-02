@@ -257,7 +257,7 @@ export function QuickReportModal({
             <Button
               size="sm"
               onClick={() => window.print()}
-              className="bg-foreground hover:bg-secondary text-xs text-white h-8"
+              className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-8"
             >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
               Print

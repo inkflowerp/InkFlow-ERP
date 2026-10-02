@@ -1779,7 +1779,7 @@ export default function CustomerProfilePage() {
 
       {/* EDIT CUSTOMER MODAL */}
       {isEditOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm overflow-y-auto">
           <div className="relative w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl p-6 space-y-4 my-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="text-base font-bold text-foreground dark:text-white">
@@ -1934,7 +1934,7 @@ export default function CustomerProfilePage() {
 
       {/* LOG COMMUNICATION MODAL */}
       {isLogCommOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm">
           <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="text-base font-bold text-foreground dark:text-white">

@@ -1220,7 +1220,7 @@ function OrderDetailContent() {
             </div>
 
             <div className="flex justify-end pt-2 print:hidden">
-              <Button onClick={() => window.print()} className="bg-foreground hover:dark:bg-muted text-white text-xs">
+              <Button onClick={() => window.print()} className="bg-slate-900 hover:dark:bg-muted text-white text-xs">
                 <Printer className="h-3.5 w-3.5 mr-1" />
                 Print Traveler Ticket
               </Button>

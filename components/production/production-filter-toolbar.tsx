@@ -200,7 +200,7 @@ export function ProductionFilterToolbar({
                 }}
                 className={`px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs ${
                   isSelected
-                    ? 'bg-foreground text-white font-bold shadow-xs'
+                    ? 'bg-slate-900 text-white font-bold shadow-xs'
                     : 'bg-card border border-border dark:border-border/80 text-muted-foreground hover:bg-muted dark:hover:bg-muted/80'
                 }`}
               >

@@ -530,7 +530,7 @@ export default function TaxPage() {
                     }}
                     className={`text-xs h-8 px-3 font-bold transition-all ${
                       taxSettings.default_vat_rate === item.rate
-                        ? 'bg-foreground text-white shadow-xs'
+                        ? 'bg-slate-900 text-white shadow-xs'
                         : 'border-input dark:border-border'
                     }`}
                   >

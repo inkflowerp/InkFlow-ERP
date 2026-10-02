@@ -265,7 +265,7 @@ export function InvoiceRequestsPanel({
                     activeSubFilter === tab.id
                       ? tab.id === 'pending'
                         ? 'bg-amber-600 text-white shadow-xs font-bold'
-                        : 'bg-foreground text-white shadow-xs font-bold'
+                        : 'bg-slate-900 text-white shadow-xs font-bold'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >

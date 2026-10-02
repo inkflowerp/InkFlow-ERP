@@ -80,8 +80,8 @@ export function PdfViewerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} maxWidth="max-w-5xl">
-      <DialogContent onClose={onClose} className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-foreground text-slate-100 border-border">
-        <DialogHeader className="p-4 border-b border-border flex flex-row items-center justify-between space-y-0 bg-foreground text-slate-100 pr-14">
+      <DialogContent onClose={onClose} className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-slate-900 text-slate-100 border-border">
+        <DialogHeader className="p-4 border-b border-border flex flex-row items-center justify-between space-y-0 bg-slate-900 text-slate-100 pr-14">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
               <FileText className="h-4 w-4" />
@@ -100,7 +100,7 @@ export function PdfViewerModal({
               variant="outline"
               disabled={!blobUrl || isLoading}
               onClick={handlePrint}
-              className="h-8 text-xs font-semibold bg-foreground border-border hover:bg-secondary text-foreground"
+              className="h-8 text-xs font-semibold bg-slate-900 border-border hover:bg-slate-800 text-foreground"
             >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
               Print
@@ -118,7 +118,7 @@ export function PdfViewerModal({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 bg-foreground relative overflow-hidden flex items-center justify-center">
+        <div className="flex-1 bg-slate-900 relative overflow-hidden flex items-center justify-center">
           {isLoading && (
             <div className="flex flex-col items-center gap-3 text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />

@@ -233,7 +233,7 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
       role="status"
       aria-live="polite"
       className={cn(
-        'group relative overflow-hidden rounded-2xl bg-foreground text-white shadow-2xl border border-slate-700/60 backdrop-blur-xl transition-all duration-300 transform animate-in fade-in slide-in-from-top-3 border-l-4 pointer-events-auto',
+        'group relative overflow-hidden rounded-2xl bg-slate-900 text-white shadow-2xl border border-slate-700/60 backdrop-blur-xl transition-all duration-300 transform animate-in fade-in slide-in-from-top-3 border-l-4 pointer-events-auto',
         theme.borderAccent
       )}
     >
@@ -403,7 +403,7 @@ export function RealtimeNotificationPopup() {
     >
       {/* Controls Bar when multiple notifications are stacked */}
       {queue.length > 1 && (
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-foreground border border-slate-700/60 backdrop-blur-md text-xs text-muted-foreground pointer-events-auto shadow-2xl animate-in fade-in">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700/60 backdrop-blur-md text-xs text-muted-foreground pointer-events-auto shadow-2xl animate-in fade-in">
           <span className="font-semibold text-2xs bangla-text">
             {queue.length} {tBilingual('Active Alerts', 'টি নোটিফিকেশন')}
           </span>
@@ -411,7 +411,7 @@ export function RealtimeNotificationPopup() {
             <button
               type="button"
               onClick={handleToggleMute}
-              className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-white transition-colors cursor-pointer"
+              className="p-1 rounded hover:bg-slate-800 text-muted-foreground hover:text-white transition-colors cursor-pointer"
               title={muted ? 'Unmute alerts' : 'Mute alert sounds'}
             >
               {muted ? <VolumeX className="h-3.5 w-3.5 text-rose-400" /> : <Volume2 className="h-3.5 w-3.5 text-emerald-400" />}

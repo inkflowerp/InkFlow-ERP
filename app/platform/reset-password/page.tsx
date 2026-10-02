@@ -95,7 +95,7 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-foreground text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 font-sans selection:bg-indigo-500 selection:text-white">
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]" />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
@@ -114,7 +114,7 @@ function ResetPasswordForm() {
           <p className="text-xs text-muted-foreground">Secure your Platform Owner credentials.</p>
         </div>
 
-        <Card className="bg-foreground border-border shadow-2xl backdrop-blur-xl text-slate-100">
+        <Card className="bg-slate-900 border-border shadow-2xl backdrop-blur-xl text-slate-100">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <Shield className="h-4 w-4 text-indigo-400" />
@@ -168,7 +168,7 @@ function ResetPasswordForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     icon={<Lock className="h-4 w-4 text-muted-foreground" />}
                     placeholder="••••••••••••"
-                    className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
+                    className="bg-slate-900 border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
                     rightElement={
                       <button
                         type="button"
@@ -193,7 +193,7 @@ function ResetPasswordForm() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     icon={<Lock className="h-4 w-4 text-muted-foreground" />}
                     placeholder="••••••••••••"
-                    className="bg-foreground border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
+                    className="bg-slate-900 border-border text-white placeholder:text-muted-foreground focus-visible:ring-indigo-500"
                     rightElement={
                       <button
                         type="button"
@@ -208,7 +208,7 @@ function ResetPasswordForm() {
                 </div>
 
                 {/* Password strength criteria */}
-                <div className="p-3 rounded-xl bg-foreground border border-border text-2xs space-y-1.5">
+                <div className="p-3 rounded-xl bg-slate-900 border border-border text-2xs space-y-1.5">
                   <div className="font-semibold text-muted-foreground text-2xs uppercase tracking-wider">
                     Password Requirements:
                   </div>
@@ -255,7 +255,7 @@ function ResetPasswordForm() {
 
 export default function PlatformResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-foreground flex items-center justify-center text-muted-foreground">Loading reset console...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-900 flex items-center justify-center text-muted-foreground">Loading reset console...</div>}>
       <ResetPasswordForm />
     </Suspense>
   )

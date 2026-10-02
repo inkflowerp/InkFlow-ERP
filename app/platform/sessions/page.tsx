@@ -125,7 +125,7 @@ export default function PlatformSessionsPage() {
             size="sm"
             variant="outline"
             onClick={() => loadData()}
-            className="h-9 text-xs border-border bg-foreground text-muted-foreground hover:bg-secondary"
+            className="h-9 text-xs border-border bg-slate-900 text-muted-foreground hover:bg-slate-800"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -142,7 +142,7 @@ export default function PlatformSessionsPage() {
       )}
 
       {/* Active Sessions List */}
-      <Card className="border-border bg-foreground backdrop-blur-sm p-5 rounded-2xl">
+      <Card className="border-border bg-slate-900 backdrop-blur-sm p-5 rounded-2xl">
         <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-indigo-400" />
@@ -168,7 +168,7 @@ export default function PlatformSessionsPage() {
                 className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
                   sess.is_current
                     ? 'bg-indigo-950/20 border-indigo-500/40 ring-1 ring-indigo-500/20'
-                    : 'bg-foreground border-border hover:border-border'
+                    : 'bg-slate-900 border-border hover:border-border'
                 }`}
               >
                 <div className="flex items-start gap-3.5">
@@ -184,7 +184,7 @@ export default function PlatformSessionsPage() {
                           Current Session
                         </span>
                       )}
-                      <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-foreground text-muted-foreground border border-border">
+                      <span className="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-slate-900 text-muted-foreground border border-border">
                         IP: {sess.ip_address || '127.0.0.1'}
                       </span>
                     </div>
@@ -224,7 +224,7 @@ export default function PlatformSessionsPage() {
       </Card>
 
       {/* Login History */}
-      <Card className="border-border bg-foreground backdrop-blur-sm p-5 rounded-2xl">
+      <Card className="border-border bg-slate-900 backdrop-blur-sm p-5 rounded-2xl">
         <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-emerald-400" />
@@ -239,7 +239,7 @@ export default function PlatformSessionsPage() {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-foreground text-muted-foreground font-semibold border-b border-border">
+            <thead className="bg-slate-900 text-muted-foreground font-semibold border-b border-border">
               <tr>
                 <th className="py-2.5 px-3">Status</th>
                 <th className="py-2.5 px-3">IP Origin</th>

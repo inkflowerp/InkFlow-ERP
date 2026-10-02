@@ -108,7 +108,7 @@ const CATEGORY_META: Record<
     label: 'General Modules',
     icon: Flag,
     color: 'text-muted-foreground',
-    bg: 'bg-secondary',
+    bg: 'bg-slate-800',
     border: 'border-border',
   },
 }
@@ -493,7 +493,7 @@ export default function PlatformFeaturesPage() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="px-3 py-2 rounded-xl bg-foreground hover:bg-secondary text-foreground hover:text-white border border-border text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors cursor-pointer"
+            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-foreground hover:text-white border border-border text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors cursor-pointer"
           >
             <Download className="h-3.5 w-3.5 text-indigo-400" />
             <span>Export CSV</span>
@@ -503,7 +503,7 @@ export default function PlatformFeaturesPage() {
             type="button"
             onClick={loadData}
             disabled={loading}
-            className="h-9 w-9 p-0 rounded-xl bg-foreground hover:bg-secondary text-foreground hover:text-white border border-border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+            className="h-9 w-9 p-0 rounded-xl bg-slate-900 hover:bg-slate-800 text-foreground hover:text-white border border-border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shrink-0"
             title="Refresh"
             aria-label="Refresh"
           >
@@ -541,7 +541,7 @@ export default function PlatformFeaturesPage() {
       {/* Executive Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Modules */}
-        <Card className="bg-foreground border-border p-4">
+        <Card className="bg-slate-900 border-border p-4">
           <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Total Feature Modules</span>
             <Boxes className="h-4 w-4 text-indigo-400" />
@@ -555,7 +555,7 @@ export default function PlatformFeaturesPage() {
         </Card>
 
         {/* Globally Active */}
-        <Card className="bg-foreground border-border p-4">
+        <Card className="bg-slate-900 border-border p-4">
           <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Active Globally</span>
             <Globe className="h-4 w-4 text-emerald-400" />
@@ -571,7 +571,7 @@ export default function PlatformFeaturesPage() {
         </Card>
 
         {/* Beta / Experimental Modules */}
-        <Card className="bg-foreground border-border p-4">
+        <Card className="bg-slate-900 border-border p-4">
           <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Beta &amp; Experimental</span>
             <Sparkles className="h-4 w-4 text-purple-400" />
@@ -585,7 +585,7 @@ export default function PlatformFeaturesPage() {
         </Card>
 
         {/* Tenant Custom Overrides */}
-        <Card className="bg-foreground border-border p-4">
+        <Card className="bg-slate-900 border-border p-4">
           <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>Tenant Overrides Active</span>
             <Building2 className="h-4 w-4 text-cyan-400" />
@@ -600,10 +600,10 @@ export default function PlatformFeaturesPage() {
       </div>
 
       {/* Main Tab Bar & Search / Category Filters */}
-      <div className="space-y-3 bg-foreground p-3.5 rounded-2xl border border-border">
+      <div className="space-y-3 bg-slate-900 p-3.5 rounded-2xl border border-border">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Main Tabs */}
-          <div className="flex items-center p-1 bg-foreground border border-border rounded-xl shrink-0">
+          <div className="flex items-center p-1 bg-slate-900 border border-border rounded-xl shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab('global')}
@@ -637,7 +637,7 @@ export default function PlatformFeaturesPage() {
               placeholder="Search by module name, key, description..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-xs bg-foreground border-border text-white placeholder:text-muted-foreground focus:border-indigo-500"
+              className="pl-8 h-8 text-xs bg-slate-900 border-border text-white placeholder:text-muted-foreground focus:border-indigo-500"
             />
             {search && (
               <button
@@ -671,7 +671,7 @@ export default function PlatformFeaturesPage() {
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   selectedCategory === cat.id
                     ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'bg-foreground border border-border text-muted-foreground hover:text-white hover:bg-secondary'
+                    : 'bg-slate-900 border border-border text-muted-foreground hover:text-white hover:bg-slate-800'
                 }`}
               >
                 {cat.label}
@@ -685,7 +685,7 @@ export default function PlatformFeaturesPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="bg-foreground border border-border rounded-lg px-2.5 py-1 text-white text-xs"
+              className="bg-slate-900 border border-border rounded-lg px-2.5 py-1 text-white text-xs"
             >
               <option value="all">All Statuses</option>
               <option value="enabled">Globally Enabled</option>
@@ -710,12 +710,12 @@ export default function PlatformFeaturesPage() {
           </div>
 
           {loading ? (
-            <div className="py-16 text-center text-muted-foreground bg-foreground rounded-2xl border border-border">
+            <div className="py-16 text-center text-muted-foreground bg-slate-900 rounded-2xl border border-border">
               <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-400" />
               <span>Loading feature flags telemetry...</span>
             </div>
           ) : filteredFlags.length === 0 ? (
-            <div className="py-16 text-center text-muted-foreground bg-foreground rounded-2xl border border-border">
+            <div className="py-16 text-center text-muted-foreground bg-slate-900 rounded-2xl border border-border">
               <Flag className="h-8 w-8 mx-auto mb-2 text-foreground" />
               <p className="font-semibold text-muted-foreground">No feature flags match your search or filter.</p>
               <p className="text-xs mt-1">Try selecting a different category or clearing filters.</p>
@@ -729,7 +729,7 @@ export default function PlatformFeaturesPage() {
                 return (
                   <Card
                     key={flag.id}
-                    className="bg-foreground border-border hover:border-slate-700/90 p-4 sm:p-5 rounded-2xl transition-all shadow-md"
+                    className="bg-slate-900 border-border hover:border-slate-700/90 p-4 sm:p-5 rounded-2xl transition-all shadow-md"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       {/* Left: Icon & Description */}
@@ -738,7 +738,7 @@ export default function PlatformFeaturesPage() {
                           className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                             flag.is_enabled
                               ? `${catInfo.bg} ${catInfo.color} border ${catInfo.border}`
-                              : 'bg-secondary text-muted-foreground border border-border'
+                              : 'bg-slate-800 text-muted-foreground border border-border'
                           }`}
                         >
                           <Icon className="h-5 w-5" />
@@ -747,7 +747,7 @@ export default function PlatformFeaturesPage() {
                         <div className="space-y-1.5">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-bold text-sm text-white">{flag.name}</h3>
-                            <span className="tabular-nums text-2xs px-2 py-0.5 rounded bg-foreground text-muted-foreground border border-border">
+                            <span className="tabular-nums text-2xs px-2 py-0.5 rounded bg-slate-900 text-muted-foreground border border-border">
                               {flag.key}
                             </span>
                             <span
@@ -815,7 +815,7 @@ export default function PlatformFeaturesPage() {
                           className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
                             flag.is_enabled
                               ? 'bg-indigo-600 shadow-md shadow-indigo-600/30'
-                              : 'bg-secondary'
+                              : 'bg-slate-800'
                           }`}
                           title={`Click to ${flag.is_enabled ? 'disable' : 'enable'} globally`}
                         >
@@ -831,7 +831,7 @@ export default function PlatformFeaturesPage() {
                           <button
                             type="button"
                             onClick={() => setDeletingFlag(flag)}
-                            className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-red-400 bg-foreground border border-border hover:border-red-800 rounded-xl transition-colors cursor-pointer"
+                            className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-red-400 bg-slate-900 border border-border hover:border-red-800 rounded-xl transition-colors cursor-pointer"
                             title="Delete custom feature flag"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -853,7 +853,7 @@ export default function PlatformFeaturesPage() {
       {activeTab === 'tenants' && (
         <div className="space-y-6">
           {/* Company Picker Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-foreground border border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900 border border-border">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
                 <Building2 className="h-5 w-5" />
@@ -878,7 +878,7 @@ export default function PlatformFeaturesPage() {
               <select
                 value={selectedCompanyId}
                 onChange={(e) => setSelectedCompanyId(e.target.value)}
-                className="bg-foreground border border-border text-white rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-hidden focus:border-indigo-500 max-w-xs"
+                className="bg-slate-900 border border-border text-white rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-hidden focus:border-indigo-500 max-w-xs"
               >
                 {companies.map((comp) => (
                   <option key={comp.id} value={comp.id}>
@@ -902,8 +902,8 @@ export default function PlatformFeaturesPage() {
                   key={flag.id}
                   className={`p-4 sm:p-5 rounded-2xl transition-all ${
                     isOverridden
-                      ? 'bg-foreground border-cyan-700/70 shadow-lg shadow-cyan-950/20'
-                      : 'bg-foreground border-border'
+                      ? 'bg-slate-900 border-cyan-700/70 shadow-lg shadow-cyan-950/20'
+                      : 'bg-slate-900 border-border'
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -912,7 +912,7 @@ export default function PlatformFeaturesPage() {
                         className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                           effectiveStatus
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-secondary text-muted-foreground border border-border'
+                            : 'bg-slate-800 text-muted-foreground border border-border'
                         }`}
                       >
                         <Icon className="h-5 w-5" />
@@ -921,7 +921,7 @@ export default function PlatformFeaturesPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-bold text-sm text-white">{flag.name}</h4>
-                          <span className="tabular-nums text-2xs px-2 py-0.5 rounded bg-foreground text-muted-foreground border border-border">
+                          <span className="tabular-nums text-2xs px-2 py-0.5 rounded bg-slate-900 text-muted-foreground border border-border">
                             {flag.key}
                           </span>
                           {isOverridden ? (
@@ -929,7 +929,7 @@ export default function PlatformFeaturesPage() {
                               Custom Tenant Override Active
                             </span>
                           ) : (
-                            <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
+                            <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-slate-800 text-muted-foreground border border-border">
                               Inherited Global Default ({flag.is_enabled ? 'Enabled' : 'Disabled'})
                             </span>
                           )}
@@ -962,7 +962,7 @@ export default function PlatformFeaturesPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenOverrideModal(flag, selectedCompanyId)}
-                            className="h-8 px-2.5 text-xs font-semibold text-foreground hover:text-white bg-secondary hover:bg-slate-700 border border-border rounded-xl transition-colors cursor-pointer"
+                            className="h-8 px-2.5 text-xs font-semibold text-foreground hover:text-white bg-slate-800 hover:bg-slate-700 border border-border rounded-xl transition-colors cursor-pointer"
                           >
                             Edit Override
                           </button>
@@ -1000,8 +1000,8 @@ export default function PlatformFeaturesPage() {
       {/* MODAL 1: REGISTER NEW FEATURE FLAG */}
       {/* ========================================================================= */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-lg bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg bg-slate-900 border border-border rounded-2xl shadow-2xl p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <Flag className="h-4 w-4 text-indigo-400" />
@@ -1029,7 +1029,7 @@ export default function PlatformFeaturesPage() {
                         key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'),
                       })
                     }
-                    className="bg-foreground border-border text-white tabular-nums text-xs h-9"
+                    className="bg-slate-900 border-border text-white tabular-nums text-xs h-9"
                   />
                 </div>
 
@@ -1040,7 +1040,7 @@ export default function PlatformFeaturesPage() {
                     placeholder="e.g. AI Image Res Enhancer"
                     value={createForm.name}
                     onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                    className="bg-foreground border-border text-white text-xs h-9"
+                    className="bg-slate-900 border-border text-white text-xs h-9"
                   />
                 </div>
               </div>
@@ -1051,7 +1051,7 @@ export default function PlatformFeaturesPage() {
                   <select
                     value={createForm.category}
                     onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}
-                    className="w-full bg-foreground border border-border rounded-xl p-2 text-white text-xs capitalize"
+                    className="w-full bg-slate-900 border border-border rounded-xl p-2 text-white text-xs capitalize"
                   >
                     <option value="core">Core ERP</option>
                     <option value="localization">BD Localization</option>
@@ -1068,7 +1068,7 @@ export default function PlatformFeaturesPage() {
                   <select
                     value={createForm.min_plan}
                     onChange={(e) => setCreateForm({ ...createForm, min_plan: e.target.value })}
-                    className="w-full bg-foreground border border-border rounded-xl p-2 text-white text-xs capitalize"
+                    className="w-full bg-slate-900 border border-border rounded-xl p-2 text-white text-xs capitalize"
                   >
                     <option value="starter">Starter Plan</option>
                     <option value="growth">Growth Plan</option>
@@ -1087,13 +1087,13 @@ export default function PlatformFeaturesPage() {
                   placeholder="Describe what this feature provides to the printing press..."
                   value={createForm.description}
                   onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white text-xs"
+                  className="w-full bg-slate-900 border border-border rounded-xl p-2.5 text-white text-xs"
                 />
               </div>
 
               {/* Toggles */}
               <div className="grid grid-cols-3 gap-2 pt-1">
-                <label className="flex items-center gap-2 p-2 bg-foreground border border-border rounded-xl cursor-pointer">
+                <label className="flex items-center gap-2 p-2 bg-slate-900 border border-border rounded-xl cursor-pointer">
                   <input
                     type="checkbox"
                     checked={createForm.is_enabled}
@@ -1103,7 +1103,7 @@ export default function PlatformFeaturesPage() {
                   <span className="text-foreground text-2xs font-semibold">Enabled Globally</span>
                 </label>
 
-                <label className="flex items-center gap-2 p-2 bg-foreground border border-border rounded-xl cursor-pointer">
+                <label className="flex items-center gap-2 p-2 bg-slate-900 border border-border rounded-xl cursor-pointer">
                   <input
                     type="checkbox"
                     checked={createForm.is_beta}
@@ -1113,7 +1113,7 @@ export default function PlatformFeaturesPage() {
                   <span className="text-purple-300 text-2xs font-semibold">Beta / Pilot</span>
                 </label>
 
-                <label className="flex items-center gap-2 p-2 bg-foreground border border-border rounded-xl cursor-pointer">
+                <label className="flex items-center gap-2 p-2 bg-slate-900 border border-border rounded-xl cursor-pointer">
                   <input
                     type="checkbox"
                     checked={createForm.is_critical}
@@ -1128,7 +1128,7 @@ export default function PlatformFeaturesPage() {
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-border bg-slate-800 hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1149,8 +1149,8 @@ export default function PlatformFeaturesPage() {
       {/* MODAL 2: EDIT FEATURE FLAG */}
       {/* ========================================================================= */}
       {editingFlag && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-lg bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg bg-slate-900 border border-border rounded-2xl shadow-2xl p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <Edit className="h-4 w-4 text-indigo-400" />
@@ -1165,12 +1165,12 @@ export default function PlatformFeaturesPage() {
             </div>
 
             <form onSubmit={handleSaveEditFlag} className="space-y-3.5 text-xs">
-              <div className="p-2.5 bg-foreground border border-border rounded-xl flex items-center justify-between">
+              <div className="p-2.5 bg-slate-900 border border-border rounded-xl flex items-center justify-between">
                 <div>
                   <div className="text-2xs text-muted-foreground">Key Slug</div>
                   <div className="tabular-nums text-white text-xs font-bold">{editingFlag.key}</div>
                 </div>
-                <span className="text-2xs px-2 py-0.5 rounded bg-secondary text-muted-foreground tabular-nums">
+                <span className="text-2xs px-2 py-0.5 rounded bg-slate-800 text-muted-foreground tabular-nums">
                   ID: {editingFlag.id.slice(0, 8)}...
                 </span>
               </div>
@@ -1181,7 +1181,7 @@ export default function PlatformFeaturesPage() {
                   required
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="bg-foreground border-border text-white text-xs h-9"
+                  className="bg-slate-900 border-border text-white text-xs h-9"
                 />
               </div>
 
@@ -1191,7 +1191,7 @@ export default function PlatformFeaturesPage() {
                   <select
                     value={editForm.category}
                     onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                    className="w-full bg-foreground border border-border rounded-xl p-2 text-white text-xs capitalize"
+                    className="w-full bg-slate-900 border border-border rounded-xl p-2 text-white text-xs capitalize"
                   >
                     <option value="core">Core ERP</option>
                     <option value="localization">BD Localization</option>
@@ -1208,7 +1208,7 @@ export default function PlatformFeaturesPage() {
                   <select
                     value={editForm.min_plan}
                     onChange={(e) => setEditForm({ ...editForm, min_plan: e.target.value })}
-                    className="w-full bg-foreground border border-border rounded-xl p-2 text-white text-xs capitalize"
+                    className="w-full bg-slate-900 border border-border rounded-xl p-2 text-white text-xs capitalize"
                   >
                     <option value="starter">Starter Plan</option>
                     <option value="growth">Growth Plan</option>
@@ -1225,7 +1225,7 @@ export default function PlatformFeaturesPage() {
                   rows={2}
                   value={editForm.description}
                   onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  className="w-full bg-foreground border border-border rounded-xl p-2.5 text-white text-xs"
+                  className="w-full bg-slate-900 border border-border rounded-xl p-2.5 text-white text-xs"
                 />
               </div>
 
@@ -1233,7 +1233,7 @@ export default function PlatformFeaturesPage() {
                 <button
                   type="button"
                   onClick={() => setEditingFlag(null)}
-                  className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-border bg-slate-800 hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1254,8 +1254,8 @@ export default function PlatformFeaturesPage() {
       {/* MODAL 3: ASSIGN TENANT OVERRIDE */}
       {/* ========================================================================= */}
       {overrideModalFlag && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-border rounded-2xl shadow-2xl p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <SlidersHorizontal className="h-4 w-4 text-cyan-400" />
@@ -1272,7 +1272,7 @@ export default function PlatformFeaturesPage() {
             <form onSubmit={handleSaveTenantOverride} className="space-y-3.5 text-xs">
               <div>
                 <label className="text-muted-foreground font-semibold block mb-1">Target Feature Flag</label>
-                <div className="p-2.5 bg-foreground border border-border rounded-xl text-white tabular-nums font-bold flex items-center justify-between">
+                <div className="p-2.5 bg-slate-900 border border-border rounded-xl text-white tabular-nums font-bold flex items-center justify-between">
                   <span>{overrideModalFlag.name}</span>
                   <span className="text-2xs text-muted-foreground tabular-nums">({overrideModalFlag.key})</span>
                 </div>
@@ -1283,7 +1283,7 @@ export default function PlatformFeaturesPage() {
                 <select
                   value={overrideCompanyId}
                   onChange={(e) => setOverrideCompanyId(e.target.value)}
-                  className="w-full bg-foreground border border-border text-white rounded-xl p-2.5 text-xs font-semibold focus:outline-hidden focus:border-indigo-500"
+                  className="w-full bg-slate-900 border border-border text-white rounded-xl p-2.5 text-xs font-semibold focus:outline-hidden focus:border-indigo-500"
                 >
                   {companies.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1302,7 +1302,7 @@ export default function PlatformFeaturesPage() {
                     className={`py-2 px-3 rounded-xl font-bold border text-center transition-all cursor-pointer ${
                       overrideState
                         ? 'bg-emerald-950/90 text-emerald-200 border-emerald-500 shadow-sm'
-                        : 'bg-foreground text-muted-foreground border-border hover:text-foreground'
+                        : 'bg-slate-900 text-muted-foreground border-border hover:text-foreground'
                     }`}
                   >
                     FORCED ENABLED
@@ -1313,7 +1313,7 @@ export default function PlatformFeaturesPage() {
                     className={`py-2 px-3 rounded-xl font-bold border text-center transition-all cursor-pointer ${
                       !overrideState
                         ? 'bg-red-950/90 text-red-200 border-red-500 shadow-sm'
-                        : 'bg-foreground text-muted-foreground border-border hover:text-foreground'
+                        : 'bg-slate-900 text-muted-foreground border-border hover:text-foreground'
                     }`}
                   >
                     FORCED DISABLED
@@ -1327,7 +1327,7 @@ export default function PlatformFeaturesPage() {
                   value={overrideNotes}
                   onChange={(e) => setOverrideNotes(e.target.value)}
                   placeholder="e.g. Granted VIP Enterprise access on custom contract..."
-                  className="bg-foreground border-border text-white text-xs h-9"
+                  className="bg-slate-900 border-border text-white text-xs h-9"
                 />
               </div>
 
@@ -1335,7 +1335,7 @@ export default function PlatformFeaturesPage() {
                 <button
                   type="button"
                   onClick={() => setOverrideModalFlag(null)}
-                  className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-border bg-slate-800 hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1356,8 +1356,8 @@ export default function PlatformFeaturesPage() {
       {/* MODAL 4: DELETE CONFIRMATION */}
       {/* ========================================================================= */}
       {deletingFlag && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md bg-foreground border border-border rounded-2xl shadow-2xl p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-border rounded-2xl shadow-2xl p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="font-bold text-white text-sm flex items-center gap-2">
                 <Trash2 className="h-4 w-4 text-red-400" />
@@ -1383,7 +1383,7 @@ export default function PlatformFeaturesPage() {
                 <button
                   type="button"
                   onClick={() => setDeletingFlag(null)}
-                  className="px-4 py-2 rounded-xl border border-border bg-secondary hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-border bg-slate-800 hover:bg-slate-700 text-foreground hover:text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>

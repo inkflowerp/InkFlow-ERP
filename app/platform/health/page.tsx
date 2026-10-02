@@ -313,7 +313,7 @@ export default function PlatformHealthPage() {
           <Button
             size="sm"
             onClick={handleExportCsv}
-            className="bg-secondary hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
+            className="bg-slate-800 hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
           >
             <Download className="h-3.5 w-3.5 mr-1.5 text-cyan-400" />
             Export Telemetry CSV
@@ -322,7 +322,7 @@ export default function PlatformHealthPage() {
           <Link href="/platform/incidents">
             <Button
               size="sm"
-              className="bg-secondary hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
+              className="bg-slate-800 hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
             >
               <ShieldAlert className="h-3.5 w-3.5 mr-1.5 text-amber-400" />
               Incidents
@@ -333,7 +333,7 @@ export default function PlatformHealthPage() {
             size="sm"
             onClick={() => loadHealth()}
             disabled={loading}
-            className="bg-secondary hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
+            className="bg-slate-800 hover:bg-slate-700 text-foreground border border-border text-xs h-9 px-3 rounded-xl"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 text-muted-foreground ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -378,11 +378,11 @@ export default function PlatformHealthPage() {
         </div>
 
         <div className="flex items-center gap-3 text-xs flex-wrap">
-          <div className="p-2.5 rounded-xl bg-foreground border border-border text-center min-w-[110px]">
+          <div className="p-2.5 rounded-xl bg-slate-900 border border-border text-center min-w-[110px]">
             <div className="text-2xs text-muted-foreground font-semibold uppercase">DB Connection Pool</div>
             <div className="font-black text-white text-sm mt-0.5">24 / 100 conns</div>
           </div>
-          <div className="p-2.5 rounded-xl bg-foreground border border-border text-center min-w-[100px]">
+          <div className="p-2.5 rounded-xl bg-slate-900 border border-border text-center min-w-[100px]">
             <div className="text-2xs text-muted-foreground font-semibold uppercase">Avg API Latency</div>
             <div className="font-black text-emerald-400 text-sm mt-0.5">38 ms</div>
           </div>
@@ -392,7 +392,7 @@ export default function PlatformHealthPage() {
       {/* 5 Core Health Metric Counters */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
         {/* 1. Failed Jobs */}
-        <Card className="bg-foreground border-border p-4 rounded-2xl">
+        <Card className="bg-slate-900 border-border p-4 rounded-2xl">
           <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
             <span>Failed Jobs</span>
             <Terminal className="h-4 w-4 text-amber-400" />
@@ -404,7 +404,7 @@ export default function PlatformHealthPage() {
         </Card>
 
         {/* 2. Failed Alerts */}
-        <Card className="bg-foreground border-border p-4 rounded-2xl">
+        <Card className="bg-slate-900 border-border p-4 rounded-2xl">
           <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
             <span>Failed Alerts</span>
             <BellOff className="h-4 w-4 text-red-400" />
@@ -416,7 +416,7 @@ export default function PlatformHealthPage() {
         </Card>
 
         {/* 3. Storage Usage */}
-        <Card className="bg-foreground border-border p-4 rounded-2xl">
+        <Card className="bg-slate-900 border-border p-4 rounded-2xl">
           <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
             <span>Storage Used</span>
             <HardDrive className="h-4 w-4 text-cyan-400" />
@@ -430,7 +430,7 @@ export default function PlatformHealthPage() {
         </Card>
 
         {/* 4. API Failures */}
-        <Card className="bg-foreground border-border p-4 rounded-2xl">
+        <Card className="bg-slate-900 border-border p-4 rounded-2xl">
           <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
             <span>API Failures</span>
             <AlertTriangle className="h-4 w-4 text-purple-400" />
@@ -442,7 +442,7 @@ export default function PlatformHealthPage() {
         </Card>
 
         {/* 5. Integration Errors */}
-        <Card className="bg-foreground border-border p-4 rounded-2xl">
+        <Card className="bg-slate-900 border-border p-4 rounded-2xl">
           <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
             <span>Integrations</span>
             <Server className="h-4 w-4 text-indigo-400" />
@@ -455,7 +455,7 @@ export default function PlatformHealthPage() {
       </div>
 
       {/* Subsystem Health Status Matrix */}
-      <Card className="bg-foreground border-border p-5 rounded-2xl space-y-4">
+      <Card className="bg-slate-900 border-border p-5 rounded-2xl space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <div>
             <h3 className="font-bold text-white text-sm flex items-center gap-2">
@@ -478,7 +478,7 @@ export default function PlatformHealthPage() {
             return (
               <div
                 key={sub.id}
-                className="p-3.5 rounded-xl bg-foreground border border-border hover:border-border transition-all flex items-start justify-between gap-3"
+                className="p-3.5 rounded-xl bg-slate-900 border border-border hover:border-border transition-all flex items-start justify-between gap-3"
               >
                 <div className="flex items-start gap-3">
                   <div
@@ -515,7 +515,7 @@ export default function PlatformHealthPage() {
       </Card>
 
       {/* Storage Breakdown Meter Card */}
-      <Card className="bg-foreground border-border rounded-2xl p-5 shadow-lg space-y-3">
+      <Card className="bg-slate-900 border-border rounded-2xl p-5 shadow-lg space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2 font-bold text-sm text-white">
             <HardDrive className="h-4 w-4 text-cyan-400" />
@@ -526,7 +526,7 @@ export default function PlatformHealthPage() {
           </span>
         </div>
 
-        <div className="w-full bg-foreground rounded-full h-3 overflow-hidden p-0.5 border border-border">
+        <div className="w-full bg-slate-900 rounded-full h-3 overflow-hidden p-0.5 border border-border">
           <div
             className="h-2 rounded-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 transition-all duration-500"
             style={{ width: `${storagePct}%` }}
@@ -556,13 +556,13 @@ export default function PlatformHealthPage() {
       </Card>
 
       {/* Telemetry Incidents & Event Logs Table */}
-      <Card className="bg-foreground border-border rounded-2xl shadow-xl overflow-hidden">
-        <CardHeader className="border-b border-border pb-3.5 bg-foreground">
+      <Card className="bg-slate-900 border-border rounded-2xl shadow-xl overflow-hidden">
+        <CardHeader className="border-b border-border pb-3.5 bg-slate-900">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
               <CardTitle className="text-base font-bold text-white flex items-center gap-2">
                 <span>Active Telemetry Incidents &amp; Alerts</span>
-                <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
+                <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-slate-800 text-muted-foreground border border-border">
                   {filteredEvents.length} Events
                 </span>
               </CardTitle>
@@ -580,7 +580,7 @@ export default function PlatformHealthPage() {
                   placeholder="Filter events..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-8 text-xs bg-foreground border-border text-white placeholder:text-muted-foreground rounded-xl"
+                  className="pl-8 h-8 text-xs bg-slate-900 border-border text-white placeholder:text-muted-foreground rounded-xl"
                 />
               </div>
 
@@ -588,7 +588,7 @@ export default function PlatformHealthPage() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="bg-foreground border border-border text-foreground rounded-xl px-2.5 py-1 text-xs font-medium focus:outline-none h-8"
+                className="bg-slate-900 border border-border text-foreground rounded-xl px-2.5 py-1 text-xs font-medium focus:outline-none h-8"
               >
                 <option value="all">All Categories</option>
                 <option value="job">Failed Jobs</option>
@@ -602,7 +602,7 @@ export default function PlatformHealthPage() {
               <select
                 value={severityFilter}
                 onChange={(e) => setSeverityFilter(e.target.value)}
-                className="bg-foreground border border-border text-foreground rounded-xl px-2.5 py-1 text-xs font-medium focus:outline-none h-8"
+                className="bg-slate-900 border border-border text-foreground rounded-xl px-2.5 py-1 text-xs font-medium focus:outline-none h-8"
               >
                 <option value="all">All Severities</option>
                 <option value="critical">Critical</option>
@@ -612,12 +612,12 @@ export default function PlatformHealthPage() {
               </select>
 
               {/* Include Resolved Toggle */}
-              <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none bg-foreground px-2.5 py-1 rounded-xl border border-border h-8">
+              <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none bg-slate-900 px-2.5 py-1 rounded-xl border border-border h-8">
                 <input
                   type="checkbox"
                   checked={showResolved}
                   onChange={(e) => setShowResolved(e.target.checked)}
-                  className="rounded border-border bg-foreground text-indigo-600 focus:ring-0"
+                  className="rounded border-border bg-slate-900 text-indigo-600 focus:ring-0"
                 />
                 <span>Include Resolved</span>
               </label>
@@ -674,11 +674,11 @@ export default function PlatformHealthPage() {
                             <span className="tabular-nums text-xs font-bold text-white">
                               {event.service_name}
                             </span>
-                            <span className="tabular-nums text-2xs text-muted-foreground bg-foreground px-2 py-0.5 rounded border border-border">
+                            <span className="tabular-nums text-2xs text-muted-foreground bg-slate-900 px-2 py-0.5 rounded border border-border">
                               Category: {event.category}
                             </span>
                             {event.company_name && (
-                              <span className="text-2xs px-2 py-0.5 rounded bg-secondary text-muted-foreground border border-border">
+                              <span className="text-2xs px-2 py-0.5 rounded bg-slate-800 text-muted-foreground border border-border">
                                 {event.company_name}
                               </span>
                             )}
@@ -705,7 +705,7 @@ export default function PlatformHealthPage() {
                           <button
                             type="button"
                             onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
-                            className="text-xs text-muted-foreground hover:text-white inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-secondary hover:bg-slate-700 border border-border font-medium"
+                            className="text-xs text-muted-foreground hover:text-white inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-border font-medium"
                           >
                             <span>Payload</span>
                             {isExpanded ? (
@@ -750,7 +750,7 @@ export default function PlatformHealthPage() {
 
                     {/* Expandable JSON Error Payload */}
                     {isExpanded && event.error_details && (
-                      <div className="mt-3 p-3 rounded-xl bg-foreground border border-border tabular-nums text-2xs text-cyan-300 overflow-x-auto relative">
+                      <div className="mt-3 p-3 rounded-xl bg-slate-900 border border-border tabular-nums text-2xs text-cyan-300 overflow-x-auto relative">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-2xs text-muted-foreground uppercase font-semibold">
                             Diagnostic Error Payload
@@ -758,7 +758,7 @@ export default function PlatformHealthPage() {
                           <button
                             type="button"
                             onClick={() => handleCopyPayload(event.error_details, event.id)}
-                            className="text-2xs text-muted-foreground hover:text-white inline-flex items-center gap-1 px-2 py-0.5 rounded bg-foreground border border-border"
+                            className="text-2xs text-muted-foreground hover:text-white inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 border border-border"
                           >
                             <Copy className="h-2.5 w-2.5" />
                             {copiedPayloadId === event.id ? 'Copied' : 'Copy JSON'}
