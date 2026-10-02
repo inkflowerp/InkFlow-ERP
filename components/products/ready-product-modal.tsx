@@ -1365,7 +1365,7 @@ export function ReadyProductModal({
 
                 <Button
  type="button"size="sm"variant="outline"onClick={handleAutoFillTiers}
- className="h-7 text-2xs font-semibold text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30 hover:bg-purple-100 cursor-pointer">
+ className="h-7 text-2xs font-semibold text-foreground border-border hover:bg-muted bg-purple-50/50 dark:bg-purple-950/30 hover:bg-purple-100 cursor-pointer">
                   <Sparkles className="w-3 h-3 mr-1"/> Auto-calculate Tiers
                 </Button>
               </div>

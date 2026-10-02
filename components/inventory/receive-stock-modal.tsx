@@ -1972,7 +1972,7 @@ export function ReceiveStockModal({
                 <div className="flex items-center gap-2">
                   <Button
  type="button"size="sm"variant="outline"onClick={handleReceiveAllRemaining}
- className="h-7 text-2xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-300 dark:border-emerald-700 cursor-pointer">
+ className="h-7 text-2xs font-semibold text-foreground border-border hover:bg-muted dark:text-emerald-300 dark:border-emerald-700 cursor-pointer">
                     <CheckCheck className="h-3.5 w-3.5 mr-1"/>
                     {tBilingual('Receive All Remaining', 'সব গ্রহণ')}
                   </Button>
@@ -2156,7 +2156,7 @@ export function ReceiveStockModal({
                                       'text-2xs px-1 py-0 tabular-nums font-bold',
  costVariance > 0
                                         ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        : 'bg-emerald-50 text-foreground border-border'
                                     )}
                                   >
                                     {costVariance > 0 ? `+${costVariance}% ↗` : `${costVariance}% ↘`}
@@ -2228,7 +2228,7 @@ export function ReceiveStockModal({
 
               <Button
  type="button"size="sm"variant="outline"onClick={handleAddDirectItem}
- className="h-7 text-xs font-bold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-300 dark:border-emerald-700 cursor-pointer">
+ className="h-7 text-xs font-bold text-foreground border-border hover:bg-muted dark:text-emerald-300 dark:border-emerald-700 cursor-pointer">
                 <Plus className="h-3.5 w-3.5 mr-1"/>
                 {tBilingual('Add Line', 'নতুন আইটেম')}
               </Button>
@@ -2431,7 +2431,7 @@ export function ReceiveStockModal({
                                 'text-2xs px-1 py-0 tabular-nums font-bold',
  isVariancePositive
                                   ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : 'bg-emerald-50 text-foreground border-border'
                               )}
                             >
                               {isVariancePositive ? `+${item.cost_variance_percent}% ↗` : `${item.cost_variance_percent}% ↘`}

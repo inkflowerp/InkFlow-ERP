@@ -129,7 +129,7 @@ export function WorkforceOverview({ tenantSlug }: WorkforceOverviewProps) {
               </div>
               <Button
  variant="outline"size="sm"onClick={fetchOverview}
- className="text-xs border-red-300 hover:bg-red-100 text-red-800 h-8">
+ className="text-xs border-destructive/30 hover:bg-destructive/10 text-destructive h-8">
  Retry
               </Button>
             </div>

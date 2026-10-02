@@ -40,9 +40,9 @@
       "text-primary": "#F8FAFC",
       "text-secondary": "#CBD5E1",
       "text-muted": "#CBD5E1",
-      "primary": "#60A5FA",
-      "primary-hover": "#2563EB",
-      "primary-foreground": "#0F172A",
+      "primary": "#2563EB",
+      "primary-hover": "#1D4ED8",
+      "primary-foreground": "#FFFFFF",
       "primary-surface": "#1E293B",
       "destructive": "#EF4444",
       "destructive-foreground": "#F8FAFC",
@@ -53,7 +53,7 @@
       "danger-surface": "hsl(0,62%,12%)",
       "info": "#38BDF8",
       "info-surface": "hsl(217,33%,17.5%)",
-      "ring": "#60A5FA"
+      "ring": "#2563EB"
     },
     "semantic-accent-allowed": [
       "emerald-{50,100,500,600,700,800,900,950}",

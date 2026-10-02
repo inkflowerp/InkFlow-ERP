@@ -68,7 +68,7 @@ export function SubscriptionStatusBanner() {
 
           <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
             <Button
- size="sm"variant="outline"className="h-7 text-xs bg-card text-red-700 hover:bg-red-50 font-bold bangla-text border-0">
+ size="sm" variant="secondary" className="h-7 text-xs bg-card text-foreground hover:bg-muted font-bold bangla-text border border-border shadow-xs">
               {tBilingual('Manage Subscription', 'সাবস্ক্রিপশন দেখুন')}
             </Button>
           </Link>
@@ -93,7 +93,7 @@ export function SubscriptionStatusBanner() {
 
           <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
             <Button
- size="sm"className="h-7 text-xs bg-card text-amber-900 hover:bg-amber-50 font-black bangla-text shadow-sm">
+ size="sm" variant="secondary" className="h-7 text-xs bg-card text-foreground hover:bg-muted font-bold bangla-text border border-border shadow-xs">
               <CreditCard className="mr-1 h-3.5 w-3.5 text-amber-600"/>
               {tBilingual('Pay Invoice Now', 'এখনই পরিশোধ করুন')}
               <ArrowRight className="ml-1 h-3 w-3"/>
@@ -124,7 +124,7 @@ export function SubscriptionStatusBanner() {
 
           <Button
  size="sm"onClick={() => openUpgradeModal('business')}
- className="h-7 text-xs bg-card text-red-700 hover:bg-red-50 font-black bangla-text shadow-sm">
+ variant="secondary" className="h-7 text-xs bg-card text-foreground hover:bg-muted font-bold bangla-text border border-border shadow-xs">
             <Crown className="mr-1 h-3.5 w-3.5 text-amber-500"/>
             {tBilingual('Upgrade Plan Now', 'এখনই আপগ্রেড করুন')}
             <ArrowRight className="ml-1 h-3 w-3"/>
@@ -140,8 +140,8 @@ export function SubscriptionStatusBanner() {
       <div
  className={
  isEndingSoon
-            ? 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white px-4 py-2 shadow-sm'
-            : 'bg-gradient-to-r from-indigo-700 via-indigo-600 to-purple-600 text-white px-4 py-2 shadow-sm'
+            ? 'bg-amber-600 text-white px-4 py-2 shadow-xs'
+            : 'bg-primary text-primary-foreground px-4 py-2 shadow-xs'
         }
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium">
@@ -171,7 +171,7 @@ export function SubscriptionStatusBanner() {
           <div className="flex items-center gap-2">
             <Button
  size="sm"variant="secondary"onClick={() => openUpgradeModal('business')}
- className="h-7 text-xs bg-card text-indigo-900 hover:bg-indigo-50 font-black bangla-text shadow-xs">
+ className="h-7 text-xs bg-card text-foreground hover:bg-muted font-bold bangla-text border border-border shadow-xs">
               <Crown className="mr-1 h-3 w-3 text-amber-500"/>
               {tBilingual('Upgrade Plan', 'প্ল্যান আপগ্রেড')}
             </Button>
@@ -197,7 +197,7 @@ export function SubscriptionStatusBanner() {
 
           <Button
  size="sm"onClick={() => openUpgradeModal(currentPlan?.code || 'business')}
- className="h-7 text-xs bg-card text-red-700 hover:bg-red-50 font-black bangla-text shadow-sm">
+ variant="secondary" className="h-7 text-xs bg-card text-foreground hover:bg-muted font-bold bangla-text border border-border shadow-xs">
             <Crown className="mr-1 h-3.5 w-3.5 text-amber-500"/>
             {tBilingual('Renew / Upgrade Plan', 'প্ল্যান নবায়ন / আপগ্রেড')}
             <ArrowRight className="ml-1 h-3 w-3"/>

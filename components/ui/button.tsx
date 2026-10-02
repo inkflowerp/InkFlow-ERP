@@ -17,7 +17,7 @@ const buttonVariants = cva(
  link: 'text-primary underline-offset-4 hover:underline shadow-none p-0 h-auto font-medium',
         // Backward-compatibility aliases for legacy callers (rendered as solid, non-gradient)
  gradient: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs',
- warning: 'bg-amber-500 text-foreground hover:bg-amber-600 shadow-xs',
+ warning: 'bg-amber-500 text-slate-950 font-bold hover:bg-amber-600 shadow-xs',
  subtle: 'bg-muted text-foreground hover:bg-muted/80 shadow-none font-medium',
       },
  size: {

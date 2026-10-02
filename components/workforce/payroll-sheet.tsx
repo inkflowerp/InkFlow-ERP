@@ -126,7 +126,7 @@ export function PayrollSheet({
               <Button
  size="sm"variant="outline"onClick={handleLock}
  disabled={isActionPending}
- className="h-8 px-3.5 text-xs font-semibold border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 min-h-[32px]">
+ className="h-8 px-3.5 text-xs font-semibold border-border text-foreground hover:bg-muted min-h-[32px]">
                 <Lock className="w-3.5 h-3.5 mr-1"/>
                 <span>Lock Period</span>
               </Button>

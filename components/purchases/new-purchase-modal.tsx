@@ -1460,7 +1460,7 @@ export function NewPurchaseModal({
               <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                 <Button
  type="button"size="sm"variant="outline"onClick={handleAddItem}
- className="h-7.5 text-xs font-bold text-amber-700 border-amber-300 hover:bg-amber-50 dark:text-amber-300 dark:border-amber-700 cursor-pointer">
+ className="h-7.5 text-xs font-bold text-foreground border-border hover:bg-muted dark:text-amber-300 dark:border-amber-700 cursor-pointer">
                   <Plus className="h-3.5 w-3.5 mr-1"/>
                   {tBilingual('Add Line Item', 'নতুন আইটেম')}
                 </Button>

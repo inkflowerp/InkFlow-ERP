@@ -158,7 +158,7 @@ export function PendingActionsCard({
                     </span>
                     <Button
  asChild
- size="sm"variant="outline"className="h-8 px-3 text-xs font-medium text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 min-h-[32px] touch-manipulation">
+ size="sm"variant="outline"className="h-8 px-3 text-xs font-medium text-foreground border-border hover:bg-muted min-h-[32px] touch-manipulation">
                       <Link href={targetHref}>
                         <span>{action.actionLabel}</span>
                         <ChevronRight className="w-3.5 h-3.5 ml-1"/>

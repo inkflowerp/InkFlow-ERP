@@ -222,7 +222,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                     <div className="flex items-center justify-end gap-1.5">
                       <Button
  type="button"size="sm"variant="secondary"asChild
- className="h-7 px-2 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 dark:text-indigo-300 font-semibold">
+ className="h-7 px-2 text-xs bg-muted hover:bg-muted/80 text-foreground font-semibold">
                         <Link href={workbenchHref}>
                           <span>Workbench</span>
                         </Link>

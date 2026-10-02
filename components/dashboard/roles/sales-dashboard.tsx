@@ -72,7 +72,7 @@ export function SalesDashboard({
 
         <Button
  type="button"size="lg"onClick={onOpenNewWork}
- className="bg-card text-blue-900 hover:bg-blue-50 text-sm font-black h-12 px-8 shadow-lg">
+ className="bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-black h-12 px-8 shadow-xs">
           <Plus className="h-5 w-5 mr-1.5 stroke-[3]"/>
           {tBilingual('New Work', 'নতুন কাজ')}
         </Button>

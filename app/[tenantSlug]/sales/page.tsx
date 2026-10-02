@@ -211,7 +211,7 @@ export default function SalesManagerPage() {
         }
  actions={
           <Link href={getTenantNavHref('/quotations', pathname, slug)}>
-            <Button className="bg-blue-600 hover:bg-blue-700 bangla-text">
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold bangla-text shadow-xs">
               <Plus className="mr-1.5 h-4 w-4"/>
               {tBilingual('New Quotation', 'নতুন কোটেশন')}
             </Button>

@@ -939,7 +939,7 @@ export function OutsourceProductModal({
                   </div>
                   <Button
  type="button"variant="outline"size="sm"onClick={handleAutoFillTiers}
- className="h-7 px-2.5 text-2xs font-bold text-purple-700 border-purple-200 hover:bg-purple-50 cursor-pointer">
+ className="h-7 px-2.5 text-2xs font-bold text-foreground border-border hover:bg-muted cursor-pointer">
                     <Sparkles className="w-3 h-3 mr-1"/>
  Auto-Calculate Tiers
                   </Button>

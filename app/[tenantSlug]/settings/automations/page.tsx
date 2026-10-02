@@ -956,7 +956,7 @@ export default function WorkflowAutomationsPage() {
 
                   <Button
  type="button"size="sm"variant="outline"onClick={handleAddCondition}
- className="h-7 text-xs border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40">
+ className="h-7 text-xs border-border text-foreground hover:bg-muted hover:bg-amber-50 dark:hover:bg-amber-950/40">
                     <Plus className="h-3 w-3 mr-1"/>
  Add Condition
                   </Button>
@@ -1166,7 +1166,7 @@ export default function WorkflowAutomationsPage() {
                   </select>
                   <Button
  type="button"size="sm"variant="outline"onClick={handleAddAction}
- className="h-9 text-xs border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
+ className="h-9 text-xs border-border text-foreground hover:bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
                     <Plus className="h-3.5 w-3.5 mr-1"/>
  Append Action
                   </Button>

@@ -656,7 +656,7 @@ export default function DeliveryLogisticsPage() {
 
               <Button
  size="sm"variant="outline"onClick={() => setIsNewInstallationOpen(true)}
- className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-800 bangla-text">
+ className="text-xs border-border text-foreground hover:bg-muted font-semibold bangla-text">
                 <Wrench className="mr-1.5 h-3.5 w-3.5"/>
                 {tBilingual('Schedule Installation', 'ইনস্টলেশন শিডিউল')}
               </Button>

@@ -898,7 +898,7 @@ export function IssueMasterRollModal({
 
             <Button
  type="button"variant="outline"size="sm"onClick={handleAddItem}
- className="h-8 text-xs font-bold gap-1.5 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 cursor-pointer shadow-2xs">
+ className="h-8 text-xs font-bold gap-1.5 border-border text-foreground hover:bg-muted hover:bg-blue-50 dark:hover:bg-blue-950/50 cursor-pointer shadow-2xs">
               <Plus className="h-3.5 w-3.5"/>
               <span>{tBilingual('+ Add Another Item', '+ আরেকটি আইটেম যোগ করুন')}</span>
             </Button>

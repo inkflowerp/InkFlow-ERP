@@ -232,7 +232,7 @@ export function PayrollPeriodTable({
                       <td className="py-3.5 px-4 text-right">
                         <Button
  asChild
- size="sm"variant="outline"className="h-7 px-2.5 text-xs font-semibold text-blue-600 border-blue-200 hover:bg-blue-50 min-h-[28px]">
+ size="sm"variant="outline"className="h-7 px-2.5 text-xs font-semibold text-foreground border-border hover:bg-muted min-h-[28px]">
                           <Link href={`/${tenantSlug}/hr/payroll/${period.id}`}>
                             <span>Open Sheet</span>
                             <ArrowRight className="w-3.5 h-3.5 ml-1"/>

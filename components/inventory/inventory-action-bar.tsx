@@ -53,7 +53,7 @@ export function InventoryActionBar({
         {/* Floor Issue */}
         <Button
  size="sm"variant="outline"onClick={onFloorIssue}
- className="text-xs h-9 px-3 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer gap-1.5 font-semibold"title="Issue materials to printing or fabrication floor">
+ className="text-xs h-9 px-3 border-border text-foreground hover:bg-muted hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer gap-1.5 font-semibold"title="Issue materials to printing or fabrication floor">
           <Scissors className="h-3.5 w-3.5 text-indigo-600"/>
           <span>{isBn ? 'ফ্লোরে ইস্যু' : 'Floor Issue'}</span>
         </Button>
@@ -62,7 +62,7 @@ export function InventoryActionBar({
         {onLogConsumption && (
           <Button
  size="sm"variant="outline"onClick={onLogConsumption}
- className="text-xs h-9 px-3 border-amber-300 dark:border-amber-700 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 cursor-pointer gap-1.5 font-semibold"title="Log actual floor consumption, scrap, and remnants">
+ className="text-xs h-9 px-3 border-border text-foreground hover:bg-muted hover:bg-amber-500/20 cursor-pointer gap-1.5 font-semibold"title="Log actual floor consumption, scrap, and remnants">
             <Printer className="h-3.5 w-3.5 text-amber-600"/>
             <span>{isBn ? 'কনজাম্পশন হিসাব' : 'Log Consumption'}</span>
           </Button>
@@ -71,7 +71,7 @@ export function InventoryActionBar({
         {/* Stock Audit / Adjustment */}
         <Button
  size="sm"variant="outline"onClick={onAdjustment}
- className="text-xs h-9 px-3 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer gap-1.5 font-semibold"title="Audit physical count and adjust stock variance">
+ className="text-xs h-9 px-3 border-border text-foreground hover:bg-muted hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer gap-1.5 font-semibold"title="Audit physical count and adjust stock variance">
           <RotateCcw className="h-3.5 w-3.5 text-amber-600"/>
           <span>{isBn ? 'স্টক অডিট / সমন্বয়' : 'Audit / Adjust'}</span>
         </Button>

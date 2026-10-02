@@ -216,7 +216,7 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
 
           <Link href={workflow.nextActionHref}>
             <Button
- size="sm"variant="outline"className="text-xs font-bold border-blue-300 text-blue-700 hover:bg-blue-100/60 dark:border-blue-800 dark:text-blue-300 shrink-0">
+ size="sm"variant="outline"className="text-xs font-bold border-border text-foreground hover:bg-muted shrink-0">
               <span>{tBilingual(workflow.nextActionEn, workflow.nextActionBn)}</span>
               <ArrowRight className="h-3.5 w-3.5 ml-1.5"/>
             </Button>
@@ -241,7 +241,7 @@ export function JobFlowStepper({ workflow, tenantSlug, className = '' }: JobFlow
             </div>
           </div>
           <Link href={`/${tenantSlug}/billing`}>
-            <Button size="sm"variant="outline"className="text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-100/60">
+            <Button size="sm"variant="outline"className="text-xs font-bold border-border text-foreground hover:bg-muted">
               {tBilingual('View Bill & Payments', 'লেজার দেখুন')}
             </Button>
           </Link>

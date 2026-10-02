@@ -199,7 +199,7 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
             <div className="flex items-center gap-2">
               <Button
  type="button"variant="outline"size="sm"onClick={handleCopy}
- className="text-xs border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950">
+ className="text-xs border-border text-foreground hover:bg-muted hover:bg-emerald-50 dark:hover:bg-emerald-950">
                 {isCopied ? <Check className="h-3.5 w-3.5 mr-1"/> : <Copy className="h-3.5 w-3.5 mr-1"/>}
                 <span>{isCopied ? 'কপি সম্পন্ন' : 'টেক্সট কপি করুন'}</span>
               </Button>

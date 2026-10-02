@@ -288,7 +288,7 @@ export function PrintFloorConsumptionUnit({
             {onRequestMaterial && (
               <Button
  size="sm"variant="outline"onClick={onRequestMaterial}
- className="border-amber-300 dark:border-amber-700/60 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1.5 transition-colors">
+ className="border-border text-foreground hover:bg-muted text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1.5 transition-colors">
                 <Plus className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400"/>
                 <span>{tBilingual('Request Material from Store', 'স্টোর থেকে রিকুইজিশন')}</span>
               </Button>

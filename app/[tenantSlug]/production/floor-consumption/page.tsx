@@ -155,7 +155,7 @@ export default function FloorConsumptionPage() {
 
             <Button
  variant="outline"size="sm"onClick={() => setIsMaterialRequestOpen(true)}
- className="gap-2 border-amber-300 dark:border-amber-700/60 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 font-semibold shadow-xs cursor-pointer transition-colors">
+ className="gap-2 border-border text-foreground hover:bg-muted font-semibold shadow-xs cursor-pointer transition-colors">
               <Plus className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0"/>
               <span>{isBn ? 'স্টোর থেকে রিকুইজিশন পাঠান' : 'Request Material'}</span>
             </Button>

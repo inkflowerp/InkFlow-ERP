@@ -509,7 +509,7 @@ export default function BranchesSettingsPage() {
                   {!branch.isMain && (
                     <>
                       <Button
- variant="outline"size="sm"className="text-xs h-8 px-2.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40"onClick={() => handleMakeMain(branch.id)}
+ variant="outline"size="sm"className="text-xs h-8 px-2.5 rounded-lg text-foreground hover:bg-muted"onClick={() => handleMakeMain(branch.id)}
                       >
                         {tBilingual('Set as Main', 'প্রধান করুন')}
                       </Button>
@@ -517,7 +517,7 @@ export default function BranchesSettingsPage() {
                       <Button
  variant="ghost"size="sm"className={cn(
                           'text-xs h-8 px-2 rounded-lg',
- branch.isActive ? 'text-rose-600 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'
+ branch.isActive ? 'text-destructive hover:bg-destructive/10' : 'text-success hover:bg-success/10'
                         )}
  onClick={() => handleToggleStatus(branch)}
  title={branch.isActive ? 'Deactivate Branch' : 'Activate Branch'}

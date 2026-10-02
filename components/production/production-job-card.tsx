@@ -1622,14 +1622,14 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   {isHold ? (
                     <Button
  size="sm"variant="outline"onClick={handleResume}
- className="h-8 text-xs font-bold border-amber-400 text-amber-800 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300 rounded-xl cursor-pointer gap-1">
+ className="h-8 text-xs font-bold border-border text-foreground hover:bg-muted font-bold rounded-xl cursor-pointer gap-1">
                       <RotateCcw className="h-3 w-3"/>
                       <span>Resume</span>
                     </Button>
                   ) : (
                     <Button
  size="sm"variant="outline"onClick={handleHold}
- className="h-8 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300 rounded-xl cursor-pointer gap-1">
+ className="h-8 text-xs font-bold border-border text-foreground hover:bg-muted font-bold rounded-xl cursor-pointer gap-1">
                       <Pause className="h-3 w-3"/>
                       <span>Hold</span>
                     </Button>

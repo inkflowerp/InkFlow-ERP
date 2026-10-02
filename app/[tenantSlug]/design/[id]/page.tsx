@@ -1540,7 +1540,7 @@ function DesignDetailContent() {
             ) : (
               <Button
  size="sm"variant="outline"onClick={handleToggleLock}
- className="h-8 text-xs text-amber-700 border-amber-300 dark:text-amber-400 hover:bg-amber-50">
+ className="h-8 text-xs text-foreground border-border hover:bg-muted">
                 <Unlock className="h-3.5 w-3.5 mr-1"/>
  Supervisor Unlock
               </Button>
