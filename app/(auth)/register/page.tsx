@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { User, Mail, Phone, Lock, ArrowRight, AlertCircle } from 'lucide-react'
+import { User, Mail, Phone, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { registerSchema, RegisterFormData } from '@/features/auth/auth.schemas'
 import { signUpAction, signInWithGoogleAction } from '@/actions/auth.actions'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,7 @@ function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const planParam = searchParams.get('plan') || ''
@@ -40,6 +41,23 @@ function RegisterForm() {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true)
     setError(null)
+
+    // Save registration draft for seamless transfer to /onboarding Step 7
+    if (typeof window !== 'undefined') {
+      const regDraft = {
+        fullName: data.fullName.trim(),
+        email: data.email.trim().toLowerCase(),
+        phone: data.phone.trim(),
+        password: data.password,
+        savedAt: Date.now(),
+      }
+      try {
+        sessionStorage.setItem('printerp_registration_draft', JSON.stringify(regDraft))
+      } catch {}
+      try {
+        localStorage.setItem('printerp_registration_draft', JSON.stringify(regDraft))
+      } catch {}
+    }
 
     const res = await signUpAction({
       email: data.email,
@@ -94,14 +112,14 @@ function RegisterForm() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-3.5">
           {error && (
-            <div className="flex flex-col gap-1.5 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/50 dark:text-red-300 border border-red-200 dark:border-red-900">
+            <div className="flex flex-col gap-1.5 rounded-lg bg-destructive/10 p-3 text-xs text-destructive border border-destructive/20">
               <div className="flex items-start gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
               {error.toLowerCase().includes('already exists') && (
                 <div className="pl-6 pt-0.5">
-                  <Link href="/login" className="font-bold underline hover:text-red-800 dark:hover:text-red-200">
+                  <Link href="/login" className="font-bold underline hover:text-destructive/80">
                     {locale === 'bn' ? 'লগইন পেজে যান →' : 'Go to Sign In →'}
                   </Link>
                 </div>
@@ -144,20 +162,31 @@ function RegisterForm() {
 
           <div className="space-y-1.5">
             <Label required>{t('auth.password')}</Label>
-            <Input
-              type="password"
-              icon={<Lock className="h-4 w-4" />}
-              placeholder="••••••••"
-              {...register('password')}
-              error={errors.password?.message}
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                icon={<Lock className="h-4 w-4" />}
+                placeholder="••••••••"
+                {...register('password')}
+                error={errors.password?.message}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer transition-colors p-1"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
         </CardContent>
 
         <CardFooter className="flex flex-col gap-3.5 border-t border-border pt-4">
           <Button
             type="submit"
-            className="w-full justify-center gap-2 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold h-11 text-sm shadow-md"
+            className="w-full justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 text-sm shadow-xs"
             isLoading={isLoading}
           >
             <span>{t('auth.sign_up')}</span>

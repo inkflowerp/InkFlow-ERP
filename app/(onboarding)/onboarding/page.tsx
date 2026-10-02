@@ -27,6 +27,8 @@ import {
   HardDrive,
   ShoppingCart,
   Lock,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import { onboardingSchema, OnboardingFormData } from '@/features/tenant/tenant.schemas'
 import { createCompanyAction, checkSlugAvailabilityAction } from '@/actions/tenant.actions'
@@ -79,15 +81,20 @@ function OnboardingWizard() {
     ? window.location.host.replace(/^onboarding\./i, '').replace(/^www\./i, '')
     : getRootDomain()
 
+  const [hasPulledRegistrationDraft, setHasPulledRegistrationDraft] = useState(false)
+  const [showOwnerPassword, setShowOwnerPassword] = useState(false)
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     trigger,
+    getValues,
     formState: { errors },
   } = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
+    shouldUnregister: false,
     defaultValues: {
       name: '',
       name_bn: '',
@@ -117,8 +124,49 @@ function OnboardingWizard() {
     }
   }, [locale, setValue])
 
-  // Prefill owner information if user just signed up or has session; redirect if already onboarded
-  React.useEffect(() => {
+  // Pull Customer Name, Owner Email, Owner Mobile, and Password from registration draft or active session
+  const pullRegistrationData = React.useCallback(() => {
+    let pulledFromDraft = false
+
+    // 1. Try registration draft from sessionStorage or localStorage
+    try {
+      let draft: any = null
+      const rawSession = typeof window !== 'undefined' ? sessionStorage.getItem('printerp_registration_draft') : null
+      const rawLocal = typeof window !== 'undefined' ? localStorage.getItem('printerp_registration_draft') : null
+
+      if (rawSession) {
+        try { draft = JSON.parse(rawSession) } catch {}
+      }
+      if (!draft && rawLocal) {
+        try { draft = JSON.parse(rawLocal) } catch {}
+      }
+
+      if (draft) {
+        const isFresh = !draft.savedAt || (Date.now() - draft.savedAt) < 6 * 60 * 60 * 1000
+        if (isFresh) {
+          if (draft.fullName) {
+            setValue('owner_name', draft.fullName, { shouldValidate: true })
+            pulledFromDraft = true
+          }
+          if (draft.email) {
+            setValue('owner_email', draft.email, { shouldValidate: true })
+            if (!getValues('email')) setValue('email', draft.email)
+            pulledFromDraft = true
+          }
+          if (draft.phone) {
+            setValue('owner_phone', draft.phone, { shouldValidate: true })
+            if (!getValues('phone')) setValue('phone', draft.phone)
+            pulledFromDraft = true
+          }
+          if (draft.password) {
+            setValue('owner_password', draft.password, { shouldValidate: true })
+            pulledFromDraft = true
+          }
+        }
+      }
+    } catch {}
+
+    // 2. Fallback: Check tenant session cookie
     try {
       const match = typeof document !== 'undefined'
         ? document.cookie.split('; ').find((row) => row.startsWith('printerp_tenant_session='))
@@ -128,20 +176,44 @@ function OnboardingWizard() {
         const raw = match.split('=')[1]
         const session = JSON.parse(decodeURIComponent(raw))
         if (session) {
-          // If tenant has already created their company workspace, redirect to dashboard
           if (session.companySlug && session.companyId) {
             window.location.href = getTenantLink(session.companySlug, '/dashboard')
             return
           }
-          if (session.fullName) setValue('owner_name', session.fullName)
-          if (session.userEmail) setValue('owner_email', session.userEmail)
-          if (session.phone) setValue('owner_phone', session.phone)
+          if (session.fullName && !getValues('owner_name')) {
+            setValue('owner_name', session.fullName, { shouldValidate: true })
+            pulledFromDraft = true
+          }
+          if (session.userEmail && !getValues('owner_email')) {
+            setValue('owner_email', session.userEmail, { shouldValidate: true })
+            if (!getValues('email')) setValue('email', session.userEmail)
+            pulledFromDraft = true
+          }
+          if (session.phone && !getValues('owner_phone')) {
+            setValue('owner_phone', session.phone, { shouldValidate: true })
+            if (!getValues('phone')) setValue('phone', session.phone)
+            pulledFromDraft = true
+          }
         }
       }
-    } catch {
-      // Ignore
+    } catch {}
+
+    if (pulledFromDraft) {
+      setHasPulledRegistrationDraft(true)
     }
-  }, [setValue])
+  }, [setValue, getValues])
+
+  // Pull on initial load
+  React.useEffect(() => {
+    pullRegistrationData()
+  }, [pullRegistrationData])
+
+  // Pull / refresh whenever user navigates to Step 7
+  React.useEffect(() => {
+    if (currentStep === 7) {
+      pullRegistrationData()
+    }
+  }, [currentStep, pullRegistrationData])
 
   const watchedBusinessType = watch('business_type')
   const watchedLanguage = watch('default_language')
@@ -334,6 +406,14 @@ function OnboardingWizard() {
           localStorage.removeItem('printerp_locale_explicit')
           document.cookie = `printerp_locale=${data.default_language}; path=/; max-age=31536000; SameSite=Lax`
           setLocale(data.default_language as 'en' | 'bn')
+        } catch {}
+      }
+
+      // Clean up registration draft upon successful workspace creation
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.removeItem('printerp_registration_draft')
+          localStorage.removeItem('printerp_registration_draft')
         } catch {}
       }
 
@@ -826,16 +906,36 @@ function OnboardingWizard() {
                 {/* STEP 7: CREATE OWNER ACCOUNT */}
                 {currentStep === 7 && (
                   <div className="space-y-4 animate-in fade-in-0 duration-200">
-                    <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 text-xs text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300 flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 shrink-0 text-emerald-600" />
-                      <span>
-                        This account will be automatically assigned the <strong>Owner (মালিক)</strong> role with full system and billing permissions.
-                      </span>
-                    </div>
+                    {hasPulledRegistrationDraft ? (
+                      <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-xs text-primary flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                          <span>
+                            {tBilingual(
+                              'Pre-filled with your registration credentials. You can keep or edit them.',
+                              'আপনার রেজিস্ট্রেশন তথ্য থেকে স্বয়ংক্রিয়ভাবে যুক্ত করা হয়েছে। আপনি চাইলে পরিবর্তন করতে পারেন।'
+                            )}
+                          </span>
+                        </div>
+                        <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-primary/20 text-primary shrink-0">
+                          {tBilingual('Auto-Filled', 'স্বয়ংক্রিয়')}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-success/30 bg-success-surface p-3 text-xs text-success flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 shrink-0 text-success" />
+                        <span>
+                          {tBilingual(
+                            'This account will be automatically assigned the Owner role with full permissions.',
+                            'এই অ্যাকাউন্টে স্বয়ংক্রিয়ভাবে পূর্ণ ক্ষমতাসহ মালিক (Owner) রোল যুক্ত হবে।'
+                          )}
+                        </span>
+                      </div>
+                    )}
 
                     <div className="space-y-1.5">
                       <Label htmlFor="owner_name" required>
-                        Owner Full Name (মালিকের নাম)
+                        {tBilingual('Owner Full Name', 'মালিকের নাম')}
                       </Label>
                       <Input
                         id="owner_name"
@@ -848,7 +948,7 @@ function OnboardingWizard() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label htmlFor="owner_email" required>
-                          Owner Email (লগইন ইমেইল)
+                          {tBilingual('Owner Email (Login)', 'মালিকের ইমেইল (লগইন)')}
                         </Label>
                         <Input
                           id="owner_email"
@@ -861,7 +961,7 @@ function OnboardingWizard() {
 
                       <div className="space-y-1.5">
                         <Label htmlFor="owner_phone" required>
-                          Owner Mobile (মোবাইল নম্বর)
+                          {tBilingual('Owner Mobile Number', 'মালিকের মোবাইল নম্বর')}
                         </Label>
                         <Input
                           id="owner_phone"
@@ -874,18 +974,29 @@ function OnboardingWizard() {
 
                     <div className="space-y-1.5">
                       <Label htmlFor="owner_password" required>
-                        Password (পাসওয়ার্ড)
+                        {tBilingual('Password', 'পাসওয়ার্ড')}
                       </Label>
-                      <div className="relative">
+                      <div className="relative flex items-center">
                         <Input
                           id="owner_password"
-                          type="password"
+                          type={showOwnerPassword ? 'text' : 'password'}
                           placeholder="••••••••"
                           {...register('owner_password')}
                           error={errors.owner_password?.message}
+                          className="pr-10"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowOwnerPassword(!showOwnerPassword)}
+                          className="absolute right-2.5 p-1 text-muted-foreground hover:text-foreground transition-colors focus:outline-hidden cursor-pointer"
+                          aria-label={showOwnerPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showOwnerPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
                       </div>
-                      <span className="text-2xs text-muted-foreground">Minimum 6 characters.</span>
+                      <span className="text-2xs text-muted-foreground">
+                        {tBilingual('Minimum 6 characters.', 'কমপক্ষে ৬ অক্ষর বা সংখ্যা।')}
+                      </span>
                     </div>
 
                     {/* Setup Review Card */}
