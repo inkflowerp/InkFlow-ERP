@@ -57,7 +57,7 @@ export function ThemeToggle({
  type="button"role="switch"aria-checked={isDark}
  onClick={toggleTheme}
  className={cn(
-          'relative inline-flex shrink-0 cursor-pointer rounded-full border border-border bg-muted transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+          'relative inline-flex shrink-0 cursor-pointer rounded-full border border-border bg-muted transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
  size === 'sm' ? 'h-7 w-12 p-0.5' : 'h-8 w-14 p-1',
  className
         )}
@@ -80,9 +80,9 @@ export function ThemeToggle({
           {!mounted ? (
             <span className={size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
           ) : isDark ? (
-            <Moon className={cn(size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5', 'text-blue-400')} />
+            <Moon className={cn(size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5', 'text-foreground')} />
           ) : (
-            <Sun className={cn(size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5', 'text-amber-500')} />
+            <Sun className={cn(size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5', 'text-warning')} />
           )}
         </span>
       </button>
@@ -110,7 +110,7 @@ export function ThemeToggle({
         {!mounted ? (
           <span className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'inline-block')} />
         ) : resolvedTheme === 'dark' ? (
-          <Sun className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-amber-400 transition-opacity duration-150')} />
+          <Sun className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-warning transition-opacity duration-150')} />
         ) : (
           <Moon className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-foreground transition-opacity duration-150')} />
         )}
@@ -133,7 +133,7 @@ export function ThemeToggle({
         {!mounted ? (
           <span className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'inline-block')} />
         ) : resolvedTheme === 'dark' ? (
-          <Sun className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-amber-400')} />
+          <Sun className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-warning')} />
         ) : (
           <Moon className={cn(size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4', 'text-foreground')} />
         )}
