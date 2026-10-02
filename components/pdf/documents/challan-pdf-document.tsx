@@ -35,7 +35,11 @@ const ChallanPdfContent = ({ challan, company }: { challan: DeliveryChallanRecor
  const companyAddress = company?.address ||"";
  const companyContact = `${company?.phone ||"+880 1700-000000"} · ${company?.email ||"dispatch@inkflow-erp.com"}`;
 
- const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/challan?id=${encodeURIComponent(challan.challan_number || challan.id)}`;
+ const appOrigin =
+   typeof window !== 'undefined' && window.location?.origin
+     ? window.location.origin
+     : process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com'
+ const qrPayload = `${appOrigin}/api/pdf/challan?id=${encodeURIComponent(challan.challan_number || challan.id)}`;
 
  const styles = StyleSheet.create({
  page: {

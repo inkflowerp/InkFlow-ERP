@@ -36,7 +36,11 @@ const MoneyReceiptPdfContent = ({ payment, company }: { payment: PaymentRecord; 
  const companyAddress = company?.address ||"";
  const companyContact = `${company?.phone ||"+880 1700-000000"} · ${company?.email ||"accounts@inkflow-erp.com"}`;
 
- const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`;
+ const appOrigin =
+   typeof window !== 'undefined' && window.location?.origin
+     ? window.location.origin
+     : process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com'
+ const qrPayload = `${appOrigin}/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`;
 
  const styles = StyleSheet.create({
  page: {

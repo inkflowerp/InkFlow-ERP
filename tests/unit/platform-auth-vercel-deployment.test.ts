@@ -19,15 +19,15 @@ describe('Platform Auth & Vercel Deployment Cookie Resolution Tests', () => {
     const opts = getAuthCookieOptions('inkflow-erp.vercel.app')
     assert.equal(opts.domain, undefined, 'Cookie domain MUST be undefined on vercel.app to prevent browser rejection')
     assert.equal(opts.sameSite, 'lax')
-    assert.equal(opts.secure, true)
     assert.equal(opts.path, '/')
+    assert.equal(opts.httpOnly, true)
   })
 
-  test('2. getAuthCookieOptions sets cross-subdomain wildcard for production custom domain', () => {
+  test('2. getAuthCookieOptions strictly enforces host-only cookies for production custom domain', () => {
     const opts = getAuthCookieOptions('inkflow.com.bd')
-    assert.equal(opts.domain, '.inkflow.com.bd')
+    assert.equal(opts.domain, undefined, 'Cookie domain MUST be undefined (host-only) to eliminate cross-subdomain session leaks')
     assert.equal(opts.sameSite, 'lax')
-    assert.equal(opts.secure, true)
+    assert.equal(opts.httpOnly, true)
   })
 
   test('3. getRootDomain prioritizes VERCEL_URL when NEXT_PUBLIC_ROOT_DOMAIN is unset', () => {

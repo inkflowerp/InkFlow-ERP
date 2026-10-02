@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
  Bell,
@@ -54,6 +54,7 @@ import {
 import { CustomerRecord } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { getCommunicationLogsAction } from '@/actions/communication.actions'
 import { formatBDT } from '@/lib/formatters'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 
@@ -84,6 +85,23 @@ export default function CommunicationsHubPage() {
     [],
  slug
   )
+
+  // Load server communication logs from PostgreSQL
+ useEffect(() => {
+ getCommunicationLogsAction()
+      .then((res) => {
+ if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+ const serverItems = res.data as any[]
+ const map = new Map<string, CommunicationLogRecord>()
+ serverItems.forEach((item) => map.set(item.id, item))
+ commLogs.forEach((item) => {
+ if (!map.has(item.id)) map.set(item.id, item)
+            })
+ setCommLogs(Array.from(map.values()))
+          }
+      })
+      .catch(() => {})
+  }, [slug])
  const [customers] = useDataStore<CustomerRecord[]>(
  STORAGE_KEYS.CUSTOMERS,
     [],

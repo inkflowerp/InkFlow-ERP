@@ -188,3 +188,41 @@ export async function syncActualConsumptionToCostingAction(
     return { success: false, error: err.message || 'Failed to sync actual consumption.' }
   }
 }
+
+export async function updateCostingAction(
+  id: string,
+  data: Partial<JobCostingRecord>,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<JobCostingRecord | null>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    if (!checkCostingPermission(tenant, 'costing.edit')) {
+      return { success: false, error: 'Unauthorized: You do not have permission to edit costing.' }
+    }
+
+    const updated = await CostingService.updateCosting(id, data, companyId)
+    if (!updated) return { success: false, error: 'Costing not found.' }
+
+    try {
+      await AuditService.logEvent(
+        companyId,
+        tenant.userId,
+        tenant.userEmail,
+        'update',
+        'costing',
+        id,
+        { job_number: updated.job_number, status: updated.status }
+      )
+    } catch {}
+
+    revalidatePath('/costing')
+    return { success: true, data: updated }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to update costing.' }
+  }
+}

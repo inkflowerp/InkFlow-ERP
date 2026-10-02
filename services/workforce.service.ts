@@ -457,13 +457,20 @@ export class WorkforceService {
           }
         } catch {}
 
-        // 2. Try auth admin listUsers
+        // 2. Try auth admin listUsers with pagination
         if (!userId) {
           try {
-            const { data: userList } = await admin.auth.admin.listUsers({ page: 1, perPage: 100 })
-            const existingAuth = userList?.users?.find((u) => u.email?.toLowerCase() === email)
-            if (existingAuth?.id) {
-              userId = existingAuth.id
+            let page = 1
+            let hasMore = true
+            while (hasMore && !userId && page <= 10) {
+              const { data: userList } = await admin.auth.admin.listUsers({ page, perPage: 100 })
+              const existingAuth = userList?.users?.find((u) => u.email?.toLowerCase() === email)
+              if (existingAuth?.id) {
+                userId = existingAuth.id
+                break
+              }
+              hasMore = Boolean(userList?.users && userList.users.length === 100)
+              page++
             }
           } catch {}
         }
@@ -491,28 +498,31 @@ export class WorkforceService {
             },
           })
 
-          if (!createErr && newUser?.user) {
-            userId = newUser.user.id
-          } else if (
-            createErr?.message?.toLowerCase().includes('already') ||
-            (createErr as any)?.code === 'email_exists'
-          ) {
-            try {
-              const { data: existingProf } = await (admin as any)
-                .from('user_profiles')
-                .select('id')
-                .ilike('email', email)
-                .maybeSingle()
-              if (existingProf?.id) {
-                userId = existingProf.id
-                if (userId && portalCreds.password?.trim()) {
-                  await admin.auth.admin.updateUserById(userId, {
-                    password: portalCreds.password.trim(),
-                    email_confirm: true,
-                  })
+          if (createErr) {
+            // If user already exists in auth, retrieve their ID via pagination
+            if (createErr.message?.toLowerCase().includes('already') || (createErr as any).status === 422) {
+              let page = 1
+              while (!userId && page <= 20) {
+                const { data: userList } = await admin.auth.admin.listUsers({ page, perPage: 100 })
+                const match = userList?.users?.find((u) => u.email?.toLowerCase() === email)
+                if (match?.id) {
+                  userId = match.id
+                  if (portalCreds.password?.trim()) {
+                    await admin.auth.admin.updateUserById(userId, {
+                      password: portalCreds.password.trim(),
+                      email_confirm: true,
+                    })
+                  }
+                  break
                 }
+                if (!userList?.users || userList.users.length < 100) break
+                page++
               }
-            } catch {}
+            } else {
+              console.warn('[WorkforceService] createUser failed:', createErr.message)
+            }
+          } else if (newUser?.user) {
+            userId = newUser.user.id
           }
         }
       } else if (userId && portalCreds.password?.trim()) {

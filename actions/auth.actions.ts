@@ -9,7 +9,7 @@ import { checkRateLimit } from '@/lib/security/rate-limiter'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
-import { getAuthCookieOptions, resolveHostname, isReservedSlug } from '@/lib/tenant/tenant-resolution'
+import { getAuthCookieOptions, resolveHostname, resolveTenant, isReservedSlug } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
 import { createClient, establishServerSession } from '@/lib/supabase/server'
 
@@ -185,9 +185,14 @@ export async function signInAction(email: string, pass: string) {
       targetCompanySlug = headerSlug
     } else {
       const host = headerStore.get('x-forwarded-host') || headerStore.get('host')
-      const hostRes = resolveHostname(host)
-      if (hostRes.hostType === 'tenant' && hostRes.tenantSlug) {
-        targetCompanySlug = hostRes.tenantSlug
+      const referer = headerStore.get('referer') || ''
+      let pathFromReferer = ''
+      try {
+        if (referer) pathFromReferer = new URL(referer).pathname
+      } catch {}
+      const tenantRes = resolveTenant(host, pathFromReferer)
+      if (tenantRes.type === 'tenant' && tenantRes.slug) {
+        targetCompanySlug = tenantRes.slug
       }
     }
   } catch {}

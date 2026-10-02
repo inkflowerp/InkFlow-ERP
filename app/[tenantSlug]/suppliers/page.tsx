@@ -58,6 +58,11 @@ import { PaySupplierVoucherModal } from '@/components/suppliers/pay-supplier-vou
 import { SupplierMaterialRateModal } from '@/components/suppliers/supplier-material-rate-modal'
 import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
 import { moveToTrashAction } from '@/actions/trash.actions'
+import {
+  getSuppliersAction,
+  createSupplierAction,
+  updateSupplierAction,
+} from '@/actions/supplier.actions'
 import type { CashBookEntryRecord } from '@/types/accounting.types'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
@@ -76,6 +81,24 @@ export default function SuppliersPage() {
 
  const [suppliers, setSuppliers] = useDataStore<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS, [])
  const [supplierPrices, setSupplierPrices] = useDataStore<any[]>(STORAGE_KEYS.SUPPLIER_PRICES, [])
+
+  // Synchronize authoritative suppliers from PostgreSQL database
+ useEffect(() => {
+ if (!company?.id) return
+ getSuppliersAction(company.id)
+      .then((res) => {
+ if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+ const serverItems = res.data
+ const map = new Map<string, SupplierRecord>()
+ serverItems.forEach((item) => map.set(item.id, item))
+ suppliers.forEach((item) => {
+ if (!map.has(item.id)) map.set(item.id, item)
+            })
+ setSuppliers(Array.from(map.values()))
+          }
+      })
+      .catch(() => {})
+  }, [company?.id])
 
   // Search & Filter State
  const [search, setSearch] = useState('')
@@ -114,14 +137,20 @@ export default function SuppliersPage() {
   }
 
   // Handle Save / Update Supplier
- const handleSaveSupplier = (saved: SupplierRecord) => {
- const exists = suppliers.some((s) => s.id === saved.id)
- if (exists) {
- PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, saved.id, saved)
- showNotification(`Supplier profile '${saved.supplier_name}' updated successfully.`)
+  const handleSaveSupplier = (saved: SupplierRecord) => {
+    const exists = suppliers.some((s) => s.id === saved.id)
+    if (exists) {
+      PrintERPDataStore.updateItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, saved.id, saved)
+      updateSupplierAction(saved.id, saved, company?.id).catch((e) =>
+        console.warn('[Supplier] Server update sync failed:', e)
+      )
+      showNotification(`Supplier profile '${saved.supplier_name}' updated successfully.`)
     } else {
- PrintERPDataStore.addItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, saved)
- showNotification(`Supplier '${saved.supplier_name}' registered successfully.`)
+      PrintERPDataStore.addItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, saved)
+      createSupplierAction(saved, company?.id).catch((e) =>
+        console.warn('[Supplier] Server create sync failed:', e)
+      )
+      showNotification(`Supplier '${saved.supplier_name}' registered successfully.`)
     }
   }
 
@@ -160,6 +189,11 @@ export default function SuppliersPage() {
  outstanding_balance: newBalance,
  updated_at: new Date().toISOString(),
     })
+
+ if (company?.id && payTargetSupplier.id) {
+   updateSupplierAction(payTargetSupplier.id, { outstanding_balance: newBalance }, company.id)
+     .catch((err: any) => console.warn('[Supplier] Server payment balance sync failed:', err))
+ }
 
     // Log to Cash book if cash
  if (details.method === 'cash') {

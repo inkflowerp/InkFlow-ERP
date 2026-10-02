@@ -44,6 +44,11 @@ import { JobCostingRecord, CostHeads, calculateNegotiationMargin } from '@/types
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import {
+  getCostingsAction,
+  createCostingAction,
+  updateCostingAction,
+} from '@/actions/costing.actions'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 
 // Bangladeshi printing industry seed templates for instant costing
@@ -169,6 +174,24 @@ export default function JobCostingPage() {
  STORAGE_KEYS.JOB_COSTINGS,
     []
   )
+
+  // Synchronize authoritative costings from PostgreSQL database
+ useEffect(() => {
+ if (!company?.id) return
+ getCostingsAction(company.id)
+      .then((res) => {
+ if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+ const serverItems = res.data
+ const map = new Map<string, JobCostingRecord>()
+ serverItems.forEach((item) => map.set(item.id, item))
+ storedCostings.forEach((item) => {
+ if (!map.has(item.id)) map.set(item.id, item)
+            })
+ setStoredCostings(Array.from(map.values()))
+          }
+      })
+      .catch(() => {})
+  }, [company?.id])
 
  const costings = useMemo(() => {
  return storedCostings || []
@@ -352,6 +375,9 @@ export default function JobCostingPage() {
  const updatedList = [newRecord, ...costings]
  setStoredCostings(updatedList)
  PrintERPDataStore.addItem(STORAGE_KEYS.JOB_COSTINGS, newRecord)
+ createCostingAction(newRecord, company?.id).catch((e) =>
+ console.warn('[Costing] Server create sync failed:', e)
+ )
 
  setIsNewCostingOpen(false)
  setNewJobNumber(`JOB-${Math.floor(1000 + Math.random() * 9000)}`)
@@ -411,6 +437,9 @@ export default function JobCostingPage() {
  const updatedList = costings.map((c) => (c.id === editingJob.id ? updatedCosting : c))
  setStoredCostings(updatedList)
  PrintERPDataStore.updateItem<JobCostingRecord>(STORAGE_KEYS.JOB_COSTINGS, editingJob.id, updatedCosting)
+ updateCostingAction(editingJob.id, updatedCosting, company?.id).catch((e) =>
+ console.warn('[Costing] Server update sync failed:', e)
+ )
 
  setEditingJob(null)
  showNotification(`9-Head actual costs and post-production variance finalized for ${editingJob.job_number}.`)

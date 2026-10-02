@@ -103,9 +103,9 @@ describe('Authentication Audit Remediation Verification Suite', () => {
       assert.strictEqual(sessionToken.includes('.'), false, 'Opaque token must not have JWT dot-separated segments')
     })
 
-    test('getAuthCookieOptions configures wildcard domain in production for custom domains', () => {
+    test('getAuthCookieOptions strictly enforces host-only cookie across custom domains', () => {
       const opts = getAuthCookieOptions('inkflow.com.bd')
-      assert.strictEqual(opts.domain, '.inkflow.com.bd')
+      assert.strictEqual(opts.domain, undefined, 'Cookie domain must be host-only')
       assert.strictEqual(opts.sameSite, 'lax')
       assert.strictEqual(opts.path, '/')
     })

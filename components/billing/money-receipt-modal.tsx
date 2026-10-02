@@ -410,9 +410,10 @@ export function MoneyReceiptModal({
             {/* QR Code Verification for Direct Print */}
             <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-muted border border-border">
               <QRCodeSVG
- value={`https://rangao.inkflow-erp.vercel.app/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`}
- size={64}
- className="bg-card p-1 rounded"/>
+                value={`${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com')}/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`}
+                size={64}
+                className="bg-card p-1 rounded"
+              />
               <span className="text-2xs text-muted-foreground font-semibold mt-1">
  Scan to Verify Voucher
               </span>

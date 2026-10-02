@@ -124,16 +124,16 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     assert.equal(normalizeSlug('!@#$% Dhaka Press 123'), 'dhaka-press-123')
   })
 
-  test('14. getAuthCookieOptions sets cross-subdomain domain in production and host-scoped in dev', () => {
+  test('14. getAuthCookieOptions enforces host-only cookies across production and development', () => {
     const prodOpts = getAuthCookieOptions('inkflow.com.bd')
-    assert.equal(prodOpts.domain, '.inkflow.com.bd')
+    assert.equal(prodOpts.domain, undefined, 'Cookie must be host-only (domain: undefined)')
     assert.equal(prodOpts.sameSite, 'lax')
-    assert.equal(prodOpts.secure, true)
+    assert.equal(prodOpts.httpOnly, true)
 
     const devOpts = getAuthCookieOptions('localhost:3000')
     assert.equal(devOpts.domain, undefined)
     assert.equal(devOpts.sameSite, 'lax')
-    assert.equal(devOpts.secure, false)
+    assert.equal(devOpts.httpOnly, true)
   })
 
   test('15. getTenantBaseUrl and getTenantLink generate clean URLs without double slashes', () => {
@@ -219,9 +219,9 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     assert.ok(link.endsWith('/orders'))
   })
 
-  test('23. getAuthCookieOptions normalizes www root domain', () => {
+  test('23. getAuthCookieOptions normalizes www root domain to host-only', () => {
     const opts = getAuthCookieOptions('www.inkflow.com.bd')
-    assert.equal(opts.domain, '.inkflow.com.bd')
+    assert.equal(opts.domain, undefined)
   })
 
   test('24. Resolves [tenantSlug].app.TLD subdomains across Vercel, .bd, .com, and .com.bd', () => {
@@ -327,10 +327,10 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     )
   })
 
-  test('28. getAuthCookieOptions sets proper cookie domains for .bd, .com, .com.bd and omits for PSL', () => {
-    assert.equal(getAuthCookieOptions('inkflow.bd').domain, '.inkflow.bd')
-    assert.equal(getAuthCookieOptions('inkflow.com').domain, '.inkflow.com')
-    assert.equal(getAuthCookieOptions('inkflow.com.bd').domain, '.inkflow.com.bd')
+  test('28. getAuthCookieOptions sets host-only cookie domains across .bd, .com, .com.bd and omits for PSL', () => {
+    assert.equal(getAuthCookieOptions('inkflow.bd').domain, undefined)
+    assert.equal(getAuthCookieOptions('inkflow.com').domain, undefined)
+    assert.equal(getAuthCookieOptions('inkflow.com.bd').domain, undefined)
     assert.equal(getAuthCookieOptions('inkflow-erp.vercel.app').domain, undefined)
   })
 })

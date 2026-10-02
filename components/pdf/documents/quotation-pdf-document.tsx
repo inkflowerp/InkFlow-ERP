@@ -38,7 +38,11 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
  const companyAddress = company?.address ||"";
  const companyContact = `${company?.phone ||"+880 1700-000000"} · ${company?.email ||"sales@inkflow-erp.com"}`;
 
- const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/quotation?id=${encodeURIComponent(quotation.quotation_number || quotation.id)}`;
+ const appOrigin =
+   typeof window !== 'undefined' && window.location?.origin
+     ? window.location.origin
+     : process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com'
+ const qrPayload = `${appOrigin}/api/pdf/quotation?id=${encodeURIComponent(quotation.quotation_number || quotation.id)}`;
 
  const styles = StyleSheet.create({
  page: {

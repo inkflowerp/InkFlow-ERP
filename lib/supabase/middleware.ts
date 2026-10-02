@@ -2,8 +2,9 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/database.types'
 import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '@/lib/auth/types'
-import { resolveHostname, isReservedSlug, isValidSlugFormat, getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
+import { resolveTenant, resolveHostname, isReservedSlug, isValidSlugFormat, getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
+import { isTestEnvironment } from '@/lib/security/runtime-env'
 
 export async function updateSession(request: NextRequest) {
   try {
@@ -63,7 +64,15 @@ export async function updateSession(request: NextRequest) {
 
     const responseCookies: { name: string; value: string; options?: any }[] = []
 
-    // Helper: Anti-cache headers to prevent bfcache retention of sensitive pages
+    // Helper: Anti-cache and security headers
+    const applySecurityHeaders = (response: NextResponse) => {
+      response.headers.set('X-Content-Type-Options', 'nosniff')
+      response.headers.set('X-Frame-Options', 'DENY')
+      response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+      response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+      return response
+    }
+
     const applyNoCacheHeaders = (response: NextResponse) => {
       response.headers.set(
         'Cache-Control',
@@ -72,6 +81,7 @@ export async function updateSession(request: NextRequest) {
       response.headers.set('Pragma', 'no-cache')
       response.headers.set('Expires', '0')
       response.headers.set('Surrogate-Control', 'no-store')
+      applySecurityHeaders(response)
       responseCookies.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
       return response
     }
@@ -217,7 +227,7 @@ export async function updateSession(request: NextRequest) {
       }
     }
 
-    const isTenantAuthenticated = Boolean(user) || hasValidTenantCookie
+    const isTenantAuthenticated = Boolean(user) || (isTestEnvironment() && hasValidTenantCookie)
 
     // --------------------------------------------------------------------------
     // A. PLATFORM PORTAL GUARDS

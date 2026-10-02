@@ -612,11 +612,16 @@ export class AuthService {
       }
 
       // 3. Resolve tenant membership and calculate effective permissions across responsibilities
-      let membership = await TenantRepository.resolveUserMembership(user.id, targetCompanySlug)
+      let membership = targetCompanySlug
+        ? await TenantRepository.resolveUserMembership(user.id, targetCompanySlug)
+        : await TenantRepository.resolveUserMembership(user.id)
 
-      if (!membership) {
-        // Check if there is any company membership for this user
-        membership = await TenantRepository.resolveUserMembership(user.id)
+      if (targetCompanySlug && !membership) {
+        await supabase.auth.signOut()
+        return {
+          success: false,
+          error: 'This account does not have access to this workspace. Please verify your workspace URL.',
+        }
       }
 
       if (!membership) {

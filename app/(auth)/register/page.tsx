@@ -246,7 +246,7 @@ function RegisterForm() {
             {t('auth.already_account')}{' '}
             <Link
               href="/login"
-              className="font-semibold text-blue-600 hover:underline dark:text-blue-400"
+              className="font-semibold text-primary hover:underline"
             >
               {t('auth.sign_in')}
             </Link>

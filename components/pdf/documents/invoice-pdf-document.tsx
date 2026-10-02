@@ -46,7 +46,11 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
  const title = isMushak
     ?"MUSHAK-6.3 VAT INVOICE": invoice.invoice_type ==="payment_receipt"?"PAYMENT RECEIPT":"COMMERCIAL INVOICE";
 
- const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/invoice?id=${encodeURIComponent(invoice.invoice_number || invoice.id)}`;
+ const appOrigin =
+   typeof window !== 'undefined' && window.location?.origin
+     ? window.location.origin
+     : process.env.NEXT_PUBLIC_APP_URL || 'https://inkflowerp.com'
+ const qrPayload = `${appOrigin}/api/pdf/invoice?id=${encodeURIComponent(invoice.invoice_number || invoice.id)}`;
 
  const styles = StyleSheet.create({
  page: {

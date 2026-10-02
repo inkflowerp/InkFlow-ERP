@@ -1,11 +1,33 @@
 import type { NextConfig } from "next";
 
+const configuredRoot = process.env.ROOT_DOMAIN || process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'inkflowerp.com'
+const cleanRoot = configuredRoot.replace(/^https?:\/\//i, '').split('/')[0].split(':')[0].toLowerCase()
+
+const allowedActionOrigins = Array.from(
+  new Set([
+    'localhost:3000',
+    'localhost',
+    '*.localhost:3000',
+    '*.localhost',
+    '*.vercel.app',
+    'inkflowerp.com',
+    '*.inkflowerp.com',
+    'inkflow.com.bd',
+    '*.inkflow.com.bd',
+    cleanRoot,
+    `*.${cleanRoot}`,
+  ])
+)
+
 const nextConfig: NextConfig = {
   serverExternalPackages: ['nodemailer', 'pg'],
   compress: true,
   poweredByHeader: false,
   reactStrictMode: false,
   experimental: {
+    serverActions: {
+      allowedOrigins: allowedActionOrigins,
+    },
     optimizePackageImports: [
       'lucide-react',
       'recharts',
@@ -82,6 +104,14 @@ const nextConfig: NextConfig = {
           {
             key: 'X-Frame-Options',
             value: 'DENY',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
           },
         ],
       },
